@@ -476,7 +476,7 @@ void TrafoParam::recalc(){
  * \param xmlDoc
  * \return
  */
-QDomElement TrafoParam::toOpenIndyXML(QDomDocument &xmlDoc){
+QDomElement TrafoParam::toOpenIndyXML(QDomDocument &xmlDoc) const{
 
     QDomElement trafoParam = Feature::toOpenIndyXML(xmlDoc);
 

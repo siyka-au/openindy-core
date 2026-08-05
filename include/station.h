@@ -110,7 +110,7 @@ public:
     //save and load XML
     //#################
 
-    QDomElement toOpenIndyXML(QDomDocument &xmlDoc);
+    QDomElement toOpenIndyXML(QDomDocument &xmlDoc) const;
     bool fromOpenIndyXML(QDomElement &xmlElem);
 
     //###############

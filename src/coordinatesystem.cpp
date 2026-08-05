@@ -581,7 +581,7 @@ void CoordinateSystem::recalc(){
  * \param xmlDoc
  * \return
  */
-QDomElement CoordinateSystem::toOpenIndyXML(QDomDocument &xmlDoc){
+QDomElement CoordinateSystem::toOpenIndyXML(QDomDocument &xmlDoc) const{
 
     QDomElement coordinateSystem = Feature::toOpenIndyXML(xmlDoc);
 

@@ -589,7 +589,7 @@ void Station::recalc(){
  * \param xmlDoc
  * \return
  */
-QDomElement Station::toOpenIndyXML(QDomDocument &xmlDoc){
+QDomElement Station::toOpenIndyXML(QDomDocument &xmlDoc) const{
 
     QDomElement station = Feature::toOpenIndyXML(xmlDoc);
 
