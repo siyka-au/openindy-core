@@ -73,7 +73,7 @@ public:
     InputElement(const int &id) : isUsed(true), shouldBeUsed(true), id(id){}
 
     //! custom comparison operator to compare input elements by their id
-    bool operator==(const InputElement &other){
+    bool operator==(const InputElement &other) const {
         return this->id == other.id;
     }
 
@@ -139,7 +139,7 @@ public:
     FixedParameter(const GeometryParameters &param) : value(0.0), parameter(param){}
 
     //! custom comparison operator to compare fixed parameters
-    bool operator==(const FixedParameter &other){
+    bool operator==(const FixedParameter &other) const {
         if(this->parameter == other.parameter){
             return true;
         }

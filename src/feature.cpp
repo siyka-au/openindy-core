@@ -1,5 +1,7 @@
 #include "feature.h"
 
+#include <stdexcept>
+
 #include "oijob.h"
 #include "function.h"
 #include "featurewrapper.h"
@@ -495,12 +497,12 @@ void Feature::recalc(){
 
         }
 
-    } catch(const exception &e) {
-        throw exception(QString("can not calculate feature: \"%1\", error: %2")
+    } catch(const std::exception &e) {
+        throw std::runtime_error(QString("can not calculate feature: \"%1\", error: %2")
                         .arg(this->getFeatureName())
                         .arg(e.what()).toLocal8Bit().data());
     } catch(...) {
-        throw exception(QString("can not calculate feature: \"%1\"")
+        throw std::runtime_error(QString("can not calculate feature: \"%1\"")
                         .arg(this->getFeatureName())
                         .toLocal8Bit().data());
     }

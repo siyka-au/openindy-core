@@ -52,7 +52,7 @@ public slots:
     //special events a tool could listen on
     //#####################################
 
-    virtual void customXmlRequest(const QPointer<OiRequestResponse> &request);
+    virtual void customXmlRequest(OiRequestResponse *request);
     virtual void watchWindowKeyPressed(const Qt::Key &key);
 
     // receive emitted job
@@ -65,7 +65,7 @@ signals:
     //############################################
 
     void sendMessage(const QString &msg, const MessageTypes &msgType, const MessageDestinations &msgDest = eConsoleMessage);
-    void customXmlResponse(const QPointer<OiRequestResponse> &response);
+    void customXmlResponse(OiRequestResponse *response);
 
     //###############################
     //signals to start sensor actions

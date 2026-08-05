@@ -2525,11 +2525,11 @@ QStringList OiJob::createFeatureNames(const QString &name, const int &count) con
     QString baseName = name;
     QString postFix;
 
-    int index = baseName.lastIndexOf(QRegExp("[0-9]*$"), baseName.length()-1);
+    int index = baseName.lastIndexOf(QRegularExpression("[0-9]*$"), baseName.length()-1);
     while(index > -1){
-        postFix.prepend(QStringRef(&baseName, index, baseName.length() - index).toString());
+        postFix.prepend(baseName.mid(index));
         baseName.resize(index);
-        index = baseName.lastIndexOf(QRegExp("[0-9]*$"), baseName.length()-1);
+        index = baseName.lastIndexOf(QRegularExpression("[0-9]*$"), baseName.length()-1);
     }
 
     //add leading zero

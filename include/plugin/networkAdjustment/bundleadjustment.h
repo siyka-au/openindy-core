@@ -17,14 +17,19 @@ namespace oi{
 class BundleException : public std::exception
 {
 public:
-    BundleException(const char * const & message, int featureId = -1) : std::exception(message), featureId(featureId) {
+    BundleException(const char * const & message, int featureId = -1) : message(message), featureId(featureId) {
     }
 
     int getFeatureId() {
         return featureId;
     }
 
+    const char * what() const noexcept override {
+        return message;
+    }
+
 private:
+    const char * message;
     int featureId;
 };
 
@@ -36,7 +41,7 @@ class BundleTransformation{
 public:
     BundleTransformation() : id(-1){}
 
-    bool operator == (const BundleTransformation &other){
+    bool operator == (const BundleTransformation &other) const {
         if(this->id == other.id){
             return true;
         }
@@ -59,7 +64,7 @@ class BundleGeometry{
 public:
     BundleGeometry() : id(-1){}
 
-    bool operator == (const BundleGeometry &other){
+    bool operator == (const BundleGeometry &other) const {
         if(this->id == other.id){
             return true;
         }
@@ -83,7 +88,7 @@ public:
     BundleStation() : id(-1), tx(true), ty(true), tz(true),
     rx(true), ry(true), rz(true), m(true){}
 
-    bool operator == (const BundleStation &other){
+    bool operator == (const BundleStation &other) const {
         if(this->id == other.id){
             return true;
         }

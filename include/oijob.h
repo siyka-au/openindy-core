@@ -10,8 +10,7 @@
 #include <QMultiMap>
 #include <QIODevice>
 #include <QSet>
-#include <QRegExp>
-#include <QStringRef>
+#include <QRegularExpression>
 
 #include "featurecontainer.h"
 #include "featureattributes.h"

@@ -3,7 +3,7 @@
 
 #include <QString>
 #include <QtXml>
-#include <QHash.h>
+#include <QHash>
 
 #include "types.h"
 #include "util.h"
@@ -46,11 +46,6 @@ public:
         this->name = copy.name;
         this->configType = copy.configType;
         return *this;
-    }
-
-    bool operator==(const MeasurementConfigKey &other) {
-        return this->name.compare(other.name) == 0
-                && this->configType == other.configType;
     }
 
     friend bool operator==(const MeasurementConfigKey &left, const MeasurementConfigKey &right){

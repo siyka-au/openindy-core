@@ -57,7 +57,8 @@ QPointer<Reading> ReadingTest::writeReadXml(QPointer<Reading> r) {
 
     ReadingUndefined u;
     QPointer<Reading> inReading = new Reading(u);
-    inReading->fromOpenIndyXML(inXml.firstChild().toElement());
+    QDomElement inElem = inXml.firstChild().toElement();
+    inReading->fromOpenIndyXML(inElem);
     return inReading;
 }
 

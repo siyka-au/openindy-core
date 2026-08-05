@@ -61,7 +61,7 @@ void Tool::closeEvent(QCloseEvent *event){
  * \brief Tool::customXmlRequest
  * \param request
  */
-void Tool::customXmlRequest(const QPointer<OiRequestResponse> &request){
+void Tool::customXmlRequest(OiRequestResponse *request){
     emit this->sendMessage(QString("No custom XML request implementation"), eCriticalMessage, eMessageBoxMessage);
 }
 
