@@ -397,8 +397,9 @@ const QPointer<CoordinateSystem> &OiJob::getActiveBundleSystem() const{
 }
 
 const QPointer<oi::BundleAdjustment> &OiJob::getActiveBundleAdjustment() const{
+    static const QPointer<oi::BundleAdjustment> nullBundleAdjustment;
     if(this->activeBundleSystem.isNull()){
-        return QPointer<oi::BundleAdjustment>(NULL);
+        return nullBundleAdjustment;
     }
     return this->activeBundleSystem->getBundlePlugin();
 }
