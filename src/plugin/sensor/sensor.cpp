@@ -21,7 +21,7 @@ Sensor::Sensor(QObject *parent) : SensorInterface(parent){
  * \param copy
  * \param parent
  */
-Sensor::Sensor(const Sensor &copy, QObject *parent){
+Sensor::Sensor(const Sensor &copy, QObject *parent) : SensorInterface(parent){
 
     //sensor configuration
     this->sensorConfiguration = copy.getSensorConfiguration();
