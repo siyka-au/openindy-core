@@ -3320,7 +3320,7 @@ void OiJob::createTemplateFromJob() {
 
     // set first station to active station
     QList<QPointer<Station> > stations = this->getStationsList();
-    std:sort(stations.begin(), stations.end(),[] (const QPointer<Station>& lhs, const QPointer<Station>& rhs) {
+    std::sort(stations.begin(), stations.end(),[] (const QPointer<Station>& lhs, const QPointer<Station>& rhs) {
         return lhs->getId() < rhs->getId();
     });
 
@@ -3328,7 +3328,7 @@ void OiJob::createTemplateFromJob() {
     QList<Sensor> usedSensors;
     int i=0;
     for(QPointer<Station> station : stations) {
-        if(++i=1) {
+        if(++i == 1) {
             blockSignals(true); // supress copying of sensor
             stations.first()->setActiveStationState(true);
             blockSignals(false);
