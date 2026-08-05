@@ -37,48 +37,72 @@ bool Function::exec(const QPointer<FeatureWrapper> &feature){
         switch(feature->getFeatureTypeEnum()){
         case eStationFeature:
             if(!feature->getStation().isNull()){ return this->exec(*feature->getStation()); }
+            break;
         case eTrafoParamFeature:
             if(!feature->getTrafoParam().isNull()){ return this->exec(*feature->getTrafoParam()); }
+            break;
         case eCoordinateSystemFeature:
             if(!feature->getCoordinateSystem().isNull()){ return this->exec(*feature->getCoordinateSystem()); }
+            break;
         case eCircleFeature:
             if(!feature->getCircle().isNull()){ return this->exec(*feature->getCircle()); }
+            break;
         case eConeFeature:
             if(!feature->getCone().isNull()){ return this->exec(*feature->getCone()); }
+            break;
         case eCylinderFeature:
             if(!feature->getCylinder().isNull()){ return this->exec(*feature->getCylinder()); }
+            break;
         case eEllipseFeature:
             if(!feature->getEllipse().isNull()){ return this->exec(*feature->getEllipse()); }
+            break;
         case eEllipsoidFeature:
             if(!feature->getEllipsoid().isNull()){ return this->exec(*feature->getEllipsoid()); }
+            break;
         case eHyperboloidFeature:
             if(!feature->getHyperboloid().isNull()){ return this->exec(*feature->getHyperboloid()); }
+            break;
         case eLineFeature:
             if(!feature->getLine().isNull()){ return this->exec(*feature->getLine()); }
+            break;
         case eNurbsFeature:
             if(!feature->getNurbs().isNull()){ return this->exec(*feature->getNurbs()); }
+            break;
         case eParaboloidFeature:
             if(!feature->getParaboloid().isNull()){ return this->exec(*feature->getParaboloid()); }
+            break;
         case ePlaneFeature:
             if(!feature->getPlane().isNull()){ return this->exec(*feature->getPlane()); }
+            break;
         case ePointFeature:
             if(!feature->getPoint().isNull()){ return this->exec(*feature->getPoint()); }
+            break;
         case ePointCloudFeature:
             if(!feature->getPointCloud().isNull()){ return this->exec(*feature->getPointCloud()); }
+            break;
         case eScalarEntityAngleFeature:
             if(!feature->getScalarEntityAngle().isNull()){ return this->exec(*feature->getScalarEntityAngle()); }
+            break;
         case eScalarEntityDistanceFeature:
             if(!feature->getScalarEntityDistance().isNull()){ return this->exec(*feature->getScalarEntityDistance()); }
+            break;
         case eScalarEntityMeasurementSeriesFeature:
             if(!feature->getScalarEntityMeasurementSeries().isNull()){ return this->exec(*feature->getScalarEntityMeasurementSeries()); }
+            break;
         case eScalarEntityTemperatureFeature:
             if(!feature->getScalarEntityTemperature().isNull()){ return this->exec(*feature->getScalarEntityTemperature()); }
+            break;
         case eSlottedHoleFeature:
             if(!feature->getSlottedHole().isNull()){ return this->exec(*feature->getSlottedHole()); }
+            break;
         case eSphereFeature:
             if(!feature->getSphere().isNull()){ return this->exec(*feature->getSphere()); }
+            break;
         case eTorusFeature:
             if(!feature->getTorus().isNull()){ return this->exec(*feature->getTorus()); }
+            break;
+        default:
+            break;
         }
 
     }
