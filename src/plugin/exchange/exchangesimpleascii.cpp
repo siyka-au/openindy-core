@@ -26,7 +26,7 @@ ExchangeSimpleAscii::~ExchangeSimpleAscii(){
  * \param typeOfGeometry
  * \return
  */
-QList<ExchangeSimpleAscii::ColumnType> ExchangeSimpleAscii::getDefaultColumnOrder(const GeometryTypes &typeOfGeometry) const{
+QList<ExchangeSimpleAscii::ColumnType> ExchangeSimpleAscii::getDefaultColumnOrder(const GeometryTypes &/*typeOfGeometry*/) const{
     return QList<ExchangeSimpleAscii::ColumnType>();
 }
 
@@ -36,7 +36,7 @@ QList<ExchangeSimpleAscii::ColumnType> ExchangeSimpleAscii::getDefaultColumnOrde
  * \param typeOfGeometry
  * \return
  */
-QMap<ExchangeSimpleAscii::ColumnType, QVariantList> ExchangeSimpleAscii::getFilePreview(const GeometryTypes &typeOfGeometry) const{
+QMap<ExchangeSimpleAscii::ColumnType, QVariantList> ExchangeSimpleAscii::getFilePreview(const GeometryTypes &/*typeOfGeometry*/) const{
     return QMap<ExchangeSimpleAscii::ColumnType, QVariantList>();
 }
 
@@ -46,7 +46,7 @@ QMap<ExchangeSimpleAscii::ColumnType, QVariantList> ExchangeSimpleAscii::getFile
  * \param typeOfGeometry
  * \return
  */
-QList<ExchangeSimpleAscii::ColumnType> ExchangeSimpleAscii::getPossibleColumns(const GeometryTypes &typeOfGeometry) const{
+QList<ExchangeSimpleAscii::ColumnType> ExchangeSimpleAscii::getPossibleColumns(const GeometryTypes &/*typeOfGeometry*/) const{
     return QList<ExchangeSimpleAscii::ColumnType>();
 }
 

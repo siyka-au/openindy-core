@@ -58,7 +58,7 @@ public:
     void setDigest(const QString &);
     const QString &getDigest() const;
 
-    const CompatibilyCheckResult checkCompatibilty() const;
+    CompatibilyCheckResult checkCompatibilty() const;
     void setLoadedProjectVersion(const QString &loadedVersion);
 
     int generateUniqueId();

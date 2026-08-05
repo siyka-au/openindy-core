@@ -489,7 +489,7 @@ bool SensorConfiguration::fromOpenIndyXML(QDomElement &xmlElem){
                 for(int j = 0; j < values.size(); j++){
                     QDomElement value = values.at(j).toElement();
                     if(value.hasAttribute("value")){
-                        this->availableStringParameter.insertMulti(param.attribute("name"), value.attribute("value"));
+                        this->availableStringParameter.insert(param.attribute("name"), value.attribute("value"));
                     }
                 }
             }

@@ -14,7 +14,7 @@ using namespace oi::math;
  * \param isNominal
  * \param parent
  */
-Geometry::Geometry(const bool &isNominal, QObject *parent) : Feature(parent), isNominal(isNominal), isCommon(false){
+Geometry::Geometry(const bool &isNominal, QObject *parent) : Feature(parent), isCommon(false), isNominal(isNominal){
 
 }
 
@@ -468,7 +468,7 @@ void Geometry::setPosition(Position &xyz) {
  * \param displayDigits
  * \return
  */
-QMap<GeometryParameters, QString> Geometry::getUnknownParameters(const QMap<DimensionType, UnitType> &displayUnits, const QMap<DimensionType, int> &displayDigits) const{
+QMap<GeometryParameters, QString> Geometry::getUnknownParameters(const QMap<DimensionType, UnitType> &/*displayUnits*/, const QMap<DimensionType, int> &/*displayDigits*/) const{
     return QMap<GeometryParameters, QString>();
 }
 
@@ -476,7 +476,7 @@ QMap<GeometryParameters, QString> Geometry::getUnknownParameters(const QMap<Dime
  * \brief Geometry::setUnknownParameters
  * \param parameters
  */
-void Geometry::setUnknownParameters(const QMap<GeometryParameters, double> &parameters){
+void Geometry::setUnknownParameters(const QMap<GeometryParameters, double> &/*parameters*/){
     return;
 }
 
@@ -765,7 +765,7 @@ QString Geometry::getDisplayIsActual() const
  * \param showDiff
  * \return
  */
-QString Geometry::getDisplayX(const UnitType &type, const int &digits, const bool &showDiff) const{
+QString Geometry::getDisplayX(const UnitType &type, const int &digits, const bool &/*showDiff*/) const{
     if(this->isSolved){
         return QString::number(convertFromDefault(this->xyz.getVector().getAt(0), type), 'f', digits);
     }
@@ -779,7 +779,7 @@ QString Geometry::getDisplayX(const UnitType &type, const int &digits, const boo
  * \param showDiff
  * \return
  */
-QString Geometry::getDisplayY(const UnitType &type, const int &digits, const bool &showDiff) const{
+QString Geometry::getDisplayY(const UnitType &type, const int &digits, const bool &/*showDiff*/) const{
     if(this->isSolved){
         return QString::number(convertFromDefault(this->xyz.getVector().getAt(1), type), 'f', digits);
     }
@@ -793,7 +793,7 @@ QString Geometry::getDisplayY(const UnitType &type, const int &digits, const boo
  * \param showDiff
  * \return
  */
-QString Geometry::getDisplayZ(const UnitType &type, const int &digits, const bool &showDiff) const{
+QString Geometry::getDisplayZ(const UnitType &type, const int &digits, const bool &/*showDiff*/) const{
     if(this->isSolved){
         return QString::number(convertFromDefault(this->xyz.getVector().getAt(2), type), 'f', digits);
     }
@@ -855,7 +855,7 @@ QString Geometry::getDisplayPrimaryK(const int &digits, const bool &showDiff) co
  * \param showDiff
  * \return
  */
-QString Geometry::getDisplayRadiusA(const UnitType &type, const int &digits, const bool &showDiff) const{
+QString Geometry::getDisplayRadiusA(const UnitType &type, const int &digits, const bool &/*showDiff*/) const{
     if(this->isSolved){
         return QString::number(convertFromDefault(this->radius.getRadius(), type), 'f', digits);
     }

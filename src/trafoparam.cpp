@@ -10,7 +10,7 @@ using namespace oi::math;
  * \brief TrafoParam::TrafoParam
  * \param parent
  */
-TrafoParam::TrafoParam(QObject *parent) : Feature(parent), scale(3), rotation(3), translation(3), homogenMatrix(4, 4){
+TrafoParam::TrafoParam(QObject *parent) : Feature(parent), translation(3), rotation(3), scale(3), homogenMatrix(4, 4){
 
     //set up feature wrapper
     if(!this->selfFeature.isNull()){
@@ -183,7 +183,7 @@ bool TrafoParam::setCoordinateSystems(const QPointer<CoordinateSystem> &from, co
  * \brief TrafoParam::getIsBundle
  * \return
  */
-const bool TrafoParam::getIsBundle() const{
+bool TrafoParam::getIsBundle() const{
 
     if(!this->from.isNull() && !this->to.isNull()){
         if(this->from->getIsBundleSystem() || this->to->getIsBundleSystem()){
@@ -383,7 +383,7 @@ bool TrafoParam::setTransformationParameters(const OiMat &rotation, const OiMat 
  * \param homogenMatrix
  * \return
  */
-bool TrafoParam::setTransformationParameters(const OiMat &homogenMatrix){
+bool TrafoParam::setTransformationParameters(const OiMat &/*homogenMatrix*/){
     return false;
 }
 

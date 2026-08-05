@@ -30,6 +30,8 @@ public:
             return this->move(sAttr.moveX, sAttr.moveY, sAttr.moveZ);
         case(eToggleSight):
             return this->toggleSightOrientation();
+        default:
+            break;
         }
         return false;
 
@@ -49,7 +51,7 @@ protected:
      * \param isrelativ
      * \return
      */
-    virtual bool move(const double &azimuth, const double &zenith, const double &distance, const bool &isRelative){
+    virtual bool move(const double &/*azimuth*/, const double &/*zenith*/, const double &/*distance*/, const bool &/*isRelative*/){
         emit this->sensorMessage(QString("Total Station not implemented correctly: move method missing"), eCriticalMessage, eMessageBoxMessage);
         return false;
     }
@@ -61,7 +63,7 @@ protected:
      * \param z
      * \return
      */
-    virtual bool move(const double &x, const double &y, const double &z){
+    virtual bool move(const double &/*x*/, const double &/*y*/, const double &/*z*/){
         emit this->sensorMessage(QString("Total Station not implemented correctly: move method missing"), eCriticalMessage, eMessageBoxMessage);
         return false;
     }

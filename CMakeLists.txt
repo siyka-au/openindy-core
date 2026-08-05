@@ -185,6 +185,10 @@ target_compile_definitions(OpenIndyCore
         OPENINDY_VERSION="${OPENINDY_VERSION}"
 )
 
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(OpenIndyCore PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+
 target_include_directories(OpenIndyCore
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -220,5 +224,9 @@ find_package(Qt6 REQUIRED COMPONENTS Test)
 add_executable(tst_reading test/reading/tst_reading.cpp)
 target_compile_definitions(tst_reading PRIVATE SRCDIR="${CMAKE_CURRENT_SOURCE_DIR}/test/reading")
 target_link_libraries(tst_reading PRIVATE Qt6::Test OpenIndyCore OpenIndyMath)
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(tst_reading PRIVATE -Wall -Wextra -Wpedantic)
+endif()
 
 add_test(NAME reading COMMAND tst_reading)

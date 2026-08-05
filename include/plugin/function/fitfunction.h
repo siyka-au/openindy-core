@@ -96,7 +96,7 @@ protected:
         }
 
         ElementTypes elementType = eUndefinedElement;
-        for(const NeededElement ne : function->getNeededElements()) {
+        for(const NeededElement &ne : function->getNeededElements()) {
             if(ne.key == InputElementKey::eDummyPoint) {
                 elementType = ne.typeOfElement;
                 break;
@@ -600,7 +600,7 @@ protected:
      * \param inputObservations
      * \return
      */
-    bool approximateCylinder(FitFunction *function, Cylinder &cylinder, const QList<IdPoint> &inputObservations, ApproximationTypes approximationType){
+    bool approximateCylinder(FitFunction *function, Cylinder &/*cylinder*/, const QList<IdPoint> &inputObservations, ApproximationTypes approximationType){
 
         //clear current approximations
         this->approximations.clear();

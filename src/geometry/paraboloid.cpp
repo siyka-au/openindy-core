@@ -181,6 +181,8 @@ void Paraboloid::setUnknownParameters(const QMap<GeometryParameters, double> &pa
         case eUnknownA:
             a = parameters.value(eUnknownA);
             break;
+        default:
+            break;
         }
     }
 
@@ -279,7 +281,7 @@ bool Paraboloid::fromOpenIndyXML(QDomElement &xmlElem){
  * \param showDiff
  * \return
  */
-QString Paraboloid::getDisplayA(const UnitType &type, const int &digits, const bool &showDiff) const{
+QString Paraboloid::getDisplayA(const UnitType &type, const int &digits, const bool &/*showDiff*/) const{
     if(this->isSolved){
         return QString::number(convertFromDefault(this->a, type), 'f', digits);
     }

@@ -328,6 +328,8 @@ void SlottedHole::setUnknownParameters(const QMap<GeometryParameters, double> &p
         case eUnknownSecondaryK:
             directionB.setAt(2, parameters.value(eUnknownSecondaryK));
             break;
+        default:
+            break;
         }
     }
 
@@ -454,7 +456,7 @@ bool SlottedHole::fromOpenIndyXML(QDomElement &xmlElem){
  * \param showDiff
  * \return
  */
-QString SlottedHole::getDisplayX(const UnitType &type, const int &digits, const bool &showDiff) const{
+QString SlottedHole::getDisplayX(const UnitType &type, const int &digits, const bool &/*showDiff*/) const{
     if(this->isSolved){
         return QString::number(convertFromDefault(this->center.getVector().getAt(0), type), 'f', digits);
     }
@@ -468,7 +470,7 @@ QString SlottedHole::getDisplayX(const UnitType &type, const int &digits, const 
  * \param showDiff
  * \return
  */
-QString SlottedHole::getDisplayY(const UnitType &type, const int &digits, const bool &showDiff) const{
+QString SlottedHole::getDisplayY(const UnitType &type, const int &digits, const bool &/*showDiff*/) const{
     if(this->isSolved){
         return QString::number(convertFromDefault(this->center.getVector().getAt(1), type), 'f', digits);
     }
@@ -482,7 +484,7 @@ QString SlottedHole::getDisplayY(const UnitType &type, const int &digits, const 
  * \param showDiff
  * \return
  */
-QString SlottedHole::getDisplayZ(const UnitType &type, const int &digits, const bool &showDiff) const{
+QString SlottedHole::getDisplayZ(const UnitType &type, const int &digits, const bool &/*showDiff*/) const{
     if(this->isSolved){
         return QString::number(convertFromDefault(this->center.getVector().getAt(2), type), 'f', digits);
     }
@@ -495,7 +497,7 @@ QString SlottedHole::getDisplayZ(const UnitType &type, const int &digits, const 
  * \param showDiff
  * \return
  */
-QString SlottedHole::getDisplayPrimaryI(const int &digits, const bool &showDiff) const{
+QString SlottedHole::getDisplayPrimaryI(const int &digits, const bool &/*showDiff*/) const{
     if(this->isSolved){
         return QString::number(this->normal.getVector().getAt(0), 'f', digits);
     }
@@ -508,7 +510,7 @@ QString SlottedHole::getDisplayPrimaryI(const int &digits, const bool &showDiff)
  * \param showDiff
  * \return
  */
-QString SlottedHole::getDisplayPrimaryJ(const int &digits, const bool &showDiff) const{
+QString SlottedHole::getDisplayPrimaryJ(const int &digits, const bool &/*showDiff*/) const{
     if(this->isSolved){
         return QString::number(this->normal.getVector().getAt(1), 'f', digits);
     }
@@ -521,7 +523,7 @@ QString SlottedHole::getDisplayPrimaryJ(const int &digits, const bool &showDiff)
  * \param showDiff
  * \return
  */
-QString SlottedHole::getDisplayPrimaryK(const int &digits, const bool &showDiff) const{
+QString SlottedHole::getDisplayPrimaryK(const int &digits, const bool &/*showDiff*/) const{
     if(this->isSolved){
         return QString::number(this->normal.getVector().getAt(2), 'f', digits);
     }
@@ -535,7 +537,7 @@ QString SlottedHole::getDisplayPrimaryK(const int &digits, const bool &showDiff)
  * \param showDiff
  * \return
  */
-QString SlottedHole::getDisplayRadiusA(const UnitType &type, const int &digits, const bool &showDiff) const{
+QString SlottedHole::getDisplayRadiusA(const UnitType &type, const int &digits, const bool &/*showDiff*/) const{
     if(this->isSolved){
         return QString::number(convertFromDefault(this->radius.getRadius(), type), 'f', digits);
     }
@@ -548,7 +550,7 @@ QString SlottedHole::getDisplayRadiusA(const UnitType &type, const int &digits, 
  * \param showDiff
  * \return
  */
-QString SlottedHole::getDisplaySecondaryI(const int &digits, const bool &showDiff) const{
+QString SlottedHole::getDisplaySecondaryI(const int &digits, const bool &/*showDiff*/) const{
     if(this->isSolved){
         return QString::number(this->holeAxis.getVector().getAt(0), 'f', digits);
     }
@@ -561,7 +563,7 @@ QString SlottedHole::getDisplaySecondaryI(const int &digits, const bool &showDif
  * \param showDiff
  * \return
  */
-QString SlottedHole::getDisplaySecondaryJ(const int &digits, const bool &showDiff) const{
+QString SlottedHole::getDisplaySecondaryJ(const int &digits, const bool &/*showDiff*/) const{
     if(this->isSolved){
         return QString::number(this->holeAxis.getVector().getAt(1), 'f', digits);
     }
@@ -574,7 +576,7 @@ QString SlottedHole::getDisplaySecondaryJ(const int &digits, const bool &showDif
  * \param showDiff
  * \return
  */
-QString SlottedHole::getDisplaySecondaryK(const int &digits, const bool &showDiff) const{
+QString SlottedHole::getDisplaySecondaryK(const int &digits, const bool &/*showDiff*/) const{
     if(this->isSolved){
         return QString::number(this->holeAxis.getVector().getAt(2), 'f', digits);
     }
@@ -588,7 +590,7 @@ QString SlottedHole::getDisplaySecondaryK(const int &digits, const bool &showDif
  * \param showDiff
  * \return
  */
-QString SlottedHole::getDisplayLength(const UnitType &type, const int &digits, const bool &showDiff) const{
+QString SlottedHole::getDisplayLength(const UnitType &type, const int &digits, const bool &/*showDiff*/) const{
     if(this->isSolved){
         return QString::number(convertFromDefault(this->length, type), 'f', digits);
     }

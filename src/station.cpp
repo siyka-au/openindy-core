@@ -713,7 +713,7 @@ QString Station::getDisplayZ(const UnitType &type, const int &digits, const bool
  * \param showDiff
  * \return
  */
-QString Station::getDisplayPrimaryI(const int &digits, const bool &showDiff) const{
+QString Station::getDisplayPrimaryI(const int &digits, const bool &/*showDiff*/) const{
     return QString::number(this->zAxis.getVector().getAt(0), 'f', digits);
 }
 
@@ -723,7 +723,7 @@ QString Station::getDisplayPrimaryI(const int &digits, const bool &showDiff) con
  * \param showDiff
  * \return
  */
-QString Station::getDisplayPrimaryJ(const int &digits, const bool &showDiff) const{
+QString Station::getDisplayPrimaryJ(const int &digits, const bool &/*showDiff*/) const{
     return QString::number(this->zAxis.getVector().getAt(1), 'f', digits);
 }
 
@@ -733,7 +733,7 @@ QString Station::getDisplayPrimaryJ(const int &digits, const bool &showDiff) con
  * \param showDiff
  * \return
  */
-QString Station::getDisplayPrimaryK(const int &digits, const bool &showDiff) const{
+QString Station::getDisplayPrimaryK(const int &digits, const bool &/*showDiff*/) const{
     return QString::number(this->zAxis.getVector().getAt(2), 'f', digits);
 }
 
@@ -806,7 +806,7 @@ void Station::setUpFeatureId(){
  * \param featureId
  * \param oldName
  */
-void Station::stationNameChanged(const int &featureId, const QString &oldName){
+void Station::stationNameChanged(const int &/*featureId*/, const QString &/*oldName*/){
     if(!this->stationSystem.isNull()){
         this->stationSystem->setFeatureName(this->name);
     }
@@ -960,6 +960,8 @@ void Station::addReadings(const int &geomId, const QList<QPointer<Reading> > &re
             break;
         case eTemperatureReading:
             this->temperatureRadings.append(reading);
+            break;
+        default:
             break;
         }
 

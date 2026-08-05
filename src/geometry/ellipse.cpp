@@ -229,6 +229,8 @@ void Ellipse::setUnknownParameters(const QMap<GeometryParameters, double> &param
         case eUnknownSecondaryK:
             directionB.setAt(2, parameters.value(eUnknownSecondaryK));
             break;
+        default:
+            break;
         }
     }
 
@@ -360,7 +362,7 @@ bool Ellipse::fromOpenIndyXML(QDomElement &xmlElem){
  * \param showDiff
  * \return
  */
-QString Ellipse::getDisplaySecondaryI(const int &digits, const bool &showDiff) const{
+QString Ellipse::getDisplaySecondaryI(const int &digits, const bool &/*showDiff*/) const{
     if(this->isSolved){
         return QString::number(this->semiMajorAxis.getVector().getAt(0), 'f', digits);
     }
@@ -373,7 +375,7 @@ QString Ellipse::getDisplaySecondaryI(const int &digits, const bool &showDiff) c
  * \param showDiff
  * \return
  */
-QString Ellipse::getDisplaySecondaryJ(const int &digits, const bool &showDiff) const{
+QString Ellipse::getDisplaySecondaryJ(const int &digits, const bool &/*showDiff*/) const{
     if(this->isSolved){
         return QString::number(this->semiMajorAxis.getVector().getAt(1), 'f', digits);
     }
@@ -386,7 +388,7 @@ QString Ellipse::getDisplaySecondaryJ(const int &digits, const bool &showDiff) c
  * \param showDiff
  * \return
  */
-QString Ellipse::getDisplaySecondaryK(const int &digits, const bool &showDiff) const{
+QString Ellipse::getDisplaySecondaryK(const int &digits, const bool &/*showDiff*/) const{
     if(this->isSolved){
         return QString::number(this->semiMajorAxis.getVector().getAt(2), 'f', digits);
     }
@@ -400,7 +402,7 @@ QString Ellipse::getDisplaySecondaryK(const int &digits, const bool &showDiff) c
  * \param showDiff
  * \return
  */
-QString Ellipse::getDisplayA(const UnitType &type, const int &digits, const bool &showDiff) const{
+QString Ellipse::getDisplayA(const UnitType &type, const int &digits, const bool &/*showDiff*/) const{
     if(this->isSolved){
         return QString::number(convertFromDefault(this->a, type), 'f', digits);
     }
@@ -414,7 +416,7 @@ QString Ellipse::getDisplayA(const UnitType &type, const int &digits, const bool
  * \param showDiff
  * \return
  */
-QString Ellipse::getDisplayB(const UnitType &type, const int &digits, const bool &showDiff) const{
+QString Ellipse::getDisplayB(const UnitType &type, const int &digits, const bool &/*showDiff*/) const{
     if(this->isSolved){
         return QString::number(convertFromDefault(this->b, type), 'f', digits);
     }

@@ -200,6 +200,8 @@ void Hyperboloid::setUnknownParameters(const QMap<GeometryParameters, double> &p
         case eUnknownC:
             c = parameters.value(eUnknownC);
             break;
+        default:
+            break;
         }
     }
 
@@ -311,7 +313,7 @@ bool Hyperboloid::fromOpenIndyXML(QDomElement &xmlElem){
  * \param showDiff
  * \return
  */
-QString Hyperboloid::getDisplayA(const UnitType &type, const int &digits, const bool &showDiff) const{
+QString Hyperboloid::getDisplayA(const UnitType &type, const int &digits, const bool &/*showDiff*/) const{
     if(this->isSolved){
         return QString::number(convertFromDefault(this->a, type), 'f', digits);
     }
@@ -325,7 +327,7 @@ QString Hyperboloid::getDisplayA(const UnitType &type, const int &digits, const 
  * \param showDiff
  * \return
  */
-QString Hyperboloid::getDisplayC(const UnitType &type, const int &digits, const bool &showDiff) const{
+QString Hyperboloid::getDisplayC(const UnitType &type, const int &digits, const bool &/*showDiff*/) const{
     if(this->isSolved){
         return QString::number(convertFromDefault(this->c, type), 'f', digits);
     }

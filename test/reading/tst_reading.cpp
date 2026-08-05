@@ -45,7 +45,9 @@ QPointer<Reading> ReadingTest::writeReadXml(QPointer<Reading> r) {
 
     QTemporaryFile file;
     // file.setAutoRemove(false);
-    file.open();
+    if(!file.open()){
+        qFatal("failed to open temporary file");
+    }
     qDebug() << file.fileName();
 
     QTextStream out(&file);

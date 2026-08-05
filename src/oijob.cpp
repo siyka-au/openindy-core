@@ -6,7 +6,7 @@ using namespace oi;
  * \brief OiJob::OiJob
  * \param parent
  */
-OiJob::OiJob(QObject *parent) : QObject(parent), nextId(1), activeGroup("All Groups"){
+OiJob::OiJob(QObject *parent) : QObject(parent), activeGroup("All Groups"), nextId(1){
 
 }
 
@@ -74,7 +74,7 @@ void OiJob::setDigest(const QString &digest) {
 /*!
  * \return true if the project file version compatible with this program version
  */
-const CompatibilyCheckResult OiJob::checkCompatibilty() const {
+CompatibilyCheckResult OiJob::checkCompatibilty() const {
     QStringList jobParts = loadedVersion.split(".");
     if(jobParts.length()<2) {
         return eCheckResult_job_wo_valid_version;
@@ -1129,6 +1129,8 @@ void OiJob::addInputReading(const QPointer<FeatureWrapper> &target, const int &f
     case eLevelReading:
         element.levelReading = reading;
         break;
+    default:
+        break;
     }
 
     target->getFeature()->getFunctions().at(functionPosition)->addInputElement(element, neededElementsIndex);
@@ -1171,7 +1173,7 @@ void OiJob::addInputFeature(const QPointer<FeatureWrapper> &target, const int &f
     InputElement element(feature->getFeature()->getId());
     element.typeOfElement = eUndefinedElement;
     if(neededElementsIndex == InputElementKey::eDummyPoint) {
-        for(const NeededElement ne : function->getNeededElements()) {
+        for(const NeededElement &ne : function->getNeededElements()) {
             if(ne.key == InputElementKey::eDummyPoint) {
                 element.typeOfElement = ne.typeOfElement;
                 break;
@@ -3073,6 +3075,8 @@ void OiJob::setUpDependencies(const InputElement &element, const QPointer<Featur
             }
             break;
         }
+        default:
+            break;
         }
 
     }else if(getIsObservation(element.typeOfElement)){
@@ -3216,6 +3220,8 @@ void OiJob::resetDependencies(const InputElement &element, const QPointer<Featur
             }
             break;
         }
+        default:
+            break;
         }
 
     }else if(getIsObservation(element.typeOfElement)){

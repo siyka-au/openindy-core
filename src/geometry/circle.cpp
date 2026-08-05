@@ -180,6 +180,8 @@ void Circle::setUnknownParameters(const QMap<GeometryParameters, double> &parame
         case eUnknownRadiusA:
             radius = parameters.value(eUnknownRadiusA);
             break;
+        default:
+            break;
         }
     }
 

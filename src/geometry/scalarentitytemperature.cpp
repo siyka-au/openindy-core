@@ -128,6 +128,8 @@ void ScalarEntityTemperature::setUnknownParameters(const QMap<GeometryParameters
         case eUnknownTemperature:
             temperature = parameters.value(eUnknownTemperature);
             break;
+        default:
+            break;
         }
     }
 
@@ -211,7 +213,7 @@ bool ScalarEntityTemperature::fromOpenIndyXML(QDomElement &xmlElem){
  * \param showDiff
  * \return
  */
-QString ScalarEntityTemperature::getDisplayTemperature(const UnitType &type, const int &digits, const bool &showDiff) const{
+QString ScalarEntityTemperature::getDisplayTemperature(const UnitType &type, const int &digits, const bool &/*showDiff*/) const{
     if(this->isSolved){
         return QString::number(convertFromDefault(this->temperature, type), 'f', digits);
     }

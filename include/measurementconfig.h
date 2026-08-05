@@ -55,7 +55,7 @@ public:
     }
 
     friend uint qHash(const MeasurementConfigKey key, uint seed) {
-        QtPrivate::QHashCombine hash;
+        QtPrivate::QHashCombine hash(seed);
         seed = hash(seed, key.name);
         seed = hash(seed, key.configType);
         return seed;
@@ -73,20 +73,20 @@ public:
         return this->name;
     }
 
-    const ConfigTypes getConfigType() const {
+    ConfigTypes getConfigType() const {
         return this->configType;
     }
 
-    const bool isUserConfig() const{
+    bool isUserConfig() const{
         return eUserConfig == this->configType;
     }
-    const bool isProjectConfig() const{
+    bool isProjectConfig() const{
         return eProjectConfig == this->configType || eStandardConfig == this->configType;
     }
-    const bool isStandardConfig() const {
+    bool isStandardConfig() const {
         return eStandardConfig == this->configType;
     }
-    const bool isValid() const{
+    bool isValid() const{
         return !this->name.isEmpty() && this->configType != eUndefinded;
     }
 
@@ -128,13 +128,13 @@ public:
 
     const QString &getName() const;
     void setName(const QString &name);
-    const MeasurementConfigKey getKey() const;
+    MeasurementConfigKey getKey() const;
 
-    const bool isUserConfig() const;
-    const bool isProjectConfig() const;
-    const bool isEditable() const;
-    const bool isStandardConfig() const;
-    const bool isValid() const;
+    bool isUserConfig() const;
+    bool isProjectConfig() const;
+    bool isEditable() const;
+    bool isStandardConfig() const;
+    bool isValid() const;
 
     const bool &getMeasureTwoSides() const;
     void setMeasureTwoSides(const bool &measureTwoSides);
@@ -149,10 +149,10 @@ public:
     void setTransientData(const QString key, const QVariant value);
 
     void setMeasurementMode(const MeasurementModes mode);
-    const MeasurementModes getMeasurementMode() const;
+    MeasurementModes getMeasurementMode() const;
 
     void setMeasurementType(const MeasurementTypes type);
-    const MeasurementTypes getMeasurementType() const;
+    MeasurementTypes getMeasurementType() const;
 
     const int &getMaxObservations() const;
     void setMaxObservations(const int &maxObservations);

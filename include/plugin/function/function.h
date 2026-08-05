@@ -69,8 +69,8 @@ public:
  */
 class InputElement{
 public:
-    InputElement() : isUsed(true), shouldBeUsed(true), id(-1){}
-    InputElement(const int &id) : isUsed(true), shouldBeUsed(true), id(id){}
+    InputElement() : id(-1), shouldBeUsed(true), isUsed(true){}
+    InputElement(const int &id) : id(id), shouldBeUsed(true), isUsed(true){}
 
     //! custom comparison operator to compare input elements by their id
     bool operator==(const InputElement &other) const {
@@ -136,7 +136,7 @@ public:
 class FixedParameter{
 public:
     FixedParameter() : value(0.0){}
-    FixedParameter(const GeometryParameters &param) : value(0.0), parameter(param){}
+    FixedParameter(const GeometryParameters &param) : parameter(param), value(0.0){}
 
     //! custom comparison operator to compare fixed parameters
     bool operator==(const FixedParameter &other) const {

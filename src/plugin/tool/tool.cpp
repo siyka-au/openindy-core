@@ -61,7 +61,7 @@ void Tool::closeEvent(QCloseEvent *event){
  * \brief Tool::customXmlRequest
  * \param request
  */
-void Tool::customXmlRequest(OiRequestResponse *request){
+void Tool::customXmlRequest(OiRequestResponse */*request*/){
     emit this->sendMessage(QString("No custom XML request implementation"), eCriticalMessage, eMessageBoxMessage);
 }
 
@@ -69,11 +69,11 @@ void Tool::customXmlRequest(OiRequestResponse *request){
  * \brief Tool::watchWindowKeyPressed
  * \param key
  */
-void Tool::watchWindowKeyPressed(const Qt::Key &key){
+void Tool::watchWindowKeyPressed(const Qt::Key &/*key*/){
     emit this->sendMessage(QString("No watch window key pressed implementation"), eCriticalMessage, eMessageBoxMessage);
 }
 
-void Tool::setCurrentJob(const QPointer<OiJob> &job) {
+void Tool::setCurrentJob(const QPointer<OiJob> &/*job*/) {
 }
 
 /*!

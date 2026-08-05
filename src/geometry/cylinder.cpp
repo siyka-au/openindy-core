@@ -182,6 +182,8 @@ void Cylinder::setUnknownParameters(const QMap<GeometryParameters, double> &para
         case eUnknownRadiusA:
             radius = parameters.value(eUnknownRadiusA);
             break;
+        default:
+            break;
         }
     }
 

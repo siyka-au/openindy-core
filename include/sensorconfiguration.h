@@ -52,7 +52,7 @@ public:
  */
 class OI_CORE_EXPORT Accuracy{
 public:
-    Accuracy() : sigmaXyz(OiVec(3)), sigmaAzimuth(0.0), sigmaZenith(0.0), sigmaDistance(0.0),
+    Accuracy() : sigmaAzimuth(0.0), sigmaZenith(0.0), sigmaDistance(0.0), sigmaXyz(OiVec(3)),
         sigmaTemp(0.0), sigmaI(0.0), sigmaJ(0.0), sigmaK(0.0){}
 
     //polar

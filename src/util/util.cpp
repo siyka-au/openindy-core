@@ -713,6 +713,8 @@ ElementTypes getElementTypeEnum(const ReadingTypes &type){
         return eReadingTemperatureElement;
     case eLevelReading:
         return eReadingLevelElement;
+    default:
+        break;
     }
 
     return eUndefinedElement;
@@ -1242,6 +1244,8 @@ bool getReadingDisplayAttributeVisibility(const ReadingDisplayAttributes &attr, 
         if(type != eTemperatureReading){
             return false;
         }
+        break;
+    default:
         break;
     }
 
@@ -1896,6 +1900,8 @@ QList<GeometryParameters> getGeometryParameters(const GeometryTypes &type){
         unknownParameters.append(eUnknownRadiusA);
         unknownParameters.append(eUnknownRadiusB);
         break;
+    default:
+        break;
     }
 
     return unknownParameters;
@@ -2030,7 +2036,7 @@ const QString &getMaterialName(const MaterialsTempComp &material)
  * \param material
  * \return
  */
-const double getMaterialValue(const MaterialsTempComp &material)
+double getMaterialValue(const MaterialsTempComp &material)
 {
     //fill helper maps if not yet done
     if(!internal::isInit){
@@ -2065,7 +2071,7 @@ QList<QString> getMaterials()
  * \param nominal
  * \return
  */
-const double getTemperatureExpansion(const QString material, double actual, double nominal)
+double getTemperatureExpansion(const QString material, double actual, double nominal)
 {
     //fill helper maps if not yet done
     if(!internal::isInit){

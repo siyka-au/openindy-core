@@ -14,7 +14,7 @@ using namespace oi::math;
  * \brief CoordinateSystem::CoordinateSystem
  * \param parent
  */
-CoordinateSystem::CoordinateSystem(QObject *parent) : Feature(parent), isActiveCoordinateSystem(false), isStationSystem(false), isBundleSystem(false){
+CoordinateSystem::CoordinateSystem(QObject *parent) : Feature(parent), isStationSystem(false), isBundleSystem(false), isActiveCoordinateSystem(false){
 
     //set up feature wrapper
     if(!this->selfFeature.isNull()){
@@ -28,7 +28,7 @@ CoordinateSystem::CoordinateSystem(QObject *parent) : Feature(parent), isActiveC
  * \param isBundleSystem
  * \param parent
  */
-CoordinateSystem::CoordinateSystem(bool isBundleSystem, QObject *parent) : Feature(parent), isActiveCoordinateSystem(false), isStationSystem(false), isBundleSystem(isBundleSystem){
+CoordinateSystem::CoordinateSystem(bool isBundleSystem, QObject *parent) : Feature(parent), isStationSystem(false), isBundleSystem(isBundleSystem), isActiveCoordinateSystem(false){
 
     //set up feature wrapper
     if(!this->selfFeature.isNull()){
@@ -805,7 +805,7 @@ bool CoordinateSystem::fromOpenIndyXML(QDomElement &xmlElem){
  * \param showDiff
  * \return
  */
-QString CoordinateSystem::getDisplayX(const UnitType &type, const int &digits, const bool &showDiff) const{
+QString CoordinateSystem::getDisplayX(const UnitType &type, const int &digits, const bool &/*showDiff*/) const{
 
     if(this->getIsActiveCoordinateSystem()){
         return QString::number(convertFromDefault(this->origin.getVector().getAt(0), type), 'f', digits);
@@ -825,7 +825,7 @@ QString CoordinateSystem::getDisplayX(const UnitType &type, const int &digits, c
  * \param showDiff
  * \return
  */
-QString CoordinateSystem::getDisplayY(const UnitType &type, const int &digits, const bool &showDiff) const{
+QString CoordinateSystem::getDisplayY(const UnitType &type, const int &digits, const bool &/*showDiff*/) const{
 
     if(this->getIsActiveCoordinateSystem()){
         return QString::number(convertFromDefault(this->origin.getVector().getAt(1), type), 'f', digits);
@@ -845,7 +845,7 @@ QString CoordinateSystem::getDisplayY(const UnitType &type, const int &digits, c
  * \param showDiff
  * \return
  */
-QString CoordinateSystem::getDisplayZ(const UnitType &type, const int &digits, const bool &showDiff) const{
+QString CoordinateSystem::getDisplayZ(const UnitType &type, const int &digits, const bool &/*showDiff*/) const{
 
     if(this->getIsActiveCoordinateSystem()){
         return QString::number(convertFromDefault(this->origin.getVector().getAt(2), type), 'f', digits);
@@ -864,7 +864,7 @@ QString CoordinateSystem::getDisplayZ(const UnitType &type, const int &digits, c
  * \param showDiff
  * \return
  */
-QString CoordinateSystem::getDisplayPrimaryI(const int &digits, const bool &showDiff) const{
+QString CoordinateSystem::getDisplayPrimaryI(const int &digits, const bool &/*showDiff*/) const{
     return QString::number(this->zAxis.getVector().getAt(0), 'f', digits);
 }
 
@@ -874,7 +874,7 @@ QString CoordinateSystem::getDisplayPrimaryI(const int &digits, const bool &show
  * \param showDiff
  * \return
  */
-QString CoordinateSystem::getDisplayPrimaryJ(const int &digits, const bool &showDiff) const{
+QString CoordinateSystem::getDisplayPrimaryJ(const int &digits, const bool &/*showDiff*/) const{
     return QString::number(this->zAxis.getVector().getAt(1), 'f', digits);
 }
 
@@ -884,7 +884,7 @@ QString CoordinateSystem::getDisplayPrimaryJ(const int &digits, const bool &show
  * \param showDiff
  * \return
  */
-QString CoordinateSystem::getDisplayPrimaryK(const int &digits, const bool &showDiff) const{
+QString CoordinateSystem::getDisplayPrimaryK(const int &digits, const bool &/*showDiff*/) const{
     return QString::number(this->zAxis.getVector().getAt(2), 'f', digits);
 }
 

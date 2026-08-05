@@ -195,7 +195,7 @@ const Accuracy &Sensor::getDefaultAccuracy() const{
  * \param sAttr
  * \return
  */
-bool Sensor::accept(const SensorFunctions &method, const SensorAttributes &sAttr){
+bool Sensor::accept(const SensorFunctions &/*method*/, const SensorAttributes &/*sAttr*/){
     return false;
 }
 
@@ -249,7 +249,7 @@ bool Sensor::disconnectSensor(){
  * \param mConfig
  * \return
  */
-QList<QPointer<Reading> > Sensor::measure(const MeasurementConfig &mConfig){
+QList<QPointer<Reading> > Sensor::measure(const MeasurementConfig &/*mConfig*/){
     emit this->sensorMessage(QString("Sensor not implemented correctly: measure method missing"), eCriticalMessage, eMessageBoxMessage);
     return QList<QPointer<Reading> >();
 }
@@ -259,7 +259,7 @@ QList<QPointer<Reading> > Sensor::measure(const MeasurementConfig &mConfig){
  * \param streamFormat
  * \return
  */
-QVariantMap Sensor::readingStream(const ReadingTypes &streamFormat){
+QVariantMap Sensor::readingStream(const ReadingTypes &/*streamFormat*/){
     emit this->sensorMessage(QString("Sensor not implemented correctly: reading stream method missing"), eCriticalMessage, eMessageBoxMessage);
     return QVariantMap();
 }
@@ -305,7 +305,7 @@ QMap<QString, QString> Sensor::getSensorStatus(){
  * \param action
  * \return
  */
-bool Sensor::doSelfDefinedAction(const QString &action){
+bool Sensor::doSelfDefinedAction(const QString &/*action*/){
     return false;
 }
 
@@ -339,7 +339,7 @@ QDomElement Sensor::toOpenIndyXML(QDomDocument &xmlDoc) const{
  * \param xmlElem
  * \return
  */
-bool Sensor::fromOpenIndyXML(QDomElement &xmlElem){
+bool Sensor::fromOpenIndyXML(QDomElement &/*xmlElem*/){
     return false;
 }
 

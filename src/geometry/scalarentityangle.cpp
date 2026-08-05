@@ -128,6 +128,8 @@ void ScalarEntityAngle::setUnknownParameters(const QMap<GeometryParameters, doub
         case eUnknownAngle:
             angle = parameters.value(eUnknownAngle);
             break;
+        default:
+            break;
         }
     }
 
@@ -211,7 +213,7 @@ bool ScalarEntityAngle::fromOpenIndyXML(QDomElement &xmlElem){
  * \param showDiff
  * \return
  */
-QString ScalarEntityAngle::getDisplayAngle(const UnitType &type, const int &digits, const bool &showDiff) const{
+QString ScalarEntityAngle::getDisplayAngle(const UnitType &type, const int &digits, const bool &/*showDiff*/) const{
     if(this->isSolved){
         return QString::number(convertFromDefault(this->angle, type), 'f', digits);
     }

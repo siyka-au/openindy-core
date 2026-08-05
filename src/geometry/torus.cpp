@@ -201,6 +201,8 @@ void Torus::setUnknownParameters(const QMap<GeometryParameters, double> &paramet
         case eUnknownRadiusB:
             radiusB = parameters.value(eUnknownRadiusA);
             break;
+        default:
+            break;
         }
     }
 
@@ -305,7 +307,7 @@ bool Torus::fromOpenIndyXML(QDomElement &xmlElem){
  * \param showDiff
  * \return
  */
-QString Torus::getDisplayRadiusB(const UnitType &type, const int &digits, const bool &showDiff) const{
+QString Torus::getDisplayRadiusB(const UnitType &type, const int &digits, const bool &/*showDiff*/) const{
     if(this->isSolved){
         return QString::number(convertFromDefault(this->radiusB.getRadius(), type), 'f', digits);
     }

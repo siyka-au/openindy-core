@@ -643,7 +643,7 @@ bool Function::fromOpenIndyXML(QDomElement &xmlElem){
  * \param station
  * \return
  */
-bool Function::exec(Station &station){
+bool Function::exec(Station &/*station*/){
     emit this->sendMessage("Function \"" + this->getMetaData().name + "\" not implemented for type station", eCriticalMessage, eMessageBoxMessage);
     return false;
 }
@@ -653,7 +653,7 @@ bool Function::exec(Station &station){
  * \param coordinateSystem
  * \return
  */
-bool Function::exec(CoordinateSystem &coordinateSystem){
+bool Function::exec(CoordinateSystem &/*coordinateSystem*/){
     emit this->sendMessage("Function \"" + this->getMetaData().name + "\" not implemented for type coordinate system", eCriticalMessage, eMessageBoxMessage);
     return false;
 }
@@ -663,7 +663,7 @@ bool Function::exec(CoordinateSystem &coordinateSystem){
  * \param trafoParam
  * \return
  */
-bool Function::exec(TrafoParam &trafoParam){
+bool Function::exec(TrafoParam &/*trafoParam*/){
     emit this->sendMessage("Function \"" + this->getMetaData().name + "\" not implemented for type transformation parameter", eCriticalMessage, eMessageBoxMessage);
     return false;
 }
@@ -673,7 +673,7 @@ bool Function::exec(TrafoParam &trafoParam){
  * \param circle
  * \return
  */
-bool Function::exec(Circle &circle){
+bool Function::exec(Circle &/*circle*/){
     emit this->sendMessage("Function \"" + this->getMetaData().name + "\" not implemented for type circle", eCriticalMessage, eMessageBoxMessage);
     return false;
 }
@@ -683,7 +683,7 @@ bool Function::exec(Circle &circle){
  * \param cone
  * \return
  */
-bool Function::exec(Cone &cone){
+bool Function::exec(Cone &/*cone*/){
     emit this->sendMessage("Function \"" + this->getMetaData().name + "\" not implemented for type cone", eCriticalMessage, eMessageBoxMessage);
     return false;
 }
@@ -693,7 +693,7 @@ bool Function::exec(Cone &cone){
  * \param cylinder
  * \return
  */
-bool Function::exec(Cylinder &cylinder){
+bool Function::exec(Cylinder &/*cylinder*/){
     emit this->sendMessage("Function \"" + this->getMetaData().name + "\" not implemented for type cylinder", eCriticalMessage, eMessageBoxMessage);
     return false;
 }
@@ -703,7 +703,7 @@ bool Function::exec(Cylinder &cylinder){
  * \param ellipse
  * \return
  */
-bool Function::exec(Ellipse &ellipse){
+bool Function::exec(Ellipse &/*ellipse*/){
     emit this->sendMessage("Function \"" + this->getMetaData().name + "\" not implemented for type ellipse", eCriticalMessage, eMessageBoxMessage);
     return false;
 }
@@ -713,7 +713,7 @@ bool Function::exec(Ellipse &ellipse){
  * \param ellipsoid
  * \return
  */
-bool Function::exec(Ellipsoid &ellipsoid){
+bool Function::exec(Ellipsoid &/*ellipsoid*/){
     emit this->sendMessage("Function \"" + this->getMetaData().name + "\" not implemented for type ellipsoid", eCriticalMessage, eMessageBoxMessage);
     return false;
 }
@@ -723,7 +723,7 @@ bool Function::exec(Ellipsoid &ellipsoid){
  * \param hyperboloid
  * \return
  */
-bool Function::exec(Hyperboloid &hyperboloid){
+bool Function::exec(Hyperboloid &/*hyperboloid*/){
     emit this->sendMessage("Function \"" + this->getMetaData().name + "\" not implemented for type hyperboloid", eCriticalMessage, eMessageBoxMessage);
     return false;
 }
@@ -733,7 +733,7 @@ bool Function::exec(Hyperboloid &hyperboloid){
  * \param line
  * \return
  */
-bool Function::exec(Line &line){
+bool Function::exec(Line &/*line*/){
     emit this->sendMessage("Function \"" + this->getMetaData().name + "\" not implemented for type line", eCriticalMessage, eMessageBoxMessage);
     return false;
 }
@@ -743,7 +743,7 @@ bool Function::exec(Line &line){
  * \param nurbs
  * \return
  */
-bool Function::exec(Nurbs &nurbs){
+bool Function::exec(Nurbs &/*nurbs*/){
     emit this->sendMessage("Function \"" + this->getMetaData().name + "\" not implemented for type nurbs", eCriticalMessage, eMessageBoxMessage);
     return false;
 }
@@ -753,7 +753,7 @@ bool Function::exec(Nurbs &nurbs){
  * \param paraboloid
  * \return
  */
-bool Function::exec(Paraboloid &paraboloid){
+bool Function::exec(Paraboloid &/*paraboloid*/){
     emit this->sendMessage("Function \"" + this->getMetaData().name + "\" not implemented for type paraboloid", eCriticalMessage, eMessageBoxMessage);
     return false;
 }
@@ -763,7 +763,7 @@ bool Function::exec(Paraboloid &paraboloid){
  * \param plane
  * \return
  */
-bool Function::exec(Plane &plane){
+bool Function::exec(Plane &/*plane*/){
     emit this->sendMessage("Function \"" + this->getMetaData().name + "\" not implemented for type plane", eCriticalMessage, eMessageBoxMessage);
     return false;
 }
@@ -773,7 +773,7 @@ bool Function::exec(Plane &plane){
  * \param point
  * \return
  */
-bool Function::exec(Point &point){
+bool Function::exec(Point &/*point*/){
     emit this->sendMessage("Function \"" + this->getMetaData().name + "\" not implemented for type point", eCriticalMessage, eMessageBoxMessage);
     return false;
 }
@@ -783,7 +783,7 @@ bool Function::exec(Point &point){
  * \param pointCloud
  * \return
  */
-bool Function::exec(PointCloud &pointCloud){
+bool Function::exec(PointCloud &/*pointCloud*/){
     emit this->sendMessage("Function \"" + this->getMetaData().name + "\" not implemented for type point cloud", eCriticalMessage, eMessageBoxMessage);
     return false;
 }
@@ -793,7 +793,7 @@ bool Function::exec(PointCloud &pointCloud){
  * \param angle
  * \return
  */
-bool Function::exec(ScalarEntityAngle &angle){
+bool Function::exec(ScalarEntityAngle &/*angle*/){
     emit this->sendMessage("Function \"" + this->getMetaData().name + "\" not implemented for type angle", eCriticalMessage, eMessageBoxMessage);
     return false;
 }
@@ -803,7 +803,7 @@ bool Function::exec(ScalarEntityAngle &angle){
  * \param distance
  * \return
  */
-bool Function::exec(ScalarEntityDistance &distance){
+bool Function::exec(ScalarEntityDistance &/*distance*/){
     emit this->sendMessage("Function \"" + this->getMetaData().name + "\" not implemented for type distance", eCriticalMessage, eMessageBoxMessage);
     return false;
 }
@@ -813,7 +813,7 @@ bool Function::exec(ScalarEntityDistance &distance){
  * \param measurementSeries
  * \return
  */
-bool Function::exec(ScalarEntityMeasurementSeries &measurementSeries){
+bool Function::exec(ScalarEntityMeasurementSeries &/*measurementSeries*/){
     emit this->sendMessage("Function \"" + this->getMetaData().name + "\" not implemented for type measurement series", eCriticalMessage, eMessageBoxMessage);
     return false;
 }
@@ -823,7 +823,7 @@ bool Function::exec(ScalarEntityMeasurementSeries &measurementSeries){
  * \param temperature
  * \return
  */
-bool Function::exec(ScalarEntityTemperature &temperature){
+bool Function::exec(ScalarEntityTemperature &/*temperature*/){
     emit this->sendMessage("Function \"" + this->getMetaData().name + "\" not implemented for type temperature", eCriticalMessage, eMessageBoxMessage);
     return false;
 }
@@ -833,7 +833,7 @@ bool Function::exec(ScalarEntityTemperature &temperature){
  * \param slottedHole
  * \return
  */
-bool Function::exec(SlottedHole &slottedHole){
+bool Function::exec(SlottedHole &/*slottedHole*/){
     emit this->sendMessage("Function \"" + this->getMetaData().name + "\" not implemented for type slotted hole", eCriticalMessage, eMessageBoxMessage);
     return false;
 }
@@ -843,7 +843,7 @@ bool Function::exec(SlottedHole &slottedHole){
  * \param sphere
  * \return
  */
-bool Function::exec(Sphere &sphere){
+bool Function::exec(Sphere &/*sphere*/){
     emit this->sendMessage("Function \"" + this->getMetaData().name + "\" not implemented for type sphere", eCriticalMessage, eMessageBoxMessage);
     return false;
 }
@@ -853,7 +853,7 @@ bool Function::exec(Sphere &sphere){
  * \param torus
  * \return
  */
-bool Function::exec(Torus &torus){
+bool Function::exec(Torus &/*torus*/){
     emit this->sendMessage("Function \"" + this->getMetaData().name + "\" not implemented for type torus", eCriticalMessage, eMessageBoxMessage);
     return false;
 }

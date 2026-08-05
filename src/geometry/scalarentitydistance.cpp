@@ -128,6 +128,8 @@ void ScalarEntityDistance::setUnknownParameters(const QMap<GeometryParameters, d
         case eUnknownDistance:
             distance = parameters.value(eUnknownDistance);
             break;
+        default:
+            break;
         }
     }
 
@@ -211,7 +213,7 @@ bool ScalarEntityDistance::fromOpenIndyXML(QDomElement &xmlElem){
  * \param showDiff
  * \return
  */
-QString ScalarEntityDistance::getDisplayDistance(const UnitType &type, const int &digits, const bool &showDiff) const{
+QString ScalarEntityDistance::getDisplayDistance(const UnitType &type, const int &digits, const bool &/*showDiff*/) const{
     if(this->isSolved){
         return QString::number(convertFromDefault(this->distance, type), 'f', digits);
     }

@@ -164,6 +164,8 @@ void Line::setUnknownParameters(const QMap<GeometryParameters, double> &paramete
         case eUnknownPrimaryK:
             direction.setAt(2, parameters.value(eUnknownPrimaryK));
             break;
+        default:
+            break;
         }
     }
 

@@ -128,6 +128,8 @@ void ScalarEntityMeasurementSeries::setUnknownParameters(const QMap<GeometryPara
         case eUnknownMeasurementSeries:
             series = parameters.value(eUnknownMeasurementSeries);
             break;
+        default:
+            break;
         }
     }
 
@@ -211,7 +213,7 @@ bool ScalarEntityMeasurementSeries::fromOpenIndyXML(QDomElement &xmlElem){
  * \param showDiff
  * \return
  */
-QString ScalarEntityMeasurementSeries::getDisplayMeasurementSeries(const UnitType &type, const int &digits, const bool &showDiff) const{
+QString ScalarEntityMeasurementSeries::getDisplayMeasurementSeries(const UnitType &type, const int &digits, const bool &/*showDiff*/) const{
     if(this->isSolved){
         return QString::number(convertFromDefault(this->seriesValue, type), 'f', digits);
     }

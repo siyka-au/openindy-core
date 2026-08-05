@@ -151,7 +151,7 @@ void Plane::setPlane(const Position &xyz, const Direction &normal){
  * \param normal
  * \param d
  */
-void Plane::setPlane(const Direction &normal, const double &d){
+void Plane::setPlane(const Direction &/*normal*/, const double &d){
 
     //set the given parameters
     this->ijk = ijk;
@@ -216,6 +216,8 @@ void Plane::setUnknownParameters(const QMap<GeometryParameters, double> &paramet
             break;
         case eUnknownPrimaryK:
             direction.setAt(2, parameters.value(eUnknownPrimaryK));
+            break;
+        default:
             break;
         }
     }

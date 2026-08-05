@@ -180,6 +180,8 @@ void Point::setUnknownParameters(const QMap<GeometryParameters, double> &paramet
         case eUnknownZ:
             position.setAt(2, parameters.value(eUnknownZ));
             break;
+        default:
+            break;
         }
     }
 
@@ -257,7 +259,7 @@ bool Point::fromOpenIndyXML(QDomElement &xmlElem){
  * \param showDiff
  * \return
  */
-QString Point::getDisplayDistance(const UnitType &type, const int &digits, const bool &showDiff) const{
+QString Point::getDisplayDistance(const UnitType &type, const int &digits, const bool &/*showDiff*/) const{
     if(this->isSolved && this->distance > 0.){
         return QString::number(convertFromDefault(this->distance, type), 'f', digits);
     }

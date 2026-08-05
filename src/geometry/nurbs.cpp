@@ -37,7 +37,7 @@ Nurbs::Nurbs(const Nurbs &copy, QObject *parent) : Geometry(copy, parent){
  * \param copy
  * \return
  */
-Nurbs &Nurbs::operator=(const Nurbs &copy){
+Nurbs &Nurbs::operator=(const Nurbs &/*copy*/){
 
     //set up feature wrapper
     if(!this->selfFeature.isNull()){

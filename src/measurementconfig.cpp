@@ -81,23 +81,23 @@ void MeasurementConfig::setName(const QString &name){
 }
 
 /* key for maps */
-const MeasurementConfigKey MeasurementConfig::getKey() const{
+MeasurementConfigKey MeasurementConfig::getKey() const{
     return MeasurementConfigKey(this->name, this->configType);
 }
 
-const bool MeasurementConfig::isUserConfig() const{
+bool MeasurementConfig::isUserConfig() const{
     return eUserConfig == this->configType;
 }
-const bool MeasurementConfig::isProjectConfig() const{
+bool MeasurementConfig::isProjectConfig() const{
     return eProjectConfig == this->configType || eStandardConfig == this->configType;
 }
-const bool MeasurementConfig::isStandardConfig() const {
+bool MeasurementConfig::isStandardConfig() const {
     return eStandardConfig == this->configType;
 }
-const bool MeasurementConfig::isEditable() const {
+bool MeasurementConfig::isEditable() const {
     return this->editable;
 }
-const bool MeasurementConfig::isValid() const{
+bool MeasurementConfig::isValid() const{
     return !this->name.isEmpty() && this->configType != eUndefinded;
 }
 
@@ -245,7 +245,7 @@ void MeasurementConfig::setMeasurementMode(const MeasurementModes mode) {
 
 }
 
-const MeasurementModes MeasurementConfig::getMeasurementMode() const {
+MeasurementModes MeasurementConfig::getMeasurementMode() const {
     return this->measurementMode;
 }
 
@@ -253,7 +253,7 @@ void MeasurementConfig::setMeasurementType(const MeasurementTypes type) {
     this->measurementType = type;
 }
 
-const MeasurementTypes MeasurementConfig::getMeasurementType() const {
+MeasurementTypes MeasurementConfig::getMeasurementType() const {
     return this->measurementType;
 }
 

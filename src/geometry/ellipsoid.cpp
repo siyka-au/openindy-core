@@ -206,6 +206,8 @@ void Ellipsoid::setUnknownParameters(const QMap<GeometryParameters, double> &par
         case eUnknownB:
             b = parameters.value(eUnknownB);
             break;
+        default:
+            break;
         }
     }
 
@@ -317,7 +319,7 @@ bool Ellipsoid::fromOpenIndyXML(QDomElement &xmlElem){
  * \param showDiff
  * \return
  */
-QString Ellipsoid::getDisplayA(const UnitType &type, const int &digits, const bool &showDiff) const{
+QString Ellipsoid::getDisplayA(const UnitType &type, const int &digits, const bool &/*showDiff*/) const{
     if(this->isSolved){
         return QString::number(convertFromDefault(this->a, type), 'f', digits);
     }
@@ -331,7 +333,7 @@ QString Ellipsoid::getDisplayA(const UnitType &type, const int &digits, const bo
  * \param showDiff
  * \return
  */
-QString Ellipsoid::getDisplayB(const UnitType &type, const int &digits, const bool &showDiff) const{
+QString Ellipsoid::getDisplayB(const UnitType &type, const int &digits, const bool &/*showDiff*/) const{
     if(this->isSolved){
         return QString::number(convertFromDefault(this->b, type), 'f', digits);
     }

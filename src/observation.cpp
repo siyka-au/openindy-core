@@ -11,8 +11,10 @@ using namespace oi::math;
  * \brief Observation::Observation
  * \param parent
  */
-Observation::Observation(QObject *parent) : Element(parent), xyz(4), originalXyz(4), sigmaXyz(4), originalSigmaXyz(4), ijk(4), originalIjk(4), sigmaIjk(4), originalSigmaIjk(4),
-    isValid(false), isSolved(false), hasDirection(false), isDummyPoint(false){
+Observation::Observation(QObject *parent) : Element(parent),
+    isValid(false), isSolved(false), hasDirection(false),
+    xyz(4), originalXyz(4), sigmaXyz(4), originalSigmaXyz(4), ijk(4), originalIjk(4), sigmaIjk(4), originalSigmaIjk(4),
+    isDummyPoint(false){
 
 }
 
@@ -50,8 +52,10 @@ Observation::Observation(const Observation &copy, QObject *parent) : Element(cop
  * \param isValid
  * \param parent
  */
-Observation::Observation(const OiVec &xyz, bool isValid, QObject *parent) : Element(parent), xyz(4), originalXyz(4), sigmaXyz(4), originalSigmaXyz(4), ijk(4), originalIjk(4), sigmaIjk(4), originalSigmaIjk(4),
-    isValid(isValid), isSolved(false) , hasDirection(false), isDummyPoint(false){
+Observation::Observation(const OiVec &xyz, bool isValid, QObject *parent) : Element(parent),
+    isValid(isValid), isSolved(false), hasDirection(false),
+    xyz(4), originalXyz(4), sigmaXyz(4), originalSigmaXyz(4), ijk(4), originalIjk(4), sigmaIjk(4), originalSigmaIjk(4),
+    isDummyPoint(false){
 
     if(xyz.getSize() == this->xyz.getSize()){
         this->xyz = xyz;
@@ -68,8 +72,10 @@ Observation::Observation(const OiVec &xyz, bool isValid, QObject *parent) : Elem
  * \param isValid
  * \param parent
  */
-Observation::Observation(const OiVec &xyz, int id, bool isValid, QObject *parent) : Element(parent), xyz(4), originalXyz(4), sigmaXyz(4), originalSigmaXyz(4), ijk(4), originalIjk(4), sigmaIjk(4), originalSigmaIjk(4),
-    isValid(isValid), isSolved(false) , hasDirection(false), isDummyPoint(false) {
+Observation::Observation(const OiVec &xyz, int id, bool isValid, QObject *parent) : Element(parent),
+    isValid(isValid), isSolved(false), hasDirection(false),
+    xyz(4), originalXyz(4), sigmaXyz(4), originalSigmaXyz(4), ijk(4), originalIjk(4), sigmaIjk(4), originalSigmaIjk(4),
+    isDummyPoint(false) {
 
     this->id = id;
 

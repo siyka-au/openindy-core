@@ -183,6 +183,8 @@ void Cone::setUnknownParameters(const QMap<GeometryParameters, double> &paramete
         case eUnknownAperture:
             aperture = parameters.value(eUnknownAperture);
             break;
+        default:
+            break;
         }
     }
 
