@@ -42,7 +42,7 @@ CoordinateSystem::CoordinateSystem(bool isBundleSystem, QObject *parent) : Featu
  * \param station
  * \param parent
  */
-CoordinateSystem::CoordinateSystem(const QPointer<Station> &station, QObject *parent) : Feature(parent), isActiveCoordinateSystem(false), isBundleSystem(false){
+CoordinateSystem::CoordinateSystem(const QPointer<Station> &station, QObject *parent) : Feature(parent), isStationSystem(false), isBundleSystem(false), isActiveCoordinateSystem(false){
 
     //set up feature wrapper
     if(!this->selfFeature.isNull()){
