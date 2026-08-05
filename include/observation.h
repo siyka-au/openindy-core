@@ -7,7 +7,6 @@
 #include <QPointer>
 
 #include "element.h"
-#include "geometry.h"
 #include "oivec.h"
 #include "statistic.h"
 
@@ -20,6 +19,7 @@ using namespace math;
 class Reading;
 class Station;
 class CoordinateSystem;
+class Geometry;
 
 /*!
  * \brief The Observation class
