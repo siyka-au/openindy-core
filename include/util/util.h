@@ -96,10 +96,6 @@ bool OI_CORE_EXPORT almostEqual(const double &a, const double &b, const int &dig
 //global functions to query sensor types
 //######################################
 
-QList<SensorTypes> OI_CORE_EXPORT getAvailableSensorTypes();
-const QString OI_CORE_EXPORT &getSensorTypeName(const SensorTypes &type);
-SensorTypes OI_CORE_EXPORT getSensorTypeEnum(const QString &name);
-
 //##########################################
 //global functions to query sensor functions
 //##########################################

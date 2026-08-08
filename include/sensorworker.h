@@ -80,7 +80,7 @@ public slots:
     QMap<QString, QString> getSensorStatus();
 
     //sensor type
-    SensorTypes getActiveSensorType();
+    SensorType getActiveSensorType();
 
     //reading and connection types
     QList<ReadingTypes> getSupportedReadingTypes();

@@ -69,6 +69,11 @@ public:
     virtual const QList<SensorFunctions> &getSupportedSensorActions() const = 0;
     virtual const QList<ConnectionTypes> &getSupportedConnectionTypes() const = 0;
 
+    //the measurement configurations this sensor publishes, and how it can
+    //acquire - both are declared by the driver rather than inferred from its type
+    virtual const QList<MeasurementConfig> &getSupportedMeasurementConfigs() const = 0;
+    virtual const QList<AcquisitionMode> &getSupportedAcquisitionModes() const = 0;
+
     //meta data
     virtual const PluginMetaData &getMetaData() const = 0;
 
@@ -185,6 +190,9 @@ public:
     const QList<SensorFunctions> &getSupportedSensorActions() const;
     const QList<ConnectionTypes> &getSupportedConnectionTypes() const;
 
+    const QList<MeasurementConfig> &getSupportedMeasurementConfigs() const;
+    const QList<AcquisitionMode> &getSupportedAcquisitionModes() const;
+
     //meta data
     const PluginMetaData &getMetaData() const;
 
@@ -258,6 +266,8 @@ protected:
     QList<ReadingTypes> supportedReadingTypes;
     QList<SensorFunctions> supportedSensorActions;
     QList<ConnectionTypes> supportedConnectionTypes;
+    QList<MeasurementConfig> supportedMeasurementConfigs;
+    QList<AcquisitionMode> supportedAcquisitionModes;
     QStringList selfDefinedActions;
     Accuracy defaultAccuracy;
     PluginMetaData metaData;

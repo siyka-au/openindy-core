@@ -10,6 +10,7 @@
 #include "types.h"
 #include "util.h"
 #include "oivec.h"
+#include "sensortype.h"
 
 namespace oi{
 
@@ -114,8 +115,8 @@ public:
 
     bool getIsValid() const;
 
-    const SensorTypes &getTypeOfSensor() const;
-    void setTypeOfSensor(const SensorTypes &type);
+    const SensorType &getTypeOfSensor() const;
+    void setTypeOfSensor(const SensorType &type);
 
     const QString &getPluginName() const;
     void setPluginName(const QString &name);
@@ -159,7 +160,7 @@ private:
 
     QString pluginName;
     QString sensorName;
-    SensorTypes typeOfSensor;
+    SensorType typeOfSensor;
 
     Accuracy accuracy;
     ConnectionConfig cConfig;

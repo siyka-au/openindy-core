@@ -86,7 +86,7 @@ public:
     QMap<QString, QString> getSensorStatus();
 
     //sensor type
-    SensorTypes getActiveSensorType() const;
+    SensorType getActiveSensorType() const;
 
     //reading and connection types
     QList<ReadingTypes> getSupportedReadingTypes() const;

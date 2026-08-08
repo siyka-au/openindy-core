@@ -167,14 +167,14 @@ QMap<QString, QString> SensorWorker::getSensorStatus(){
  * \brief SensorWorker::getActiveSensorType
  * \return
  */
-SensorTypes SensorWorker::getActiveSensorType(){
+SensorType SensorWorker::getActiveSensorType(){
 
     //check sensor
     if(this->sensor.isNull()){
-        return eUndefinedSensor;
+        return SensorType();
     }
 
-    SensorTypes type = this->sensor->getSensorConfiguration().getTypeOfSensor();
+    SensorType type = this->sensor->getSensorConfiguration().getTypeOfSensor();
     return type;
 
 }

@@ -105,7 +105,7 @@ bool SensorConfiguration::getIsValid() const{
  * \brief SensorConfiguration::getTypeOfSensor
  * \return
  */
-const SensorTypes &SensorConfiguration::getTypeOfSensor() const{
+const SensorType &SensorConfiguration::getTypeOfSensor() const{
     return this->typeOfSensor;
 }
 
@@ -113,7 +113,7 @@ const SensorTypes &SensorConfiguration::getTypeOfSensor() const{
  * \brief SensorConfiguration::setTypeOfSensor
  * \param type
  */
-void SensorConfiguration::setTypeOfSensor(const SensorTypes &type){
+void SensorConfiguration::setTypeOfSensor(const SensorType &type){
     this->typeOfSensor = type;
 }
 
@@ -264,7 +264,7 @@ QDomElement SensorConfiguration::toOpenIndyXML(QDomDocument &xmlDoc) const{
     QDomElement pluginInfo = xmlDoc.createElement("plugin");
     pluginInfo.setAttribute("name", this->pluginName);
     pluginInfo.setAttribute("sensor", this->sensorName);
-    pluginInfo.setAttribute("sensorType", getSensorTypeName(this->typeOfSensor));
+    pluginInfo.setAttribute("sensorType", this->typeOfSensor.id());
     sConfig.appendChild(pluginInfo);
 
     //save connection parameters
@@ -388,7 +388,7 @@ bool SensorConfiguration::fromOpenIndyXML(QDomElement &xmlElem){
     }
     this->pluginName = pluginInfo.attribute("name");
     this->sensorName = pluginInfo.attribute("sensor");
-    this->typeOfSensor = getSensorTypeEnum(pluginInfo.attribute("sensorType"));
+    this->typeOfSensor = SensorTypeRegistry::byId(pluginInfo.attribute("sensorType")).value_or(SensorType());
 
     //get connection parameters
     QDomElement connectionParams = xmlElem.firstChildElement("connection");

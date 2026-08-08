@@ -141,6 +141,22 @@ const QList<ConnectionTypes> &Sensor::getSupportedConnectionTypes() const{
 }
 
 /*!
+ * \brief Sensor::getSupportedMeasurementConfigs
+ * \return
+ */
+const QList<MeasurementConfig> &Sensor::getSupportedMeasurementConfigs() const{
+    return this->supportedMeasurementConfigs;
+}
+
+/*!
+ * \brief Sensor::getSupportedAcquisitionModes
+ * \return
+ */
+const QList<AcquisitionMode> &Sensor::getSupportedAcquisitionModes() const{
+    return this->supportedAcquisitionModes;
+}
+
+/*!
  * \brief Sensor::getMetaData
  * \return
  */

@@ -476,11 +476,11 @@ QMap<QString, QString> Station::getSensorStatus(){
  * \brief Station::getActiveSensorType
  * \return
  */
-SensorTypes Station::getActiveSensorType() const{
+SensorType Station::getActiveSensorType() const{
 
     //check sensor control
     if(this->sensorControl.isNull()){
-        return eUndefinedSensor;
+        return SensorType();
     }
 
     return this->sensorControl->getActiveSensorType();

@@ -250,12 +250,12 @@ QMap<QString, QString> SensorControl::getSensorStatus(){
  * \brief SensorControl::getActiveSensorType
  * \return
  */
-SensorTypes SensorControl::getActiveSensorType(){
+SensorType SensorControl::getActiveSensorType(){
 
     //call method of sensor worker
-    SensorTypes type;
+    SensorType type;
     bool hasInvoked = QMetaObject::invokeMethod(this->worker, "getActiveSensorType", Qt::DirectConnection,
-                                                Q_RETURN_ARG(SensorTypes, type));
+                                                Q_RETURN_ARG(SensorType, type));
     if(!hasInvoked){
         emit this->sensorMessage("Cannot invoke getSensor method of sensor worker", eErrorMessage, eConsoleMessage);
     }

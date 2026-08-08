@@ -87,7 +87,6 @@ add_library(OpenIndyCore SHARED
     src/plugin/function/function.cpp
     src/plugin/networkAdjustment/bundleadjustment.cpp
     src/plugin/sensor/sensor.cpp
-    src/plugin/sensor/sensorfacade.cpp
     src/plugin/simulation/simulationmodel.cpp
     src/plugin/tool/tool.cpp
     src/util/util.cpp
@@ -105,6 +104,7 @@ add_library(OpenIndyCore SHARED
     src/radius.cpp
     src/reading.cpp
     src/sensorconfiguration.cpp
+    src/sensortype.cpp
     src/sensorcontrol.cpp
     src/sensorworker.cpp
     src/sensorworkermessage.cpp
@@ -146,7 +146,6 @@ add_library(OpenIndyCore SHARED
     include/plugin/function/specialfunction.h
     include/plugin/sensor/lasertracker.h
     include/plugin/sensor/sensor.h
-    include/plugin/sensor/sensorfacade.h
     include/plugin/sensor/totalstation.h
     include/plugin/simulation/simulationmodel.h
     include/plugin/tool/tool.h
@@ -168,6 +167,7 @@ add_library(OpenIndyCore SHARED
     include/radius.h
     include/reading.h
     include/sensorconfiguration.h
+    include/sensortype.h
     include/sensorcontrol.h
     include/sensorworker.h
     include/sensorworkermessage.h

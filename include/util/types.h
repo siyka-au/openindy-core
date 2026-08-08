@@ -414,14 +414,6 @@ enum DimensionType{
 //sensor specific enums
 //#####################
 
-enum SensorTypes{
-
-    eLaserTracker = 0,
-    eTotalStation,
-    eUndefinedSensor
-
-};
-
 enum SensorFaces{
 
     eFrontSide = 0,
@@ -451,6 +443,26 @@ enum SensorFunctions{
     eDisconnect,
     eStream,
     eSearch
+};
+
+/*!
+ * \brief The AcquisitionMode enum
+ * How a sensor produces data, which is independent of what type of sensor it
+ * is and of how many points one acquisition yields.
+ *
+ * eDiscrete   - start, wait, take the result. Photogrammetry emits thousands
+ *               of points from an instant snapshot; a terrestrial scan yields
+ *               a whole cloud from one sweep; a touch probe yields one point.
+ *               All discrete: there is no live stream to subscribe to.
+ * eContinuous - a running, interruptible stream: target tracking, a scanning
+ *               probe head, a handheld scanner. Only these can drive live
+ *               workflows such as stakeout guidance or averaging windows.
+ */
+enum class AcquisitionMode{
+
+    eDiscrete = 0,
+    eContinuous
+
 };
 
 //################################
