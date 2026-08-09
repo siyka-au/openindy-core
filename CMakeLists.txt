@@ -106,6 +106,7 @@ add_library(OpenIndyCore SHARED
     src/sensorconfiguration.cpp
     src/sensortype.cpp
     src/connectionkind.cpp
+    src/calibratedconstellation.cpp
     src/sensorcontrol.cpp
     src/sensorworker.cpp
     src/sensorworkermessage.cpp
@@ -170,6 +171,7 @@ add_library(OpenIndyCore SHARED
     include/sensorconfiguration.h
     include/sensortype.h
     include/connectionkind.h
+    include/calibratedconstellation.h
     include/sensorcontrol.h
     include/sensorworker.h
     include/sensorworkermessage.h
