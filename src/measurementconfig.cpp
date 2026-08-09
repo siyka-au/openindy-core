@@ -33,6 +33,7 @@ MeasurementConfig::MeasurementConfig(const MeasurementConfig &copy){
 
     this->configType = copy.configType;
     this->editable = copy.editable;
+    this->sensorType = copy.sensorType;
 
     this->transientData = copy.transientData;
     this->transientData.detach();
@@ -56,6 +57,7 @@ MeasurementConfig &MeasurementConfig::operator=(const MeasurementConfig &copy){
 
     this->configType = copy.configType;
     this->editable = copy.editable;
+    this->sensorType = copy.sensorType;
 
     this->transientData = copy.transientData;
     this->transientData.detach();
@@ -82,7 +84,7 @@ void MeasurementConfig::setName(const QString &name){
 
 /* key for maps */
 MeasurementConfigKey MeasurementConfig::getKey() const{
-    return MeasurementConfigKey(this->name, this->configType);
+    return MeasurementConfigKey(this->name, this->configType, this->sensorType);
 }
 
 bool MeasurementConfig::isUserConfig() const{
@@ -171,6 +173,9 @@ QDomElement MeasurementConfig::toOpenIndyXML(QDomDocument &xmlDoc) const{
     mConfig.setAttribute("maxObservations", this->maxObservations);
     mConfig.setAttribute("timeInterval", this->timeInterval);
     mConfig.setAttribute("distanceInterval", this->distanceInterval);
+    if(this->sensorType.isValid()){
+        mConfig.setAttribute("sensorType", this->sensorType.id());
+    }
 
     return mConfig;
 
@@ -206,8 +211,31 @@ bool MeasurementConfig::fromOpenIndyXML(QDomElement &xmlElem){
     this->timeInterval = xmlElem.attribute("timeInterval").toDouble();
     this->distanceInterval = xmlElem.attribute("distanceInterval").toDouble();
 
+    //optional, not required: an absent tag legitimately means this config
+    //isn't gated to any one sensor type, not a pre-tag file needing
+    //migration - see the getSensorType() doc comment
+    if(xmlElem.hasAttribute("sensorType")){
+        this->sensorType = SensorTypeRegistry::byId(xmlElem.attribute("sensorType")).value_or(SensorType());
+    }
+
     return true;
 
+}
+
+/*!
+ * \brief MeasurementConfig::getSensorType
+ * \return
+ */
+const SensorType &MeasurementConfig::getSensorType() const{
+    return this->sensorType;
+}
+
+/*!
+ * \brief MeasurementConfig::setSensorType
+ * \param type
+ */
+void MeasurementConfig::setSensorType(const SensorType &type){
+    this->sensorType = type;
 }
 
 const QVariant MeasurementConfig::getTransientData(const QString key) const {

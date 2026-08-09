@@ -7,6 +7,7 @@
 
 #include "types.h"
 #include "util.h"
+#include "sensortype.h"
 
 namespace oi{
 
@@ -37,35 +38,47 @@ enum ConfigTypes {
 class OI_CORE_EXPORT MeasurementConfigKey {
 public:
     MeasurementConfigKey(): configType(eUndefinded) {}
-    MeasurementConfigKey(QString name, ConfigTypes configType) : name(name), configType(configType){}
+    MeasurementConfigKey(QString name, ConfigTypes configType, SensorType sensorType = SensorType())
+        : name(name), configType(configType), sensorType(sensorType) {}
     MeasurementConfigKey(const MeasurementConfigKey &copy) {
         this->name = copy.name;
         this->configType = copy.configType;
+        this->sensorType = copy.sensorType;
     }
     MeasurementConfigKey &operator=(const MeasurementConfigKey &copy) {
         this->name = copy.name;
         this->configType = copy.configType;
+        this->sensorType = copy.sensorType;
         return *this;
     }
 
+    //name+configType alone collided across driver-published configs the
+    //moment two different sensor types published the same standard-config
+    //name (every driver's "FastPoint") - one silently overwrote the other
+    //in a QMap keyed on this. sensorType is part of the identity for the
+    //same reason SensorConfiguration's type isn't optional.
     friend bool operator==(const MeasurementConfigKey &left, const MeasurementConfigKey &right){
 
-        return left.getName() == right.getName()        // combined key
-                && left.configType == right.configType; // combined key
+        return left.getName() == right.getName()
+                && left.configType == right.configType
+                && left.sensorType == right.sensorType;
     }
 
     friend uint qHash(const MeasurementConfigKey key, uint seed) {
         QtPrivate::QHashCombine hash(seed);
         seed = hash(seed, key.name);
         seed = hash(seed, key.configType);
+        seed = hash(seed, key.sensorType.id());
         return seed;
     }
 
     friend bool operator<(const MeasurementConfigKey &left, const MeasurementConfigKey &right) {
         if(left.name != right.name) {
             return left.name < right.name;
-        } else {
+        } else if(left.configType != right.configType) {
             return left.configType < right.configType;
+        } else {
+            return left.sensorType.id() < right.sensorType.id();
         }
     }
 
@@ -75,6 +88,10 @@ public:
 
     ConfigTypes getConfigType() const {
         return this->configType;
+    }
+
+    const SensorType &getSensorType() const {
+        return this->sensorType;
     }
 
     bool isUserConfig() const{
@@ -93,6 +110,7 @@ public:
 private:
     QString name;
     ConfigTypes configType;
+    SensorType sensorType;
 };
 
 /*!
@@ -119,7 +137,8 @@ public:
                 && left.getMeasureTwoSides() == right.getMeasureTwoSides()
                 && left.getMaxObservations() == right.getMaxObservations()
                 && left.getTimeInterval() == right.getTimeInterval()
-                && almostEqual(left.getDistanceInterval(), right.getDistanceInterval(), 8);
+                && almostEqual(left.getDistanceInterval(), right.getDistanceInterval(), 8)
+                && left.getSensorType() == right.getSensorType();
     }
 
     //########################################
@@ -157,6 +176,15 @@ public:
     const int &getMaxObservations() const;
     void setMaxObservations(const int &maxObservations);
 
+    //! which sensor type published this config (set once, at creation, by
+    //! whichever driver's init() built it) - the compatibility check between
+    //! a selected config and the connected sensor is keyed off this, not
+    //! anything the user can edit after the fact. An invalid SensorType
+    //! (isValid() == false) means this config predates the tag or was
+    //! authored generically and isn't gated to any one type.
+    const SensorType &getSensorType() const;
+    void setSensorType(const SensorType &type);
+
     void makeUserConfig();
     void makeStandardConfig();
     void makeProjectConfig();
@@ -188,6 +216,8 @@ private:
     MeasurementTypes measurementType;
     MeasurementModes measurementMode;
     int maxObservations;
+
+    SensorType sensorType;
 
     bool editable;
 };

@@ -230,3 +230,13 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 endif()
 
 add_test(NAME reading COMMAND tst_reading)
+
+add_executable(tst_measurementconfig test/measurementconfig/tst_measurementconfig.cpp)
+target_compile_definitions(tst_measurementconfig PRIVATE SRCDIR="${CMAKE_CURRENT_SOURCE_DIR}/test/measurementconfig")
+target_link_libraries(tst_measurementconfig PRIVATE Qt6::Test OpenIndyCore OpenIndyMath)
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(tst_measurementconfig PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+
+add_test(NAME measurementconfig COMMAND tst_measurementconfig)
