@@ -170,6 +170,22 @@ const QPointer<Paraboloid> &FeatureWrapper::getParaboloid() const{
 }
 
 /*!
+ * \brief FeatureWrapper::getGroup
+ * \return
+ */
+const QPointer<Group> &FeatureWrapper::getGroup() const{
+    return this->groupFeature;
+}
+
+/*!
+ * \brief FeatureWrapper::getPointGroup
+ * \return
+ */
+const QPointer<PointGroup> &FeatureWrapper::getPointGroup() const{
+    return this->pointGroup;
+}
+
+/*!
  * \brief FeatureWrapper::getPointCloud
  * \return
  */
@@ -404,6 +420,33 @@ void FeatureWrapper::setParaboloid(const QPointer<Paraboloid> &paraboloid){
         this->geometry = paraboloid;
         this->paraboloid = paraboloid;
         this->typeOfFeature = eParaboloidFeature;
+    }
+}
+
+/*!
+ * \brief FeatureWrapper::setPointCloud
+ * \param pointCloud
+ */
+void FeatureWrapper::setGroup(const QPointer<Group> &group){
+    if(!group.isNull() && this->typeOfFeature == eUndefinedFeature){
+        this->feature = group;
+        this->groupFeature = group;
+        this->typeOfFeature = eGroupFeature;
+    }
+}
+
+/*!
+ * \brief FeatureWrapper::setPointGroup
+ * \param pointGroup
+ */
+void FeatureWrapper::setPointGroup(const QPointer<PointGroup> &pointGroup){
+    if(!pointGroup.isNull() && this->typeOfFeature == eUndefinedFeature){
+        this->feature = pointGroup;
+        //a PointGroup is-a Group, so both handles resolve - a consumer that
+        //only cares about grouping doesn't need to know which kind it got
+        this->groupFeature = pointGroup;
+        this->pointGroup = pointGroup;
+        this->typeOfFeature = ePointGroupFeature;
     }
 }
 

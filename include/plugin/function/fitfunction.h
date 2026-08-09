@@ -178,6 +178,33 @@ protected:
                 eigenIndex = i;
             }
         }
+
+        //a plane needs the points to actually span two dimensions. If they
+        //are collinear (or coincident) then ata is rank-deficient, *two*
+        //eigenvalues are ~0, and "the eigenvector of the smallest
+        //eigenvalue" picks arbitrarily between them - any plane containing
+        //the line fits equally well, so the normal returned is noise.
+        //Without this check that garbage was returned as success.
+        double largest = 0.0;
+        double middle = 0.0;
+        for(int i = 0; i < d.getSize(); i++){
+            const double value = qAbs(d.getAt(i));
+            if(value > largest){
+                middle = largest;
+                largest = value;
+            }else if(value > middle){
+                middle = value;
+            }
+        }
+
+        //relative, because these are sums of squared deviations and so
+        //scale with the extent of the data. Deliberately conservative: this
+        //rejects the genuinely singular case, not merely ill-conditioned
+        //input, so it cannot start failing fits that used to work.
+        if(largest <= 0.0 || (middle / largest) < 1.0e-12){
+            return false;
+        }
+
         u.getCol(normal, eigenIndex);
         normal.normalize();
 

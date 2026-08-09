@@ -1340,6 +1340,23 @@ void OiJob::addInputFeature(const QPointer<FeatureWrapper> &target, const int &f
 
         break;
 
+    }case ePointCollectionElement:{
+
+        //"a collection of points" - satisfied by either a point group or a
+        //point cloud. Which one it is is provenance, not geometry, and a
+        //fit function consuming the collection does not need to care.
+        if(!feature->getPointGroup().isNull()){
+            element.pointGroup = feature->getPointGroup();
+            element.group = feature->getGroup();
+        }else if(!feature->getPointCloud().isNull()){
+            element.pointCloud = feature->getPointCloud();
+            element.geometry = feature->getGeometry();
+        }else{
+            return;
+        }
+
+        break;
+
     }case eScalarEntityAngleElement:{
 
         //check angle
@@ -2177,6 +2194,35 @@ void OiJob::setGeometryObservations(const int &featureId){
 }
 
 /*!
+ * \brief OiJob::setGroupMembers
+ * A group's membership changed, so anything computed from its contents is
+ * stale. This is what makes bulk acquisition work: a driver adds a
+ * thousand points to a group and every fit bound to that group re-solves,
+ * without the fit's own inputs ever being touched.
+ * \param featureId
+ */
+void OiJob::setGroupMembers(const int &featureId){
+
+    emit this->groupMembersChanged(featureId);
+
+    //recalculate only what actually consumes this group. The dependency
+    //edges already exist - OiJob::setUpDependencies records them when a
+    //function's input element references another feature.
+    QPointer<FeatureWrapper> group = this->getFeatureById(featureId);
+    if(group.isNull() || group->getFeature().isNull()){
+        return;
+    }
+
+    foreach(const QPointer<FeatureWrapper> &dependent, group->getFeature()->getUsedFor()){
+        if(dependent.isNull() || dependent->getFeature().isNull()){
+            continue;
+        }
+        emit this->recalcFeature(dependent->getFeature());
+    }
+
+}
+
+/*!
  * \brief OiJob::setGeometryNominalSystem
  * \param featureId
  */
@@ -2364,6 +2410,12 @@ void OiJob::connectFeature(const QPointer<FeatureWrapper> &feature){
                          this, &OiJob::setGeometrySimulationData, Qt::AutoConnection);
         QObject::connect(feature->getGeometry().data(), &Geometry::geomMeasurementConfigChanged,
                          this, &OiJob::setGeometryMeasurementConfig, Qt::AutoConnection);
+    }
+
+    //group connects
+    if(!feature->getGroup().isNull()){
+        QObject::connect(feature->getGroup().data(), &Group::groupMembersChanged,
+                         this, &OiJob::setGroupMembers, Qt::AutoConnection);
     }
 
     //trafo param connects
@@ -2645,6 +2697,16 @@ QPointer<FeatureWrapper> OiJob::createFeatureWrapper(const FeatureTypes &type, b
     }case ePointCloudFeature:{
         PointCloud *pointCloud = new PointCloud(isNominal);
         feature->setPointCloud(pointCloud);
+        break;
+    }case eGroupFeature:{
+        //organisational, never nominal: a group holds references and is
+        //neither measured nor solved, so isNominal has no meaning for it
+        Group *group = new Group();
+        feature->setGroup(group);
+        break;
+    }case ePointGroupFeature:{
+        PointGroup *pointGroup = new PointGroup();
+        feature->setPointGroup(pointGroup);
         break;
     }case eScalarEntityAngleFeature:{
         ScalarEntityAngle *angle = new ScalarEntityAngle(isNominal);

@@ -108,6 +108,7 @@ void init(){
     elementTypesMap.insert(eReadingTemperatureElement, "temperature reading");
     elementTypesMap.insert(eReadingLevelElement, "level reading");
     elementTypesMap.insert(eLevelElement, "level");
+    elementTypesMap.insert(ePointCollectionElement, "point collection");
 
     //fill element plural map
     elementTypesPluralMap.insert(eCircleElement, "circles");
@@ -142,6 +143,7 @@ void init(){
     elementTypesPluralMap.insert(eReadingDirectionElement, "direction readings");
     elementTypesPluralMap.insert(eReadingTemperatureElement, "temperature readings");
     elementTypesPluralMap.insert(eReadingLevelElement, "level readings");
+    elementTypesPluralMap.insert(ePointCollectionElement, "point collections");
 
     //fill feature map
     featureTypesMap.insert(eCircleFeature, "circle");
@@ -167,6 +169,8 @@ void init(){
     featureTypesMap.insert(eStationFeature, "station");
     featureTypesMap.insert(eTrafoParamFeature, "transformation parameters");
     featureTypesMap.insert(eLevelFeature, "level");
+    featureTypesMap.insert(eGroupFeature, "group");
+    featureTypesMap.insert(ePointGroupFeature, "point group");
 
     //fill geometry map
     geometryTypesMap.insert(eCircleGeometry, "circle");
@@ -657,6 +661,12 @@ ElementTypes getElementTypeEnum(const FeatureTypes &type){
         return ePointElement;
     case ePointCloudFeature:
         return ePointCloudElement;
+    case ePointGroupFeature:
+        //both a point cloud and a point group are collections of points, so
+        //a function needing ePointCollectionElement accepts either. The
+        //cloud keeps its own more specific element type for consumers that
+        //genuinely need bulk scan data rather than any collection.
+        return ePointCollectionElement;
     case eScalarEntityAngleFeature:
         return eScalarEntityAngleElement;
     case eScalarEntityDistanceFeature:

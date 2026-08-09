@@ -90,7 +90,13 @@ enum ElementTypes{
     eReadingLevelElement,
 
     eUndefinedElement,
-    eLevelElement
+    eLevelElement,
+
+    //"a collection of points" - satisfied by a PointCloud or a PointGroup.
+    //A fit function asks for this rather than for N individual points, so
+    //bulk acquisition mutates the collection and never touches the
+    //function's own inputs.
+    ePointCollectionElement
 
 };
 
@@ -125,6 +131,12 @@ enum FeatureTypes{
 
     eUndefinedFeature,
     eLevelFeature,
+
+    //organisational (not measured, not solved): a named collection of
+    //references to other features. Appended deliberately - this enum is
+    //order-sensitive and existing values must not shift.
+    eGroupFeature,
+    ePointGroupFeature,
 
 };
 

@@ -205,6 +205,7 @@ signals:
     void geometryNominalsChanged(const int &featureId);
     void geometryActualChanged(const int &featureId);
     void geometryObservationsChanged(const int &featureId);
+    void groupMembersChanged(const int &featureId);
     void geometryNominalSystemChanged(const int &featureId);
     void geometryStatisticChanged(const int &featureId);
     void geometrySimulationDataChanged(const int &featureId);
@@ -273,6 +274,7 @@ private slots:
     void setGeometryNominals(const int &featureId);
     void setGeometryActual(const int &featureId);
     void setGeometryObservations(const int &featureId);
+    void setGroupMembers(const int &featureId);
     void setGeometryNominalSystem(const int &featureId);
     void setGeometryStatistic(const int &featureId);
     void setGeometrySimulationData(const int &featureId);

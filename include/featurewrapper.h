@@ -22,6 +22,8 @@
 #include "paraboloid.h"
 #include "hyperboloid.h"
 #include "pointcloud.h"
+#include "group.h"
+#include "pointgroup.h"
 #include "nurbs.h"
 #include "ellipse.h"
 #include "slottedhole.h"
@@ -59,6 +61,8 @@ public:
     const QPointer<CoordinateSystem> &getCoordinateSystem() const;
     const QPointer<TrafoParam> &getTrafoParam() const;
     const QPointer<Station> &getStation() const;
+    const QPointer<Group> &getGroup() const;
+    const QPointer<PointGroup> &getPointGroup() const;
 
     const QPointer<Point> &getPoint() const;
     const QPointer<Line> &getLine() const;
@@ -88,6 +92,8 @@ public:
     void setCoordinateSystem(const QPointer<CoordinateSystem> &coordSystem);
     void setTrafoParam(const QPointer<TrafoParam> &trafoParam);
     void setStation(const QPointer<Station> &station);
+    void setGroup(const QPointer<Group> &group);
+    void setPointGroup(const QPointer<PointGroup> &pointGroup);
 
     void setPoint(const QPointer<Point> &point);
     void setLine(const QPointer<Line> &line);
@@ -135,6 +141,8 @@ private:
     QPointer<Hyperboloid> hyperboloid;
     QPointer<Paraboloid> paraboloid;
     QPointer<PointCloud> pointCloud;
+    QPointer<Group> groupFeature;
+    QPointer<PointGroup> pointGroup;
     QPointer<Nurbs> nurbs;
     QPointer<Ellipse> ellipse;
     QPointer<SlottedHole> slottedHole;
