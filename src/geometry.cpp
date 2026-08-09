@@ -610,6 +610,12 @@ QDomElement Geometry::toOpenIndyXML(QDomDocument &xmlDoc) const{
     if(!this->isNominal){
         QDomElement mConfig = xmlDoc.createElement("measurementConfig");
         mConfig.setAttribute("name", this->activeMeasurementConfig.getName());
+        //sensorType disambiguates configs that share a name across driver
+        //types (e.g. two drivers both publishing "FastPoint") - name alone
+        //was ambiguous and made this round-trip lossy
+        if(this->activeMeasurementConfig.getSensorType().isValid()){
+            mConfig.setAttribute("sensorType", this->activeMeasurementConfig.getSensorType().id());
+        }
         geometry.appendChild(mConfig);
     }
 
