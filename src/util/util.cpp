@@ -34,7 +34,6 @@ QMap<UnitType, QString> unitTypesMap;
 
 QMap<SensorFunctions, QString> sensorFunctionsMap;
 
-QMap<ConnectionTypes, QString> connectionTypesMap;
 
 QMap<ToolTypes, QString> toolTypesMap;
 
@@ -434,8 +433,6 @@ void init(){
     sensorFunctionsMap.insert(eStream, "stream");
 
     //fill connection types map
-    connectionTypesMap.insert(eSerialConnection, "serial");
-    connectionTypesMap.insert(eNetworkConnection, "network");
 
     //fill tool types map
     toolTypesMap.insert(eReportTool, "report");
@@ -1486,58 +1483,6 @@ SensorFunctions getSensorFunctionEnum(const QString &name){
 
     //get the corresponding sensor function enum value
     return internal::sensorFunctionsMap.key(name, eInitialize);
-
-}
-
-/*!
- * \brief getAvailableConnectionTypes
- * \return
- */
-QList<ConnectionTypes> getAvailableConnectionTypes(){
-
-    //fill helper maps if not yet done
-    if(!internal::isInit){
-        internal::init();
-    }
-
-    return internal::connectionTypesMap.keys();
-
-}
-
-/*!
- * \brief getConnectionTypeName
- * \param type
- * \return
- */
-const QString &getConnectionTypeName(const ConnectionTypes &type){
-
-    //fill helper maps if not yet done
-    if(!internal::isInit){
-        internal::init();
-    }
-
-    //get the corresponding connection type name
-    if(internal::connectionTypesMap.contains(type)){
-        return internal::connectionTypesMap[type];
-    }
-    return internal::undefined;
-
-}
-
-/*!
- * \brief getConnectionTypeEnum
- * \param name
- * \return
- */
-ConnectionTypes getConnectionTypeEnum(const QString &name){
-
-    //fill helper maps if not yet done
-    if(!internal::isInit){
-        internal::init();
-    }
-
-    //get the corresponding connection type enum value
-    return internal::connectionTypesMap.key(name, eNetworkConnection);
 
 }
 

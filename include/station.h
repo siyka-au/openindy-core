@@ -90,7 +90,7 @@ public:
 
     //reading and connection types
     QList<ReadingTypes> getSupportedReadingTypes() const;
-    QList<ConnectionTypes> getSupportedConnectionTypes() const;
+    QList<ConnectionKind> getSupportedConnectionTypes() const;
 
     //sensor actions
     QList<SensorFunctions> getSupportedSensorActions() const;

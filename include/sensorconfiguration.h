@@ -11,6 +11,7 @@
 #include "util.h"
 #include "oivec.h"
 #include "sensortype.h"
+#include "connectionkind.h"
 
 namespace oi{
 
@@ -31,7 +32,7 @@ public:
     ConnectionConfig(){}
 
     //type
-    ConnectionTypes typeOfConnection;
+    ConnectionKind typeOfConnection;
 
     //network
     QString ip;

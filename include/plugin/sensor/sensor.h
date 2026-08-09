@@ -67,7 +67,7 @@ public:
     //reading types, sensor actions and connection types
     virtual const QList<ReadingTypes> &getSupportedReadingTypes() const = 0;
     virtual const QList<SensorFunctions> &getSupportedSensorActions() const = 0;
-    virtual const QList<ConnectionTypes> &getSupportedConnectionTypes() const = 0;
+    virtual const QList<ConnectionKind> &getSupportedConnectionTypes() const = 0;
 
     //the measurement configurations this sensor publishes, and how it can
     //acquire - both are declared by the driver rather than inferred from its type
@@ -188,7 +188,7 @@ public:
     //reading types, sensor actions and connection types
     const QList<ReadingTypes> &getSupportedReadingTypes() const;
     const QList<SensorFunctions> &getSupportedSensorActions() const;
-    const QList<ConnectionTypes> &getSupportedConnectionTypes() const;
+    const QList<ConnectionKind> &getSupportedConnectionTypes() const;
 
     const QList<MeasurementConfig> &getSupportedMeasurementConfigs() const;
     const QList<AcquisitionMode> &getSupportedAcquisitionModes() const;
@@ -265,7 +265,7 @@ protected:
     //meta information about the sensor
     QList<ReadingTypes> supportedReadingTypes;
     QList<SensorFunctions> supportedSensorActions;
-    QList<ConnectionTypes> supportedConnectionTypes;
+    QList<ConnectionKind> supportedConnectionTypes;
     QList<MeasurementConfig> supportedMeasurementConfigs;
     QList<AcquisitionMode> supportedAcquisitionModes;
     QStringList selfDefinedActions;

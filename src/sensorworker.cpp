@@ -199,14 +199,14 @@ QList<ReadingTypes> SensorWorker::getSupportedReadingTypes(){
  * \brief SensorWorker::getSupportedConnectionTypes
  * \return
  */
-QList<ConnectionTypes> SensorWorker::getSupportedConnectionTypes(){
+QList<ConnectionKind> SensorWorker::getSupportedConnectionTypes(){
 
     //check sensor
     if(this->sensor.isNull()){
-        return QList<ConnectionTypes>();
+        return QList<ConnectionKind>();
     }
 
-    QList<ConnectionTypes> types = this->sensor->getSupportedConnectionTypes();
+    QList<ConnectionKind> types = this->sensor->getSupportedConnectionTypes();
     return types;
 
 }

@@ -84,7 +84,7 @@ public slots:
 
     //reading and connection types
     QList<ReadingTypes> getSupportedReadingTypes();
-    QList<ConnectionTypes> getSupportedConnectionTypes();
+    QList<ConnectionKind> getSupportedConnectionTypes();
 
     //sensor actions
     QList<SensorFunctions> getSupportedSensorActions();

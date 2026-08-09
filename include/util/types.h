@@ -422,13 +422,6 @@ enum SensorFaces{
 
 };
 
-enum ConnectionTypes{
-
-    eNetworkConnection = 0,
-    eSerialConnection
-
-};
-
 enum SensorFunctions{
 
     eMoveAngle = 0,

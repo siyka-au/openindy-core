@@ -286,12 +286,12 @@ QList<ReadingTypes> SensorControl::getSupportedReadingTypes(){
  * \brief SensorControl::getSupportedConnectionTypes
  * \return
  */
-QList<ConnectionTypes> SensorControl::getSupportedConnectionTypes(){
+QList<ConnectionKind> SensorControl::getSupportedConnectionTypes(){
 
     //call method of sensor worker
-    QList<ConnectionTypes> types;
+    QList<ConnectionKind> types;
     bool hasInvoked = QMetaObject::invokeMethod(this->worker, "getSupportedConnectionTypes", Qt::DirectConnection,
-                                                Q_RETURN_ARG(QList<ConnectionTypes>, types));
+                                                Q_RETURN_ARG(QList<ConnectionKind>, types));
     if(!hasInvoked){
         emit this->sensorMessage("Cannot invoke getSensor method of sensor worker", eErrorMessage, eConsoleMessage);
     }

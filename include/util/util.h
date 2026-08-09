@@ -108,10 +108,6 @@ SensorFunctions OI_CORE_EXPORT getSensorFunctionEnum(const QString &name);
 //global function to query connection types
 //#########################################
 
-QList<ConnectionTypes> OI_CORE_EXPORT getAvailableConnectionTypes();
-const QString OI_CORE_EXPORT &getConnectionTypeName(const ConnectionTypes &type);
-ConnectionTypes OI_CORE_EXPORT getConnectionTypeEnum(const QString &name);
-
 //####################################
 //global functions to query tool types
 //####################################

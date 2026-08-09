@@ -269,7 +269,7 @@ QDomElement SensorConfiguration::toOpenIndyXML(QDomDocument &xmlDoc) const{
 
     //save connection parameters
     QDomElement connParams = xmlDoc.createElement("connection");
-    connParams.setAttribute("typeOfConnection", this->cConfig.typeOfConnection);
+    connParams.setAttribute("typeOfConnection", this->cConfig.typeOfConnection.id());
     connParams.setAttribute("ip", this->cConfig.ip);
     connParams.setAttribute("port", this->cConfig.port);
     connParams.setAttribute("comPort", this->cConfig.comPort);
@@ -398,7 +398,7 @@ bool SensorConfiguration::fromOpenIndyXML(QDomElement &xmlElem){
         if(!connectionParams.hasAttribute("typeOfConnection")){
             return false;
         }
-        this->cConfig.typeOfConnection = (ConnectionTypes)connectionParams.attribute("typeOfConnection").toInt();
+        this->cConfig.typeOfConnection = ConnectionKind::byId(connectionParams.attribute("typeOfConnection"));
 
         //set connection attributes
         if(connectionParams.hasAttribute("ip")){ this->cConfig.ip = connectionParams.attribute("ip"); }

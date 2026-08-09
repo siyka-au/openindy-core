@@ -105,6 +105,7 @@ add_library(OpenIndyCore SHARED
     src/reading.cpp
     src/sensorconfiguration.cpp
     src/sensortype.cpp
+    src/connectionkind.cpp
     src/sensorcontrol.cpp
     src/sensorworker.cpp
     src/sensorworkermessage.cpp
@@ -168,6 +169,7 @@ add_library(OpenIndyCore SHARED
     include/reading.h
     include/sensorconfiguration.h
     include/sensortype.h
+    include/connectionkind.h
     include/sensorcontrol.h
     include/sensorworker.h
     include/sensorworkermessage.h

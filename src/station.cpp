@@ -506,11 +506,11 @@ QList<ReadingTypes> Station::getSupportedReadingTypes() const{
  * \brief Station::getSupportedConnectionTypes
  * \return
  */
-QList<ConnectionTypes> Station::getSupportedConnectionTypes() const{
+QList<ConnectionKind> Station::getSupportedConnectionTypes() const{
 
     //check sensor control
     if(this->sensorControl.isNull()){
-        return QList<ConnectionTypes>();
+        return QList<ConnectionKind>();
     }
 
     return this->sensorControl->getSupportedConnectionTypes();

@@ -136,7 +136,7 @@ const QList<SensorFunctions> &Sensor::getSupportedSensorActions() const{
  * \brief Sensor::getSupportedConnectionTypes
  * \return
  */
-const QList<ConnectionTypes> &Sensor::getSupportedConnectionTypes() const{
+const QList<ConnectionKind> &Sensor::getSupportedConnectionTypes() const{
     return this->supportedConnectionTypes;
 }
 
