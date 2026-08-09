@@ -107,6 +107,8 @@ add_library(OpenIndyCore SHARED
     src/sensortype.cpp
     src/connectionkind.cpp
     src/calibratedconstellation.cpp
+    src/group.cpp
+    src/pointgroup.cpp
     src/sensorcontrol.cpp
     src/sensorworker.cpp
     src/sensorworkermessage.cpp
@@ -172,6 +174,9 @@ add_library(OpenIndyCore SHARED
     include/sensortype.h
     include/connectionkind.h
     include/calibratedconstellation.h
+    include/group.h
+    include/pointgroup.h
+    include/pointcollection.h
     include/sensorcontrol.h
     include/sensorworker.h
     include/sensorworkermessage.h
@@ -244,3 +249,12 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 endif()
 
 add_test(NAME measurementconfig COMMAND tst_measurementconfig)
+
+add_executable(tst_pointcollection test/pointcollection/tst_pointcollection.cpp)
+target_link_libraries(tst_pointcollection PRIVATE Qt6::Test OpenIndyCore OpenIndyMath)
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(tst_pointcollection PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+
+add_test(NAME pointcollection COMMAND tst_pointcollection)

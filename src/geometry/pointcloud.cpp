@@ -121,7 +121,7 @@ bool PointCloud::hasPosition() const{
  * Returns a list of all point cloud points
  * \return
  */
-const QList<QPointer<Point_PC> > &PointCloud::getPointCloudPoints() const{
+const QList<Point_PC *> &PointCloud::getPointCloudPoints() const{
     return this->points;
 }
 
@@ -129,8 +129,58 @@ const QList<QPointer<Point_PC> > &PointCloud::getPointCloudPoints() const{
  * \brief PointCloud::addPointCloudPoint
  * \param point
  */
-void PointCloud::addPointCloudPoint(const QPointer<Point_PC> &point){
+void PointCloud::addPointCloudPoint(Point_PC *point){
+    if(point == nullptr){
+        return;
+    }
     this->points.append(point);
+}
+
+/*!
+ * \brief PointCloud::collectionPoints
+ * PointCollection interface: a fit function asks any collection for its
+ * points and doesn't care whether they came from a scanner or from a
+ * thousand individually aimed shots.
+ * \return
+ */
+QList<Position> PointCloud::collectionPoints() const{
+
+    QList<Position> positions;
+    positions.reserve(this->points.size());
+
+    foreach(Point_PC *point, this->points){
+
+        //isUsed is the cloud's own inclusion flag - a point excluded by
+        //segmentation or filtering is still stored, but is not part of the
+        //collection a fit should see
+        if(point == nullptr || !point->isUsed){
+            continue;
+        }
+
+        positions.append(Position(point->xyz[0], point->xyz[1], point->xyz[2]));
+
+    }
+
+    return positions;
+
+}
+
+/*!
+ * \brief PointCloud::collectionPointCount
+ * \return
+ */
+int PointCloud::collectionPointCount() const{
+
+    //counted without materialising positions - a real scan is millions of
+    //points and this gets asked just to answer "is there enough data yet"
+    int count = 0;
+    foreach(Point_PC *point, this->points){
+        if(point != nullptr && point->isUsed){
+            ++count;
+        }
+    }
+    return count;
+
 }
 
 /*!
