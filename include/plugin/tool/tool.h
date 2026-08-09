@@ -114,7 +114,9 @@ protected:
 #define CONCAT2(a, b) CONCAT(a, b)
 #endif
 
+#include "pluginabi.h"
+
 #define TOOL_PREFIX de.openIndy.plugin.tool.v
-#define Tool_iidd STR2(CONCAT2(TOOL_PREFIX, PLUGIN_INTERFACE_VERSION))
+#define Tool_iidd STR2(CONCAT2(TOOL_PREFIX, OI_PLUGIN_ABI_VERSION))
 
 #endif // TOOL_H

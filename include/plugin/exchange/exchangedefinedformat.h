@@ -55,7 +55,9 @@ protected:
 #define CONCAT2(a, b) CONCAT(a, b)
 #endif
 
+#include "pluginabi.h"
+
 #define EXCHANGE_DEFINEDFORMAT_PREFIX de.openIndy.plugin.exchange.exchangeDefinedFormat.v
-#define ExchangeDefinedFormat_iidd STR2(CONCAT2(EXCHANGE_DEFINEDFORMAT_PREFIX, PLUGIN_INTERFACE_VERSION))
+#define ExchangeDefinedFormat_iidd STR2(CONCAT2(EXCHANGE_DEFINEDFORMAT_PREFIX, OI_PLUGIN_ABI_VERSION))
 
 #endif // EXCHANGEDEFINEDFORMAT_H

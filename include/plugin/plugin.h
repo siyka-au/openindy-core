@@ -65,8 +65,10 @@ public:
 #define CONCAT2(a, b) CONCAT(a, b)
 #endif
 
+#include "pluginabi.h"
+
 #define PLUGIN_PREFIX de.openIndy.plugin.v
-#define Plugin_iidd STR2(CONCAT2(PLUGIN_PREFIX, PLUGIN_INTERFACE_VERSION))
+#define Plugin_iidd STR2(CONCAT2(PLUGIN_PREFIX, OI_PLUGIN_ABI_VERSION))
 
 using namespace oi;
 Q_DECLARE_INTERFACE(Plugin, Plugin_iidd)

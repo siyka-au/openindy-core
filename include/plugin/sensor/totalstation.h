@@ -95,7 +95,9 @@ protected:
 #define CONCAT2(a, b) CONCAT(a, b)
 #endif
 
+#include "pluginabi.h"
+
 #define TOTALSTATION_PREFIX de.openIndy.plugin.sensor.totalStation.v
-#define TotalStation_iidd STR2(CONCAT2(TOTALSTATION_PREFIX, PLUGIN_INTERFACE_VERSION))
+#define TotalStation_iidd STR2(CONCAT2(TOTALSTATION_PREFIX, OI_PLUGIN_ABI_VERSION))
 
 #endif // TOTALSTATION_H

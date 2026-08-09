@@ -405,7 +405,9 @@ Q_DECLARE_METATYPE( oi::Function* )
 #define CONCAT2(a, b) CONCAT(a, b)
 #endif
 
+#include "pluginabi.h"
+
 #define FUNCTION_PREFIX de.openIndy.plugin.function.v
-#define Function_iid STR2(CONCAT2(FUNCTION_PREFIX, PLUGIN_INTERFACE_VERSION))
+#define Function_iid STR2(CONCAT2(FUNCTION_PREFIX, OI_PLUGIN_ABI_VERSION))
 
 #endif // FUNCTION_H

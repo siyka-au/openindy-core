@@ -295,7 +295,9 @@ protected:
 #define CONCAT2(a, b) CONCAT(a, b)
 #endif
 
+#include "pluginabi.h"
+
 #define SENSOR_PREFIX de.openIndy.plugin.sensor.v
-#define Sensor_iidd STR2(CONCAT2(SENSOR_PREFIX, PLUGIN_INTERFACE_VERSION))
+#define Sensor_iidd STR2(CONCAT2(SENSOR_PREFIX, OI_PLUGIN_ABI_VERSION))
 
 #endif // SENSOR_H

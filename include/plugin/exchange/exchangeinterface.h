@@ -112,8 +112,10 @@ protected:
 #define CONCAT2(a, b) CONCAT(a, b)
 #endif
 
+#include "pluginabi.h"
+
 #define EXCHANGE_PREFIX de.openIndy.plugin.exchange.v
-#define Exchange_iidd STR2(CONCAT2(EXCHANGE_PREFIX, PLUGIN_INTERFACE_VERSION))
+#define Exchange_iidd STR2(CONCAT2(EXCHANGE_PREFIX, OI_PLUGIN_ABI_VERSION))
 
 #endif // EXCHANGEINTERFACE_H
 

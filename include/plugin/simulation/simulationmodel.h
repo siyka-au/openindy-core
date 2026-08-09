@@ -232,7 +232,9 @@ protected:
 #define CONCAT2(a, b) CONCAT(a, b)
 #endif
 
+#include "pluginabi.h"
+
 #define SIMULATION_PREFIX de.openIndy.plugin.simulation.v
-#define Simulation_iidd STR2(CONCAT2(SIMULATION_PREFIX, PLUGIN_INTERFACE_VERSION))
+#define Simulation_iidd STR2(CONCAT2(SIMULATION_PREFIX, OI_PLUGIN_ABI_VERSION))
 
 #endif // SIMULATIONMODEL_H

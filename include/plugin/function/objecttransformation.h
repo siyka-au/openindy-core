@@ -45,7 +45,9 @@ protected:
 #define CONCAT2(a, b) CONCAT(a, b)
 #endif
 
+#include "pluginabi.h"
+
 #define OBJECTTRANSFORMATIONFUNCTION_PREFIX de.openIndy.plugin.function.objectTransformation.v
-#define ObjectTransformation_iidd STR2(CONCAT2(OBJECTTRANSFORMATIONFUNCTION_PREFIX, PLUGIN_INTERFACE_VERSION))
+#define ObjectTransformation_iidd STR2(CONCAT2(OBJECTTRANSFORMATIONFUNCTION_PREFIX, OI_PLUGIN_ABI_VERSION))
 
 #endif // OBJECTTRANSFORMATION_H

@@ -37,10 +37,38 @@ string(REGEX REPLACE "-" "." OI_CORE_GIT_VERSION "${OI_CORE_GIT_VERSION}")
 set(OPENINDY_VERSION "${OI_CORE_GIT_VERSION}" CACHE STRING
     "Version string embedded via the OPENINDY_VERSION define")
 
-string(REGEX REPLACE "[.]" "" PLUGIN_INTERFACE_VERSION "${OI_CORE_GIT_VERSION}")
-if(NOT PLUGIN_INTERFACE_VERSION)
-    set(PLUGIN_INTERFACE_VERSION 0)
+# --- plugin ABI version ---
+#
+# Deliberately NOT derived from the git version above. The product version
+# should change on every commit; the plugin ABI must change only when the
+# plugin contract changes. See include/plugin/pluginabi.h for the reasoning
+# and for when to bump it.
+#
+# The header is the single source of truth. It is read here only so plugins
+# can stamp the value into their metaInfo.json, letting the app report a
+# mismatch by reading metadata instead of discovering it after a failed load.
+
+set(OI_PLUGIN_ABI_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/include/plugin/pluginabi.h")
+file(STRINGS "${OI_PLUGIN_ABI_HEADER}" OI_PLUGIN_ABI_LINE
+     REGEX "^#define[ \t]+OI_PLUGIN_ABI_VERSION[ \t]+[0-9]+")
+string(REGEX MATCH "[0-9]+$" OI_PLUGIN_ABI_VERSION_VALUE "${OI_PLUGIN_ABI_LINE}")
+if(NOT OI_PLUGIN_ABI_VERSION_VALUE)
+    message(FATAL_ERROR
+        "Could not read OI_PLUGIN_ABI_VERSION from ${OI_PLUGIN_ABI_HEADER}. "
+        "It must contain a line of the form '#define OI_PLUGIN_ABI_VERSION <integer>'.")
 endif()
+
+# CACHE INTERNAL so it crosses the FetchContent/add_subdirectory boundary into
+# the plugin repos, which build core as a subproject.
+set(OI_PLUGIN_ABI_VERSION "${OI_PLUGIN_ABI_VERSION_VALUE}" CACHE INTERNAL
+    "OpenIndy plugin ABI version, read from include/plugin/pluginabi.h" FORCE)
+
+message(STATUS "OpenIndy plugin ABI version: ${OI_PLUGIN_ABI_VERSION}")
+
+# Bumping the header must re-run configure, otherwise the plugins' generated
+# metaInfo.json keeps the stale number while their binaries get the new one -
+# which would be a worse version of the bug this is fixing.
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${OI_PLUGIN_ABI_HEADER}")
 
 # --- Math dependency ---
 
@@ -184,13 +212,13 @@ add_library(OpenIndyCore SHARED
     include/statistic.h
     include/trafoparam.h
     include/plugin/networkAdjustment/bundleadjustment.h
+    include/plugin/pluginabi.h
 )
 
 target_compile_definitions(OpenIndyCore
     PRIVATE
         OI_CORE_LIB
     PUBLIC
-        PLUGIN_INTERFACE_VERSION=${PLUGIN_INTERFACE_VERSION}
         OPENINDY_VERSION="${OPENINDY_VERSION}"
 )
 
@@ -258,3 +286,13 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 endif()
 
 add_test(NAME pointcollection COMMAND tst_pointcollection)
+
+add_executable(tst_pluginabi test/pluginabi/tst_pluginabi.cpp)
+target_link_libraries(tst_pluginabi PRIVATE Qt6::Test OpenIndyCore OpenIndyMath)
+target_compile_definitions(tst_pluginabi PRIVATE SOURCEDIR="${CMAKE_CURRENT_SOURCE_DIR}")
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(tst_pluginabi PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+
+add_test(NAME pluginabi COMMAND tst_pluginabi)

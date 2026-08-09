@@ -125,7 +125,9 @@ protected:
 #define CONCAT2(a, b) CONCAT(a, b)
 #endif
 
+#include "pluginabi.h"
+
 #define EXCHANGE_SIMPLEASCII_PREFIX de.openIndy.plugin.exchange.exchangeSimpleAscii.v
-#define ExchangeSimpleAscii_iidd STR2(CONCAT2(EXCHANGE_SIMPLEASCII_PREFIX, PLUGIN_INTERFACE_VERSION))
+#define ExchangeSimpleAscii_iidd STR2(CONCAT2(EXCHANGE_SIMPLEASCII_PREFIX, OI_PLUGIN_ABI_VERSION))
 
 #endif // EXCHANGESIMPLEASCII_H

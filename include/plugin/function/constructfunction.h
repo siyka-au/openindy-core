@@ -46,7 +46,9 @@ protected:
 #define CONCAT2(a, b) CONCAT(a, b)
 #endif
 
+#include "pluginabi.h"
+
 #define CONSTRUCTFUNCTION_PREFIX de.openIndy.plugin.function.constructFunction.v
-#define ConstructFunction_iidd STR2(CONCAT2(CONSTRUCTFUNCTION_PREFIX, PLUGIN_INTERFACE_VERSION))
+#define ConstructFunction_iidd STR2(CONCAT2(CONSTRUCTFUNCTION_PREFIX, OI_PLUGIN_ABI_VERSION))
 
 #endif // CONSTRUCTFUNCTION_H

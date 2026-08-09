@@ -1342,7 +1342,9 @@ protected:
 #define CONCAT2(a, b) CONCAT(a, b)
 #endif
 
+#include "pluginabi.h"
+
 #define FITFUNCTION_PREFIX de.openIndy.plugin.function.fitFunction.v
-#define FitFunction_iidd STR2(CONCAT2(FITFUNCTION_PREFIX, PLUGIN_INTERFACE_VERSION))
+#define FitFunction_iidd STR2(CONCAT2(FITFUNCTION_PREFIX, OI_PLUGIN_ABI_VERSION))
 
 #endif // FITFUNCTION_H

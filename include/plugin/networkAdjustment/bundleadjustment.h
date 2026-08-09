@@ -269,7 +269,9 @@ Q_DECLARE_METATYPE( oi::BundleAdjustment* )
 #define CONCAT2(a, b) CONCAT(a, b)
 #endif
 
+#include "pluginabi.h"
+
 #define BUNDLEADJUSTMENT_PREFIX de.openIndy.plugin.bundleAdjustment.v
-#define BundleAdjustment_iidd STR2(CONCAT2(BUNDLEADJUSTMENT_PREFIX, PLUGIN_INTERFACE_VERSION))
+#define BundleAdjustment_iidd STR2(CONCAT2(BUNDLEADJUSTMENT_PREFIX, OI_PLUGIN_ABI_VERSION))
 
 #endif // BUNDLEADJUSTMENT_H

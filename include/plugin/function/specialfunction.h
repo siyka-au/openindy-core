@@ -46,7 +46,9 @@ protected:
 #define CONCAT2(a, b) CONCAT(a, b)
 #endif
 
+#include "pluginabi.h"
+
 #define SPECIALFUNCTION_PREFIX de.openIndy.plugin.function.specialFunction.v
-#define SpecialFunction_iidd STR2(CONCAT2(SPECIALFUNCTION_PREFIX, PLUGIN_INTERFACE_VERSION))
+#define SpecialFunction_iidd STR2(CONCAT2(SPECIALFUNCTION_PREFIX, OI_PLUGIN_ABI_VERSION))
 
 #endif // SPECIALFUNCTION__H

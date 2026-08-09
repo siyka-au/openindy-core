@@ -145,7 +145,9 @@ protected:
 #define CONCAT2(a, b) CONCAT(a, b)
 #endif
 
+#include "pluginabi.h"
+
 #define LASERTRACKER_PREFIX de.openIndy.plugin.sensor.laserTracker.v
-#define LaserTracker_iidd STR2(CONCAT2(LASERTRACKER_PREFIX, PLUGIN_INTERFACE_VERSION))
+#define LaserTracker_iidd STR2(CONCAT2(LASERTRACKER_PREFIX, OI_PLUGIN_ABI_VERSION))
 
 #endif // LASERTRACKER_H

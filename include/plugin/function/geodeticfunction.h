@@ -46,7 +46,9 @@ protected:
 #define CONCAT2(a, b) CONCAT(a, b)
 #endif
 
+#include "pluginabi.h"
+
 #define GEODETICFUNCTION_PREFIX de.openIndy.plugin.function.geodeticFunction.v
-#define GeodeticFunction_iidd STR2(CONCAT2(GEODETICFUNCTION_PREFIX, PLUGIN_INTERFACE_VERSION))
+#define GeodeticFunction_iidd STR2(CONCAT2(GEODETICFUNCTION_PREFIX, OI_PLUGIN_ABI_VERSION))
 
 #endif // GEODETICFUNCTION_H

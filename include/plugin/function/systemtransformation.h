@@ -92,7 +92,9 @@ protected:
 #define CONCAT2(a, b) CONCAT(a, b)
 #endif
 
+#include "pluginabi.h"
+
 #define SYSTEMTRANSFORMATIONFUNCTION_PREFIX de.openIndy.plugin.function.systemTransformation.v
-#define SystemTransformation_iidd STR2(CONCAT2(SYSTEMTRANSFORMATIONFUNCTION_PREFIX, PLUGIN_INTERFACE_VERSION))
+#define SystemTransformation_iidd STR2(CONCAT2(SYSTEMTRANSFORMATIONFUNCTION_PREFIX, OI_PLUGIN_ABI_VERSION))
 
 #endif // SYSTEMTRANSFORMATION_H

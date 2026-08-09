@@ -40,7 +40,9 @@ signals:
 #define CONCAT2(a, b) CONCAT(a, b)
 #endif
 
+#include "pluginabi.h"
+
 #define GENERATEFEATUREFUNCTION_PREFIX de.openIndy.plugin.function.generateFeatureFunction.v
-#define GenerateFeatureFunction_iidd STR2(CONCAT2(GENERATEFEATUREFUNCTION_PREFIX, PLUGIN_INTERFACE_VERSION))
+#define GenerateFeatureFunction_iidd STR2(CONCAT2(GENERATEFEATUREFUNCTION_PREFIX, OI_PLUGIN_ABI_VERSION))
 
 #endif // GENERATEFEATUREFUNCTION_H
