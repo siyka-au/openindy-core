@@ -258,9 +258,9 @@ void Point::recalc(){
  * producer is a measurement, not a draft: it is owned by the station that
  * produced those observations. A Point with neither (freshly constructed,
  * or a derived Point built from other Points via ePointElement inputs -
- * AverageFromPoints, PlaneFromPointCollection's plane, etc, which never
- * populate this Point's own observations list) falls through to the base
- * rule unchanged.
+ * AverageFromPoints, a fitted Plane/Line/Sphere/etc's own geometry, and so
+ * on, none of which populate this Point's own observations list) falls
+ * through to the base rule unchanged.
  * \return
  */
 std::optional<QString> Point::getOwnerDescription() const{

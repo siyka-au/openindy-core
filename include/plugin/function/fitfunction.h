@@ -588,15 +588,23 @@ protected:
                 break;
             }
             case eFirstTwoDummyPoint: {
-                QList<QPointer<Observation> > dummyPoints;
+                //D12/Stage 7c-ii: the dummyPoint role now resolves to
+                //ePointElement (every fit function but BestFitPoint does),
+                //not just eObservationElement - read whichever the
+                //InputElement actually carries, same as
+                //BestFitUtil::getDummyPoint already does for plane/circle.
+                QList<OiVec> dummyPoints;
                 foreach(const InputElement &element, function->getInputElements()[dummyPointPosition(function)]){
                     if(!element.observation.isNull()
                             && element.observation->getIsSolved()) {
-                        dummyPoints.append(element.observation);
+                        dummyPoints.append(element.observation->getXYZ());
+                    } else if(!element.point.isNull()
+                            && element.point->getIsSolved()) {
+                        dummyPoints.append(element.point->getPosition().getVectorH());
                     }
                 }
                 if(dummyPoints.size() >= 2){
-                    OiVec diff = dummyPoints.at(1)->getXYZ() - dummyPoints.at(0)->getXYZ();
+                    OiVec diff = dummyPoints.at(1) - dummyPoints.at(0);
                     diff.removeLast();
                     diff.normalize();
                     direction = diff;
@@ -724,17 +732,22 @@ protected:
                 break;
             }
         case eFirstTwoDummyPoint: {
-            QList<QPointer<Observation> > dummyPoints;
+            //D12/Stage 7c-ii: see the identical fix in bestFitCylinder()
+            //above - the dummyPoint role resolves to ePointElement now.
+            QList<OiVec> dummyPoints;
             foreach(const InputElement &element, function->getInputElements()[dummyPointPosition(function)]){
                 if(!element.observation.isNull()
                         && element.observation->getIsSolved()) {
-                    dummyPoints.append(element.observation);
+                    dummyPoints.append(element.observation->getXYZ());
+                } else if(!element.point.isNull()
+                        && element.point->getIsSolved()) {
+                    dummyPoints.append(element.point->getPosition().getVectorH());
                 }
             }
             if(dummyPoints.size() < 2){
                 return false;
             }
-            OiVec diff = dummyPoints.at(1)->getXYZ() - dummyPoints.at(0)->getXYZ();
+            OiVec diff = dummyPoints.at(1) - dummyPoints.at(0);
             diff.removeLast();
 
             return approximateCylinder(function, diff, inputObservations, "first two dummy points");
