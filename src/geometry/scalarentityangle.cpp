@@ -6,10 +6,9 @@ using namespace oi;
 
 /*!
  * \brief ScalarEntityAngle::ScalarEntityAngle
- * \param isNominal
  * \param parent
  */
-ScalarEntityAngle::ScalarEntityAngle(const bool &isNominal, QObject *parent) : Geometry(isNominal, parent){
+ScalarEntityAngle::ScalarEntityAngle(QObject *parent) : Geometry(parent){
 
     //set up feature wrapper
     if(!this->selfFeature.isNull()){
@@ -20,11 +19,10 @@ ScalarEntityAngle::ScalarEntityAngle(const bool &isNominal, QObject *parent) : G
 
 /*!
  * \brief ScalarEntityAngle::ScalarEntityAngle
- * \param isNominal
  * \param angle
  * \param parent
  */
-ScalarEntityAngle::ScalarEntityAngle(const bool &isNominal, const double &angle, QObject *parent) : Geometry(isNominal, parent){
+ScalarEntityAngle::ScalarEntityAngle(const double &angle, QObject *parent) : Geometry(parent){
 
     //set up feature wrapper
     if(!this->selfFeature.isNull()){
@@ -113,10 +111,10 @@ QMap<GeometryParameters, QString> ScalarEntityAngle::getUnknownParameters(const 
 }
 
 /*!
- * \brief ScalarEntityAngle::setUnknownParameters
+ * \brief ScalarEntityAngle::applyUnknownParameters
  * \param parameters
  */
-void ScalarEntityAngle::setUnknownParameters(const QMap<GeometryParameters, double> &parameters){
+void ScalarEntityAngle::applyUnknownParameters(const QMap<GeometryParameters, double> &parameters){
 
     //get current parameters
     double angle = this->angle;
@@ -146,7 +144,7 @@ void ScalarEntityAngle::recalc(){
     Geometry::recalc();
 
     //reset angle definition if not solved and no nominal
-    if(!this->isSolved && !this->isNominal){
+    if(!this->isSolved && this->getOwnerDescription().has_value()){
         this->angle = 0.0;
     }
 
@@ -169,7 +167,7 @@ QDomElement ScalarEntityAngle::toOpenIndyXML(QDomDocument &xmlDoc) const{
 
     //add angle
     QDomElement angle = xmlDoc.createElement("angle");
-    if(this->isSolved || this->isNominal){
+    if(this->isSolved || !this->getOwnerDescription().has_value()){
         angle.setAttribute("value", this->angle);
     }else{
         angle.setAttribute("value", 0.0);

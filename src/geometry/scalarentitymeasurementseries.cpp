@@ -6,10 +6,9 @@ using namespace oi;
 
 /*!
  * \brief ScalarEntityMeasurementSeries::ScalarEntityMeasurementSeries
- * \param isNominal
  * \param parent
  */
-ScalarEntityMeasurementSeries::ScalarEntityMeasurementSeries(const bool &isNominal, QObject *parent) : Geometry(isNominal, parent){
+ScalarEntityMeasurementSeries::ScalarEntityMeasurementSeries(QObject *parent) : Geometry(parent){
 
     //set up feature wrapper
     if(!this->selfFeature.isNull()){
@@ -20,11 +19,10 @@ ScalarEntityMeasurementSeries::ScalarEntityMeasurementSeries(const bool &isNomin
 
 /*!
  * \brief ScalarEntityMeasurementSeries::ScalarEntityMeasurementSeries
- * \param isNominal
  * \param seriesValue
  * \param parent
  */
-ScalarEntityMeasurementSeries::ScalarEntityMeasurementSeries(const bool &isNominal, const double &seriesValue, QObject *parent) : Geometry(isNominal, parent){
+ScalarEntityMeasurementSeries::ScalarEntityMeasurementSeries(const double &seriesValue, QObject *parent) : Geometry(parent){
 
     //set up feature wrapper
     if(!this->selfFeature.isNull()){
@@ -113,10 +111,10 @@ QMap<GeometryParameters, QString> ScalarEntityMeasurementSeries::getUnknownParam
 }
 
 /*!
- * \brief ScalarEntityMeasurementSeries::setUnknownParameters
+ * \brief ScalarEntityMeasurementSeries::applyUnknownParameters
  * \param parameters
  */
-void ScalarEntityMeasurementSeries::setUnknownParameters(const QMap<GeometryParameters, double> &parameters){
+void ScalarEntityMeasurementSeries::applyUnknownParameters(const QMap<GeometryParameters, double> &parameters){
 
     //get current parameters
     double series = this->seriesValue;
@@ -146,7 +144,7 @@ void ScalarEntityMeasurementSeries::recalc(){
     Geometry::recalc();
 
     //reset measurement series definition if not solved and no nominal
-    if(!this->isSolved && !this->isNominal){
+    if(!this->isSolved && this->getOwnerDescription().has_value()){
         this->seriesValue = 0.0;
     }
 
@@ -169,7 +167,7 @@ QDomElement ScalarEntityMeasurementSeries::toOpenIndyXML(QDomDocument &xmlDoc) c
 
     //add series value
     QDomElement seriesValue = xmlDoc.createElement("seriesValue");
-    if(this->isSolved || this->isNominal){
+    if(this->isSolved || !this->getOwnerDescription().has_value()){
         seriesValue.setAttribute("value", this->seriesValue);
     }else{
         seriesValue.setAttribute("value", 0.0);

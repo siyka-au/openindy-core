@@ -16,8 +16,8 @@ class OI_CORE_EXPORT ScalarEntityTemperature : public Geometry
     Q_OBJECT
 
 public:
-    ScalarEntityTemperature(const bool &isNominal, QObject *parent = 0);
-    ScalarEntityTemperature(const bool &isNominal, const double &temperature, QObject *parent = 0);
+    ScalarEntityTemperature(QObject *parent = 0);
+    ScalarEntityTemperature(const double &temperature, QObject *parent = 0);
 
     ScalarEntityTemperature(const ScalarEntityTemperature &copy, QObject *parent = 0);
 
@@ -47,7 +47,7 @@ public:
 
     virtual QMap<GeometryParameters, QString> getUnknownParameters(const QMap<DimensionType, UnitType> &displayUnits,
                                                           const QMap<DimensionType, int> &displayDigits) const;
-    virtual void setUnknownParameters(const QMap<GeometryParameters, double> &parameters);
+    virtual void applyUnknownParameters(const QMap<GeometryParameters, double> &parameters);
 
     //###########################
     //reexecute the function list

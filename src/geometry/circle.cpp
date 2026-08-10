@@ -7,10 +7,9 @@ using namespace oi::math;
 
 /*!
  * \brief Circle::Circle
- * \param isNominal
  * \param parent
  */
-Circle::Circle(const bool &isNominal, QObject *parent) : Geometry(isNominal, parent){
+Circle::Circle(QObject *parent) : Geometry(parent){
 
     //set up feature wrapper
     if(!this->selfFeature.isNull()){
@@ -21,13 +20,12 @@ Circle::Circle(const bool &isNominal, QObject *parent) : Geometry(isNominal, par
 
 /*!
  * \brief Circle::Circle
- * \param isNominal
  * \param center
  * \param normal
  * \param radius
  * \param parent
  */
-Circle::Circle(const bool &isNominal, const Position &center, const Direction &normal, const Radius &radius, QObject *parent) : Geometry(isNominal, parent){
+Circle::Circle(const Position &center, const Direction &normal, const Radius &radius, QObject *parent) : Geometry(parent){
 
     //set up feature wrapper
     if(!this->selfFeature.isNull()){
@@ -145,10 +143,10 @@ QMap<GeometryParameters, QString> Circle::getUnknownParameters(const QMap<Dimens
 }
 
 /*!
- * \brief Circle::setUnknownParameters
+ * \brief Circle::applyUnknownParameters
  * \param parameters
  */
-void Circle::setUnknownParameters(const QMap<GeometryParameters, double> &parameters){
+void Circle::applyUnknownParameters(const QMap<GeometryParameters, double> &parameters){
 
     //get current parameters
     OiVec position = this->xyz.getVector();
@@ -202,7 +200,7 @@ void Circle::recalc(){
     Geometry::recalc();
 
     //reset circle definition if not solved and no nominal
-    if(!this->isSolved && !this->isNominal){
+    if(!this->isSolved && this->getOwnerDescription().has_value()){
         this->xyz.setVector(0.0, 0.0, 0.0);
         this->ijk.setVector(0.0, 0.0, 0.0);
         this->radius.setRadius(0.0);

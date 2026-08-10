@@ -7,10 +7,9 @@ using namespace oi::math;
 
 /*!
  * \brief Point::Point
- * \param isNominal
  * \param parent
  */
-Point::Point(const bool &isNominal, QObject *parent) : Geometry(isNominal, parent), distance(-1.){
+Point::Point(QObject *parent) : Geometry(parent), distance(-1.){
 
     //set up feature wrapper
     if(!this->selfFeature.isNull()){
@@ -21,11 +20,10 @@ Point::Point(const bool &isNominal, QObject *parent) : Geometry(isNominal, paren
 
 /*!
  * \brief Point::Point
- * \param isNominal
  * \param xyz
  * \param parent
  */
-Point::Point(const bool &isNominal, const Position &xyz, QObject *parent) : Geometry(isNominal, parent), distance(-1.){
+Point::Point(const Position &xyz, QObject *parent) : Geometry(parent), distance(-1.){
 
     //set up feature wrapper
     if(!this->selfFeature.isNull()){
@@ -36,7 +34,7 @@ Point::Point(const bool &isNominal, const Position &xyz, QObject *parent) : Geom
 
 }
 
-Point::Point(int id, const bool &isNominal, const Position &xyz, QObject *parent) : Geometry(isNominal, parent), distance(-1.){
+Point::Point(int id, const Position &xyz, QObject *parent) : Geometry(parent), distance(-1.){
     this->id = id;
 
     //set up feature wrapper
@@ -159,10 +157,10 @@ QMap<GeometryParameters, QString> Point::getUnknownParameters(const QMap<Dimensi
 }
 
 /*!
- * \brief Point::setUnknownParameters
+ * \brief Point::applyUnknownParameters
  * \param parameters
  */
-void Point::setUnknownParameters(const QMap<GeometryParameters, double> &parameters){
+void Point::applyUnknownParameters(const QMap<GeometryParameters, double> &parameters){
 
     //get current parameters
     OiVec position = this->xyz.getVector();
@@ -199,7 +197,7 @@ void Point::recalc(){
     Geometry::recalc();
 
     //reset point definition if not solved and no nominal
-    if(!this->isSolved && !this->isNominal){
+    if(!this->isSolved && this->getOwnerDescription().has_value()){
         this->xyz.setVector(0.0, 0.0, 0.0);
     }
 

@@ -128,6 +128,42 @@ const QPointer<FeatureWrapper> &Feature::getFeatureWrapper() const{
 }
 
 /*!
+ * \brief Feature::getOwnerDescription
+ * D19: empty means user-owned (editable). Base case is always
+ * user-owned; see Geometry::getOwnerDescription for the fit-owned case.
+ * \return
+ */
+std::optional<QString> Feature::getOwnerDescription() const{
+    return std::nullopt;
+}
+
+/*!
+ * \brief Feature::rejectIfNotEditable
+ * Enforces D19 at the API. Call at the top of a setter that represents
+ * a direct user edit; internal writes performed by a function's own
+ * exec() are not user edits and must not call this.
+ * \param attemptedEdit human-readable name of what was being edited, for the message
+ * \return true if the edit was rejected
+ */
+bool Feature::rejectIfNotEditable(const QString &attemptedEdit) const{
+
+    const std::optional<QString> owner = this->getOwnerDescription();
+    if(!owner.has_value()){
+        return false;
+    }
+
+    if(!this->job.isNull()){
+        emit this->job->sendMessage(
+            QString("Cannot edit %1 of \"%2\": it is owned by %3 and is read-only.")
+                .arg(attemptedEdit, this->name, *owner),
+            eErrorMessage, eMessageBoxMessage);
+    }
+
+    return true;
+
+}
+
+/*!
  * \brief Feature::getFeatureName
  * \return
  */
@@ -149,14 +185,7 @@ void Feature::setFeatureName(const QString &name){
     //validate the new name before setting it
     if(!this->job.isNull() && !this->selfFeature.isNull()){
 
-        bool isNominal = false;
-        QPointer<CoordinateSystem> nominalSystem;
-        if(!this->selfFeature->getGeometry().isNull()){
-            isNominal = this->selfFeature->getGeometry()->getIsNominal();
-            nominalSystem = this->selfFeature->getGeometry()->getNominalSystem();
-        }
-
-        if(!this->job->validateFeatureName(name, this->selfFeature->getFeatureTypeEnum(), isNominal, nominalSystem)){
+        if(!this->job->validateFeatureName(name, this->selfFeature->getFeatureTypeEnum())){
             return;
         }
 

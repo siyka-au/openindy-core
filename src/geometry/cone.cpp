@@ -7,10 +7,9 @@ using namespace oi::math;
 
 /*!
  * \brief Cone::Cone
- * \param isNominal
  * \param parent
  */
-Cone::Cone(const bool &isNominal, QObject *parent) : Geometry(isNominal, parent){
+Cone::Cone(QObject *parent) : Geometry(parent){
 
     //set up feature wrapper
     if(!this->selfFeature.isNull()){
@@ -21,13 +20,12 @@ Cone::Cone(const bool &isNominal, QObject *parent) : Geometry(isNominal, parent)
 
 /*!
  * \brief Cone::Cone
- * \param isNominal
  * \param apex
  * \param axis
  * \param aperture
  * \param parent
  */
-Cone::Cone(const bool &isNominal, const Position &apex, const Direction &axis, const double &aperture, QObject *parent) : Geometry(isNominal, parent){
+Cone::Cone(const Position &apex, const Direction &axis, const double &aperture, QObject *parent) : Geometry(parent){
 
     //set up feature wrapper
     if(!this->selfFeature.isNull()){
@@ -148,10 +146,10 @@ QMap<GeometryParameters, QString> Cone::getUnknownParameters(const QMap<Dimensio
 }
 
 /*!
- * \brief Cone::setUnknownParameters
+ * \brief Cone::applyUnknownParameters
  * \param parameters
  */
-void Cone::setUnknownParameters(const QMap<GeometryParameters, double> &parameters){
+void Cone::applyUnknownParameters(const QMap<GeometryParameters, double> &parameters){
 
     //get current parameters
     OiVec position = this->xyz.getVector();
@@ -204,7 +202,7 @@ void Cone::recalc(){
     Geometry::recalc();
 
     //reset cone definition if not solved and no nominal
-    if(!this->isSolved && !this->isNominal){
+    if(!this->isSolved && this->getOwnerDescription().has_value()){
         this->xyz.setVector(0.0, 0.0, 0.0);
         this->ijk.setVector(0.0, 0.0, 0.0);
         this->aperture = 0.0;
@@ -229,7 +227,7 @@ QDomElement Cone::toOpenIndyXML(QDomDocument &xmlDoc) const{
 
     //set aperture
     QDomElement aperture = xmlDoc.createElement("aperture");
-    if(this->isSolved || this->isNominal){
+    if(this->isSolved || !this->getOwnerDescription().has_value()){
         aperture.setAttribute("value", this->aperture);
     }else{
         aperture.setAttribute("value", 0.0);

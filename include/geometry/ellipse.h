@@ -19,8 +19,8 @@ class OI_CORE_EXPORT Ellipse : public Geometry
     Q_OBJECT
 
 public:
-    Ellipse(const bool &isNominal, QObject *parent = 0);
-    Ellipse(const bool &isNominal, const Position &center, const Direction &normal, const double &a, const double &b, const Direction &semiMajorAxis, QObject *parent = 0);
+    Ellipse(QObject *parent = 0);
+    Ellipse(const Position &center, const Direction &normal, const double &a, const double &b, const Direction &semiMajorAxis, QObject *parent = 0);
 
     Ellipse(const Ellipse &copy, QObject *parent = 0);
 
@@ -69,7 +69,7 @@ public:
 
     virtual QMap<GeometryParameters, QString> getUnknownParameters(const QMap<DimensionType, UnitType> &displayUnits,
                                                           const QMap<DimensionType, int> &displayDigits) const;
-    virtual void setUnknownParameters(const QMap<GeometryParameters, double> &parameters);
+    virtual void applyUnknownParameters(const QMap<GeometryParameters, double> &parameters);
 
     //###########################
     //reexecute the function list

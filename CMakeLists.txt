@@ -287,6 +287,15 @@ endif()
 
 add_test(NAME pointcollection COMMAND tst_pointcollection)
 
+add_executable(tst_ownership test/ownership/tst_ownership.cpp)
+target_link_libraries(tst_ownership PRIVATE Qt6::Test OpenIndyCore OpenIndyMath)
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(tst_ownership PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+
+add_test(NAME ownership COMMAND tst_ownership)
+
 add_executable(tst_pluginabi test/pluginabi/tst_pluginabi.cpp)
 target_link_libraries(tst_pluginabi PRIVATE Qt6::Test OpenIndyCore OpenIndyMath)
 target_compile_definitions(tst_pluginabi PRIVATE SOURCEDIR="${CMAKE_CURRENT_SOURCE_DIR}")

@@ -16,8 +16,8 @@ class OI_CORE_EXPORT ScalarEntityMeasurementSeries : public Geometry
     Q_OBJECT
 
 public:
-    ScalarEntityMeasurementSeries(const bool &isNominal, QObject *parent = 0);
-    ScalarEntityMeasurementSeries(const bool &isNominal, const double &seriesValue, QObject *parent = 0);
+    ScalarEntityMeasurementSeries(QObject *parent = 0);
+    ScalarEntityMeasurementSeries(const double &seriesValue, QObject *parent = 0);
 
     ScalarEntityMeasurementSeries(const ScalarEntityMeasurementSeries &copy, QObject *parent = 0);
 
@@ -47,7 +47,7 @@ public:
 
     virtual QMap<GeometryParameters, QString> getUnknownParameters(const QMap<DimensionType, UnitType> &displayUnits,
                                                           const QMap<DimensionType, int> &displayDigits) const;
-    virtual void setUnknownParameters(const QMap<GeometryParameters, double> &parameters);
+    virtual void applyUnknownParameters(const QMap<GeometryParameters, double> &parameters);
 
     //###########################
     //reexecute the function list

@@ -7,10 +7,9 @@ using namespace oi::math;
 
 /*!
  * \brief Torus::Torus
- * \param isNominal
  * \param parent
  */
-Torus::Torus(const bool &isNominal, QObject *parent) : Geometry(isNominal, parent){
+Torus::Torus(QObject *parent) : Geometry(parent){
 
     //set up feature wrapper
     if(!this->selfFeature.isNull()){
@@ -21,14 +20,13 @@ Torus::Torus(const bool &isNominal, QObject *parent) : Geometry(isNominal, paren
 
 /*!
  * \brief Torus::Torus
- * \param isNominal
  * \param center
  * \param normal
  * \param radiusA
  * \param radiusB
  * \param parent
  */
-Torus::Torus(const bool &isNominal, const Position &center, const Direction &normal, const Radius &radiusA, const Radius &radiusB, QObject *parent) : Geometry(isNominal, parent){
+Torus::Torus(const Position &center, const Direction &normal, const Radius &radiusA, const Radius &radiusB, QObject *parent) : Geometry(parent){
 
     //set up feature wrapper
     if(!this->selfFeature.isNull()){
@@ -162,10 +160,10 @@ QMap<GeometryParameters, QString> Torus::getUnknownParameters(const QMap<Dimensi
 }
 
 /*!
- * \brief Torus::setUnknownParameters
+ * \brief Torus::applyUnknownParameters
  * \param parameters
  */
-void Torus::setUnknownParameters(const QMap<GeometryParameters, double> &parameters){
+void Torus::applyUnknownParameters(const QMap<GeometryParameters, double> &parameters){
 
     //get current parameters
     OiVec position = this->xyz.getVector();
@@ -224,7 +222,7 @@ void Torus::recalc(){
     Geometry::recalc();
 
     //reset torus definition if not solved and no nominal
-    if(!this->isSolved && !this->isNominal){
+    if(!this->isSolved && this->getOwnerDescription().has_value()){
         this->xyz.setVector(0.0, 0.0, 0.0);
         this->ijk.setVector(0.0, 0.0, 0.0);
         this->radius.setRadius(0.0);
@@ -250,7 +248,7 @@ QDomElement Torus::toOpenIndyXML(QDomDocument &xmlDoc) const{
 
     //set radius b
     QDomElement radiusB = xmlDoc.createElement("radiusB");
-    if(this->isSolved || this->isNominal){
+    if(this->isSolved || !this->getOwnerDescription().has_value()){
         radiusB.setAttribute("value", this->radiusB.getRadius());
     }else{
         radiusB.setAttribute("value", 0.0);

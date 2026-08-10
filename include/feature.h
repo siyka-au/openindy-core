@@ -6,6 +6,7 @@
 #include <QList>
 #include <QString>
 #include <QtXml>
+#include <optional>
 
 #include "element.h"
 
@@ -70,6 +71,19 @@ public:
     const QList<QPointer<FeatureWrapper> > &getPreviouslyNeeded() const;
     bool addPreviouslyNeeded(const QPointer<FeatureWrapper> &feature);
     bool removePreviouslyNeeded(const QPointer<FeatureWrapper> &feature);
+
+    //###############################################################
+    //ownership determines editability and origin (D19, domain-model
+    //§1). Empty means the user owns this feature and may edit it
+    //freely. A non-empty result names what owns it instead - a
+    //producing fit, an owning station - and is why a user edit must be
+    //rejected rather than merely hidden in the UI. The base
+    //implementation is always user-owned; override per owner kind
+    //(Geometry does this for the nominal/actual case, D17; a
+    //station-owned Observation will when it becomes a Point).
+    //###############################################################
+
+    virtual std::optional<QString> getOwnerDescription() const;
 
     //###########################
     //reexecute the function list
@@ -174,6 +188,17 @@ signals:
     void featureIsActiveChanged(const int &featureId);
 
 protected:
+
+    //###############################################################
+    //enforcement helper for D19 - call at the top of any setter that
+    //represents a direct user edit (not a function/exec write, which
+    //owns the right to write regardless). Returns true - and reports
+    //the reason through OiJob::sendMessage, naming the owner - if the
+    //edit must be rejected. This is the "reject at the API" mechanism;
+    //without it ownership would be convention only.
+    //###############################################################
+
+    bool rejectIfNotEditable(const QString &attemptedEdit) const;
 
     //######################################
     //update feature id when the job was set

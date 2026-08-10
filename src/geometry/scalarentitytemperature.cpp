@@ -6,10 +6,9 @@ using namespace oi;
 
 /*!
  * \brief ScalarEntityTemperature::ScalarEntityTemperature
- * \param isNominal
  * \param parent
  */
-ScalarEntityTemperature::ScalarEntityTemperature(const bool &isNominal, QObject *parent) : Geometry(isNominal, parent){
+ScalarEntityTemperature::ScalarEntityTemperature(QObject *parent) : Geometry(parent){
 
     //set up feature wrapper
     if(!this->selfFeature.isNull()){
@@ -20,11 +19,10 @@ ScalarEntityTemperature::ScalarEntityTemperature(const bool &isNominal, QObject 
 
 /*!
  * \brief ScalarEntityTemperature::ScalarEntityTemperature
- * \param isNominal
  * \param temperature
  * \param parent
  */
-ScalarEntityTemperature::ScalarEntityTemperature(const bool &isNominal, const double &temperature, QObject *parent) : Geometry(isNominal, parent){
+ScalarEntityTemperature::ScalarEntityTemperature(const double &temperature, QObject *parent) : Geometry(parent){
 
     //set up feature wrapper
     if(!this->selfFeature.isNull()){
@@ -113,10 +111,10 @@ QMap<GeometryParameters, QString> ScalarEntityTemperature::getUnknownParameters(
 }
 
 /*!
- * \brief ScalarEntityTemperature::setUnknownParameters
+ * \brief ScalarEntityTemperature::applyUnknownParameters
  * \param parameters
  */
-void ScalarEntityTemperature::setUnknownParameters(const QMap<GeometryParameters, double> &parameters){
+void ScalarEntityTemperature::applyUnknownParameters(const QMap<GeometryParameters, double> &parameters){
 
     //get current parameters
     double temperature = this->temperature;
@@ -146,7 +144,7 @@ void ScalarEntityTemperature::recalc(){
     Geometry::recalc();
 
     //reset temperature definition if not solved and no nominal
-    if(!this->isSolved && !this->isNominal){
+    if(!this->isSolved && this->getOwnerDescription().has_value()){
         this->temperature = 0.0;
     }
 
@@ -169,7 +167,7 @@ QDomElement ScalarEntityTemperature::toOpenIndyXML(QDomDocument &xmlDoc) const{
 
     //add temperature
     QDomElement temperature = xmlDoc.createElement("temperature");
-    if(this->isSolved || this->isNominal){
+    if(this->isSolved || !this->getOwnerDescription().has_value()){
         temperature.setAttribute("value", this->temperature);
     }else{
         temperature.setAttribute("value", 0.0);

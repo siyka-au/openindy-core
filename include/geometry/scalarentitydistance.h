@@ -16,8 +16,8 @@ class OI_CORE_EXPORT ScalarEntityDistance : public Geometry
     Q_OBJECT
 
 public:
-    ScalarEntityDistance(const bool &isNominal, QObject *parent = 0);
-    ScalarEntityDistance(const bool &isNominal, const double &distance, QObject *parent = 0);
+    ScalarEntityDistance(QObject *parent = 0);
+    ScalarEntityDistance(const double &distance, QObject *parent = 0);
 
     ScalarEntityDistance(const ScalarEntityDistance &copy, QObject *parent = 0);
 
@@ -47,7 +47,7 @@ public:
 
     virtual QMap<GeometryParameters, QString> getUnknownParameters(const QMap<DimensionType, UnitType> &displayUnits,
                                                           const QMap<DimensionType, int> &displayDigits) const;
-    virtual void setUnknownParameters(const QMap<GeometryParameters, double> &parameters);
+    virtual void applyUnknownParameters(const QMap<GeometryParameters, double> &parameters);
 
     //###########################
     //reexecute the function list

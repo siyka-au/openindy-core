@@ -6,10 +6,9 @@ using namespace oi;
 
 /*!
  * \brief Nurbs::Nurbs
- * \param isNominal
  * \param parent
  */
-Nurbs::Nurbs(const bool &isNominal, QObject *parent) : Geometry(isNominal, parent){
+Nurbs::Nurbs(QObject *parent) : Geometry(parent){
 
     //set up feature wrapper
     if(!this->selfFeature.isNull()){

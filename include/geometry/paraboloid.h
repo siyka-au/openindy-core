@@ -19,8 +19,8 @@ class OI_CORE_EXPORT Paraboloid : public Geometry
     Q_OBJECT
 
 public:
-    Paraboloid(const bool &isNominal, QObject *parent = 0);
-    Paraboloid(const bool &isNominal, const Position &apex, const Direction &axis, const double &a, QObject *parent = 0);
+    Paraboloid(QObject *parent = 0);
+    Paraboloid(const Position &apex, const Direction &axis, const double &a, QObject *parent = 0);
 
     Paraboloid(const Paraboloid &copy, QObject *parent = 0);
 
@@ -63,7 +63,7 @@ public:
 
     virtual QMap<GeometryParameters, QString> getUnknownParameters(const QMap<DimensionType, UnitType> &displayUnits,
                                                           const QMap<DimensionType, int> &displayDigits) const;
-    virtual void setUnknownParameters(const QMap<GeometryParameters, double> &parameters);
+    virtual void applyUnknownParameters(const QMap<GeometryParameters, double> &parameters);
 
     //###########################
     //reexecute the function list

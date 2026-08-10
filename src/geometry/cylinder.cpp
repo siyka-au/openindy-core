@@ -7,10 +7,9 @@ using namespace oi::math;
 
 /*!
  * \brief Cylinder::Cylinder
- * \param isNominal
  * \param parent
  */
-Cylinder::Cylinder(const bool &isNominal, QObject *parent) : Geometry(isNominal, parent){
+Cylinder::Cylinder(QObject *parent) : Geometry(parent){
 
     //set up feature wrapper
     if(!this->selfFeature.isNull()){
@@ -21,13 +20,12 @@ Cylinder::Cylinder(const bool &isNominal, QObject *parent) : Geometry(isNominal,
 
 /*!
  * \brief Cylinder::Cylinder
- * \param isNominal
  * \param axisPoint
  * \param axis
  * \param radius
  * \param parent
  */
-Cylinder::Cylinder(const bool &isNominal, const Position &axisPoint, const Direction &axis, const Radius &radius, QObject *parent) : Geometry(isNominal, parent){
+Cylinder::Cylinder(const Position &axisPoint, const Direction &axis, const Radius &radius, QObject *parent) : Geometry(parent){
 
     //set up feature wrapper
     if(!this->selfFeature.isNull()){
@@ -147,10 +145,10 @@ QMap<GeometryParameters, QString> Cylinder::getUnknownParameters(const QMap<Dime
 }
 
 /*!
- * \brief Cylinder::setUnknownParameters
+ * \brief Cylinder::applyUnknownParameters
  * \param parameters
  */
-void Cylinder::setUnknownParameters(const QMap<GeometryParameters, double> &parameters){
+void Cylinder::applyUnknownParameters(const QMap<GeometryParameters, double> &parameters){
 
     //get current parameters
     OiVec position = this->xyz.getVector();
@@ -204,7 +202,7 @@ void Cylinder::recalc(){
     Geometry::recalc();
 
     //reset cylinder definition if not solved and no nominal
-    if(!this->isSolved && !this->isNominal){
+    if(!this->isSolved && this->getOwnerDescription().has_value()){
         this->xyz.setVector(0.0, 0.0, 0.0);
         this->ijk.setVector(0.0, 0.0, 0.0);
         this->radius.setRadius(0.0);

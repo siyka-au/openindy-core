@@ -18,9 +18,9 @@ class OI_CORE_EXPORT Plane : public Geometry
     Q_OBJECT
 
 public:
-    Plane(const bool &isNominal, QObject *parent = 0);
-    Plane(const bool &isNominal, const Position &xyz, const Direction &normal, QObject *parent = 0);
-    Plane(const bool &isNominal, const Direction &normal, const double &d, QObject *parent = 0);
+    Plane(QObject *parent = 0);
+    Plane(const Position &xyz, const Direction &normal, QObject *parent = 0);
+    Plane(const Direction &normal, const double &d, QObject *parent = 0);
 
     Plane(const Plane &copy, QObject *parent = 0);
 
@@ -66,7 +66,7 @@ public:
 
     virtual QMap<GeometryParameters, QString> getUnknownParameters(const QMap<DimensionType, UnitType> &displayUnits,
                                                           const QMap<DimensionType, int> &displayDigits) const;
-    virtual void setUnknownParameters(const QMap<GeometryParameters, double> &parameters);
+    virtual void applyUnknownParameters(const QMap<GeometryParameters, double> &parameters);
 
     //###########################
     //reexecute the function list

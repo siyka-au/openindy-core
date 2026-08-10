@@ -5,6 +5,7 @@
 #include <QPointer>
 #include <QList>
 #include <QtXml>
+#include <optional>
 
 #include "feature.h"
 #include "measurementconfig.h"
@@ -22,6 +23,25 @@ class CoordinateSystem;
 /*!
  * \brief The Geometry class
  *
+ * D17: nominal and actual are two ordinary Geometry instances of the same
+ * concrete type (e.g. two Points), never a single instance wearing both
+ * hats. Nothing here stores "is this a nominal" - that question is
+ * answered structurally, by which kind of function produced it
+ * (Geometry::getOwnerDescription, D19): a scalar-only producer (a nominal
+ * function, e.g. NominalPoint) leaves the result user-owned and editable;
+ * a FitFunction owns its result and makes it read-only. An actual may
+ * optionally record which nominal it realises (`realises`, below) - many
+ * actuals may point at the same nominal, which is what re-inspecting the
+ * same thing over time looks like, so this is deliberately not a
+ * back-reference list with a uniqueness constraint.
+ *
+ * Geometry<G> is impossible - moc cannot process templated QObject
+ * subclasses - so the concrete geometry type is still resolved at
+ * runtime via FeatureWrapper/qobject_cast, not a template parameter.
+ *
+ * Tolerance (what a nominal allows) is deferred - no model for it exists
+ * yet. It will attach to the nominal side of this relationship; nothing
+ * here should assume its absence permanently.
  */
 class OI_CORE_EXPORT Geometry : public Feature
 {
@@ -29,7 +49,7 @@ class OI_CORE_EXPORT Geometry : public Feature
     Q_OBJECT
 
 public:
-    explicit Geometry(const bool &isNominal, QObject *parent = 0);
+    explicit Geometry(QObject *parent = 0);
 
     Geometry(const Geometry &copy, QObject *parent = 0);
 
@@ -44,14 +64,18 @@ public:
     const bool &getIsCommon() const;
     void setCommonState(const bool &isCommon);
 
-    const bool &getIsNominal() const;
+    //D19: empty when the user owns this geometry (no producer yet, or a
+    //scalar-only "nominal" producer); otherwise names the fit that owns
+    //it. See the class comment.
+    std::optional<QString> getOwnerDescription() const override;
 
-    const QList<QPointer<Geometry> > &getNominals() const;
-    bool addNominal(const QPointer<Geometry> &nominal);
-    bool removeNominal(const QPointer<Geometry> &nominal);
-
-    const QPointer<Geometry> &getActual() const;
-    bool setActual(const QPointer<Geometry> &actual);
+    //the nominal this geometry realises, if any (D17). Only ever
+    //meaningful on an actual; a nominal's own realises is always empty.
+    //Many actuals may share one nominal, so there is deliberately no
+    //back-reference list on the nominal side.
+    const std::optional<QPointer<Geometry> > &getRealises() const;
+    bool setRealises(const QPointer<Geometry> &nominal);
+    void clearRealises();
 
     const QList<QPointer<Observation> > &getObservations() const;
     void addObservation(const QPointer<Observation> &obs);
@@ -95,7 +119,16 @@ public:
 
     virtual QMap<GeometryParameters, QString> getUnknownParameters(const QMap<DimensionType, UnitType> &displayUnits,
                                                           const QMap<DimensionType, int> &displayDigits) const;
-    virtual void setUnknownParameters(const QMap<GeometryParameters, double> &parameters);
+
+    //D19: not virtual any more. This is the direct-user-edit entry point
+    //(reached from the nominal properties dialog), so it enforces
+    //ownership before touching anything. Subclasses used to override
+    //this directly to apply their own parameters; they now override
+    //applyUnknownParameters() instead, which this calls once the edit is
+    //known to be allowed. A function's own exec() does not go through
+    //here - it writes via setPosition/setDirection/setPoint etc, which
+    //is the producer's own right to write, not a user edit.
+    void setUnknownParameters(const QMap<GeometryParameters, double> &parameters);
 
     //###########################
     //reexecute the function list
@@ -138,8 +171,7 @@ signals:
     //########################################
 
     void geomIsCommonChanged(const int &featureId);
-    void geomNominalsChanged(const int &featureId);
-    void geomActualChanged(const int &featureId);
+    void geomRealisesChanged(const int &featureId);
     void geomObservationsChanged(const int &featureId);
     void geomNominalSystemChanged(const int &featureId);
     void geomStatisticChanged(const int &featureId);
@@ -149,6 +181,15 @@ signals:
 
 protected:
 
+    //#############################
+    //apply unknown parameters (D19)
+    //#############################
+
+    //subclasses implement their own parameter application here instead of
+    //overriding setUnknownParameters() directly - see that method's
+    //comment. Default is a no-op, matching the previous base behaviour.
+    virtual void applyUnknownParameters(const QMap<GeometryParameters, double> &parameters);
+
     //###################
     //geometry attributes
     //###################
@@ -156,12 +197,15 @@ protected:
     //common
     bool isCommon;
 
-    //nominals
-    bool isNominal;
-    QList< QPointer<Geometry> > nominals;
+    //D17: which nominal this geometry realises, if any. Only ever set on
+    //an actual (an actual's fit set it when it was told which nominal it
+    //was measuring); a nominal's own value is always nullopt. See the
+    //class comment for why this is not a back-reference list.
+    std::optional<QPointer<Geometry> > realises;
 
-    //actual / nominal
-    QPointer<Geometry> actual;
+    //the coordinate system a *nominal* geometry is defined in (unused by
+    //an actual). Kept as a plain field rather than being nominal-only by
+    //type, same reasoning as `realises` above - Geometry<G> is impossible.
     QPointer<CoordinateSystem> nominalSystem;
 
     //observations

@@ -415,7 +415,9 @@ bool CoordinateSystem::addNominal(const QPointer<FeatureWrapper> &nominal){
         return false;
     }
 
-    if(!nominal.isNull() && !nominal->getGeometry().isNull() && nominal->getGeometry()->getIsNominal()){
+    //only a user-owned geometry can be a nominal in this system (D19) -
+    //a fit-owned actual has no business here
+    if(!nominal.isNull() && !nominal->getGeometry().isNull() && !nominal->getGeometry()->getOwnerDescription().has_value()){
 
         //check if the nominal has already been added
         if(this->nominalsMap.contains(nominal->getGeometry()->getId())){

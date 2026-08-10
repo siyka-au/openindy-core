@@ -5,16 +5,16 @@
 #include "observation.h"
 #include "station.h"
 #include "function.h"
+#include "fitfunction.h"
 
 using namespace oi;
 using namespace oi::math;
 
 /*!
  * \brief Geometry::Geometry
- * \param isNominal
  * \param parent
  */
-Geometry::Geometry(const bool &isNominal, QObject *parent) : Feature(parent), isCommon(false), isNominal(isNominal){
+Geometry::Geometry(QObject *parent) : Feature(parent), isCommon(false){
 
 }
 
@@ -26,7 +26,6 @@ Geometry::Geometry(const bool &isNominal, QObject *parent) : Feature(parent), is
 Geometry::Geometry(const Geometry &copy, QObject *parent) : Feature(copy, parent){
 
     //copy attributes
-    this->isNominal = copy.isNominal;
     this->isCommon = copy.isCommon;
     this->statistic = copy.statistic;
     this->simulationData = copy.simulationData;
@@ -36,11 +35,9 @@ Geometry::Geometry(const Geometry &copy, QObject *parent) : Feature(copy, parent
     this->ijk = copy.ijk;
     this->radius = copy.radius;
 
-    //copy nominals, actual, observations
-    //this->nominals = copy.nominals;
-    //this->actual = copy.actual;
-    //this->observations = copy.observations;
-    //this->nominalSystem = copy.nominalSystem;
+    //deliberately not copied: realises, observations, nominalSystem -
+    //duplicating a feature must not duplicate what it realises, what
+    //observed it, or which system it is nominal in
 
 }
 
@@ -52,7 +49,6 @@ Geometry::Geometry(const Geometry &copy, QObject *parent) : Feature(copy, parent
 Geometry &Geometry::operator=(const Geometry &copy){
 
     //copy attributes
-    this->isNominal = copy.isNominal;
     this->isCommon = copy.isCommon;
     this->statistic = copy.statistic;
     this->simulationData = copy.simulationData;
@@ -62,11 +58,8 @@ Geometry &Geometry::operator=(const Geometry &copy){
     this->ijk = copy.ijk;
     this->radius = copy.radius;
 
-    //copy nominals, actual, observations
-    //this->nominals = copy.nominals;
-    //this->actual = copy.actual;
-    //this->observations = copy.observations;
-    //this->nominalSystem = copy.nominalSystem;
+    //deliberately not copied: realises, observations, nominalSystem - see
+    //the copy constructor above
 
     return *this;
 
@@ -77,27 +70,18 @@ Geometry &Geometry::operator=(const Geometry &copy){
  */
 Geometry::~Geometry(){
 
-    if(this->isNominal){
+    //delete this geometry from the nominal list of its coordinate system,
+    //if it was a nominal
+    if(!this->nominalSystem.isNull()){
+        this->nominalSystem->removeNominal(this->selfFeature);
+    }
 
-        //delete this geometry from the nominal list of its actual
-        if(!this->actual.isNull()){
-            this->actual->removeNominal(this);
+    //delete this geometry from the target geometries list of any
+    //observations that reference it
+    foreach(const QPointer<Observation> &observation, this->observations){
+        if(!observation.isNull()){
+            observation->removeTargetGeometry(this->id);
         }
-
-        //delete this geometry from list of nominals in nominal system
-        if(!this->nominalSystem.isNull()){
-            this->nominalSystem->removeNominal(this->selfFeature);
-        }
-
-    }else{
-
-        //delete this geometry from target geometries list of the observations
-        foreach(const QPointer<Observation> &observation, this->observations){
-            if(!observation.isNull()){
-                observation->removeTargetGeometry(this->id);
-            }
-        }
-
     }
 
 }
@@ -122,119 +106,89 @@ void Geometry::setCommonState(const bool &isCommon){
 }
 
 /*!
- * \brief Geometry::getIsNominal
+ * \brief Geometry::getOwnerDescription
+ * D19: a geometry produced by a FitFunction is owned by that fit and is
+ * read-only - the fit regenerates it on every recompute, so a user edit
+ * would just be overwritten (or worse, silently diverge until the next
+ * recalc). Anything else - no producer yet, or a scalar-parameter-only
+ * producer such as NominalPoint - is user-owned and editable. This is
+ * what makes a nominal editable and an actual not, without a flag: it
+ * falls out of which kind of function produced it.
  * \return
  */
-const bool &Geometry::getIsNominal() const{
-    return this->isNominal;
-}
+std::optional<QString> Geometry::getOwnerDescription() const{
 
-/*!
- * \brief Geometry::getNominals
- * \return
- */
-const QList<QPointer<Geometry> > &Geometry::getNominals() const{
-    return this->nominals;
-}
-
-/*!
- * \brief Geometry::addNominal
- * \param nominal
- * \return
- */
-bool Geometry::addNominal(const QPointer<Geometry> &nominal){
-
-    if(!nominal.isNull() && nominal->getIsNominal() && !this->getIsNominal()){
-
-        //compare feature types
-        if(this->selfFeature.isNull() || nominal->selfFeature.isNull() || this->selfFeature->getFeatureTypeEnum() != nominal->selfFeature->getFeatureTypeEnum()){
-            return false;
-        }
-
-        //check if the nominal is in the same job
-        if(!this->job.isNull()){
-            QPointer<FeatureWrapper> jobNominal = this->job->getFeatureById(nominal->getId());
-            if(jobNominal.isNull() || jobNominal->getGeometry().isNull() || jobNominal->getGeometry() != nominal){
-                return false;
-            }
-        }
-
-        //check if this geometry already contains the nominal
-        if(!this->nominals.contains(nominal)){
-            this->nominals.append(nominal);
-            nominal->setActual(this);
-            emit this->geomNominalsChanged(this->id);
-            return true;
-        }
-
+    if(this->functionList.isEmpty()){
+        return std::nullopt;
     }
 
-    return false;
+    const QPointer<Function> producer = this->functionList.constFirst();
+    if(producer.isNull() || dynamic_cast<FitFunction*>(producer.data()) == nullptr){
+        return std::nullopt;
+    }
+
+    return QString("its fit function \"%1\"").arg(producer->getMetaData().name);
 
 }
 
 /*!
- * \brief Geometry::removeNominal
+ * \brief Geometry::getRealises
+ * \return
+ */
+const std::optional<QPointer<Geometry> > &Geometry::getRealises() const{
+    return this->realises;
+}
+
+/*!
+ * \brief Geometry::setRealises
+ * Record which nominal this (actual) geometry realises. Not a user edit -
+ * this is set by whatever created the actual to measure a specific
+ * nominal (Controller's "measure this nominal" operation) - so it is not
+ * gated by rejectIfNotEditable.
  * \param nominal
  * \return
  */
-bool Geometry::removeNominal(const QPointer<Geometry> &nominal){
+bool Geometry::setRealises(const QPointer<Geometry> &nominal){
 
-    //check if the nominal is valid
     if(nominal.isNull()){
         return false;
     }
 
-    //remove nominal
-    return this->nominals.removeOne(nominal);
-
-}
-
-/*!
- * \brief Geometry::getActual
- * \return
- */
-const QPointer<Geometry> &Geometry::getActual() const{
-    return this->actual;
-}
-
-/*!
- * \brief Geometry::setActual
- * \param actual
- * \return
- */
-bool Geometry::setActual(const QPointer<Geometry> &actual){
-
-    //check if this is a nominal
-    if(!this->isNominal){
-        return false;
-    }
-
-    //check actual
-    if(actual.isNull() || (!this->actual.isNull() && this->actual->getId() == actual->getId())
-            || actual->getIsNominal()){
+    //the nominal side of the relationship must actually be user-owned -
+    //an actual realising another actual makes no sense
+    if(nominal->getOwnerDescription().has_value()){
         return false;
     }
 
     //compare feature types
-    if(this->selfFeature.isNull() || actual->selfFeature.isNull() || this->selfFeature->getFeatureTypeEnum() != actual->selfFeature->getFeatureTypeEnum()){
+    if(this->selfFeature.isNull() || nominal->selfFeature.isNull()
+            || this->selfFeature->getFeatureTypeEnum() != nominal->selfFeature->getFeatureTypeEnum()){
         return false;
     }
 
-    //check if actual is in the same job
+    //check if the nominal is in the same job
     if(!this->job.isNull()){
-        QPointer<FeatureWrapper> jobActual = this->job->getFeatureById(actual->getId());
-        if(jobActual.isNull() || jobActual->getGeometry().isNull() || jobActual->getGeometry() != actual){
+        QPointer<FeatureWrapper> jobNominal = this->job->getFeatureById(nominal->getId());
+        if(jobNominal.isNull() || jobNominal->getGeometry().isNull() || jobNominal->getGeometry() != nominal){
             return false;
         }
     }
 
-    this->actual = actual;
-    actual->addNominal(this);
-    emit this->geomActualChanged(this->id);
+    this->realises = nominal;
+    emit this->geomRealisesChanged(this->id);
 
     return true;
 
+}
+
+/*!
+ * \brief Geometry::clearRealises
+ */
+void Geometry::clearRealises(){
+    if(this->realises.has_value()){
+        this->realises = std::nullopt;
+        emit this->geomRealisesChanged(this->id);
+    }
 }
 
 /*!
@@ -251,7 +205,9 @@ const QList<QPointer<Observation> > &Geometry::getObservations() const{
  */
 void Geometry::addObservation(const QPointer<Observation> &obs){
 
-    if(!obs.isNull() && !this->isNominal){
+    //this is the acquisition path writing to whatever it is measuring
+    //into (an actual), not a user edit, so it is not gated by D19
+    if(!obs.isNull()){
 
         //check if obs is already included
         if(this->observations.contains(obs)){
@@ -321,7 +277,9 @@ const QPointer<CoordinateSystem> &Geometry::getNominalSystem() const{
  */
 bool Geometry::setNominalSystem(const QPointer<CoordinateSystem> &nomSys){
 
-    if(!nomSys.isNull() && this->isNominal && this->nominalSystem != nomSys){
+    //only a user-owned geometry (a nominal) is defined in a nominal
+    //system; a fit-owned actual is not (D19)
+    if(!nomSys.isNull() && !this->getOwnerDescription().has_value() && this->nominalSystem != nomSys){
 
         //check if nomSys is in the same job
         if(!this->job.isNull()){
@@ -474,9 +432,26 @@ QMap<GeometryParameters, QString> Geometry::getUnknownParameters(const QMap<Dime
 
 /*!
  * \brief Geometry::setUnknownParameters
+ * D19 enforcement point for direct user edits of a geometry's own
+ * parameters (reached from the nominal properties dialog). See the
+ * comment on the declaration for why this - rather than
+ * applyUnknownParameters - is where the check lives.
  * \param parameters
  */
-void Geometry::setUnknownParameters(const QMap<GeometryParameters, double> &/*parameters*/){
+void Geometry::setUnknownParameters(const QMap<GeometryParameters, double> &parameters){
+    if(this->rejectIfNotEditable("parameters")){
+        return;
+    }
+    this->applyUnknownParameters(parameters);
+}
+
+/*!
+ * \brief Geometry::applyUnknownParameters
+ * Base case: no unknown parameters. Subclasses that have any override
+ * this instead of setUnknownParameters.
+ * \param parameters
+ */
+void Geometry::applyUnknownParameters(const QMap<GeometryParameters, double> &/*parameters*/){
     return;
 }
 
@@ -487,8 +462,10 @@ void Geometry::recalc(){
 
     Feature::recalc();
 
-    //if the geometry is a nominal without functions and its system is the active system set isSolved to true
-    if(this->functionList.size() == 0 && this->isNominal && !this->nominalSystem.isNull() && this->nominalSystem->getIsActiveCoordinateSystem()){
+    //a geometry with a nominal system but no producer function yet (a
+    //freshly created nominal before its first parameter entry) is
+    //considered solved as soon as that system is the active one
+    if(this->functionList.size() == 0 && !this->nominalSystem.isNull() && this->nominalSystem->getIsActiveCoordinateSystem()){
         this->isSolved = true;
     }
 
@@ -514,14 +491,17 @@ QDomElement Geometry::toOpenIndyXML(QDomDocument &xmlDoc) const{
 
     geometry.setTagName("geometry");
 
-    //set geometry attributes
-    geometry.setAttribute("nominal", this->getIsNominal());
+    //D17/D19: no "nominal" flag is persisted any more. Whether this
+    //geometry is a nominal or an actual is not stored state - it is
+    //re-derived from its producer function once functions are attached on
+    //load, same as at runtime (Geometry::getOwnerDescription).
+    const bool isEditable = !this->getOwnerDescription().has_value();
     geometry.setAttribute("common", this->getIsCommon());
 
     //add position
     if(this->hasPosition()){
         QDomElement coordinates = xmlDoc.createElement("coordinates");
-        if(this->isSolved || this->isNominal){
+        if(this->isSolved || isEditable){
             coordinates.setAttribute("x", this->getPosition().getVector().getAt(0));
             coordinates.setAttribute("y", this->getPosition().getVector().getAt(1));
             coordinates.setAttribute("z", this->getPosition().getVector().getAt(2));
@@ -536,7 +516,7 @@ QDomElement Geometry::toOpenIndyXML(QDomDocument &xmlDoc) const{
     //add direction
     if(this->hasDirection()){
         QDomElement coordinates = xmlDoc.createElement("spatialDirection");
-        if(this->isSolved || this->isNominal){
+        if(this->isSolved || isEditable){
             coordinates.setAttribute("i", this->getDirection().getVector().getAt(0));
             coordinates.setAttribute("j", this->getDirection().getVector().getAt(1));
             coordinates.setAttribute("k", this->getDirection().getVector().getAt(2));
@@ -551,7 +531,7 @@ QDomElement Geometry::toOpenIndyXML(QDomDocument &xmlDoc) const{
     //add radius
     if(this->hasRadius()){
         QDomElement coordinates = xmlDoc.createElement("radius");
-        if(this->isSolved || this->isNominal){
+        if(this->isSolved || isEditable){
             coordinates.setAttribute("value", this->getRadius().getRadius());
         }else{
             coordinates.setAttribute("value", 0.0);
@@ -568,8 +548,9 @@ QDomElement Geometry::toOpenIndyXML(QDomDocument &xmlDoc) const{
     }
     geometry.appendChild(stdv);
 
-    //add observations
-    if(!this->getIsNominal() && this->observations.size() > 0){
+    //add observations (only ever non-empty for an actual, structurally -
+    //nothing attaches observations to a nominal)
+    if(this->observations.size() > 0){
         QDomElement observations = xmlDoc.createElement("observations");
         foreach(const QPointer<Observation> &obs, this->observations){
             QDomElement observation = xmlDoc.createElement("observation");
@@ -580,34 +561,21 @@ QDomElement Geometry::toOpenIndyXML(QDomDocument &xmlDoc) const{
     }
 
     //add nominal system
-    if(this->isNominal && !this->nominalSystem.isNull()){
+    if(!this->nominalSystem.isNull()){
         QDomElement nominalSystem = xmlDoc.createElement("nominalCoordinateSystem");
         nominalSystem.setAttribute("ref", this->nominalSystem->getId());
         geometry.appendChild(nominalSystem);
     }
 
-    //add corresponding actual geometry
-    if(this->isNominal && !this->actual.isNull()){
-        QDomElement actual = xmlDoc.createElement("actual");
-        actual.setAttribute("ref", this->actual->getId());
-        geometry.appendChild(actual);
-    }
-
-    //add nominals
-    if(!this->isNominal && this->nominals.size() >= 0){
-        QDomElement nominals = xmlDoc.createElement("nominalGeometries");
-        foreach(const QPointer<Geometry> &geom, this->nominals){
-            if(!geom.isNull()){
-                QDomElement nominal = xmlDoc.createElement("geometry");
-                nominal.setAttribute("ref", geom->getId());
-                nominals.appendChild(nominal);
-            }
-        }
-        geometry.appendChild(nominals);
+    //add the nominal this geometry realises, if any (D17)
+    if(this->realises.has_value() && !this->realises->isNull()){
+        QDomElement realises = xmlDoc.createElement("realises");
+        realises.setAttribute("ref", this->realises.value()->getId());
+        geometry.appendChild(realises);
     }
 
     //add measurement config
-    if(!this->isNominal){
+    if(this->activeMeasurementConfig.isValid()){
         QDomElement mConfig = xmlDoc.createElement("measurementConfig");
         mConfig.setAttribute("name", this->activeMeasurementConfig.getName());
         //sensorType disambiguates configs that share a name across driver
@@ -634,11 +602,11 @@ bool Geometry::fromOpenIndyXML(QDomElement &xmlElem){
 
     if(result){
 
-        //set geometry attributes
-        if(!xmlElem.hasAttribute("nominal") || !xmlElem.hasAttribute("common")){
+        //set geometry attributes. No "nominal" flag to read any more - see
+        //toOpenIndyXML.
+        if(!xmlElem.hasAttribute("common")){
             return false;
         }
-        this->isNominal = xmlElem.attribute("nominal").toInt();
         this->isCommon = xmlElem.attribute("common").toInt();
 
         //set standard deviation
@@ -700,7 +668,9 @@ QString Geometry::getDisplayMeasurementConfig() const{
  */
 QString Geometry::getDisplayObservations() const{
 
-    if(this->isNominal){
+    //a user-owned (nominal-like) geometry structurally never has
+    //observations - nothing acquires into it
+    if(!this->getOwnerDescription().has_value()){
         return "";
     }
 
@@ -753,10 +723,11 @@ QString Geometry::getDisplayIsCommon() const{
  */
 QString Geometry::getDisplayIsActual() const
 {
-    if(this->getIsNominal()){
-        QString output = "";
-        output.append("nominal ");
-        output.append(this->getNominalSystem()->getFeatureName());
+    if(!this->getOwnerDescription().has_value()){
+        QString output = "nominal";
+        if(!this->getNominalSystem().isNull()){
+            output.append(" ").append(this->getNominalSystem()->getFeatureName());
+        }
         return output;
     }else{
         return "actual";

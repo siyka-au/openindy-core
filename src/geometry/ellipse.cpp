@@ -7,10 +7,9 @@ using namespace oi::math;
 
 /*!
  * \brief Ellipse::Ellipse
- * \param isNominal
  * \param parent
  */
-Ellipse::Ellipse(const bool &isNominal, QObject *parent) : Geometry(isNominal, parent){
+Ellipse::Ellipse(QObject *parent) : Geometry(parent){
 
     //set up feature wrapper
     if(!this->selfFeature.isNull()){
@@ -21,7 +20,6 @@ Ellipse::Ellipse(const bool &isNominal, QObject *parent) : Geometry(isNominal, p
 
 /*!
  * \brief Ellipse::Ellipse
- * \param isNominal
  * \param center
  * \param normal
  * \param a
@@ -29,7 +27,7 @@ Ellipse::Ellipse(const bool &isNominal, QObject *parent) : Geometry(isNominal, p
  * \param semiMajorAxis
  * \param parent
  */
-Ellipse::Ellipse(const bool &isNominal, const Position &center, const Direction &normal, const double &a, const double &b, const Direction &semiMajorAxis, QObject *parent) : Geometry(isNominal, parent){
+Ellipse::Ellipse(const Position &center, const Direction &normal, const double &a, const double &b, const Direction &semiMajorAxis, QObject *parent) : Geometry(parent){
 
     //set up feature wrapper
     if(!this->selfFeature.isNull()){
@@ -180,10 +178,10 @@ QMap<GeometryParameters, QString> Ellipse::getUnknownParameters(const QMap<Dimen
 }
 
 /*!
- * \brief Ellipse::setUnknownParameters
+ * \brief Ellipse::applyUnknownParameters
  * \param parameters
  */
-void Ellipse::setUnknownParameters(const QMap<GeometryParameters, double> &parameters){
+void Ellipse::applyUnknownParameters(const QMap<GeometryParameters, double> &parameters){
 
     //get current parameters
     OiVec position = this->xyz.getVector();
@@ -252,7 +250,7 @@ void Ellipse::recalc(){
     Geometry::recalc();
 
     //reset ellipse definition if not solved and no nominal
-    if(!this->isSolved && !this->isNominal){
+    if(!this->isSolved && this->getOwnerDescription().has_value()){
         this->xyz.setVector(0.0, 0.0, 0.0);
         this->ijk.setVector(0.0, 0.0, 0.0);
         this->a = 0.0;
@@ -279,7 +277,7 @@ QDomElement Ellipse::toOpenIndyXML(QDomDocument &xmlDoc) const{
 
     //set semi-major axis length
     QDomElement a = xmlDoc.createElement("a");
-    if(this->isSolved || this->isNominal){
+    if(this->isSolved || !this->getOwnerDescription().has_value()){
         a.setAttribute("value", this->a);
     }else{
         a.setAttribute("value", 0.0);
@@ -288,7 +286,7 @@ QDomElement Ellipse::toOpenIndyXML(QDomDocument &xmlDoc) const{
 
     //set semi-minor axis length
     QDomElement b = xmlDoc.createElement("b");
-    if(this->isSolved || this->isNominal){
+    if(this->isSolved || !this->getOwnerDescription().has_value()){
         b.setAttribute("value", this->b);
     }else{
         b.setAttribute("value", 0.0);
@@ -297,7 +295,7 @@ QDomElement Ellipse::toOpenIndyXML(QDomDocument &xmlDoc) const{
 
     //set semi-major axis direction
     QDomElement semiMajorAxis = xmlDoc.createElement("semiMajorAxis");
-    if(this->isSolved || this->isNominal){
+    if(this->isSolved || !this->getOwnerDescription().has_value()){
         semiMajorAxis.setAttribute("i", this->semiMajorAxis.getVector().getAt(0));
         semiMajorAxis.setAttribute("j", this->semiMajorAxis.getVector().getAt(1));
         semiMajorAxis.setAttribute("k", this->semiMajorAxis.getVector().getAt(2));

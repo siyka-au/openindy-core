@@ -16,7 +16,7 @@ class OI_CORE_EXPORT Nurbs : public Geometry
     Q_OBJECT
 
 public:
-    Nurbs(const bool &isNominal, QObject *parent = 0);
+    Nurbs(QObject *parent = 0);
 
     Nurbs(const Nurbs &copy, QObject *parent = 0);
 

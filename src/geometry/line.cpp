@@ -7,10 +7,9 @@ using namespace oi::math;
 
 /*!
  * \brief Line::Line
- * \param isNominal
  * \param parent
  */
-Line::Line(const bool &isNominal, QObject *parent) : Geometry(isNominal, parent){
+Line::Line(QObject *parent) : Geometry(parent){
 
     //set up feature wrapper
     if(!this->selfFeature.isNull()){
@@ -21,12 +20,11 @@ Line::Line(const bool &isNominal, QObject *parent) : Geometry(isNominal, parent)
 
 /*!
  * \brief Line::Line
- * \param isNominal
  * \param xyz
  * \param axis
  * \param parent
  */
-Line::Line(const bool &isNominal, const Position &xyz, const Direction &axis, QObject *parent) : Geometry(isNominal, parent){
+Line::Line(const Position &xyz, const Direction &axis, QObject *parent) : Geometry(parent){
 
     //set up feature wrapper
     if(!this->selfFeature.isNull()){
@@ -133,10 +131,10 @@ QMap<GeometryParameters, QString> Line::getUnknownParameters(const QMap<Dimensio
 }
 
 /*!
- * \brief Line::setUnknownParameters
+ * \brief Line::applyUnknownParameters
  * \param parameters
  */
-void Line::setUnknownParameters(const QMap<GeometryParameters, double> &parameters){
+void Line::applyUnknownParameters(const QMap<GeometryParameters, double> &parameters){
 
     //get current parameters
     OiVec position = this->xyz.getVector();
@@ -185,7 +183,7 @@ void Line::recalc(){
     Geometry::recalc();
 
     //reset line definition if not solved and no nominal
-    if(!this->isSolved && !this->isNominal){
+    if(!this->isSolved && this->getOwnerDescription().has_value()){
         this->xyz.setVector(0.0, 0.0, 0.0);
         this->ijk.setVector(0.0, 0.0, 0.0);
     }

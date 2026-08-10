@@ -19,8 +19,8 @@ class OI_CORE_EXPORT Hyperboloid : public Geometry
     Q_OBJECT
 
 public:
-    Hyperboloid(const bool &isNominal, QObject *parent = 0);
-    Hyperboloid(const bool &isNominal, const Position &center, const Direction &axis, const double &a, const double &c, QObject *parent = 0);
+    Hyperboloid(QObject *parent = 0);
+    Hyperboloid(const Position &center, const Direction &axis, const double &a, const double &c, QObject *parent = 0);
 
     Hyperboloid(const Hyperboloid &copy, QObject *parent = 0);
 
@@ -65,7 +65,7 @@ public:
 
     virtual QMap<GeometryParameters, QString> getUnknownParameters(const QMap<DimensionType, UnitType> &displayUnits,
                                                           const QMap<DimensionType, int> &displayDigits) const;
-    virtual void setUnknownParameters(const QMap<GeometryParameters, double> &parameters);
+    virtual void applyUnknownParameters(const QMap<GeometryParameters, double> &parameters);
 
     //###########################
     //reexecute the function list

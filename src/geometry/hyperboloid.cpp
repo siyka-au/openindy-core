@@ -7,10 +7,9 @@ using namespace oi::math;
 
 /*!
  * \brief Hyperboloid::Hyperboloid
- * \param isNominal
  * \param parent
  */
-Hyperboloid::Hyperboloid(const bool &isNominal, QObject *parent) : Geometry(isNominal, parent){
+Hyperboloid::Hyperboloid(QObject *parent) : Geometry(parent){
 
     //set up feature wrapper
     if(!this->selfFeature.isNull()){
@@ -21,14 +20,13 @@ Hyperboloid::Hyperboloid(const bool &isNominal, QObject *parent) : Geometry(isNo
 
 /*!
  * \brief Hyperboloid::Hyperboloid
- * \param isNominal
  * \param center
  * \param axis
  * \param a
  * \param c
  * \param parent
  */
-Hyperboloid::Hyperboloid(const bool &isNominal, const Position &center, const Direction &axis, const double &a, const double &c, QObject *parent) : Geometry(isNominal, parent){
+Hyperboloid::Hyperboloid(const Position &center, const Direction &axis, const double &a, const double &c, QObject *parent) : Geometry(parent){
 
     //set up feature wrapper
     if(!this->selfFeature.isNull()){
@@ -161,10 +159,10 @@ QMap<GeometryParameters, QString> Hyperboloid::getUnknownParameters(const QMap<D
 }
 
 /*!
- * \brief Hyperboloid::setUnknownParameters
+ * \brief Hyperboloid::applyUnknownParameters
  * \param parameters
  */
-void Hyperboloid::setUnknownParameters(const QMap<GeometryParameters, double> &parameters){
+void Hyperboloid::applyUnknownParameters(const QMap<GeometryParameters, double> &parameters){
 
     //get current parameters
     OiVec position = this->xyz.getVector();
@@ -221,7 +219,7 @@ void Hyperboloid::recalc(){
     Geometry::recalc();
 
     //reset hyperboloid definition if not solved and no nominal
-    if(!this->isSolved && !this->isNominal){
+    if(!this->isSolved && this->getOwnerDescription().has_value()){
         this->xyz.setVector(0.0, 0.0, 0.0);
         this->ijk.setVector(0.0, 0.0, 0.0);
         this->a = 0.0;
@@ -247,7 +245,7 @@ QDomElement Hyperboloid::toOpenIndyXML(QDomDocument &xmlDoc) const{
 
     //set a
     QDomElement a = xmlDoc.createElement("a");
-    if(this->isSolved || this->isNominal){
+    if(this->isSolved || !this->getOwnerDescription().has_value()){
         a.setAttribute("value", this->a);
     }else{
         a.setAttribute("value", 0.0);
@@ -256,7 +254,7 @@ QDomElement Hyperboloid::toOpenIndyXML(QDomDocument &xmlDoc) const{
 
     //set c
     QDomElement c = xmlDoc.createElement("c");
-    if(this->isSolved || this->isNominal){
+    if(this->isSolved || !this->getOwnerDescription().has_value()){
         c.setAttribute("value", this->c);
     }else{
         c.setAttribute("value", 0.0);

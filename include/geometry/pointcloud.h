@@ -53,7 +53,7 @@ class OI_CORE_EXPORT PointCloud : public Geometry, public PointCollection
     Q_OBJECT
 
 public:
-    PointCloud(bool isNominal, QObject *parent = 0);
+    PointCloud(QObject *parent = 0);
 
     PointCloud(const PointCloud &copy, QObject *parent = 0);
 

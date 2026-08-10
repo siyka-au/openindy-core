@@ -7,10 +7,9 @@ using namespace oi::math;
 
 /*!
  * \brief Plane::Plane
- * \param isNominal
  * \param parent
  */
-Plane::Plane(const bool &isNominal, QObject *parent) : Geometry(isNominal, parent){
+Plane::Plane(QObject *parent) : Geometry(parent){
 
     //set up feature wrapper
     if(!this->selfFeature.isNull()){
@@ -21,12 +20,11 @@ Plane::Plane(const bool &isNominal, QObject *parent) : Geometry(isNominal, paren
 
 /*!
  * \brief Plane::Plane
- * \param isNominal
  * \param xyz
  * \param normal
  * \param parent
  */
-Plane::Plane(const bool &isNominal, const Position &xyz, const Direction &normal, QObject *parent) : Geometry(isNominal, parent){
+Plane::Plane(const Position &xyz, const Direction &normal, QObject *parent) : Geometry(parent){
 
     //set up feature wrapper
     if(!this->selfFeature.isNull()){
@@ -39,12 +37,11 @@ Plane::Plane(const bool &isNominal, const Position &xyz, const Direction &normal
 
 /*!
  * \brief Plane::Plane
- * \param isNominal
  * \param normal
  * \param d
  * \param parent
  */
-Plane::Plane(const bool &isNominal, const Direction &normal, const double &d, QObject *parent) : Geometry(isNominal, parent){
+Plane::Plane(const Direction &normal, const double &d, QObject *parent) : Geometry(parent){
 
     //set up feature wrapper
     if(!this->selfFeature.isNull()){
@@ -186,10 +183,10 @@ QMap<GeometryParameters, QString> Plane::getUnknownParameters(const QMap<Dimensi
 }
 
 /*!
- * \brief Plane::setUnknownParameters
+ * \brief Plane::applyUnknownParameters
  * \param parameters
  */
-void Plane::setUnknownParameters(const QMap<GeometryParameters, double> &parameters){
+void Plane::applyUnknownParameters(const QMap<GeometryParameters, double> &parameters){
 
     //get current parameters
     OiVec position = this->xyz.getVector();
@@ -238,7 +235,7 @@ void Plane::recalc(){
     Geometry::recalc();
 
     //reset plane definition if not solved and no nominal
-    if(!this->isSolved && !this->isNominal){
+    if(!this->isSolved && this->getOwnerDescription().has_value()){
         this->xyz.setVector(0.0, 0.0, 0.0);
         this->ijk.setVector(0.0, 0.0, 0.0);
         this->d = 0.0;

@@ -21,7 +21,7 @@ Station::Station(QObject *parent) : Feature(parent), isActiveStation(false){
     }
 
     //create a point object as the station's position
-    this->position = new Point(false);
+    this->position = new Point();
 
     //create a coordinate system object as the station's coordinate system
     this->stationSystem = new CoordinateSystem(QPointer<Station>(this));
@@ -49,7 +49,7 @@ Station::Station(const QString &name, QObject *parent) : Feature(parent), isActi
     this->name = name;
 
     //create a point object as the station's position
-    this->position = new Point(false);
+    this->position = new Point();
     this->position->setFeatureName(name);
 
     //create a coordinate system object as the station's coordinate system

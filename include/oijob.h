@@ -63,8 +63,7 @@ public:
 
     int generateUniqueId();
 
-    bool validateFeatureName(const QString &name, const FeatureTypes &type, const bool &isNominal = false,
-                             const QPointer<CoordinateSystem> &nominalSystem = QPointer<CoordinateSystem>(NULL));
+    bool validateFeatureName(const QString &name, const FeatureTypes &type);
 
     //###########################################
     //methods to access the current feature state
@@ -202,8 +201,7 @@ signals:
 
     //geometry specific attributes changed
     void geometryIsCommonChanged(const int &featureId);
-    void geometryNominalsChanged(const int &featureId);
-    void geometryActualChanged(const int &featureId);
+    void geometryRealisesChanged(const int &featureId);
     void geometryObservationsChanged(const int &featureId);
     void groupMembersChanged(const int &featureId);
     void geometryNominalSystemChanged(const int &featureId);
@@ -271,8 +269,7 @@ private slots:
 
     //geometry specific attributes changed
     void setGeometryIsCommon(const int &featureId);
-    void setGeometryNominals(const int &featureId);
-    void setGeometryActual(const int &featureId);
+    void setGeometryRealises(const int &featureId);
     void setGeometryObservations(const int &featureId);
     void setGroupMembers(const int &featureId);
     void setGeometryNominalSystem(const int &featureId);
@@ -313,7 +310,7 @@ private:
     //##############
 
     QStringList createFeatureNames(const QString &name, const int &count) const;
-    QPointer<FeatureWrapper> createFeatureWrapper(const FeatureTypes &type, bool isNominal = false) const;
+    QPointer<FeatureWrapper> createFeatureWrapper(const FeatureTypes &type) const;
     bool checkAndSetUpNewFeature(const QPointer<FeatureWrapper> &feature, bool overwrite = false);
 
     bool canRemoveFeature(const QPointer<FeatureWrapper> &feature) const;

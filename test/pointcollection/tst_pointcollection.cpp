@@ -16,7 +16,7 @@ namespace{
 //a solved Point wrapped for group membership, which is how every real
 //point reaches a group
 QPointer<FeatureWrapper> makePoint(double x, double y, double z, int id){
-    QPointer<Point> point = new Point(id, false, Position(x, y, z));
+    QPointer<Point> point = new Point(id, Position(x, y, z));
     point->setIsSolved(true);
     QPointer<FeatureWrapper> wrapper = new FeatureWrapper();
     wrapper->setPoint(point);
@@ -94,7 +94,7 @@ void PointCollectionTest::pointInManyGroupsIsStoredOnce(){
 
 void PointCollectionTest::constraintRejectsWrongType(){
 
-    QPointer<PointCloud> cloud = new PointCloud(false);
+    QPointer<PointCloud> cloud = new PointCloud();
     QPointer<FeatureWrapper> cloudWrapper = new FeatureWrapper();
     cloudWrapper->setPointCloud(cloud);
 
@@ -183,7 +183,7 @@ void PointCollectionTest::unsolvedPointsAreNotPartOfTheCollection(){
     PointGroup group("wall");
     group.addMember(makePoint(0.0, 0.0, 0.0, 1));
 
-    QPointer<Point> unsolved = new Point(2, false, Position(5.0, 5.0, 5.0));
+    QPointer<Point> unsolved = new Point(2, Position(5.0, 5.0, 5.0));
     unsolved->setIsSolved(false);
     QPointer<FeatureWrapper> unsolvedWrapper = new FeatureWrapper();
     unsolvedWrapper->setPoint(unsolved);
@@ -198,7 +198,7 @@ void PointCollectionTest::unsolvedPointsAreNotPartOfTheCollection(){
 
 void PointCollectionTest::pointCloudSatisfiesPointCollection(){
 
-    QPointer<PointCloud> cloud = new PointCloud(false);
+    QPointer<PointCloud> cloud = new PointCloud();
     cloud->addPointCloudPoint(new Point_PC(1.0f, 2.0f, 3.0f));
     cloud->addPointCloudPoint(new Point_PC(4.0f, 5.0f, 6.0f));
 
@@ -226,7 +226,7 @@ void PointCollectionTest::bothCollectionsAreInterchangeableThroughTheInterface()
     group.addMember(makePoint(0.0, 0.0, 0.0, 1));
     group.addMember(makePoint(1.0, 0.0, 0.0, 2));
 
-    QPointer<PointCloud> cloud = new PointCloud(false);
+    QPointer<PointCloud> cloud = new PointCloud();
     cloud->addPointCloudPoint(new Point_PC(0.0f, 0.0f, 0.0f));
     cloud->addPointCloudPoint(new Point_PC(1.0f, 0.0f, 0.0f));
 

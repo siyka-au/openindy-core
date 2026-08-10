@@ -7,10 +7,9 @@ using namespace oi::math;
 
 /*!
  * \brief Paraboloid::Paraboloid
- * \param isNominal
  * \param parent
  */
-Paraboloid::Paraboloid(const bool &isNominal, QObject *parent) : Geometry(isNominal, parent){
+Paraboloid::Paraboloid(QObject *parent) : Geometry(parent){
 
     //set up feature wrapper
     if(!this->selfFeature.isNull()){
@@ -21,13 +20,12 @@ Paraboloid::Paraboloid(const bool &isNominal, QObject *parent) : Geometry(isNomi
 
 /*!
  * \brief Paraboloid::Paraboloid
- * \param isNominal
  * \param apex
  * \param axis
  * \param a
  * \param parent
  */
-Paraboloid::Paraboloid(const bool &isNominal, const Position &apex, const Direction &axis, const double &a, QObject *parent) : Geometry(isNominal, parent){
+Paraboloid::Paraboloid(const Position &apex, const Direction &axis, const double &a, QObject *parent) : Geometry(parent){
 
     //set up feature wrapper
     if(!this->selfFeature.isNull()){
@@ -146,10 +144,10 @@ QMap<GeometryParameters, QString> Paraboloid::getUnknownParameters(const QMap<Di
 }
 
 /*!
- * \brief Paraboloid::setUnknownParameters
+ * \brief Paraboloid::applyUnknownParameters
  * \param parameters
  */
-void Paraboloid::setUnknownParameters(const QMap<GeometryParameters, double> &parameters){
+void Paraboloid::applyUnknownParameters(const QMap<GeometryParameters, double> &parameters){
 
     //get current parameters
     OiVec position = this->xyz.getVector();
@@ -202,7 +200,7 @@ void Paraboloid::recalc(){
     Geometry::recalc();
 
     //reset paraboloid definition if not solved and no nominal
-    if(!this->isSolved && !this->isNominal){
+    if(!this->isSolved && this->getOwnerDescription().has_value()){
         this->xyz.setVector(0.0, 0.0, 0.0);
         this->ijk.setVector(0.0, 0.0, 0.0);
         this->a = 0.0;
@@ -227,7 +225,7 @@ QDomElement Paraboloid::toOpenIndyXML(QDomDocument &xmlDoc) const{
 
     //set a
     QDomElement a = xmlDoc.createElement("a");
-    if(this->isSolved || this->isNominal){
+    if(this->isSolved || !this->getOwnerDescription().has_value()){
         a.setAttribute("value", this->a);
     }else{
         a.setAttribute("value", 0.0);

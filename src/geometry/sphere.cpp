@@ -7,10 +7,9 @@ using namespace oi::math;
 
 /*!
  * \brief Sphere::Sphere
- * \param isNominal
  * \param parent
  */
-Sphere::Sphere(const bool &isNominal, QObject *parent) : Geometry(isNominal, parent){
+Sphere::Sphere(QObject *parent) : Geometry(parent){
 
     //set up feature wrapper
     if(!this->selfFeature.isNull()){
@@ -21,12 +20,11 @@ Sphere::Sphere(const bool &isNominal, QObject *parent) : Geometry(isNominal, par
 
 /*!
  * \brief Sphere::Sphere
- * \param isNominal
  * \param center
  * \param radius
  * \param parent
  */
-Sphere::Sphere(const bool &isNominal, const Position &center, const Radius &radius, QObject *parent) : Geometry(isNominal, parent){
+Sphere::Sphere(const Position &center, const Radius &radius, QObject *parent) : Geometry(parent){
 
     //set up feature wrapper
     if(!this->selfFeature.isNull()){
@@ -132,10 +130,10 @@ QMap<GeometryParameters, QString> Sphere::getUnknownParameters(const QMap<Dimens
 }
 
 /*!
- * \brief Sphere::setUnknownParameters
+ * \brief Sphere::applyUnknownParameters
  * \param parameters
  */
-void Sphere::setUnknownParameters(const QMap<GeometryParameters, double> &parameters){
+void Sphere::applyUnknownParameters(const QMap<GeometryParameters, double> &parameters){
 
     //get current parameters
     OiVec position = this->xyz.getVector();
@@ -177,7 +175,7 @@ void Sphere::recalc(){
     Geometry::recalc();
 
     //reset sphere definition if not solved and no nominal
-    if(!this->isSolved && !this->isNominal){
+    if(!this->isSolved && this->getOwnerDescription().has_value()){
         this->xyz.setVector(0.0, 0.0, 0.0);
         this->radius.setRadius(0.0);
     }

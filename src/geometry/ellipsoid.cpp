@@ -7,10 +7,9 @@ using namespace oi::math;
 
 /*!
  * \brief Ellipsoid::Ellipsoid
- * \param isNominal
  * \param parent
  */
-Ellipsoid::Ellipsoid(const bool &isNominal, QObject *parent) : Geometry(isNominal, parent){
+Ellipsoid::Ellipsoid(QObject *parent) : Geometry(parent){
 
     //set up feature wrapper
     if(!this->selfFeature.isNull()){
@@ -21,7 +20,6 @@ Ellipsoid::Ellipsoid(const bool &isNominal, QObject *parent) : Geometry(isNomina
 
 /*!
  * \brief Ellipsoid::Ellipsoid
- * \param isNominal
  * \param center
  * \param majorAxis
  * \param a
@@ -30,7 +28,7 @@ Ellipsoid::Ellipsoid(const bool &isNominal, QObject *parent) : Geometry(isNomina
  * \param minorAxis
  * \param parent
  */
-Ellipsoid::Ellipsoid(const bool &isNominal, const Position &center, const Direction &majorAxis, const double &a, const double &b, QObject *parent) : Geometry(isNominal, parent){
+Ellipsoid::Ellipsoid(const Position &center, const Direction &majorAxis, const double &a, const double &b, QObject *parent) : Geometry(parent){
 
     //set up feature wrapper
     if(!this->selfFeature.isNull()){
@@ -167,10 +165,10 @@ QMap<GeometryParameters, QString> Ellipsoid::getUnknownParameters(const QMap<Dim
 }
 
 /*!
- * \brief Ellipsoid::setUnknownParameters
+ * \brief Ellipsoid::applyUnknownParameters
  * \param parameters
  */
-void Ellipsoid::setUnknownParameters(const QMap<GeometryParameters, double> &parameters){
+void Ellipsoid::applyUnknownParameters(const QMap<GeometryParameters, double> &parameters){
 
     //get current parameters
     OiVec position = this->xyz.getVector();
@@ -227,7 +225,7 @@ void Ellipsoid::recalc(){
     Geometry::recalc();
 
     //reset ellipsoid definition if not solved and no nominal
-    if(!this->isSolved && !this->isNominal){
+    if(!this->isSolved && this->getOwnerDescription().has_value()){
         this->xyz.setVector(0.0, 0.0, 0.0);
         this->ijk.setVector(0.0, 0.0, 0.0);
         this->a = 0.0;
@@ -253,7 +251,7 @@ QDomElement Ellipsoid::toOpenIndyXML(QDomDocument &xmlDoc) const{
 
     //set semi-major axis length
     QDomElement a = xmlDoc.createElement("a");
-    if(this->isSolved || this->isNominal){
+    if(this->isSolved || !this->getOwnerDescription().has_value()){
         a.setAttribute("value", this->a);
     }else{
         a.setAttribute("value", 0.0);
@@ -262,7 +260,7 @@ QDomElement Ellipsoid::toOpenIndyXML(QDomDocument &xmlDoc) const{
 
     //set semi-minor axis length
     QDomElement b = xmlDoc.createElement("b");
-    if(this->isSolved || this->isNominal){
+    if(this->isSolved || !this->getOwnerDescription().has_value()){
         b.setAttribute("value", this->b);
     }else{
         b.setAttribute("value", 0.0);

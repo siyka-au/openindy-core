@@ -7,10 +7,9 @@ using namespace oi::math;
 
 /*!
  * \brief SlottedHole::SlottedHole
- * \param isNominal
  * \param parent
  */
-SlottedHole::SlottedHole(const bool &isNominal, QObject *parent) : Geometry(isNominal, parent){
+SlottedHole::SlottedHole(QObject *parent) : Geometry(parent){
 
     //set up feature wrapper
     if(!this->selfFeature.isNull()){
@@ -21,7 +20,6 @@ SlottedHole::SlottedHole(const bool &isNominal, QObject *parent) : Geometry(isNo
 
 /*!
  * \brief SlottedHole::SlottedHole
- * \param isNominal
  * \param center
  * \param normal
  * \param radius
@@ -29,7 +27,7 @@ SlottedHole::SlottedHole(const bool &isNominal, QObject *parent) : Geometry(isNo
  * \param holeAxis
  * \param parent
  */
-SlottedHole::SlottedHole(const bool &isNominal, const Position &center, const Direction &normal, const Radius &radius, const double &length, const Direction &holeAxis, QObject *parent) : Geometry(isNominal, parent){
+SlottedHole::SlottedHole(const Position &center, const Direction &normal, const Radius &radius, const double &length, const Direction &holeAxis, QObject *parent) : Geometry(parent){
 
     //set up feature wrapper
     if(!this->selfFeature.isNull()){
@@ -42,14 +40,13 @@ SlottedHole::SlottedHole(const bool &isNominal, const Position &center, const Di
 
 /*!
  * \brief SlottedHole::SlottedHole
- * \param isNominal
  * \param circleCenterA
  * \param circleCenterB
  * \param normal
  * \param radius
  * \param parent
  */
-SlottedHole::SlottedHole(const bool &isNominal, const Position &circleCenterA, const Position &circleCenterB, const Direction &normal, const Radius &radius, QObject *parent) : Geometry(isNominal, parent){
+SlottedHole::SlottedHole(const Position &circleCenterA, const Position &circleCenterB, const Direction &normal, const Radius &radius, QObject *parent) : Geometry(parent){
 
     //set up feature wrapper
     if(!this->selfFeature.isNull()){
@@ -279,10 +276,10 @@ QMap<GeometryParameters, QString> SlottedHole::getUnknownParameters(const QMap<D
 }
 
 /*!
- * \brief SlottedHole::setUnknownParameters
+ * \brief SlottedHole::applyUnknownParameters
  * \param parameters
  */
-void SlottedHole::setUnknownParameters(const QMap<GeometryParameters, double> &parameters){
+void SlottedHole::applyUnknownParameters(const QMap<GeometryParameters, double> &parameters){
 
     //get current parameters
     OiVec position = this->center.getVector();
@@ -352,7 +349,7 @@ void SlottedHole::recalc(){
     Geometry::recalc();
 
     //reset slotted hole definition if not solved and no nominal
-    if(!this->isSolved && !this->isNominal){
+    if(!this->isSolved && this->getOwnerDescription().has_value()){
         this->center.setVector(0.0, 0.0, 0.0);
         this->normal.setVector(0.0, 0.0, 0.0);
         this->radius.setRadius(0.0);
@@ -381,7 +378,7 @@ QDomElement SlottedHole::toOpenIndyXML(QDomDocument &xmlDoc) const{
 
     //set length
     QDomElement length = xmlDoc.createElement("length");
-    if(this->isSolved || this->isNominal){
+    if(this->isSolved || !this->getOwnerDescription().has_value()){
         length.setAttribute("value", this->length);
     }else{
         length.setAttribute("value", 0.0);
@@ -390,7 +387,7 @@ QDomElement SlottedHole::toOpenIndyXML(QDomDocument &xmlDoc) const{
 
     //set hole axis
     QDomElement holeAxis = xmlDoc.createElement("holeAxis");
-    if(this->isSolved || this->isNominal){
+    if(this->isSolved || !this->getOwnerDescription().has_value()){
         holeAxis.setAttribute("i", this->holeAxis.getVector().getAt(0));
         holeAxis.setAttribute("j", this->holeAxis.getVector().getAt(1));
         holeAxis.setAttribute("k", this->holeAxis.getVector().getAt(2));

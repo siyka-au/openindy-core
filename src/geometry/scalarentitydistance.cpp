@@ -6,10 +6,9 @@ using namespace oi;
 
 /*!
  * \brief ScalarEntityDistance::ScalarEntityDistance
- * \param isNominal
  * \param parent
  */
-ScalarEntityDistance::ScalarEntityDistance(const bool &isNominal, QObject *parent) : Geometry(isNominal, parent){
+ScalarEntityDistance::ScalarEntityDistance(QObject *parent) : Geometry(parent){
 
     //set up feature wrapper
     if(!this->selfFeature.isNull()){
@@ -20,11 +19,10 @@ ScalarEntityDistance::ScalarEntityDistance(const bool &isNominal, QObject *paren
 
 /*!
  * \brief ScalarEntityDistance::ScalarEntityDistance
- * \param isNominal
  * \param distance
  * \param parent
  */
-ScalarEntityDistance::ScalarEntityDistance(const bool &isNominal, const double &distance, QObject *parent) : Geometry(isNominal, parent){
+ScalarEntityDistance::ScalarEntityDistance(const double &distance, QObject *parent) : Geometry(parent){
 
     //set up feature wrapper
     if(!this->selfFeature.isNull()){
@@ -113,10 +111,10 @@ QMap<GeometryParameters, QString> ScalarEntityDistance::getUnknownParameters(con
 }
 
 /*!
- * \brief ScalarEntityDistance::setUnknownParameters
+ * \brief ScalarEntityDistance::applyUnknownParameters
  * \param parameters
  */
-void ScalarEntityDistance::setUnknownParameters(const QMap<GeometryParameters, double> &parameters){
+void ScalarEntityDistance::applyUnknownParameters(const QMap<GeometryParameters, double> &parameters){
 
     //get current parameters
     double distance = this->distance;
@@ -169,7 +167,7 @@ QDomElement ScalarEntityDistance::toOpenIndyXML(QDomDocument &xmlDoc) const{
 
     //add distance
     QDomElement distance = xmlDoc.createElement("distance");
-    if(this->isSolved || this->isNominal){
+    if(this->isSolved || !this->getOwnerDescription().has_value()){
         distance.setAttribute("value", this->distance);
     }else{
         distance.setAttribute("value", 0.0);

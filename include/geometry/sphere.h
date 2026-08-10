@@ -19,8 +19,8 @@ class OI_CORE_EXPORT Sphere : public Geometry
     Q_OBJECT
 
 public:
-    Sphere(const bool &isNominal, QObject *parent = 0);
-    Sphere(const bool &isNominal, const Position &center, const Radius &radius, QObject *parent = 0);
+    Sphere(QObject *parent = 0);
+    Sphere(const Position &center, const Radius &radius, QObject *parent = 0);
 
     Sphere(const Sphere &copy, QObject *parent = 0);
 
@@ -58,7 +58,7 @@ public:
 
     virtual QMap<GeometryParameters, QString> getUnknownParameters(const QMap<DimensionType, UnitType> &displayUnits,
                                                           const QMap<DimensionType, int> &displayDigits) const;
-    virtual void setUnknownParameters(const QMap<GeometryParameters, double> &parameters);
+    virtual void applyUnknownParameters(const QMap<GeometryParameters, double> &parameters);
 
     //###########################
     //reexecute the function list

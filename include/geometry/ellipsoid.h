@@ -19,8 +19,8 @@ class OI_CORE_EXPORT Ellipsoid : public Geometry
     Q_OBJECT
 
 public:
-    Ellipsoid(const bool &isNominal, QObject *parent = 0);
-    Ellipsoid(const bool &isNominal, const Position &center, const Direction &majorAxis,
+    Ellipsoid(QObject *parent = 0);
+    Ellipsoid(const Position &center, const Direction &majorAxis,
               const double &a, const double &b, QObject *parent = 0);
 
     Ellipsoid(const Ellipsoid &copy, QObject *parent = 0);
@@ -67,7 +67,7 @@ public:
 
     virtual QMap<GeometryParameters, QString> getUnknownParameters(const QMap<DimensionType, UnitType> &displayUnits,
                                                           const QMap<DimensionType, int> &displayDigits) const;
-    virtual void setUnknownParameters(const QMap<GeometryParameters, double> &parameters);
+    virtual void applyUnknownParameters(const QMap<GeometryParameters, double> &parameters);
 
     //###########################
     //reexecute the function list

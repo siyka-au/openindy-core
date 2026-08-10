@@ -7,10 +7,9 @@ using namespace oi::math;
 
 /*!
  * \brief PointCloud::PointCloud
- * \param isNominal
  * \param parent
  */
-PointCloud::PointCloud(bool isNominal, QObject *parent) : Geometry(isNominal, parent){
+PointCloud::PointCloud(QObject *parent) : Geometry(parent){
 
     //set up feature wrapper
     if(!this->selfFeature.isNull()){
