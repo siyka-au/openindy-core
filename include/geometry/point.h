@@ -6,6 +6,7 @@
 
 #include "geometry.h"
 #include "position.h"
+#include "measurementintent.h"
 
 namespace oi{
 
@@ -69,6 +70,29 @@ public:
 
     void recalc();
 
+    //###############################################################
+    //D19: a Point produced directly by an acquisition (has readings
+    //attached via its observations, see Geometry::getObservations) is
+    //owned by the station that produced it, not by a fit function - it
+    //has no producer function at all, which the inherited
+    //Geometry::getOwnerDescription would misread as user-owned. See
+    //point.cpp for the rule.
+    //###############################################################
+
+    std::optional<QString> getOwnerDescription() const override;
+
+    //###############################################################
+    //D12: what this point was shot for, stamped at acquisition (or by
+    //hand later - domain-model.md S3 makes these the same operation). A
+    //fit's point input resolves by querying this, not by a stored
+    //membership list on the consuming feature.
+    //###############################################################
+
+    const QList<MeasurementIntent> &getIntents() const;
+    void addIntent(const MeasurementIntent &intent);
+    bool removeIntent(const MeasurementIntent &intent);
+    bool hasIntent(int featureId, const QString &roleName) const;
+
     //#################
     //save and load XML
     //#################
@@ -78,6 +102,11 @@ public:
 
     QString getDisplayDistance(const UnitType &type, const int &digits, const bool &showDiff) const;
     double distance; // depends on function
+
+protected:
+
+    QList<MeasurementIntent> intents;
+
 };
 
 }

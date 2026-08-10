@@ -137,6 +137,14 @@ public:
     void addInputObservation(const QPointer<FeatureWrapper> &target, const int &functionPosition, const int &neededElementsIndex, const QPointer<Observation> &observation);
     void addInputReading(const QPointer<FeatureWrapper> &target, const int &functionPosition, const int &neededElementsIndex, const QPointer<Reading> &reading);
     void addInputFeature(const QPointer<FeatureWrapper> &target, const int &functionPosition, const int &neededElementsIndex, const QPointer<FeatureWrapper> &feature);
+    void addInputPoint(const QPointer<FeatureWrapper> &target, const int &functionPosition, const int &neededElementsIndex, const QPointer<Point> &point);
+
+    //D12: stamp a tag on an existing point (hand-allocation, e.g.
+    //dissecting a batch in the office) and feed any function that
+    //declares a matching role - the same resolution addMeasurementResults
+    //uses at acquisition time, so hand-tagging and field acquisition are
+    //the same operation (domain-model.md S3).
+    void tagPoint(const QPointer<Point> &point, int featureId, const QString &roleName);
 
     //remove input elements from a feature's function
     void removeInputElement(const QPointer<FeatureWrapper> &target, const int &functionPosition, const int &neededElementsIndex, const int &elementId);
@@ -319,6 +327,12 @@ private:
 
     void setUpDependencies(const InputElement &element, const QPointer<Feature> &feature);
     void resetDependencies(const InputElement &element, const QPointer<Feature> &feature);
+
+    //D12: feeds any function of the tagged feature that declares a
+    //matching ePointElement role - the query behind tag resolution. Used
+    //by both addMeasurementResults (acquisition) and tagPoint (hand
+    //allocation), which is what makes them the same operation.
+    void resolvePointIntent(const QPointer<Point> &point, const MeasurementIntent &intent);
 
     //###################################################################################
     //add features when a project has been loaded (only accessible from ProjectExchanger)

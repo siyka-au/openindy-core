@@ -192,6 +192,7 @@ add_library(OpenIndyCore SHARED
     include/featurewrapper.h
     include/geometry.h
     include/measurementconfig.h
+    include/measurementintent.h
     include/observation.h
     include/oijob.h
     include/oirequestresponse.h
@@ -295,6 +296,15 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 endif()
 
 add_test(NAME ownership COMMAND tst_ownership)
+
+add_executable(tst_measurementintent test/measurementintent/tst_measurementintent.cpp)
+target_link_libraries(tst_measurementintent PRIVATE Qt6::Test OpenIndyCore OpenIndyMath)
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(tst_measurementintent PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+
+add_test(NAME measurementintent COMMAND tst_measurementintent)
 
 add_executable(tst_pluginabi test/pluginabi/tst_pluginabi.cpp)
 target_link_libraries(tst_pluginabi PRIVATE Qt6::Test OpenIndyCore OpenIndyMath)

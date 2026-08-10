@@ -470,6 +470,33 @@ enum class AcquisitionMode{
 
 };
 
+/*!
+ * \brief The AcquisitionResultShape enum
+ * D2/D15a - how many Points one acquisition action yields, declared by the
+ * driver as a capability. This is orthogonal to AcquisitionMode and to
+ * sensor type: it says nothing about *what* a Point means (that never
+ * varies, domain-model.md S2), only how many of them one action produces.
+ *
+ * eOnePoint   - one physical target, however many readings it took
+ *               (a TS15 10-count config, a laser tracker 100-sample
+ *               average). Every driver in this repo today.
+ * eManyPoints - one action yields many distinct targets, one reading each
+ *               (a V-STARS snapshot).
+ * eCloud      - one action yields a PointCloud, not Points at all (a
+ *               terrestrial scan).
+ *
+ * Only eOnePoint is wired end to end yet (Stage 7f); the others exist so
+ * the capability is expressible ahead of the driver that needs it, per D2 -
+ * swapping instruments must never change what a Point means.
+ */
+enum class AcquisitionResultShape{
+
+    eOnePoint = 0,
+    eManyPoints,
+    eCloud
+
+};
+
 //################################
 //tool types (categories of tools)
 //################################

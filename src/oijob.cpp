@@ -992,6 +992,114 @@ void OiJob::addInputObservation(const QPointer<FeatureWrapper> &target, const in
 }
 
 /*!
+ * \brief OiJob::addInputPoint
+ * Adds an existing point to the specified function of the target feature -
+ * the ePointElement counterpart of addInputObservation, and what tag
+ * resolution (D12) calls once it has matched a Point's MeasurementIntent
+ * to a NeededElement::roleName.
+ * \param target
+ * \param functionPosition
+ * \param neededElementsIndex
+ * \param point
+ */
+void OiJob::addInputPoint(const QPointer<FeatureWrapper> &target, const int &functionPosition, const int &neededElementsIndex, const QPointer<Point> &point){
+
+    //check target feature and point
+    if(target.isNull() || target->getFeature().isNull() || point.isNull()){
+        return;
+    }
+
+    //check function position
+    if(functionPosition < 0 || functionPosition >= target->getFeature()->getFunctions().size()
+            || target->getFeature()->getFunctions().at(functionPosition).isNull()){
+        return;
+    }
+
+    QPointer<Function> function = target->getFeature()->getFunctions().at(functionPosition);
+
+    //do not add the same point twice at the same position
+    if(function->hasInputElement(point->getId())){
+        return;
+    }
+
+    //create and add input element
+    InputElement element(point->getId());
+    element.typeOfElement = ePointElement;
+    element.point = point;
+    element.geometry = point;
+    function->addInputElement(element, neededElementsIndex);
+
+    //record the dependency edge (recalculation order, delete-cascade) the
+    //same way OiJob::addFunction does for a function's inputs declared up
+    //front - this is the incremental-add counterpart, since tag
+    //resolution adds points to a function's inputs one at a time, after
+    //the function already exists
+    this->setUpDependencies(element, target->getFeature());
+
+}
+
+/*!
+ * \brief OiJob::resolvePointIntent
+ * \param point
+ * \param intent
+ */
+void OiJob::resolvePointIntent(const QPointer<Point> &point, const MeasurementIntent &intent){
+
+    if(point.isNull()){
+        return;
+    }
+
+    const QPointer<FeatureWrapper> target = this->featureContainer.getFeatureById(intent.featureId);
+    if(target.isNull() || target->getFeature().isNull()){
+        return;
+    }
+
+    const QList<QPointer<Function> > &functions = target->getFeature()->getFunctions();
+    for(int functionPosition = 0; functionPosition < functions.size(); ++functionPosition){
+
+        const QPointer<Function> &function = functions.at(functionPosition);
+        if(function.isNull()){
+            continue;
+        }
+
+        const QList<NeededElement> &needed = function->getNeededElements();
+        for(int neededElementsIndex = 0; neededElementsIndex < needed.size(); ++neededElementsIndex){
+
+            const NeededElement &ne = needed.at(neededElementsIndex);
+            if(ne.typeOfElement == ePointElement && ne.roleName == intent.roleName){
+                this->addInputPoint(target, functionPosition, neededElementsIndex, point);
+            }
+
+        }
+
+    }
+
+}
+
+/*!
+ * \brief OiJob::tagPoint
+ * D12: stamps a MeasurementIntent on an existing point and feeds it into
+ * any function that declares a matching role - the retroactive-tagging
+ * path (dissecting a batch in the office). Shares resolvePointIntent with
+ * addMeasurementResults so field acquisition and hand allocation are the
+ * same operation (domain-model.md S3).
+ * \param point
+ * \param featureId
+ * \param roleName
+ */
+void OiJob::tagPoint(const QPointer<Point> &point, int featureId, const QString &roleName){
+
+    if(point.isNull()){
+        return;
+    }
+
+    const MeasurementIntent intent(featureId, roleName);
+    point->addIntent(intent);
+    this->resolvePointIntent(point, intent);
+
+}
+
+/*!
  * \brief OiJob::addInputReading
  * Adds an existing reading to the specified function of the target feature
  * \param target
@@ -1076,18 +1184,15 @@ void OiJob::addInputFeature(const QPointer<FeatureWrapper> &target, const int &f
 
 
     //create and add input element
-    InputElement element(feature->getFeature()->getId());
-    element.typeOfElement = eUndefinedElement;
-    if(neededElementsIndex == InputElementKey::eDummyPoint) {
-        for(const NeededElement &ne : function->getNeededElements()) {
-            if(ne.key == InputElementKey::eDummyPoint) {
-                element.typeOfElement = ne.typeOfElement;
-                break;
-            }
-        }
-    } else {
-        element.typeOfElement = function->getNeededElements().at(neededElementsIndex).typeOfElement;
+    //D12: position is always the NeededElement's real list index now (no
+    //more InputElementKey::eDummyPoint sentinel doubling as a map key -
+    //see function.h/fitfunction.h), so this is always a direct index
+    //lookup.
+    if(neededElementsIndex < 0 || neededElementsIndex >= function->getNeededElements().size()){
+        return;
     }
+    InputElement element(feature->getFeature()->getId());
+    element.typeOfElement = function->getNeededElements().at(neededElementsIndex).typeOfElement;
 
     switch(element.typeOfElement){
     case eCircleElement:{
@@ -1491,8 +1596,21 @@ void OiJob::removeInputElement(const QPointer<FeatureWrapper> &target, const int
 
 /*!
  * \brief OiJob::addMeasurementResults
- * Creates and adds observations for the given readings
- * \param geomId
+ * D12/D15a/D20: always creates exactly one new, tagged Point from the
+ * given readings - "a Point is one physical target as captured in one
+ * acquisition, holding however many readings the instrument took"
+ * (domain-model.md S2). This replaces the old eObservationElement special
+ * case (binding a raw Observation straight into the target feature's
+ * first function, only when that function happened to declare
+ * eObservationElement) - deleted outright rather than reworked, per the
+ * stage scope: core never invents a group or feeds a legacy
+ * eObservationElement fit directly any more, it only ever produces a
+ * tagged Point and lets tag resolution (resolvePointIntent) feed whatever
+ * declares a matching ePointElement role. A fit still declaring
+ * eObservationElement (BestFitPlane and siblings, pending Stage 7c-ii)
+ * simply is not fed by this path any more - a known, sequenced gap, not an
+ * oversight (plan-domain-model-rework.md, Stage 7f/7c-ii).
+ * \param geomId the feature this acquisition was for
  * \param readings
  */
 void OiJob::addMeasurementResults(const int &geomId, const QList<QPointer<Reading> > &readings){
@@ -1500,6 +1618,7 @@ void OiJob::addMeasurementResults(const int &geomId, const QList<QPointer<Readin
     //check active station
     QPointer<Station> activeStation = this->activeStation;
     if(activeStation.isNull() || activeStation->getCoordinateSystem().isNull()){
+        emit this->sendMessage("Measurement rejected: no active station with a coordinate system", eErrorMessage, eMessageBoxMessage);
         foreach(const QPointer<Reading> &reading, readings){
             if(!reading.isNull()){
                 delete reading.data();
@@ -1508,9 +1627,12 @@ void OiJob::addMeasurementResults(const int &geomId, const QList<QPointer<Readin
         return;
     }
 
-    //get and check feature with the id geomId
-    QPointer<FeatureWrapper> feature = this->featureContainer.getFeatureById(geomId);
-    if(feature.isNull() || feature->getGeometry().isNull()){
+    //get and check feature with the id geomId - this is the acquisition's
+    //*target*, not necessarily a fit function's input any more; it is
+    //what the new Point gets tagged for
+    QPointer<FeatureWrapper> targetFeature = this->featureContainer.getFeatureById(geomId);
+    if(targetFeature.isNull() || targetFeature->getGeometry().isNull()){
+        emit this->sendMessage(QString("Measurement rejected: target feature %1 could not be resolved").arg(geomId), eErrorMessage, eMessageBoxMessage);
         foreach(const QPointer<Reading> &reading, readings){
             if(!reading.isNull()){
                 delete reading.data();
@@ -1519,37 +1641,84 @@ void OiJob::addMeasurementResults(const int &geomId, const QList<QPointer<Readin
         return;
     }
 
-    //run through all readings
-    feature->getGeometry()->blockSignals(true);
+    //create one station-owned Observation per reading, unchanged from
+    //before - these hold the raw shots and are what makes the new Point
+    //"a measurement" (Point::getOwnerDescription, point.cpp)
+    QList<QPointer<Observation> > observations;
+    bool isDummyPoint = false;
     foreach(const QPointer<Reading> &reading, readings){
 
-        //check reading
         if(reading.isNull()){
             continue;
         }
 
-        //create and set up observation
         QPointer<Observation> observation = new Observation();
         reading->setObservation(observation);
         activeStation->getCoordinateSystem()->addObservation(observation);
-        observation->addTargetGeometry(feature->getGeometry());
-
-        //add the observation to the first function of the feature (if it is a fit function)
-        if(feature->getGeometry()->getFunctions().size() >= 1
-                && !feature->getGeometry()->getFunctions().at(0).isNull()
-                && feature->getGeometry()->getFunctions().at(0)->getNeededElements().size() > 0
-                && feature->getGeometry()->getFunctions().at(0)->getNeededElements().at(0).typeOfElement == eObservationElement){
-            this->addInputObservation(feature, 0, observation->getIsDummyPoint() ? InputElementKey::eDummyPoint : InputElementKey::eDefault, observation);
-        }
+        observations.append(observation);
+        isDummyPoint = isDummyPoint || observation->getIsDummyPoint();
 
     }
-    feature->getGeometry()->blockSignals(false);
 
-    //emit the observations changed signal only once at the end
-    feature->getGeometry()->geomObservationsChanged(feature->getGeometry()->getId());
+    if(observations.isEmpty()){
+        return;
+    }
 
-    //recalculate the feature
-    emit this->recalcFeature(feature->getFeature());
+    //D15a: the aggregate position for this acquisition is computed by
+    //Point::recalc() (point.cpp), NOT here. This is not a stylistic
+    //choice - it is required for correctness: an Observation's xyz is not
+    //yet meaningful at this point in the call chain (Reading::setObservation
+    //only ever sets originalXyz; the transform into the job's active
+    //coordinate system is app-level machinery - FeatureUpdater/
+    //TrafoController - that core cannot and must not depend on). Computing
+    //a centroid here would silently average zeros. Point::recalc() runs
+    //*after* FeatureUpdater::recalcFeature has transformed this point's
+    //own observations, via the ordinary dependency graph - which is
+    //exactly why the point is registered as a dependency below before
+    //anything is recalculated.
+    QPointer<FeatureWrapper> pointFeature = this->createFeatureWrapper(ePointFeature);
+    if(pointFeature.isNull() || pointFeature->getPoint().isNull()){
+        emit this->sendMessage("Measurement rejected: could not create the resulting point", eErrorMessage, eMessageBoxMessage);
+        return;
+    }
+
+    pointFeature->getFeature()->setJob(this);
+    pointFeature->getFeature()->name = QString("P%1").arg(pointFeature->getFeature()->getId());
+
+    this->featureContainer.addFeature(pointFeature);
+    this->connectFeature(pointFeature);
+
+    QPointer<Point> point = pointFeature->getPoint();
+    point->blockSignals(true);
+    foreach(const QPointer<Observation> &observation, observations){
+        point->addObservation(observation);
+    }
+    point->blockSignals(false);
+    point->geomObservationsChanged(point->getId());
+
+    //D12: stamp the tag and feed any function that already declares a
+    //matching role - "no binding step" (Stage 7f acceptance criteria).
+    //eDummyPoint's old positional special-casing becomes the role name
+    //"dummyPoint" (function.h); every other measurement is untagged-role
+    //"default". resolvePointIntent also wires the dependency edge (via
+    //addInputPoint -> setUpDependencies) that makes the recalc below
+    //reach this point's own transform+average before the function that
+    //consumes it runs.
+    const QString roleName = isDummyPoint ? QStringLiteral("dummyPoint") : QStringLiteral("default");
+    const MeasurementIntent intent(geomId, roleName);
+    point->addIntent(intent);
+    this->resolvePointIntent(point, intent);
+
+    //recalculate the new point itself first - this is what actually
+    //transforms its observations and computes its position/isSolved
+    //(Point::recalc()); then recalculate the target feature, which by now
+    //either already updated via the point's own usedFor cascade (if tag
+    //resolution fed a function) or simply has nothing new to do (if
+    //nothing consumes this role yet - a known, sequenced gap for
+    //functions still declaring eObservationElement, see the class
+    //comment above).
+    emit this->recalcFeature(pointFeature->getFeature());
+    emit this->recalcFeature(targetFeature->getFeature());
 
 }
 

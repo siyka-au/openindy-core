@@ -33,6 +33,7 @@ Sensor::Sensor(const Sensor &copy, QObject *parent) : SensorInterface(parent){
     this->selfDefinedActions = copy.getSelfDefinedActions();
     this->defaultAccuracy = copy.getDefaultAccuracy();
     this->metaData = copy.getMetaData();
+    this->acquisitionResultShape = copy.getAcquisitionResultShape();
 
     //the needed scalar input parameters including default values
     this->integerParameters = copy.getIntegerParameter();
@@ -58,6 +59,7 @@ Sensor &Sensor::operator=(const Sensor &copy){
     this->selfDefinedActions = copy.getSelfDefinedActions();
     this->defaultAccuracy = copy.getDefaultAccuracy();
     this->metaData = copy.getMetaData();
+    this->acquisitionResultShape = copy.getAcquisitionResultShape();
 
     //the needed scalar input parameters including default values
     this->integerParameters = copy.getIntegerParameter();
@@ -154,6 +156,14 @@ const QList<MeasurementConfig> &Sensor::getSupportedMeasurementConfigs() const{
  */
 const QList<AcquisitionMode> &Sensor::getSupportedAcquisitionModes() const{
     return this->supportedAcquisitionModes;
+}
+
+/*!
+ * \brief Sensor::getAcquisitionResultShape
+ * \return
+ */
+AcquisitionResultShape Sensor::getAcquisitionResultShape() const{
+    return this->acquisitionResultShape;
 }
 
 /*!

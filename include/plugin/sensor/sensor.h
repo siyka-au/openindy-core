@@ -74,6 +74,12 @@ public:
     virtual const QList<MeasurementConfig> &getSupportedMeasurementConfigs() const = 0;
     virtual const QList<AcquisitionMode> &getSupportedAcquisitionModes() const = 0;
 
+    //how many Points one acquisition action yields (D2/D15a) - a capability,
+    //never inferred from sensor type. Every current driver is eOnePoint;
+    //declared here so eManyPoints/eCloud are expressible without an ABI
+    //change when a V-STARS/scanner driver needs them.
+    virtual AcquisitionResultShape getAcquisitionResultShape() const = 0;
+
     //meta data
     virtual const PluginMetaData &getMetaData() const = 0;
 
@@ -192,6 +198,7 @@ public:
 
     const QList<MeasurementConfig> &getSupportedMeasurementConfigs() const;
     const QList<AcquisitionMode> &getSupportedAcquisitionModes() const;
+    AcquisitionResultShape getAcquisitionResultShape() const;
 
     //meta data
     const PluginMetaData &getMetaData() const;
@@ -268,6 +275,12 @@ protected:
     QList<ConnectionKind> supportedConnectionTypes;
     QList<MeasurementConfig> supportedMeasurementConfigs;
     QList<AcquisitionMode> supportedAcquisitionModes;
+
+    //D2/D15a: every driver in this repo produces one Point per acquisition
+    //today, so this is the default; a future V-STARS/scanner driver
+    //overrides it in its own constructor rather than this needing a
+    //per-subclass virtual override.
+    AcquisitionResultShape acquisitionResultShape = AcquisitionResultShape::eOnePoint;
     QStringList selfDefinedActions;
     Accuracy defaultAccuracy;
     PluginMetaData metaData;

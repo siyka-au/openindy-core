@@ -5,8 +5,9 @@
 #include <QList>
 #include <math.h>
 #include <QPointer>
+#include <optional>
 
-#include "element.h"
+#include "geometry/point.h"
 #include "oivec.h"
 #include "statistic.h"
 
@@ -23,8 +24,34 @@ class Geometry;
 
 /*!
  * \brief The Observation class
+ *
+ * D20 (domain-model.md S2): an Observation *is* a Point - single
+ * inheritance, legal because Point's own chain (Geometry : Feature :
+ * Element) never crossed Observation's old one (Element directly). This is
+ * what lets a fit select Points and freely intermingle raw shots with
+ * derived ones without ever asking which kind it holds (the stated
+ * requirement behind D12): an Observation satisfies every Point-typed
+ * input by ordinary polymorphism, no wrapping/adapter type needed.
+ *
+ * D19: an Observation is owned by its Station and always read-only - see
+ * getOwnerDescription(). It has no producer function and (deliberately)
+ * never populates its own inherited Geometry::observations list - "no
+ * observations of its own" is what the design doc calls this, and it is
+ * unreachable rather than merely unused, because nothing in this codebase
+ * ever calls recalc()/exec() on a raw, station-owned Observation - only
+ * the aggregate Point that OiJob::addMeasurementResults builds from one or
+ * more Observations is job-managed and fed to functions.
+ *
+ * Observation keeps its own xyz/ijk (with sigma, and an "original" vs
+ * "current display system" split) rather than reusing the inherited
+ * Position/Direction Geometry carries, because Position has no sigma slot
+ * at all (see position.h) - this is a real, not cosmetic, duplication.
+ * setXYZ()/setIsSolved() keep the inherited Point-facing position and
+ * Feature-facing isSolved in sync defensively, but nothing in the normal
+ * data flow actually reads Point::getPosition()/Feature::getIsSolved() on
+ * a raw Observation today.
  */
-class OI_CORE_EXPORT Observation : public Element
+class OI_CORE_EXPORT Observation : public Point
 {
     friend class Reading;
     friend class CoordinateSystem;
@@ -73,7 +100,13 @@ public:
     const QPointer<Station> &getStation() const;
     void setStation(const QPointer<Station> &station);
 
-    const QList<QPointer<Geometry> > &getTargetGeometries() const;
+    //D12: backed by the inherited Point::intents (MeasurementIntent) list
+    //rather than a second, Observation-only membership list - see
+    //point.h/measurementintent.h. Kept as QPointer<Geometry> convenience
+    //accessors (resolved via job) so existing call sites did not all need
+    //to move to raw ids; roleName is not exposed here, only feature
+    //identity, since none of the pre-existing callers distinguished roles.
+    QList<QPointer<Geometry> > getTargetGeometries() const;
     void addTargetGeometry(const QPointer<Geometry> &targetGeometry);
     void removeTargetGeometry(const QPointer<Geometry> &targetGeometry);
     void removeTargetGeometry(const int &geomId);
@@ -81,6 +114,14 @@ public:
     void setMeasuredTargetGeometry(const QPointer<Geometry> &measuredTargetGeom);
 
     const QPointer<Reading> &getReading() const;
+
+    //D19/D20: always station-owned, always read-only - see observation.cpp
+    std::optional<QString> getOwnerDescription() const override;
+
+    //keeps the inherited Point-facing position correct regardless of
+    //which of Observation's own xyz write paths ran last - see
+    //observation.cpp
+    const Position &getPosition() const override;
 
     //##########################
     //get and set state booleans
@@ -102,9 +143,15 @@ public:
     QString getDisplayId() const;
     QString getDisplayStation() const;
     QString getDisplayTargetGeometries() const;
-    QString getDisplayX(const UnitType &type, const int &digits) const;
-    QString getDisplayY(const UnitType &type, const int &digits) const;
-    QString getDisplayZ(const UnitType &type, const int &digits) const;
+
+    //matches Geometry::getDisplayX/Y/Z's signature exactly (including the
+    //showDiff param, unused here) so this is an ordinary override, not an
+    //overload that hides the base one under -Woverloaded-virtual - and so
+    //a 2-arg call (every existing call site) stays unambiguous rather than
+    //resolving against two equally-viable candidates.
+    QString getDisplayX(const UnitType &type, const int &digits, const bool &showDiff = false) const override;
+    QString getDisplayY(const UnitType &type, const int &digits, const bool &showDiff = false) const override;
+    QString getDisplayZ(const UnitType &type, const int &digits, const bool &showDiff = false) const override;
     QString getDisplaySigmaX(const UnitType &type, const int &digits) const;
     QString getDisplaySigmaY(const UnitType &type, const int &digits) const;
     QString getDisplaySigmaZ(const UnitType &type, const int &digits) const;
@@ -132,10 +179,11 @@ private:
 
     QPointer<Station> station;
 
-    QList< QPointer<Geometry> > targetGeometriesList;
-    QMap<int, QPointer<Geometry> > targetGeometriesMap;
-
     QPointer<Geometry> measuredTargetGeometry;
+
+    //backing store for the getPosition() override, computed from xyz on
+    //each call - see observation.cpp
+    mutable Position positionCache;
 
     QPointer<Reading> reading;
 

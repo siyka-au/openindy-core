@@ -81,13 +81,31 @@ protected:
 };
 
 
+//D12/domain-model.md S3: replaces the old InputElementKey::eDummyPoint
+//sentinel (10000) doubling as the map position. Position in a function's
+//inputElements map is now always the NeededElement's real list index, so
+//"where is the dummy point" is answered by searching for the role name
+//instead of a magic constant - this is the same query shape tag
+//resolution uses elsewhere, just scoped to one function's own declaration.
+inline int dummyPointPosition(Function *function) {
+    const QList<NeededElement> &needed = function->getNeededElements();
+    for(int i = 0; i < needed.size(); ++i) {
+        if(needed.at(i).roleName == QLatin1String("dummyPoint")) {
+            return i;
+        }
+    }
+    return -1;
+}
+
 class OI_CORE_EXPORT BestFitUtil: public FunctionUtil
 {
 protected:
 
     bool hasDummyPoint(FitFunction *function) {
-        return function->getInputElements().contains(InputElementKey::eDummyPoint)
-                && function->getInputElements()[InputElementKey::eDummyPoint].size() > 0;
+        const int pos = dummyPointPosition(function);
+        return pos >= 0
+                && function->getInputElements().contains(pos)
+                && function->getInputElements()[pos].size() > 0;
     }
 
     bool getDummyPoint(OiVec &dummyPoint, FitFunction *function) {
@@ -95,14 +113,9 @@ protected:
             return false;
         }
 
-        ElementTypes elementType = eUndefinedElement;
-        for(const NeededElement &ne : function->getNeededElements()) {
-            if(ne.key == InputElementKey::eDummyPoint) {
-                elementType = ne.typeOfElement;
-                break;
-            }
-        }
-        InputElement inputElement = function->getInputElements()[InputElementKey::eDummyPoint][0];
+        const int pos = dummyPointPosition(function);
+        ElementTypes elementType = function->getNeededElements().at(pos).typeOfElement;
+        InputElement inputElement = function->getInputElements()[pos][0];
         OiVec dp;
         switch(elementType) {
         case eObservationElement:
@@ -576,7 +589,7 @@ protected:
             }
             case eFirstTwoDummyPoint: {
                 QList<QPointer<Observation> > dummyPoints;
-                foreach(const InputElement &element, function->getInputElements()[InputElementKey::eDummyPoint]){
+                foreach(const InputElement &element, function->getInputElements()[dummyPointPosition(function)]){
                     if(!element.observation.isNull()
                             && element.observation->getIsSolved()) {
                         dummyPoints.append(element.observation);
@@ -712,7 +725,7 @@ protected:
             }
         case eFirstTwoDummyPoint: {
             QList<QPointer<Observation> > dummyPoints;
-            foreach(const InputElement &element, function->getInputElements()[InputElementKey::eDummyPoint]){
+            foreach(const InputElement &element, function->getInputElements()[dummyPointPosition(function)]){
                 if(!element.observation.isNull()
                         && element.observation->getIsSolved()) {
                     dummyPoints.append(element.observation);

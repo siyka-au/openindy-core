@@ -294,6 +294,14 @@ bool CoordinateSystem::addObservation(const QPointer<Observation> &observation){
         if(!this->job.isNull()){
             observation->id = this->job->generateUniqueId();
             observation->getReading()->id = this->job->generateUniqueId();
+
+            //D19/D20: an Observation is now itself a Feature (Point) but
+            //is never added through OiJob::addFeature/setJob() the
+            //ordinary way - it needs a job pointer anyway, for
+            //getTargetGeometries()'s id lookups and for
+            //rejectIfNotEditable()'s message, so set it directly here
+            //(friend access) rather than inventing a second path.
+            observation->job = this->job;
         }
 
         //add observation to the coordinate system

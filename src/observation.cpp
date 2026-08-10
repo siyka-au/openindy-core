@@ -4,6 +4,7 @@
 #include "coordinatesystem.h"
 #include "function.h"
 #include "geometry.h"
+#include "oijob.h"
 
 #if defined(__GNUC__) && !defined(__clang__)
 #warning "openindy-core#1: Geometry/Observation hold direct QPointers to each other, which triggers -Wsfinae-incomplete via AUTOMOC's aggregated moc TU; see https://github.com/siyka-au/openindy-core/issues/1"
@@ -16,7 +17,7 @@ using namespace oi::math;
  * \brief Observation::Observation
  * \param parent
  */
-Observation::Observation(QObject *parent) : Element(parent),
+Observation::Observation(QObject *parent) : Point(parent),
     isValid(false), isSolved(false), hasDirection(false),
     xyz(4), originalXyz(4), sigmaXyz(4), originalSigmaXyz(4), ijk(4), originalIjk(4), sigmaIjk(4), originalSigmaIjk(4),
     isDummyPoint(false){
@@ -28,7 +29,7 @@ Observation::Observation(QObject *parent) : Element(parent),
  * \param copy
  * \param parent
  */
-Observation::Observation(const Observation &copy, QObject *parent) : Element(copy, parent){
+Observation::Observation(const Observation &copy, QObject *parent) : Point(copy, parent){
 
     //copy attributes
     this->isValid = copy.isValid;
@@ -57,7 +58,7 @@ Observation::Observation(const Observation &copy, QObject *parent) : Element(cop
  * \param isValid
  * \param parent
  */
-Observation::Observation(const OiVec &xyz, bool isValid, QObject *parent) : Element(parent),
+Observation::Observation(const OiVec &xyz, bool isValid, QObject *parent) : Point(parent),
     isValid(isValid), isSolved(false), hasDirection(false),
     xyz(4), originalXyz(4), sigmaXyz(4), originalSigmaXyz(4), ijk(4), originalIjk(4), sigmaIjk(4), originalSigmaIjk(4),
     isDummyPoint(false){
@@ -77,7 +78,7 @@ Observation::Observation(const OiVec &xyz, bool isValid, QObject *parent) : Elem
  * \param isValid
  * \param parent
  */
-Observation::Observation(const OiVec &xyz, int id, bool isValid, QObject *parent) : Element(parent),
+Observation::Observation(const OiVec &xyz, int id, bool isValid, QObject *parent) : Point(parent),
     isValid(isValid), isSolved(false), hasDirection(false),
     xyz(4), originalXyz(4), sigmaXyz(4), originalSigmaXyz(4), ijk(4), originalIjk(4), sigmaIjk(4), originalSigmaIjk(4),
     isDummyPoint(false) {
@@ -134,7 +135,7 @@ Observation::~Observation(){
     QList<QPointer<Geometry> > targetGeometries;
 
     //remove observation and reading from its target geometries
-    foreach(const QPointer<Geometry> &geom, this->targetGeometriesList){
+    foreach(const QPointer<Geometry> &geom, this->getTargetGeometries()){
 
         //check target geometry
         if(geom.isNull()){
@@ -175,6 +176,37 @@ Observation::~Observation(){
     //delete the corresponding reading
     delete this->getReading().data();
 
+}
+
+/*!
+ * \brief Observation::getOwnerDescription
+ * D19/D20: always station-owned, always read-only - unconditionally,
+ * regardless of functionList (an Observation never has a producer
+ * function) so this does not defer to Geometry::getOwnerDescription at
+ * all. See the class comment in observation.h.
+ * \return
+ */
+std::optional<QString> Observation::getOwnerDescription() const{
+    if(!this->station.isNull()){
+        return QString("its station \"%1\"").arg(this->station->getFeatureName());
+    }
+    return QString("its station");
+}
+
+/*!
+ * \brief Observation::getPosition
+ * Overrides Point::getPosition() (ultimately Geometry::getPosition()) so
+ * that reaching this object through any Point-typed pointer sees the same
+ * position getXYZ() does, computed from Observation's own xyz - see the
+ * class comment in observation.h for why Observation keeps its own
+ * xyz/sigma rather than writing through the inherited Position member.
+ * \return
+ */
+const Position &Observation::getPosition() const{
+    if(this->xyz.getSize() >= 3){
+        this->positionCache.setVector(this->xyz.getAt(0), this->xyz.getAt(1), this->xyz.getAt(2));
+    }
+    return this->positionCache;
 }
 
 /*!
@@ -311,27 +343,53 @@ void Observation::setStation(const QPointer<Station> &station){
 
 /*!
  * \brief Observation::getTargetGeometries
+ * Resolves the inherited Point::intents (D12) back into live Geometry
+ * pointers via this observation's job, for the pre-existing callers that
+ * want "what geometry is this for" rather than a bare feature id. Returned
+ * by value (rather than the old by-reference QList<QPointer<Geometry>>&)
+ * since there is no single stored list left to bind a reference to - a
+ * const& binding a caller takes to the returned temporary is still safe
+ * (lifetime extension), so this did not require touching call sites.
  * \return
  */
-const QList<QPointer<Geometry> > &Observation::getTargetGeometries() const{
-    return this->targetGeometriesList;
+QList<QPointer<Geometry> > Observation::getTargetGeometries() const{
+
+    QList<QPointer<Geometry> > result;
+
+    if(this->job.isNull()){
+        return result;
+    }
+
+    foreach(const MeasurementIntent &intent, this->getIntents()){
+        const QPointer<FeatureWrapper> feature = this->job->getFeatureById(intent.featureId);
+        if(!feature.isNull() && !feature->getGeometry().isNull() && !result.contains(feature->getGeometry())){
+            result.append(feature->getGeometry());
+        }
+    }
+
+    return result;
+
 }
 
 /*!
  * \brief Observation::addTargetGeometry
+ * Stamps an untagged (roleName empty) MeasurementIntent for the given
+ * geometry - the pre-7f callers of this method never distinguished roles,
+ * so an empty role preserves their behaviour exactly.
  * \param targetGeometry
  */
 void Observation::addTargetGeometry(const QPointer<Geometry> &targetGeometry){
 
     if(!targetGeometry.isNull()){
 
+        const MeasurementIntent intent(targetGeometry->getId(), QString());
+
         //check if target geometry is already included
-        if(this->targetGeometriesList.contains(targetGeometry)){
+        if(this->hasIntent(intent.featureId, intent.roleName)){
             return;
         }
 
-        this->targetGeometriesList.append(targetGeometry);
-        this->targetGeometriesMap.insert(targetGeometry->getId(), targetGeometry);
+        this->addIntent(intent);
 
         targetGeometry->addObservation(this);
 
@@ -345,23 +403,33 @@ void Observation::addTargetGeometry(const QPointer<Geometry> &targetGeometry){
 
 /*!
  * \brief Observation::removeTargetGeometry
+ * Removes every intent tagging this observation for targetGeometry,
+ * regardless of role - matches the old semantics of "this observation is
+ * no longer for that geometry at all". Takes the pointer directly (no job
+ * lookup needed) so this keeps working even on a bare, job-less
+ * Observation.
  * \param targetGeometry
  */
 void Observation::removeTargetGeometry(const QPointer<Geometry> &targetGeometry){
 
-    if(!targetGeometry.isNull()){
-
-        //check if target geometry is included
-        if(!this->targetGeometriesList.contains(targetGeometry)){
-            return;
-        }
-
-        this->targetGeometriesList.removeOne(targetGeometry);
-        this->targetGeometriesMap.remove(targetGeometry->getId());
-
-        targetGeometry->removeObservation(this);
-
+    if(targetGeometry.isNull()){
+        return;
     }
+
+    QList<MeasurementIntent> matching;
+    foreach(const MeasurementIntent &intent, this->getIntents()){
+        if(intent.featureId == targetGeometry->getId()){
+            matching.append(intent);
+        }
+    }
+    if(matching.isEmpty()){
+        return;
+    }
+    foreach(const MeasurementIntent &intent, matching){
+        this->removeIntent(intent);
+    }
+
+    targetGeometry->removeObservation(this);
 
 }
 
@@ -370,12 +438,19 @@ void Observation::removeTargetGeometry(const QPointer<Geometry> &targetGeometry)
  * \param geomId
  */
 void Observation::removeTargetGeometry(const int &geomId){
-    QPointer<Geometry> targetGeometry = this->targetGeometriesMap.value(geomId, QPointer<Geometry>());
-    this->removeTargetGeometry(targetGeometry);
 
-    if(this->measuredTargetGeometry.isNull() && this->targetGeometriesList.size() == 1){
-        this->measuredTargetGeometry = this->targetGeometriesList.at(0);
+    if(!this->job.isNull()){
+        const QPointer<FeatureWrapper> feature = this->job->getFeatureById(geomId);
+        if(!feature.isNull() && !feature->getGeometry().isNull()){
+            this->removeTargetGeometry(feature->getGeometry());
+        }
     }
+
+    const QList<QPointer<Geometry> > remaining = this->getTargetGeometries();
+    if(this->measuredTargetGeometry.isNull() && remaining.size() == 1){
+        this->measuredTargetGeometry = remaining.at(0);
+    }
+
 }
 
 /*!
@@ -438,6 +513,14 @@ const bool &Observation::getIsValid() const{
  */
 void Observation::setIsSolved(const bool &isSolved){
     this->isSolved = isSolved;
+
+    //Observation::isSolved ("valid in current coordinate system") shadows
+    //the inherited Feature::isSolved ("solved in display system", see
+    //feature.h) - they answer different questions historically, but keep
+    //the inherited one in sync too so a caller that reaches this object
+    //through a Point*/Feature* (Feature::getIsSolved is not virtual) does
+    //not see a permanently-false default.
+    this->Feature::setIsSolved(isSolved);
 }
 
 /*!
@@ -488,7 +571,7 @@ QString Observation::getDisplayStation() const{
 QString Observation::getDisplayTargetGeometries() const{
 
     QString result = "";
-    foreach(const QPointer<Geometry> &geometry, this->targetGeometriesList){
+    foreach(const QPointer<Geometry> &geometry, this->getTargetGeometries()){
 
         if(geometry.isNull()){
             continue;
@@ -511,7 +594,7 @@ QString Observation::getDisplayTargetGeometries() const{
  * \param digits
  * \return
  */
-QString Observation::getDisplayX(const UnitType &type, const int &digits) const{
+QString Observation::getDisplayX(const UnitType &type, const int &digits, const bool &/*showDiff*/) const{
     if(this->isValid && this->isSolved){
         return QString::number(convertFromDefault(this->xyz.getAt(0), type), 'f', digits);
     }
@@ -524,7 +607,7 @@ QString Observation::getDisplayX(const UnitType &type, const int &digits) const{
  * \param digits
  * \return
  */
-QString Observation::getDisplayY(const UnitType &type, const int &digits) const{
+QString Observation::getDisplayY(const UnitType &type, const int &digits, const bool &/*showDiff*/) const{
     if(this->isValid && this->isSolved){
         return QString::number(convertFromDefault(this->xyz.getAt(1), type), 'f', digits);
     }
@@ -537,7 +620,7 @@ QString Observation::getDisplayY(const UnitType &type, const int &digits) const{
  * \param digits
  * \return
  */
-QString Observation::getDisplayZ(const UnitType &type, const int &digits) const{
+QString Observation::getDisplayZ(const UnitType &type, const int &digits, const bool &/*showDiff*/) const{
     if(this->isValid && this->isSolved){
         return QString::number(convertFromDefault(this->xyz.getAt(2), type), 'f', digits);
     }

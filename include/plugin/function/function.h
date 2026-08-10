@@ -47,23 +47,28 @@ namespace oi{
 //helper classes to define function parameters
 //############################################
 
-enum InputElementKey {
-    eNotSet = -1,
-    eDefault = 0,
-    // ...
-    eDummyPoint = 10000
-};
-
 /*!
  * \brief The NeededElement class
  * Save the needed element types that are necessary to solve a function
+ *
+ * D12/domain-model.md S3: roleName replaces the old positional
+ * InputElementKey ({eNotSet=-1, eDefault=0, ..., eDummyPoint=10000}, with
+ * NeededElement's position in the function's input map determined by its
+ * list index unconditionally - no more sentinel value doubling as a
+ * position). A stable role *name* is what lets a MeasurementIntent tag
+ * survive a fit function being swapped out (the tracker-dies scenario):
+ * the tag anchors to (featureId, roleName), and any function that declares
+ * the same roleName picks it back up, regardless of position. Functions
+ * with a single, undistinguished input can leave this empty; BestFitPlane's
+ * two same-typed inputs are the case that needed it - "default" and
+ * "dummyPoint" (formerly eDefault/eDummyPoint).
  */
 class NeededElement{
 public:
     ElementTypes typeOfElement; //type of the needed input element
     QString description; //optional description for the needed element to show in the GUI
     bool infinite; //only one element or as many elements as one wants?
-    InputElementKey key = eNotSet; // if key not set InputElementKey is NeedeElement index
+    QString roleName; //stable role name for tag-based resolution (D12); empty for an undistinguished single input
 };
 
 /*!
