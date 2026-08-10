@@ -1,5 +1,6 @@
 #include <QString>
 #include <QtTest>
+#include <QtXml>
 
 #include "chooselalib.h"
 #include "point.h"
@@ -48,6 +49,8 @@ private Q_SLOTS:
     void actualCanRealiseAnEditableNominal();
     void manyActualsMayRealiseTheSameNominal();
     void actualCannotBeRealisedByAnotherActual();
+    void realisesRoundTripsThroughXml();
+    void geometryXmlHasNoIsNominalAttribute();
 };
 
 void OwnershipTest::initTestCase(){
@@ -141,6 +144,51 @@ void OwnershipTest::actualCannotBeRealisedByAnotherActual(){
     //(editable) geometry can be the nominal side of the relationship
     QVERIFY(!actualB.setRealises(actualA.getFeatureWrapper()->getGeometry()));
     QVERIFY(!actualB.getRealises().has_value());
+}
+
+void OwnershipTest::realisesRoundTripsThroughXml(){
+
+    //D17 persistence: an actual's realises reference is written as a
+    //<realises ref="..."> child element (replacing the old
+    //nominalGeometries/actual pair) - this only checks the write side,
+    //since resolving the ref back into a live pointer is a two-pass
+    //job-level operation done by ProjectExchanger, not something a bare
+    //Geometry can do on its own.
+    Point nominal(101, Position());
+
+    Point actual(202, Position());
+    actual.addFunction(new FakeFit());
+    QVERIFY(actual.setRealises(nominal.getFeatureWrapper()->getGeometry()));
+
+    QDomDocument doc("test");
+    QDomElement xml = actual.toOpenIndyXML(doc);
+    QVERIFY(!xml.isNull());
+
+    QDomElement realisesElement = xml.firstChildElement("realises");
+    QVERIFY(!realisesElement.isNull());
+    QCOMPARE(realisesElement.attribute("ref").toInt(), 101);
+
+    //a nominal itself realises nothing, so it must not write the element
+    QDomDocument nominalDoc("test");
+    QDomElement nominalXml = nominal.toOpenIndyXML(nominalDoc);
+    QVERIFY(nominalXml.firstChildElement("realises").isNull());
+
+}
+
+void OwnershipTest::geometryXmlHasNoIsNominalAttribute(){
+
+    //the acceptance bar for this stage, literally: no isNominal flag
+    //anywhere, including on the wire
+    Point point;
+    QDomDocument doc("test");
+    QDomElement xml = point.toOpenIndyXML(doc);
+    QVERIFY(!xml.isNull());
+    QVERIFY(!xml.hasAttribute("nominal"));
+
+    //fromOpenIndyXML must not require it either
+    Point reloaded;
+    QVERIFY(reloaded.fromOpenIndyXML(xml));
+
 }
 
 QTEST_MAIN(OwnershipTest)
