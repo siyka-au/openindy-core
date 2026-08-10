@@ -32,5 +32,8 @@ build/*_resource.rc
 
 install
 
+# QtCreator
+.qtcreator/
+
 # written by tst_pluginabi when the fingerprint does not match; copy over plugin-abi.digest
 plugin-abi.digest.actual
