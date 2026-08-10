@@ -19,18 +19,48 @@ QList<ElementTypes> OI_CORE_EXPORT getAvailableElementTypes();
 QList<FeatureTypes> OI_CORE_EXPORT getAvailableFeatureTypes();
 QList<GeometryTypes> OI_CORE_EXPORT getAvailableGeometryTypes();
 
-const QString OI_CORE_EXPORT &getElementTypeName(const ElementTypes &type);
-const QString OI_CORE_EXPORT &getElementTypePluralName(const ElementTypes &type);
-ElementTypes OI_CORE_EXPORT getElementTypeEnum(const QString &name);
+//#############################################################################
+//TYPE NAMES - two separate lookups, and the difference matters
+//#############################################################################
+//
+// *TypeName()        -> the PERSISTED TOKEN. Stable identifier. NOT for display.
+// *TypeDisplayName() -> what the user reads. Free to reword and re-case.
+//
+// The token functions below are what a saved project actually contains:
+//
+//     plane.setAttribute("type", getGeometryTypeName(ePlaneGeometry));
+//
+// and they are read back with an exact, case-sensitive QMap::key() lookup, so
+// changing one does not fail loudly - the geometry simply becomes eUndefined
+// on load. Type names are also interpolated into settings keys
+// ("defaultFunction.%1", "defaultMeasurementConfig.%1"), so a changed token
+// silently orphans every saved default as well.
+//
+// That is why these are two tables rather than one string transformed for
+// display: editing what a user reads must not be able to change what a file
+// contains. tst_typenames pins every token against a golden list and will
+// fail if one moves.
+//
+// Rule of thumb: if the string reaches a QDomElement, a settings key, or a
+// reverse lookup, it is a token. If it reaches a widget, it is a display name.
+
+const QString OI_CORE_EXPORT &getElementTypeName(const ElementTypes &type);        //persisted token
+const QString OI_CORE_EXPORT &getElementTypePluralName(const ElementTypes &type);  //persisted token (getElementTypeEnum falls back to it)
+ElementTypes OI_CORE_EXPORT getElementTypeEnum(const QString &name);              //token -> enum; never accepts a display name
 ElementTypes OI_CORE_EXPORT getElementTypeEnum(const FeatureTypes &type);
 ElementTypes OI_CORE_EXPORT getElementTypeEnum(const ReadingTypes &type);
 
-const QString OI_CORE_EXPORT &getFeatureTypeName(const FeatureTypes &type);
-FeatureTypes OI_CORE_EXPORT getFeatureTypeEnum(const QString &name);
+const QString OI_CORE_EXPORT &getElementTypeDisplayName(const ElementTypes &type);
+const QString OI_CORE_EXPORT &getElementTypeDisplayPluralName(const ElementTypes &type);
 
-const QString OI_CORE_EXPORT &getGeometryTypeName(const GeometryTypes &type);
-GeometryTypes OI_CORE_EXPORT getGeometryTypeEnum(const QString &name);
+const QString OI_CORE_EXPORT &getFeatureTypeName(const FeatureTypes &type);        //persisted token
+FeatureTypes OI_CORE_EXPORT getFeatureTypeEnum(const QString &name);              //token -> enum
+const QString OI_CORE_EXPORT &getFeatureTypeDisplayName(const FeatureTypes &type);
+
+const QString OI_CORE_EXPORT &getGeometryTypeName(const GeometryTypes &type);      //persisted token
+GeometryTypes OI_CORE_EXPORT getGeometryTypeEnum(const QString &name);            //token -> enum
 GeometryTypes OI_CORE_EXPORT getGeometryTypeEnum(const FeatureTypes &type);
+const QString OI_CORE_EXPORT &getGeometryTypeDisplayName(const GeometryTypes &type);
 
 bool OI_CORE_EXPORT getIsFeature(const ElementTypes &type);
 bool OI_CORE_EXPORT getIsReading(const ElementTypes &type);

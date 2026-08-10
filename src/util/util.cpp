@@ -10,10 +10,26 @@ namespace oi{
 
 namespace internal{
 
+//############################################################################
+//PERSISTED TOKENS - these strings are written into saved projects and into
+//settings keys. Changing one silently breaks loading. See util.h.
+//############################################################################
+
 QMap<ElementTypes, QString> elementTypesMap;
 QMap<ElementTypes, QString> elementTypesPluralMap;
 QMap<FeatureTypes, QString> featureTypesMap;
 QMap<GeometryTypes, QString> geometryTypesMap;
+
+//############################################################################
+//DISPLAY NAMES - shown to the user, never persisted, safe to edit freely.
+//Deliberately separate maps rather than a transform of the tokens above, so
+//that changing what a user reads can never change what a file contains.
+//############################################################################
+
+QMap<ElementTypes, QString> elementTypesDisplayMap;
+QMap<ElementTypes, QString> elementTypesDisplayPluralMap;
+QMap<FeatureTypes, QString> featureTypesDisplayMap;
+QMap<GeometryTypes, QString> geometryTypesDisplayMap;
 
 QMap<ElementTypes, QString> elementTypeIcons;
 QMap<FeatureTypes, QString> featureTypeIcons;
@@ -56,6 +72,10 @@ void init(){
     //clear maps
     elementTypesMap.clear();
     elementTypesPluralMap.clear();
+    elementTypesDisplayMap.clear();
+    elementTypesDisplayPluralMap.clear();
+    featureTypesDisplayMap.clear();
+    geometryTypesDisplayMap.clear();
     featureTypesMap.clear();
     geometryTypesMap.clear();
     readingTypesMap.clear();
@@ -511,6 +531,138 @@ void init(){
     materialValuesMap.insert(eMaterialConcrete,           0.000012   );
     materialValuesMap.insert(eMaterialReinforcedConcrete, 0.000013   );
 
+    //########################################################################
+    //DISPLAY NAMES
+    //
+    //Safe to edit. These are what the user reads; nothing here is ever
+    //written to a project file or a settings key. Wording and capitalisation
+    //can be changed freely without breaking anything.
+    //
+    //Seeded as title-case from the persisted tokens above. They are an
+    //explicit table rather than a transform of the tokens precisely so that
+    //editing one cannot change the other.
+    //########################################################################
+
+    //elementTypesDisplayMap
+    elementTypesDisplayMap.insert(eCircleElement, "Circle");
+    elementTypesDisplayMap.insert(eConeElement, "Cone");
+    elementTypesDisplayMap.insert(eCylinderElement, "Cylinder");
+    elementTypesDisplayMap.insert(eEllipseElement, "Ellipse");
+    elementTypesDisplayMap.insert(eEllipsoidElement, "Ellipsoid");
+    elementTypesDisplayMap.insert(eHyperboloidElement, "Hyperboloid");
+    elementTypesDisplayMap.insert(eLineElement, "Line");
+    elementTypesDisplayMap.insert(eNurbsElement, "Nurbs");
+    elementTypesDisplayMap.insert(eParaboloidElement, "Paraboloid");
+    elementTypesDisplayMap.insert(ePlaneElement, "Plane");
+    elementTypesDisplayMap.insert(ePointElement, "Point");
+    elementTypesDisplayMap.insert(ePointCloudElement, "Point Cloud");
+    elementTypesDisplayMap.insert(eScalarEntityAngleElement, "Angle");
+    elementTypesDisplayMap.insert(eScalarEntityDistanceElement, "Distance");
+    elementTypesDisplayMap.insert(eScalarEntityMeasurementSeriesElement, "Measurement Series");
+    elementTypesDisplayMap.insert(eScalarEntityTemperatureElement, "Temperature");
+    elementTypesDisplayMap.insert(eSlottedHoleElement, "Slotted Hole");
+    elementTypesDisplayMap.insert(eSphereElement, "Sphere");
+    elementTypesDisplayMap.insert(eTorusElement, "Torus");
+    elementTypesDisplayMap.insert(eDirectionElement, "Direction");
+    elementTypesDisplayMap.insert(ePositionElement, "Position");
+    elementTypesDisplayMap.insert(eRadiusElement, "Radius");
+    elementTypesDisplayMap.insert(eCoordinateSystemElement, "Coordinate System");
+    elementTypesDisplayMap.insert(eStationElement, "Station");
+    elementTypesDisplayMap.insert(eTrafoParamElement, "Transformation Parameters");
+    elementTypesDisplayMap.insert(eObservationElement, "Observation");
+    elementTypesDisplayMap.insert(eReadingCartesianElement, "Cartesian Reading");
+    elementTypesDisplayMap.insert(eReadingPolarElement, "Polar Reading");
+    elementTypesDisplayMap.insert(eReadingDistanceElement, "Distance Reading");
+    elementTypesDisplayMap.insert(eReadingDirectionElement, "Direction Reading");
+    elementTypesDisplayMap.insert(eReadingTemperatureElement, "Temperature Reading");
+    elementTypesDisplayMap.insert(eReadingLevelElement, "Level Reading");
+    elementTypesDisplayMap.insert(eLevelElement, "Level");
+    elementTypesDisplayMap.insert(ePointCollectionElement, "Point Collection");
+
+    //elementTypesDisplayPluralMap
+    elementTypesDisplayPluralMap.insert(eCircleElement, "Circles");
+    elementTypesDisplayPluralMap.insert(eConeElement, "Cones");
+    elementTypesDisplayPluralMap.insert(eCylinderElement, "Cylinders");
+    elementTypesDisplayPluralMap.insert(eEllipseElement, "Ellipses");
+    elementTypesDisplayPluralMap.insert(eEllipsoidElement, "Ellipsoids");
+    elementTypesDisplayPluralMap.insert(eHyperboloidElement, "Hyperboloids");
+    elementTypesDisplayPluralMap.insert(eLineElement, "Lines");
+    elementTypesDisplayPluralMap.insert(eNurbsElement, "Nurbs");
+    elementTypesDisplayPluralMap.insert(eParaboloidElement, "Paraboloids");
+    elementTypesDisplayPluralMap.insert(ePlaneElement, "Planes");
+    elementTypesDisplayPluralMap.insert(ePointElement, "Points");
+    elementTypesDisplayPluralMap.insert(ePointCloudElement, "Point Clouds");
+    elementTypesDisplayPluralMap.insert(eScalarEntityAngleElement, "Angles");
+    elementTypesDisplayPluralMap.insert(eScalarEntityDistanceElement, "Distances");
+    elementTypesDisplayPluralMap.insert(eScalarEntityMeasurementSeriesElement, "Measurement Series");
+    elementTypesDisplayPluralMap.insert(eScalarEntityTemperatureElement, "Temperatures");
+    elementTypesDisplayPluralMap.insert(eSlottedHoleElement, "Slotted Holes");
+    elementTypesDisplayPluralMap.insert(eSphereElement, "Spheres");
+    elementTypesDisplayPluralMap.insert(eTorusElement, "Tori");
+    elementTypesDisplayPluralMap.insert(eDirectionElement, "Directions");
+    elementTypesDisplayPluralMap.insert(ePositionElement, "Positions");
+    elementTypesDisplayPluralMap.insert(eRadiusElement, "Radii");
+    elementTypesDisplayPluralMap.insert(eCoordinateSystemElement, "Coordinate Systems");
+    elementTypesDisplayPluralMap.insert(eStationElement, "Stations");
+    elementTypesDisplayPluralMap.insert(eTrafoParamElement, "Transformation Parameters");
+    elementTypesDisplayPluralMap.insert(eObservationElement, "Observations");
+    elementTypesDisplayPluralMap.insert(eReadingCartesianElement, "Cartesian Readings");
+    elementTypesDisplayPluralMap.insert(eReadingPolarElement, "Polar Readings");
+    elementTypesDisplayPluralMap.insert(eReadingDistanceElement, "Distance Readings");
+    elementTypesDisplayPluralMap.insert(eReadingDirectionElement, "Direction Readings");
+    elementTypesDisplayPluralMap.insert(eReadingTemperatureElement, "Temperature Readings");
+    elementTypesDisplayPluralMap.insert(eReadingLevelElement, "Level Readings");
+    elementTypesDisplayPluralMap.insert(ePointCollectionElement, "Point Collections");
+
+    //featureTypesDisplayMap
+    featureTypesDisplayMap.insert(eCircleFeature, "Circle");
+    featureTypesDisplayMap.insert(eConeFeature, "Cone");
+    featureTypesDisplayMap.insert(eCylinderFeature, "Cylinder");
+    featureTypesDisplayMap.insert(eEllipseFeature, "Ellipse");
+    featureTypesDisplayMap.insert(eEllipsoidFeature, "Ellipsoid");
+    featureTypesDisplayMap.insert(eHyperboloidFeature, "Hyperboloid");
+    featureTypesDisplayMap.insert(eLineFeature, "Line");
+    featureTypesDisplayMap.insert(eNurbsFeature, "Nurbs");
+    featureTypesDisplayMap.insert(eParaboloidFeature, "Paraboloid");
+    featureTypesDisplayMap.insert(ePlaneFeature, "Plane");
+    featureTypesDisplayMap.insert(ePointFeature, "Point");
+    featureTypesDisplayMap.insert(ePointCloudFeature, "Point Cloud");
+    featureTypesDisplayMap.insert(eScalarEntityAngleFeature, "Angle");
+    featureTypesDisplayMap.insert(eScalarEntityDistanceFeature, "Distance");
+    featureTypesDisplayMap.insert(eScalarEntityMeasurementSeriesFeature, "Measurement Series");
+    featureTypesDisplayMap.insert(eScalarEntityTemperatureFeature, "Temperature");
+    featureTypesDisplayMap.insert(eSlottedHoleFeature, "Slotted Hole");
+    featureTypesDisplayMap.insert(eSphereFeature, "Sphere");
+    featureTypesDisplayMap.insert(eTorusFeature, "Torus");
+    featureTypesDisplayMap.insert(eCoordinateSystemFeature, "Coordinate System");
+    featureTypesDisplayMap.insert(eStationFeature, "Station");
+    featureTypesDisplayMap.insert(eTrafoParamFeature, "Transformation Parameters");
+    featureTypesDisplayMap.insert(eLevelFeature, "Level");
+    featureTypesDisplayMap.insert(eGroupFeature, "Group");
+    featureTypesDisplayMap.insert(ePointGroupFeature, "Point Group");
+
+    //geometryTypesDisplayMap
+    geometryTypesDisplayMap.insert(eCircleGeometry, "Circle");
+    geometryTypesDisplayMap.insert(eConeGeometry, "Cone");
+    geometryTypesDisplayMap.insert(eCylinderGeometry, "Cylinder");
+    geometryTypesDisplayMap.insert(eEllipseGeometry, "Ellipse");
+    geometryTypesDisplayMap.insert(eEllipsoidGeometry, "Ellipsoid");
+    geometryTypesDisplayMap.insert(eHyperboloidGeometry, "Hyperboloid");
+    geometryTypesDisplayMap.insert(eLineGeometry, "Line");
+    geometryTypesDisplayMap.insert(eNurbsGeometry, "Nurbs");
+    geometryTypesDisplayMap.insert(eParaboloidGeometry, "Paraboloid");
+    geometryTypesDisplayMap.insert(ePlaneGeometry, "Plane");
+    geometryTypesDisplayMap.insert(ePointGeometry, "Point");
+    geometryTypesDisplayMap.insert(ePointCloudGeometry, "Point Cloud");
+    geometryTypesDisplayMap.insert(eScalarEntityAngleGeometry, "Angle");
+    geometryTypesDisplayMap.insert(eScalarEntityDistanceGeometry, "Distance");
+    geometryTypesDisplayMap.insert(eScalarEntityMeasurementSeriesGeometry, "Measurement Series");
+    geometryTypesDisplayMap.insert(eScalarEntityTemperatureGeometry, "Temperature");
+    geometryTypesDisplayMap.insert(eSlottedHoleGeometry, "Slotted Hole");
+    geometryTypesDisplayMap.insert(eSphereGeometry, "Sphere");
+    geometryTypesDisplayMap.insert(eTorusGeometry, "Torus");
+    geometryTypesDisplayMap.insert(ePlaneLevelGeometry, "Level");
+
     isInit = true;
 
 }
@@ -858,6 +1010,90 @@ GeometryTypes getGeometryTypeEnum(const FeatureTypes &type){
  * \param type
  * \return
  */
+/*!
+ * \brief getElementTypeDisplayName
+ * The user-facing name of an element type.
+ * Display name only - never persist this or feed it to a reverse lookup.
+ * \param type
+ * \return
+ */
+const QString &getElementTypeDisplayName(const ElementTypes &type){
+
+    //fill helper maps if not yet done
+    if(!internal::isInit){
+        internal::init();
+    }
+
+    if(internal::elementTypesDisplayMap.contains(type)){
+        return internal::elementTypesDisplayMap[type];
+    }
+    return internal::undefined;
+
+}
+
+/*!
+ * \brief getElementTypeDisplayPluralName
+ * The user-facing plural name of an element type.
+ * Display name only - never persist this or feed it to a reverse lookup.
+ * \param type
+ * \return
+ */
+const QString &getElementTypeDisplayPluralName(const ElementTypes &type){
+
+    //fill helper maps if not yet done
+    if(!internal::isInit){
+        internal::init();
+    }
+
+    if(internal::elementTypesDisplayPluralMap.contains(type)){
+        return internal::elementTypesDisplayPluralMap[type];
+    }
+    return internal::undefined;
+
+}
+
+/*!
+ * \brief getFeatureTypeDisplayName
+ * The user-facing name of a feature type.
+ * Display name only - never persist this or feed it to a reverse lookup.
+ * \param type
+ * \return
+ */
+const QString &getFeatureTypeDisplayName(const FeatureTypes &type){
+
+    //fill helper maps if not yet done
+    if(!internal::isInit){
+        internal::init();
+    }
+
+    if(internal::featureTypesDisplayMap.contains(type)){
+        return internal::featureTypesDisplayMap[type];
+    }
+    return internal::undefined;
+
+}
+
+/*!
+ * \brief getGeometryTypeDisplayName
+ * The user-facing name of a geometry type.
+ * Display name only - never persist this or feed it to a reverse lookup.
+ * \param type
+ * \return
+ */
+const QString &getGeometryTypeDisplayName(const GeometryTypes &type){
+
+    //fill helper maps if not yet done
+    if(!internal::isInit){
+        internal::init();
+    }
+
+    if(internal::geometryTypesDisplayMap.contains(type)){
+        return internal::geometryTypesDisplayMap[type];
+    }
+    return internal::undefined;
+
+}
+
 bool getIsFeature(const ElementTypes &type){
     if(type == eObservationElement
             || type == eReadingCartesianElement

@@ -296,3 +296,12 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 endif()
 
 add_test(NAME pluginabi COMMAND tst_pluginabi)
+
+add_executable(tst_typenames test/typenames/tst_typenames.cpp)
+target_link_libraries(tst_typenames PRIVATE Qt6::Test OpenIndyCore OpenIndyMath)
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(tst_typenames PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+
+add_test(NAME typenames COMMAND tst_typenames)
