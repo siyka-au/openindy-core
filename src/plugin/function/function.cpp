@@ -27,10 +27,47 @@ void Function::init(){
 
 /*!
  * \brief Function::exec
+ * D16/domain-model.md S5: the pipeline choke point. Every Function
+ * subclass funnels through here (Feature::recalc() calls exactly this
+ * overload), so this is where a NeededElement's declared pipeline is
+ * applied - generically, with zero changes needed in any fit function's
+ * own exec(Plane&)/exec(Point&)/etc, because they already read
+ * InputElement::shouldBeUsed (Stage 7c-ii/7f groundwork).
+ *
+ * Two passes, not a single Stream walk, because one stage type
+ * (eResidualOutlierRejectionStage) needs a completed fit's residuals as
+ * its own input - it cannot be evaluated before a fit exists. Pass 1
+ * applies the deterministic stages (ExplicitList, Exclude) and runs the
+ * real fit; pass 2, only if the residual stage actually excluded
+ * something, reruns the fit once more with the reduced set. This is
+ * exactly two passes, not iterative reweighting to convergence - see
+ * domain-model.md S9 for why that is an accepted, documented limitation
+ * rather than an oversight.
  * \param feature
  * \return
  */
 bool Function::exec(const QPointer<FeatureWrapper> &feature){
+
+    this->applyDeterministicPipelineStages();
+
+    bool ok = this->execByFeatureType(feature);
+
+    if(ok && this->applyResidualPipelineStages()){
+        ok = this->execByFeatureType(feature);
+    }
+
+    return ok;
+
+}
+
+/*!
+ * \brief Function::execByFeatureType
+ * The original exec(feature) dispatch - unchanged, just relocated so
+ * exec() can wrap it with pipeline application (see above).
+ * \param feature
+ * \return
+ */
+bool Function::execByFeatureType(const QPointer<FeatureWrapper> &feature){
 
     if(!feature.isNull()){
 
@@ -448,10 +485,268 @@ void Function::setShouldBeUsed(const int &position, const int &id, const bool &s
 }
 
 /*!
+ * \brief Function::getPipeline
+ * \param position
+ * \return
+ */
+const QList<PipelineStage> &Function::getPipeline(const int &position) const{
+    static const QList<PipelineStage> empty;
+    if(position < 0 || position >= this->neededElements.size()){
+        return empty;
+    }
+    return this->neededElements.at(position).pipeline;
+}
+
+/*!
+ * \brief Function::setPipeline
+ * \param position
+ * \param stages
+ */
+void Function::setPipeline(const int &position, const QList<PipelineStage> &stages){
+    if(position < 0 || position >= this->neededElements.size()){
+        return;
+    }
+    this->neededElements[position].pipeline = stages;
+    emit this->inputElementsChanged();
+}
+
+/*!
+ * \brief Function::addPipelineStage
+ * \param position
+ * \param stage
+ */
+void Function::addPipelineStage(const int &position, const PipelineStage &stage){
+    if(position < 0 || position >= this->neededElements.size()){
+        return;
+    }
+    this->neededElements[position].pipeline.append(stage);
+    emit this->inputElementsChanged();
+}
+
+/*!
+ * \brief Function::clearPipeline
+ * \param position
+ */
+void Function::clearPipeline(const int &position){
+    if(position < 0 || position >= this->neededElements.size()){
+        return;
+    }
+    this->neededElements[position].pipeline.clear();
+    emit this->inputElementsChanged();
+}
+
+/*!
+ * \brief Function::getPipelineExclusions
+ * \param position
+ * \return
+ */
+const QList<PipelineExclusion> &Function::getPipelineExclusions(const int &position) const{
+    static const QList<PipelineExclusion> empty;
+    QMap<int, QList<PipelineExclusion> >::const_iterator it = this->pipelineExclusions.constFind(position);
+    if(it == this->pipelineExclusions.constEnd()){
+        return empty;
+    }
+    return it.value();
+}
+
+/*!
+ * \brief Function::applyDeterministicPipelineStages
+ * Walks every NeededElement position that has a non-empty declared
+ * pipeline and applies its ExplicitList/Exclude stages, in declared
+ * order, to the tag-resolved candidate set already sitting in
+ * inputElements[position]. A position with an empty pipeline is left
+ * completely untouched - a pipeline is opt-in per role
+ * (function.h:NeededElement::pipeline).
+ *
+ * eResidualOutlierRejectionStage is a deliberate no-op here (the "yields
+ * incoming unchanged" Stream case): it needs a completed fit, which does
+ * not exist yet on the first pass. applyResidualPipelineStages() handles
+ * it after execByFeatureType() runs once.
+ * \return whether any position had a pipeline declared at all
+ */
+bool Function::applyDeterministicPipelineStages(){
+
+    bool anyPipelineDeclared = false;
+
+    for(int position = 0; position < this->neededElements.size(); position++){
+
+        const QList<PipelineStage> &stages = this->neededElements.at(position).pipeline;
+        if(stages.isEmpty()){
+            continue;
+        }
+        anyPipelineDeclared = true;
+
+        if(!this->inputElements.contains(position)){
+            continue;
+        }
+
+        QList<int> survivors;
+        foreach(const InputElement &element, this->inputElements.value(position)){
+            survivors.append(element.id);
+        }
+
+        QList<PipelineExclusion> exclusions;
+
+        foreach(const PipelineStage &stage, stages){
+
+            switch(stage.type){
+
+            case eExplicitListStage:{
+                QList<int> next;
+                foreach(int id, survivors){
+                    if(stage.explicitIds.contains(id)){
+                        next.append(id);
+                    }else{
+                        exclusions.append(PipelineExclusion(id, "not in the declared explicit list"));
+                    }
+                }
+                survivors = next;
+                break;
+            }
+
+            case eExcludeStage:{
+                foreach(const PipelineExclusion &excl, stage.explicitExclusions){
+                    if(survivors.removeOne(excl.elementId)){
+                        exclusions.append(excl);
+                    }
+                }
+                break;
+            }
+
+            case eResidualOutlierRejectionStage:
+                //handled after a fit exists - see applyResidualPipelineStages()
+                break;
+
+            }
+
+        }
+
+        QList<InputElement> updated = this->inputElements.value(position);
+        for(int i = 0; i < updated.size(); i++){
+            updated[i].shouldBeUsed = survivors.contains(updated[i].id);
+        }
+        this->inputElements[position] = updated;
+        this->pipelineExclusions[position] = exclusions;
+
+    }
+
+    return anyPipelineDeclared;
+
+}
+
+/*!
+ * \brief Function::applyResidualPipelineStages
+ * For every NeededElement position whose pipeline declares
+ * eResidualOutlierRejectionStage, reads the *just-completed* fit's
+ * per-element residual (via residualMagnitude(), sourced from the
+ * addDisplayResidual() calls the fit itself already made) and excludes
+ * any surviving candidate whose residual magnitude exceeds
+ * sigmaMultiplier * this->statistic.getStdev(). Deterministic exclusions
+ * from applyDeterministicPipelineStages() are kept, not recomputed.
+ *
+ * Degrades to a no-op (not a crash) whenever there is nothing usable to
+ * compare against - no stdev yet, or a fit type that never reported a
+ * residual under a recognised key (domain-model.md S9).
+ * \return whether this changed any element's shouldBeUsed - the signal
+ * that a second execByFeatureType() pass is warranted
+ */
+bool Function::applyResidualPipelineStages(){
+
+    bool changed = false;
+
+    for(int position = 0; position < this->neededElements.size(); position++){
+
+        const QList<PipelineStage> &stages = this->neededElements.at(position).pipeline;
+
+        bool hasResidualStage = false;
+        double sigmaMultiplier = 3.0;
+        foreach(const PipelineStage &stage, stages){
+            if(stage.type == eResidualOutlierRejectionStage){
+                hasResidualStage = true;
+                sigmaMultiplier = stage.sigmaMultiplier;
+                break;
+            }
+        }
+
+        if(!hasResidualStage || !this->inputElements.contains(position)){
+            continue;
+        }
+
+        const double stdev = this->statistic.getStdev();
+        if(stdev <= 0.0){
+            continue;
+        }
+        const double threshold = sigmaMultiplier * stdev;
+
+        QList<InputElement> current = this->inputElements.value(position);
+        QList<PipelineExclusion> exclusions = this->pipelineExclusions.value(position);
+        bool changedHere = false;
+
+        for(int i = 0; i < current.size(); i++){
+
+            if(!current[i].shouldBeUsed){
+                continue; //already excluded by a deterministic stage
+            }
+
+            const std::optional<double> residual = this->residualMagnitude(current[i].id);
+            if(!residual.has_value()){
+                continue; //this fit type does not report a comparable residual
+            }
+
+            if(qAbs(residual.value()) > threshold){
+                current[i].shouldBeUsed = false;
+                exclusions.append(PipelineExclusion(current[i].id,
+                    QString("residual %1 exceeds %2 x sigma (stdev %3, threshold %4)")
+                        .arg(residual.value()).arg(sigmaMultiplier).arg(stdev).arg(threshold)));
+                changedHere = true;
+            }
+
+        }
+
+        if(changedHere){
+            this->inputElements[position] = current;
+            this->pipelineExclusions[position] = exclusions;
+            changed = true;
+        }
+
+    }
+
+    return changed;
+
+}
+
+/*!
+ * \brief Function::residualMagnitude
+ * \param elementId
+ * \return
+ */
+std::optional<double> Function::residualMagnitude(int elementId) const{
+
+    const Residual residual = this->statistic.getDisplayResidual(elementId);
+    if(residual.elementId != elementId){
+        return std::nullopt;
+    }
+
+    const QString vKey = getObservationDisplayAttributesName(eObservationDisplayV);
+    if(residual.corrections.contains(vKey)){
+        return residual.corrections.value(vKey);
+    }
+
+    const QString vrKey = getObservationDisplayAttributesName(eObservationDisplayVR);
+    if(residual.corrections.contains(vrKey)){
+        return residual.corrections.value(vrKey);
+    }
+
+    return std::nullopt;
+
+}
+
+/*!
  * \brief Function::clear
  */
 void Function::clear(){
     this->inputElements.clear();
+    this->pipelineExclusions.clear();
     this->fixedParameters.clear();
     this->scalarInputParams.isValid = false;
     this->resultProtocol.clear();
@@ -524,6 +819,31 @@ QDomElement Function::toOpenIndyXML(QDomDocument &xmlDoc) const{
         }
     }
     function.appendChild(inputElements);
+
+    //D16/domain-model.md S5: persist each NeededElement position's
+    //declared pipeline - the source of truth, not pipelineExclusions
+    //(which is re-derived from this plus current data on every exec(),
+    //same as isUsed). Only ids and scalars, no object references, so
+    //this round-trips through Function::fromOpenIndyXML alone - no
+    //ProjectExchanger ID-resolution pass needed the way inputElements'
+    //object pointers require.
+    QDomElement pipelines = xmlDoc.createElement("pipelines");
+    for(int position = 0; position < this->neededElements.size(); position++){
+        const QList<PipelineStage> &stages = this->neededElements.at(position).pipeline;
+        if(stages.isEmpty()){
+            continue;
+        }
+        QDomElement pipelineElem = xmlDoc.createElement("pipeline");
+        pipelineElem.setAttribute("position", position);
+        foreach(const PipelineStage &stage, stages){
+            QDomElement stageElem = stage.toOpenIndyXML(xmlDoc);
+            if(!stageElem.isNull()){
+                pipelineElem.appendChild(stageElem);
+            }
+        }
+        pipelines.appendChild(pipelineElem);
+    }
+    function.appendChild(pipelines);
 
     ScalarInputParams params;
     if(!this->scalarInputParams.isValid){
@@ -633,6 +953,36 @@ bool Function::fromOpenIndyXML(QDomElement &xmlElem){
     }
 
     this->scalarInputParams.isValid = true;
+
+    //D16/domain-model.md S5: restore each position's declared pipeline.
+    //Must run after init() has already populated this->neededElements
+    //(PluginLoader::loadFunctionPlugin constructs and inits the function
+    //before ProjectExchanger calls fromOpenIndyXML on it) - this mutates
+    //existing entries by position rather than rebuilding the list, so it
+    //cannot race init()'s neededElements.clear().
+    QDomElement pipelines = xmlElem.firstChildElement("pipelines");
+    if(!pipelines.isNull()){
+        QDomNodeList pipelineList = pipelines.elementsByTagName("pipeline");
+        for(int i = 0; i < pipelineList.size(); i++){
+            QDomElement pipelineElem = pipelineList.at(i).toElement();
+            if(!pipelineElem.hasAttribute("position")){
+                continue;
+            }
+            const int position = pipelineElem.attribute("position").toInt();
+            if(position < 0 || position >= this->neededElements.size()){
+                continue;
+            }
+            QList<PipelineStage> stages;
+            QDomNodeList stageList = pipelineElem.elementsByTagName("stage");
+            for(int j = 0; j < stageList.size(); j++){
+                PipelineStage stage;
+                if(stage.fromOpenIndyXML(stageList.at(j).toElement())){
+                    stages.append(stage);
+                }
+            }
+            this->neededElements[position].pipeline = stages;
+        }
+    }
 
     return true;
 

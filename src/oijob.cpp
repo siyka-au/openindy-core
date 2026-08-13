@@ -1978,6 +1978,69 @@ void OiJob::setShouldBeUsed(const QPointer<FeatureWrapper> &target, const int &f
 }
 
 /*!
+ * \brief OiJob::setPipeline
+ * D16/domain-model.md S5: replace the declared pipeline for one
+ * NeededElement position. Mirrors setShouldBeUsed's shape - mutate the
+ * declaration, then optionally trigger the ordinary recalc that
+ * evaluates it (Function::exec(), not a second recalculation path).
+ * \param target
+ * \param functionIndex
+ * \param neededElementIndex
+ * \param stages
+ * \param recalc
+ */
+void OiJob::setPipeline(const QPointer<FeatureWrapper> &target, const int &functionIndex, const int &neededElementIndex,
+                         const QList<PipelineStage> &stages, const bool &recalc){
+
+    if(target.isNull() || target->getFeature().isNull()){
+        return;
+    }
+
+    if(functionIndex < 0 || functionIndex >= target->getFeature()->getFunctions().size()
+            || target->getFeature()->getFunctions().at(functionIndex).isNull()){
+        return;
+    }
+
+    target->getFeature()->getFunctions()[functionIndex]->setPipeline(neededElementIndex, stages);
+
+    if(recalc){
+        emit this->recalcFeature(target->getFeature());
+    }
+
+}
+
+/*!
+ * \brief OiJob::excludeElement
+ * D16: the hand-picking entry point - reject one element with a reason
+ * without replacing whatever pipeline already exists at this position.
+ * \param target
+ * \param functionIndex
+ * \param neededElementIndex
+ * \param elementId
+ * \param reason
+ * \param recalc
+ */
+void OiJob::excludeElement(const QPointer<FeatureWrapper> &target, const int &functionIndex, const int &neededElementIndex,
+                            const int &elementId, const QString &reason, const bool &recalc){
+
+    if(target.isNull() || target->getFeature().isNull()){
+        return;
+    }
+
+    if(functionIndex < 0 || functionIndex >= target->getFeature()->getFunctions().size()
+            || target->getFeature()->getFunctions().at(functionIndex).isNull()){
+        return;
+    }
+
+    target->getFeature()->getFunctions()[functionIndex]->addPipelineStage(neededElementIndex, PipelineStage::exclude(elementId, reason));
+
+    if(recalc){
+        emit this->recalcFeature(target->getFeature());
+    }
+
+}
+
+/*!
  * \brief OiJob::setActiveFeature
  * \param featureId
  */

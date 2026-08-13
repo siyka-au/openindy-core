@@ -113,6 +113,7 @@ add_library(OpenIndyCore SHARED
     src/plugin/exchange/exchangeinterface.cpp
     src/plugin/exchange/exchangesimpleascii.cpp
     src/plugin/function/function.cpp
+    src/plugin/function/pipelinestage.cpp
     src/plugin/networkAdjustment/bundleadjustment.cpp
     src/plugin/sensor/sensor.cpp
     src/plugin/simulation/simulationmodel.cpp
@@ -171,6 +172,7 @@ add_library(OpenIndyCore SHARED
     include/plugin/function/constructfunction.h
     include/plugin/function/fitfunction.h
     include/plugin/function/function.h
+    include/plugin/function/pipelinestage.h
     include/plugin/function/generatefeaturefunction.h
     include/plugin/function/geodeticfunction.h
     include/plugin/function/objecttransformation.h
@@ -324,6 +326,15 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 endif()
 
 add_test(NAME pluginabi COMMAND tst_pluginabi)
+
+add_executable(tst_pipeline test/pipeline/tst_pipeline.cpp)
+target_link_libraries(tst_pipeline PRIVATE Qt6::Test OpenIndyCore OpenIndyMath)
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(tst_pipeline PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+
+add_test(NAME pipeline COMMAND tst_pipeline)
 
 add_executable(tst_typenames test/typenames/tst_typenames.cpp)
 target_link_libraries(tst_typenames PRIVATE Qt6::Test OpenIndyCore OpenIndyMath)

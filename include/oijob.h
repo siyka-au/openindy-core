@@ -191,6 +191,26 @@ public:
     void setShouldBeUsed(const QPointer<FeatureWrapper> &target, const int &functionIndex, const int &neededElementIndex,
                          const int &elementId, const bool &use, const bool &recalc);
 
+    //#################################################
+    //declare a NeededElement's filter pipeline (D16, domain-model.md S5)
+    //#################################################
+
+    //replace the whole declared pipeline for one NeededElement position -
+    //the callable entry point a UI would use for "define the filter for
+    //this role". Same shape as setShouldBeUsed above: mutate, then
+    //optionally force the recalc that makes it take effect.
+    void setPipeline(const QPointer<FeatureWrapper> &target, const int &functionIndex, const int &neededElementIndex,
+                      const QList<PipelineStage> &stages, const bool &recalc);
+
+    //convenience for the single most common declared stage - D16's
+    //hand-picking case: reject one specific element with a reason,
+    //without disturbing whatever pipeline already exists for this
+    //position. Appends an eExcludeStage rather than replacing the
+    //pipeline, so it composes with an already-declared
+    //eResidualOutlierRejectionStage instead of clobbering it.
+    void excludeElement(const QPointer<FeatureWrapper> &target, const int &functionIndex, const int &neededElementIndex,
+                         const int &elementId, const QString &reason, const bool &recalc);
+
     void createTemplateFromJob();
 
 signals:

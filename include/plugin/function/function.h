@@ -40,6 +40,9 @@
 #include "featurewrapper.h"
 #include "types.h"
 #include "util.h"
+#include "pipelinestage.h"
+
+#include <optional>
 
 namespace oi{
 
@@ -69,6 +72,15 @@ public:
     QString description; //optional description for the needed element to show in the GUI
     bool infinite; //only one element or as many elements as one wants?
     QString roleName; //stable role name for tag-based resolution (D12); empty for an undistinguished single input
+
+    //D16/domain-model.md S5: the ordered, declarative pipeline over this
+    //role's tag-resolved candidates - Java-Stream-shaped, evaluated by
+    //Function::exec() before (and, for a residual-based stage, again
+    //after) the type-specific fit runs. Empty by default and left empty
+    //for every function that doesn't declare one: a pipeline is opt-in
+    //per role, and an undeclared pipeline must never override whatever
+    //InputElement::shouldBeUsed a user or prior mechanism already set.
+    QList<PipelineStage> pipeline;
 };
 
 /*!
@@ -290,6 +302,27 @@ public:
     bool getShouldBeUsed(const int &position, const int &id);
     void setShouldBeUsed(const int &position, const int &id, const bool &state);
 
+    //###############################################
+    //declare and inspect a NeededElement's pipeline
+    //###############################################
+
+    //D16/domain-model.md S5: declare/read/mutate the ordered filter
+    //pipeline for the NeededElement at `position` (same index space as
+    //getInputElements()). Evaluated automatically by exec() - callers
+    //that mutate this still need to trigger an ordinary recalc for it to
+    //take effect, exactly like every other input-set change (OiJob does
+    //not auto-recalc on tagPoint either; see oijob.h).
+    const QList<PipelineStage> &getPipeline(const int &position) const;
+    void setPipeline(const int &position, const QList<PipelineStage> &stages);
+    void addPipelineStage(const int &position, const PipelineStage &stage);
+    void clearPipeline(const int &position);
+
+    //traceability requirement (D16/domain-model.md S5): what the pipeline
+    //most recently excluded at `position`, and why. Repopulated every
+    //exec(); empty until the function has run at least once, the same
+    //way isUsed is only meaningful post-exec.
+    const QList<PipelineExclusion> &getPipelineExclusions(const int &position) const;
+
     //#############
     //clear results
     //#############
@@ -385,10 +418,41 @@ protected:
 
     QMap<int, QList<InputElement> > inputElements;
 
+    //D16/domain-model.md S5: what each NeededElement position's pipeline
+    //most recently excluded, and why - keyed the same way inputElements
+    //is. Rebuilt every exec(), not persisted separately (it is fully
+    //re-derivable from the declared pipeline plus current data, exactly
+    //like isUsed).
+    QMap<int, QList<PipelineExclusion> > pipelineExclusions;
+
     void filterObservations(QList<QPointer<Observation> > &allUsableObservations, QList<QPointer<Observation> > &inputObservations);
     void addDisplayResidual(int elementId, double vr);
     void addDisplayResidual(int elementId, double vx, double vy, double vz, double v);
     void addDisplayResidual(int elementId, double vx, double vy, double vz, double v, double vi, double vj, double vk);
+
+private:
+
+    //the pre-Stage-7b switch-on-feature-type dispatch, run once (or, for
+    //a residual-based pipeline stage, twice - see exec()).
+    bool execByFeatureType(const QPointer<FeatureWrapper> &feature);
+
+    //deterministic pipeline stages (ExplicitList, Exclude) - need no fit
+    //result, so they run before the first execByFeatureType() pass.
+    //Returns whether any position had a non-empty pipeline declared.
+    bool applyDeterministicPipelineStages();
+
+    //eResidualOutlierRejectionStage - needs a completed fit's residuals,
+    //so it runs after the first execByFeatureType() pass, using this
+    //pass's Statistic. Returns whether it changed any shouldBeUsed, i.e.
+    //whether a second execByFeatureType() pass is warranted.
+    bool applyResidualPipelineStages();
+
+    //looks up the scalar residual magnitude Function::addDisplayResidual
+    //recorded for elementId in the current statistic, trying the "v" key
+    //(most fit functions) then "vr" (e.g. BestFitSphere). Not every fit
+    //function reports one under either key (domain-model.md S9) - this
+    //degrades to nullopt rather than guessing.
+    std::optional<double> residualMagnitude(int elementId) const;
 
 };
 
