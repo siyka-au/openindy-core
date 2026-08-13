@@ -212,6 +212,59 @@ It was carrying two independent jobs: **provenance** (where points came from) an
 because you measure straight into the thing you are fitting. V-STARS separates them
 completely — one acquisition, thousands of points, forty geometries.
 
+### The pipeline shape (Stage 7b, shipped)
+
+**`NeededElement` carries an ordered `pipeline` (`QList<PipelineStage>`), literally.** Not a
+parallel structure keyed by position elsewhere — the pipeline lives on the same declaration
+a `roleName` does, so it travels with the function and persists the same way. A `PipelineStage`
+(`include/plugin/function/pipelinestage.h`) is one of:
+
+- **`ExplicitList`** — only these element ids survive. The hand-picking case with no rejection
+  reason needed (a curated set, not an exclusion).
+- **`Exclude(reason)`** — these ids are dropped, each carrying its own reason. **D16, verbatim:**
+  the point keeps its tag; this is the recorded fact of why it did not participate.
+- **`ResidualOutlierRejection(sigmaMultiplier)`** — the one computed stage this pass ships. Reads
+  whatever residual the fit itself already reported (`Function::addDisplayResidual`, keyed
+  `"v"` then `"vr"`) and excludes anything beyond `sigmaMultiplier * stdev`.
+
+**The choke point is `Function::exec(const QPointer<FeatureWrapper>&)`**, not any individual
+fit's `exec(Plane&)`/`exec(Point&)`/etc. Every subclass funnels through it (`Feature::recalc()`
+calls exactly this overload), so pipeline application is generic across every fit type with
+**zero changes to any fit function's own code** — they already read `InputElement::shouldBeUsed`
+and call `setIsUsed`/`addDisplayResidual` (7c-ii groundwork). Concretely: apply deterministic
+stages (`ExplicitList`/`Exclude`, need no fit result) → run the fit once → if a residual stage is
+declared, evaluate it against that pass's `Statistic` → if it excluded anything, run the fit a
+second time. Exactly two passes, never iterative reweighting to convergence — see S9.
+
+**Pipelines are opt-in per role.** A `NeededElement` with no declared pipeline is left completely
+alone; `Function::exec()` must never overwrite a `shouldBeUsed` nobody asked it to touch. This is
+what keeps the pre-existing (if UI-less) `OiJob::setShouldBeUsed`/`Function::setShouldBeUsed`
+working unchanged for every function that has not adopted a pipeline.
+
+**Traceability**: `Function::getPipelineExclusions(position)` reports the current exclusion set
+with reasons, re-derived on every `exec()` — not persisted separately, the same way `isUsed`
+isn't. The declared pipeline itself *is* persisted (`Function::toOpenIndyXML`/`fromOpenIndyXML`),
+and needed **no `ProjectExchanger` changes**: unlike `InputElement`, which holds object pointers
+`ProjectExchanger` must resolve through its own id maps, a `PipelineStage` holds only ids and
+scalars, so it round-trips through `Function`'s own XML methods alone.
+
+**Same mechanism at observation level, verified not assumed.** `BestFitPoint` (the one function
+touching raw `Observation`s, D13) needed no code changes either — a pipeline declared on its
+`eObservationElement` position works identically, proven end to end against the real class in
+`openindy-default-plugin/test/pipelinefilter/tst_pipelinefilter.cpp`.
+
+**Why a value type, not a `QObject`/plugin-discoverable stage like `Function` itself.** The plan's
+wording ("plugin-provided and parameterized, same shape as functions") reads as "stages should be
+as extensible as functions are." The one stage this pass ships cannot be — it has to read whatever
+residual the *owning* fit already reported, which only works evaluated generically at the one
+choke point every fit funnels through, not through a per-stage virtual a plugin would implement in
+isolation with no access to the fit's own `Statistic`. Building a second plugin-discovery ABI (new
+interface header, IID, factory, `PluginRepository` wiring) for exactly one built-in stage is the
+speculative filter library the plan explicitly says not to build. `PipelineStageType` can grow a
+genuine plugin-discoverable shape later — the persisted XML shape and enum values do not depend on
+how a stage's behaviour is dispatched — if a future stage genuinely needs custom, fit-specific math
+a plugin author supplies.
+
 ### Deliberately out of scope: automated segmentation
 
 Auto-sectioning a cloud or a V-STARS batch and aligning it to what you are measuring is
@@ -367,7 +420,26 @@ Recorded because each was silent, and the same class of bug keeps recurring.
    never ran the iterative least-squares refinement `BestFitSphere` did — approximation
    only, despite looking like a drop-in sibling. Found only by reading both
    implementations side by side during consolidation, not by any test disagreeing.
-9. **`Feature::selfFeature` is not the `FeatureWrapper` that ends up in the job.** Every
+9. **A residual-based outlier filter is only unmasked by its own outliers once the sample is
+   large enough.** `ResidualOutlierRejection` (Stage 7b) computes its threshold from a `Statistic`
+   whose `stdev` is itself computed *including* whatever outliers are present — a single gross
+   outlier inflates the very stdev meant to catch it. For `k` outliers of roughly equal residual
+   magnitude among `N` points, the threshold only exceeds the outlier's own residual once
+   `N > 9k + 3` (derivation in `openindy-core/test/pipeline/tst_pipeline.cpp`). Below that, the
+   filter silently does nothing — not an error, just a threshold that never trips. This is a
+   property of naive population-stdev sigma clipping generally, not a bug in this
+   implementation; a future robust-statistics stage (median absolute deviation, iterative
+   trimming) would not have this floor, but is out of scope per Stage 7b's "one real stage" limit.
+10. **`BestFitPlane`'s normal-*sign* rectification degenerates for three collinear "used"
+   points.** It picks the sign (not magnitude — that comes from the PCA fit over every used
+   point) from the cross product of `usedPositions[0]`, `[1]`, `[2]` — i.e. whichever three
+   elements happen to be first in `inputElements[0]`'s order, which is *acquisition* order, not
+   anything geometric. A dataset built by iterating a grid one axis at a time (e.g. all `x=0`
+   points before any other `x`) hands it three collinear points as that first triple. Harmless
+   for a hand-tagged or randomly-ordered dataset, a real landmine for programmatically generated
+   or synthetic test data — found while writing `tst_pipelinefilter.cpp` (Stage 7b), not a
+   regression.
+11. **`Feature::selfFeature` is not the `FeatureWrapper` that ends up in the job.** Every
    `Feature` constructs its own `FeatureWrapper` in its constructor
    (`Feature::selfFeature`), self-consistently wrapping itself. Separately,
    `OiJob::createFeatureWrapper` (and every test that follows its pattern) does
