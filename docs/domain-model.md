@@ -337,3 +337,13 @@ Recorded because each was silent, and the same class of bug keeps recurring.
 6. **Uncomputed fields nobody noticed.** `Observation::sigmaXyz` was never populated
    anywhere — `transformAllObsToDestSystem` copied `xyz`/`ijk` from their originals but
    not sigma.
+7. **A declared input type that didn't match what the code actually read.**
+   `BestFitCylinderFromPoints` declared `eObservationElement` despite its name;
+   `setUpResult()` read `element.point`. It was unreachable through ordinary `OiJob`
+   binding — no real caller could ever populate it correctly — and "passed" its own unit
+   test only because that test bypassed binding and stuffed Point-shaped `InputElement`s
+   in directly. A test that skips the real wiring path can make dead code look alive.
+8. **A partial reimplementation silently dropped a refinement step.** `SphereFromPoints`
+   never ran the iterative least-squares refinement `BestFitSphere` did — approximation
+   only, despite looking like a drop-in sibling. Found only by reading both
+   implementations side by side during consolidation, not by any test disagreeing.
