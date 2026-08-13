@@ -297,6 +297,15 @@ endif()
 
 add_test(NAME ownership COMMAND tst_ownership)
 
+add_executable(tst_ownedsubgeometry test/ownedsubgeometry/tst_ownedsubgeometry.cpp)
+target_link_libraries(tst_ownedsubgeometry PRIVATE Qt6::Test OpenIndyCore OpenIndyMath)
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(tst_ownedsubgeometry PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+
+add_test(NAME ownedsubgeometry COMMAND tst_ownedsubgeometry)
+
 add_executable(tst_measurementintent test/measurementintent/tst_measurementintent.cpp)
 target_link_libraries(tst_measurementintent PRIVATE Qt6::Test OpenIndyCore OpenIndyMath)
 

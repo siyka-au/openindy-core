@@ -718,6 +718,10 @@ bool OiJob::removeFeature(const int &featureId){
         return false;
     }
 
+    //D19 applied to functions (Stage 7h): deleting the owner deletes what
+    //it owns, so it cannot dangle
+    this->removeOwnedSubGeometries(feature);
+
     //possibly reset active group
     if(feature->getFeature()->getGroupName().compare("") != 0 && feature->getFeature()->getGroupName().compare(this->activeGroup) == 0
             && this->featureContainer.getFeaturesByGroup(feature->getFeature()->getGroupName()).size() == 1){
@@ -754,6 +758,10 @@ bool OiJob::removeFeature(const QPointer<FeatureWrapper> &feature){
         emit this->sendMessage(QString("Cannot remove feature %1").arg(feature->getFeature()->getFeatureName()), eWarningMessage);
         return false;
     }
+
+    //D19 applied to functions (Stage 7h): deleting the owner deletes what
+    //it owns, so it cannot dangle
+    this->removeOwnedSubGeometries(feature);
 
     //possibly reset active group
     if(feature->getFeature()->getGroupName().compare("") != 0 && feature->getFeature()->getGroupName().compare(this->activeGroup) == 0
@@ -896,6 +904,76 @@ void OiJob::addFunction(const QPointer<Function> &function){
             this->setUpDependencies(element, this->activeFeature->getFeature());
         }
     }
+
+}
+
+/*!
+ * \brief OiJob::addOwnedSubGeometry
+ * D19 applied to functions (Stage 7h) - see the declaration's comment.
+ * \param owner
+ * \param subGeometry
+ * \param producerFunction
+ * \param neededElementsIndex
+ * \return
+ */
+bool OiJob::addOwnedSubGeometry(const QPointer<FeatureWrapper> &owner,
+                                 const QPointer<FeatureWrapper> &subGeometry,
+                                 const QPointer<Function> &producerFunction,
+                                 const int &neededElementsIndex){
+
+    //check owner
+    if(owner.isNull() || owner->getGeometry().isNull()){
+        emit this->sendMessage("No valid owner feature for owned sub-geometry", eErrorMessage);
+        return false;
+    }
+    if(this->featureContainer.getFeatureById(owner->getGeometry()->getId()).isNull()){
+        emit this->sendMessage("Owner feature is not part of this job", eErrorMessage);
+        return false;
+    }
+
+    //check sub-geometry: must already be registered in this job, with no
+    //function attached yet (this call is the one and only time an owned
+    //accessor's producer gets attached)
+    if(subGeometry.isNull() || subGeometry->getGeometry().isNull()){
+        emit this->sendMessage("No valid feature to generate as owned sub-geometry", eErrorMessage);
+        return false;
+    }
+    if(this->featureContainer.getFeatureById(subGeometry->getGeometry()->getId()).isNull()){
+        emit this->sendMessage("Sub-geometry feature is not part of this job", eErrorMessage);
+        return false;
+    }
+    if(!subGeometry->getGeometry()->getFunctions().isEmpty()){
+        emit this->sendMessage("Feature already has a producer function", eErrorMessage);
+        return false;
+    }
+
+    //check function
+    if(producerFunction.isNull()){
+        emit this->sendMessage("No valid function for owned sub-geometry", eErrorMessage);
+        return false;
+    }
+
+    //connect the function the same way OiJob::addFunction does
+    QObject::connect(producerFunction.data(), &Function::sendMessage, this, &OiJob::sendMessage, Qt::AutoConnection);
+
+    //attach the function - mints its id, appends to functionList
+    subGeometry->getGeometry()->addFunction(producerFunction);
+
+    //bind the owner as this function's input and wire the ordinary
+    //dependency edges (previouslyNeeded/usedFor), exactly as if the user
+    //had picked this function and this input by hand (7c-i's path)
+    this->addInputFeature(subGeometry, 0, neededElementsIndex, owner);
+
+    //record ownership - makes the feature read-only (getOwnerDescription)
+    //and lets the owner find/regenerate/cascade-delete it
+    subGeometry->getGeometry()->setOwnerFeature(owner->getGeometry());
+
+    //trigger the initial computation through the ordinary recalc path -
+    //not a second recalculation mechanism, the same signal
+    //OiJob::removeFeature and friends already emit
+    emit this->recalcFeatureSet();
+
+    return true;
 
 }
 
@@ -2939,6 +3017,29 @@ bool OiJob::canRemoveFeature(const QPointer<FeatureWrapper> &feature) const{
     }
 
     return true;
+
+}
+
+/*!
+ * \brief OiJob::removeOwnedSubGeometries
+ * D19 applied to functions (Stage 7h) - see the declaration's comment.
+ * \param feature
+ */
+void OiJob::removeOwnedSubGeometries(const QPointer<FeatureWrapper> &feature){
+
+    if(feature.isNull() || feature->getGeometry().isNull()){
+        return;
+    }
+
+    //copy first: removeFeature (via ~Geometry) mutates the owner's
+    //ownedSubGeometries list as each child is actually deleted
+    const QList<QPointer<Geometry> > owned = feature->getGeometry()->getOwnedSubGeometries();
+
+    foreach(const QPointer<Geometry> &child, owned){
+        if(!child.isNull()){
+            this->removeFeature(child->getId());
+        }
+    }
 
 }
 

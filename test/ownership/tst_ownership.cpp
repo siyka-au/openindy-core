@@ -51,6 +51,14 @@ private Q_SLOTS:
     void actualCannotBeRealisedByAnotherActual();
     void realisesRoundTripsThroughXml();
     void geometryXmlHasNoIsNominalAttribute();
+
+    //Stage 7h: D19 applied to functions - function-owned sub-geometry
+    void ownedSubGeometryIsReadOnlyAndNamesItsOwner();
+    void ownedSubGeometryRejectsDirectParameterEdits();
+    void settingOwnerFeatureRegistersOnBothSides();
+    void aGeometryCannotOwnItself();
+    void ownerFeatureRoundTripsThroughXml();
+    void destroyingAnOwnedGeometryUnregistersFromItsOwner();
 };
 
 void OwnershipTest::initTestCase(){
@@ -188,6 +196,123 @@ void OwnershipTest::geometryXmlHasNoIsNominalAttribute(){
     //fromOpenIndyXML must not require it either
     Point reloaded;
     QVERIFY(reloaded.fromOpenIndyXML(xml));
+
+}
+
+/*!
+ * Stage 7h coverage for D19 applied to functions (domain-model.md S6):
+ * function-owned sub-geometry is a real feature in the tree, owned by an
+ * owner *feature* (not identified by its producer's function type, unlike
+ * the FitFunction/nominal-actual case above) and read-only. The exact
+ * same ConstructFunction (e.g. LineFromPlaneNormal, openindy-default-plugin)
+ * produces an independent, editable feature when attached directly by a
+ * user (7c-i, still covered by constructFunctionProducerLeavesGeometryEditable
+ * above) and a bound, read-only one here - what differs is only whether
+ * setOwnerFeature was called, which is OiJob::addOwnedSubGeometry's job,
+ * not the function's.
+ */
+void OwnershipTest::ownedSubGeometryIsReadOnlyAndNamesItsOwner(){
+
+    Point owner;
+    owner.setFeatureName("Plane1");
+
+    Point child;
+    QPointer<FakeConstruct> construct = new FakeConstruct();
+    child.addFunction(construct);
+
+    //still editable before ownership is recorded - the same construct
+    //function, unowned, is 7c-i's independent path
+    QVERIFY(!child.getOwnerDescription().has_value());
+
+    QVERIFY(child.setOwnerFeature(owner.getFeatureWrapper()->getGeometry()));
+
+    const std::optional<QString> description = child.getOwnerDescription();
+    QVERIFY(description.has_value());
+    QVERIFY(description->contains("FakeConstruct"));
+    QVERIFY(description->contains("Plane1"));
+
+}
+
+void OwnershipTest::ownedSubGeometryRejectsDirectParameterEdits(){
+
+    Point owner;
+    Point child;
+    child.setPoint(Position(1.0, 2.0, 3.0));
+    child.addFunction(new FakeConstruct());
+    QVERIFY(child.setOwnerFeature(owner.getFeatureWrapper()->getGeometry()));
+
+    QMap<GeometryParameters, double> edit;
+    edit.insert(eUnknownX, 99.0);
+    child.setUnknownParameters(edit);
+
+    //rejected at the API, exactly like the fit-owned case above
+    QCOMPARE(child.getPosition().getVector().getAt(0), 1.0);
+
+}
+
+void OwnershipTest::settingOwnerFeatureRegistersOnBothSides(){
+
+    Point owner;
+    Point childA;
+    Point childB;
+
+    QVERIFY(childA.setOwnerFeature(owner.getFeatureWrapper()->getGeometry()));
+    QVERIFY(childB.setOwnerFeature(owner.getFeatureWrapper()->getGeometry()));
+
+    QCOMPARE(owner.getOwnedSubGeometries().size(), 2);
+    QVERIFY(owner.getOwnedSubGeometries().contains(childA.getFeatureWrapper()->getGeometry()));
+    QVERIFY(owner.getOwnedSubGeometries().contains(childB.getFeatureWrapper()->getGeometry()));
+
+    QVERIFY(childA.getOwnerFeature().has_value());
+    QCOMPARE(childA.getOwnerFeature().value().data(), static_cast<Geometry*>(&owner));
+
+}
+
+void OwnershipTest::aGeometryCannotOwnItself(){
+    Point point;
+    QVERIFY(!point.setOwnerFeature(point.getFeatureWrapper()->getGeometry()));
+    QVERIFY(!point.getOwnerFeature().has_value());
+}
+
+void OwnershipTest::ownerFeatureRoundTripsThroughXml(){
+
+    //write side only, same shape and same reason as realisesRoundTripsThroughXml:
+    //resolving the ref back into a live pointer is ProjectExchanger's job
+    Point owner(303, Position());
+
+    Point child(404, Position());
+    child.addFunction(new FakeConstruct());
+    QVERIFY(child.setOwnerFeature(owner.getFeatureWrapper()->getGeometry()));
+    child.setIsSolved(true);
+
+    QDomDocument doc("test");
+    QDomElement xml = child.toOpenIndyXML(doc);
+    QVERIFY(!xml.isNull());
+
+    QDomElement ownerElement = xml.firstChildElement("ownerFeature");
+    QVERIFY(!ownerElement.isNull());
+    QCOMPARE(ownerElement.attribute("ref").toInt(), 303);
+
+    //the owner itself is not owned, so it must not write the element
+    QDomDocument ownerDoc("test");
+    QDomElement ownerXml = owner.toOpenIndyXML(ownerDoc);
+    QVERIFY(ownerXml.firstChildElement("ownerFeature").isNull());
+
+}
+
+void OwnershipTest::destroyingAnOwnedGeometryUnregistersFromItsOwner(){
+
+    Point owner;
+
+    {
+        Point child;
+        QVERIFY(child.setOwnerFeature(owner.getFeatureWrapper()->getGeometry()));
+        QCOMPARE(owner.getOwnedSubGeometries().size(), 1);
+    }
+
+    //child just went out of scope (~Geometry ran) - the owner's list must
+    //not be left pointing at a destroyed object
+    QCOMPARE(owner.getOwnedSubGeometries().size(), 0);
 
 }
 

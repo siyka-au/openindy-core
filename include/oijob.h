@@ -133,6 +133,27 @@ public:
     void addFunction(const QPointer<Function> &function);
     void removeFunction(const int &functionIndex);
 
+    //#############################################################
+    //D19 applied to functions (Stage 7h): generate function-owned
+    //sub-geometry
+    //#############################################################
+
+    //Attaches `producerFunction` (an ordinary ConstructFunction, e.g.
+    //LineFromPlaneNormal - the same class 7c-i's independent, editable
+    //feature uses) to `subGeometry`, binds `owner` as its input at
+    //neededElementsIndex, and records `owner` as subGeometry's owner
+    //(Geometry::setOwnerFeature) so it is read-only and regenerates on
+    //the owner's recompute. `subGeometry` must already be added to this
+    //job (e.g. via addFeatures) with no function attached yet. Reuses
+    //the ordinary dependency-wiring (addInputFeature) and function-attach
+    //(Feature::addFunction) machinery - not a parallel path. Generic
+    //across geometry type: this is the one primitive Haiku's replication
+    //pass for other owner/accessor pairs reuses unchanged.
+    bool addOwnedSubGeometry(const QPointer<FeatureWrapper> &owner,
+                              const QPointer<FeatureWrapper> &subGeometry,
+                              const QPointer<Function> &producerFunction,
+                              const int &neededElementsIndex = 0);
+
     //add input elements to a feature's function
     void addInputObservation(const QPointer<FeatureWrapper> &target, const int &functionPosition, const int &neededElementsIndex, const QPointer<Observation> &observation);
     void addInputReading(const QPointer<FeatureWrapper> &target, const int &functionPosition, const int &neededElementsIndex, const QPointer<Reading> &reading);
@@ -322,6 +343,15 @@ private:
     bool checkAndSetUpNewFeature(const QPointer<FeatureWrapper> &feature, bool overwrite = false);
 
     bool canRemoveFeature(const QPointer<FeatureWrapper> &feature) const;
+
+    //D19 applied to functions (Stage 7h): "deleting the owner deletes its
+    //owned sub-geometry" - called from removeFeature() before the feature
+    //itself is removed. Copies the owner's getOwnedSubGeometries() list
+    //before iterating since removeFeature mutates it (via ~Geometry's
+    //cleanup), and recurses through the ordinary removeFeature(int) path
+    //rather than deleting Feature objects directly, so every owned child
+    //gets the normal disconnect/container-removal/signal bookkeeping.
+    void removeOwnedSubGeometries(const QPointer<FeatureWrapper> &feature);
 
     bool checkCircleWarning(const QPointer<Feature> &activeFeature, const QPointer<Feature> &usedForActiveFeature);
 
