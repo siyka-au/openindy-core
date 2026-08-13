@@ -243,6 +243,26 @@ Owned sub-geometry needs **no new addressing syntax**. They are ordinary feature
 tree, so the existing input machinery works unchanged — which deleted a whole
 `<feature>.<realisation>.<accessor>` path system from the design.
 
+**Shipped (Stage 7h): ownership is recorded, not inferred from the function's type.**
+`Geometry::getOwnerDescription()` checks a new `ownerFeature` field *before* the existing
+"is the producer a `FitFunction`" check. This is deliberate: it means the exact same
+`ConstructFunction` class (`LineFromPlaneNormal`, `PointFromPlaneOrigin`) is user-owned and
+editable when a user attaches it directly (7c-i) and read-only when
+`OiJob::addOwnedSubGeometry` attaches it and records an owner. **No new plugin code was
+needed for Plane's accessor set** — 7c-i's classes work unchanged as owned-accessor
+producers. This generalises past the FitFunction-vs-ConstructFunction split D19 originally
+drew for nominal/actual: ownership is now a fact recorded about a *feature*, not something
+inferred from *what kind of function* produced it.
+
+Regeneration reuses the ordinary dependency-graph walk (`FeatureUpdater::
+recursiveFeatureRecalculation`), not a second recalculation path — `Geometry::recalc()`
+compares its own value before/after re-executing its function list and only dirties its
+owned children (`setIsUpdated(false)`) when that value actually changed. Combined with
+`FeatureUpdater`'s reset loops leaving owned sub-geometry's `isUpdated` alone (instead of
+unconditionally clearing it, as they do for every other feature), an owned accessor
+regenerates when its owner moves and is left untouched by a recalc pass over an otherwise-
+unchanged graph — including the one every project load triggers.
+
 ---
 
 ## 7. Plugin ABI
@@ -347,3 +367,21 @@ Recorded because each was silent, and the same class of bug keeps recurring.
    never ran the iterative least-squares refinement `BestFitSphere` did — approximation
    only, despite looking like a drop-in sibling. Found only by reading both
    implementations side by side during consolidation, not by any test disagreeing.
+9. **`Feature::selfFeature` is not the `FeatureWrapper` that ends up in the job.** Every
+   `Feature` constructs its own `FeatureWrapper` in its constructor
+   (`Feature::selfFeature`), self-consistently wrapping itself. Separately,
+   `OiJob::createFeatureWrapper` (and every test that follows its pattern) does
+   `new FeatureWrapper(); wrapper->setPoint(new Point())` — a **second**, different
+   `FeatureWrapper` object, which is the one actually passed to `addFeature`, stored in
+   `FeatureContainer`, and threaded through the rest of the app. `Feature::addUsedFor`/
+   `addPreviouslyNeeded`'s symmetric propagation uses `this->selfFeature` for the reverse
+   edge, so `owner->getUsedFor()` ends up holding the *auto-created* wrapper, not whatever
+   external wrapper a caller registered the same feature under — `.contains(externalWrapper)`
+   on that list silently returns false even though the dependency edge is real and correct.
+   `usedForMap`/`previouslyNeededMap` (keyed by feature id) are unaffected and are the
+   reliable way to check membership; list membership must be checked by
+   `entry->getFeature()->getId()`, not `QPointer<FeatureWrapper>` identity. Found while
+   writing `tst_ownedsubgeometry.cpp` (Stage 7h) — not a regression, pre-existing since
+   whenever `FeatureWrapper` gained per-feature construction, and every other test/call
+   site either doesn't check `getUsedFor()`/`getPreviouslyNeeded()` by object identity or
+   happens to use `getFeatureWrapper()` (== `selfFeature`) consistently on both sides.
