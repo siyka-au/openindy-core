@@ -397,6 +397,62 @@ a type-erased `FeatureWrapper`) is where the `dynamic_cast` to `Producer<Concret
 `Transform<ConcreteType>*` happens. A cast that fails **is** the "this function does not
 belong in this slot" rejection — no separate validation step required.
 
+### Shipped (Stage 7d): attach-time enforcement, and what stayed the same
+
+**Runtime, not compile-time — D21's left-open call, resolved.** `Feature::addFunction()` is
+the attach-time enforcement point (`Function::canActAsProducer`/`canActAsTransform`,
+runtime `dynamic_cast` checks, same style as the dispatch boundary above). A compile-time
+template API (`attachProducer<T>(Producer<T>*)`) was considered and rejected: the real
+attach paths — the UI's function picker, `ProjectExchanger` restoring a saved project —
+only ever hold a dynamically-loaded `Function*` with no compile-time geometry type, so a
+template-constrained signature could not be used at the one call site that matters most.
+
+**Which slot a function takes is decided by what it implements, not by attach order.**
+`Feature::addFunction()` offers the producer slot only if the function implements
+`Producer<T>` for this feature's type *and* the slot is empty; otherwise, if it implements
+`Transform<T>`, it is appended as a transform *regardless of whether a producer exists at
+all* — a station-owned `Point`'s value can come directly from measurement (`Point::recalc()`
+computing a centroid from `observations`, D20), with no producer `Function` ever attached,
+and a `Transform` (e.g. `Register`) must still be attachable on top of that. A function
+implementing neither mixin for the feature's type — or a second `Producer` once the slot is
+filled — is rejected outright, with a message naming the reason, and simply is not attached
+(`Feature::addFunction()` still returns `void`; a caller cannot currently distinguish "did
+not attach" from "attached" without re-checking `getFunctions()`).
+
+**`SpecialFunction` (e.g. `openindy-default-plugin`'s `ConfiguredFunction`) is exempt from
+the mixin check entirely.** It manages its own execution by overriding `execChecked()`
+directly — running its own sub-function traversal (`CFVisitor`) — rather than ever reaching
+`execByFeatureType`'s dispatch, so neither `Producer<T>` nor `Transform<T>` applies to it.
+`Function::canActAsProducer`/`canActAsTransform` special-case any `SpecialFunction` to
+`true` for exactly this reason.
+
+**`Feature::getFunctions()` survives as a computed view — producer (if set) followed by
+transforms, in declared order — for backward compatibility.** Dozens of pre-7d call sites
+across all four repos (`FeatureUpdater`, `OiJob`, UI models, `ProjectExchanger`) index into
+it positionally, on the standing convention that position 0 is the producer (verified fact
+1). Rather than touching every one, `getFunctions()` reconstructs that exact ordering from
+the two real containers on every call — position 0 is *guaranteed* to be the producer now
+(when one exists), which is strictly more robust than the old convention-only guarantee
+regardless of attach order. `addFunction`/`removeFunction` keep their pre-7d signatures too
+(`removeFunction(index)` maps `0` to the producer slot, everything else to
+`transformFunctions[index-1]`).
+
+**The public `bool Function::exec(feature)` is now a thin wrapper over the new
+`std::expected<void, QString> Function::execChecked(feature)`.** `Feature::recalc()` calls
+`execChecked()` directly — the actual `std::expected` boundary the plan's acceptance
+criteria describe — while `exec()` stays bool-returning and unchanged in signature for the
+~150 pre-7d call sites (mostly `tst_function.cpp`) that call a function directly without
+going through `Feature::recalc()`. Both are `virtual`, so a `SpecialFunction` overriding
+`execChecked()` is picked up correctly through either entry point.
+
+**A `Producer<T>`/`Transform<T>`'s returned `T` is written into the feature's real geometry
+object via that type's own `operator=`** (`execAs<T>()` in `function.cpp`) — the same
+pattern every migrated concrete class uses: build a fresh local `T`, mutate it with the
+class's own pre-existing `setUpResult()`-shaped helper (untouched by this stage — only the
+outer `exec()` entry point's signature changed), return it. This is why the migration
+preserved every fit/construct function's actual math unchanged; see trap #12 below for the
+one place this pattern needed a real fix, not just a wrapper.
+
 ---
 
 ## 8. Plugin ABI
@@ -538,3 +594,33 @@ Recorded because each was silent, and the same class of bug keeps recurring.
    whenever `FeatureWrapper` gained per-feature construction, and every other test/call
    site either doesn't check `getUsedFor()`/`getPreviouslyNeeded()` by object identity or
    happens to use `getFeatureWrapper()` (== `selfFeature`) consistently on both sides.
+12. **A hand-written `operator=`/copy constructor that copies only "my own new fields" silently
+   drops base-class state once it starts being used for more than in-place mutation.**
+   `Plane::operator=` (and every sibling `Geometry` subtype) only ever copied its own added
+   members (`xyz`/`ijk`/`d` for `Plane`) — never `Geometry::statistic`, `isCommon`,
+   `simulationData`, `activeMeasurementConfig`. Harmless for over a decade because the old
+   `exec(Type&)` family mutated the live target object directly and `operator=` was never in
+   the loop at all. Stage 7d's `Producer<T>`/`Transform<T>` build a *fresh local* `T` and
+   write it back via `*target = result.value()`, which goes through exactly the `operator=`
+   that had this gap — `getStatistic().getStdev()` silently read back `0` on every migrated
+   fit function until fixed. **`TrafoParam` had the identical bug one level deeper**: its
+   *copy constructor* (not just `operator=`) never copied `statistic` either, so the value
+   was lost during `return trafoParam;`'s implicit conversion into
+   `std::expected<TrafoParam, QString>` — before the dispatch boundary's fix could even see
+   it. Fixed two ways, deliberately different: generically at the dispatch boundary
+   (`execAs<T>()`, `function.cpp` — a concept-guarded `propagateStatisticIfPresent()` that
+   covers any current or future `T` with `getStatistic()`/`setStatistic()`, without editing
+   every affected `operator=`) for the `Geometry` case, and directly in `TrafoParam`'s own
+   copy constructor and `operator=` for the case a boundary-level fix could not reach. Found
+   via `tst_function`'s residual/stdev assertions and `tst_calibratedconstellation` while
+   migrating Stage 7d, not pre-existing regressions — the bug was always there, but nothing
+   exercised the `operator=`/copy-constructor path before this stage existed.
+13. **`Feature::addFunction()` returns `void`, so a rejected attach (Stage 7d's attach-time
+   enforcement) is silent to the caller.** A function that implements neither `Producer<T>`
+   nor `Transform<T>` for a feature's type — or a second `Producer` once the slot is full —
+   emits a message and is simply not attached; nothing communicates "did not attach" back to
+   `OiJob`/`ProjectExchanger`/the UI short of re-checking `getFunctions()`'s size before and
+   after. Not observed to matter in practice (every real plugin function now implements the
+   right mixin; only ad-hoc test doubles ever triggered it, and every one found during this
+   stage was fixed to implement a mixin rather than worked around), but a real gap if a
+   future plugin ships a function that doesn't declare the mixin its `applicableFor` implies.
