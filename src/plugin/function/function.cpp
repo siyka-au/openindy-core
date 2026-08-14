@@ -2,6 +2,63 @@
 
 using namespace oi;
 
+namespace {
+
+/*!
+ * Stage 7d/D21 (domain-model.md S7): the one place a Function is actually
+ * dispatched to its Producer<T>/Transform<T> mixin and the result written
+ * back into the feature's own geometry object via that type's ordinary
+ * operator= (which - like Plane::operator=, Point::operator=, ... -
+ * copies only the geometric fields, never id/parent/functionList, exactly
+ * matching what the old in-place exec(Type&) family did). A cast that
+ * fails on both mixins is the "this function doesn't belong in this slot"
+ * rejection.
+ */
+template<typename T>
+std::expected<void, QString> execAs(oi::Function *function, T *target, const QString &typeName){
+
+    if(oi::Producer<T> *producer = dynamic_cast<oi::Producer<T>*>(function)){
+        std::expected<T, QString> result = producer->exec();
+        if(!result.has_value()){
+            return std::unexpected(result.error());
+        }
+        *target = result.value();
+        return {};
+    }
+
+    if(oi::Transform<T> *transform = dynamic_cast<oi::Transform<T>*>(function)){
+        std::expected<T, QString> result = transform->exec(*target);
+        if(!result.has_value()){
+            return std::unexpected(result.error());
+        }
+        *target = result.value();
+        return {};
+    }
+
+    return std::unexpected(QString("Function \"%1\" not implemented for type %2")
+                                .arg(function->getMetaData().name, typeName));
+
+}
+
+/*!
+ * Stage 7d/D21: does `function` implement Producer<T> (isProducer=true) or
+ * Transform<T> (isProducer=false) for this concrete type? Used by both
+ * Function::canActAsProducer/canActAsTransform (attach-time check, no
+ * feature instance needed) - the type T is supplied by the caller's
+ * switch case, exactly mirroring execByFeatureType's dispatch switch.
+ */
+template<typename T>
+bool implementsProducer(oi::Function *function){
+    return dynamic_cast<oi::Producer<T>*>(function) != nullptr;
+}
+
+template<typename T>
+bool implementsTransform(oi::Function *function){
+    return dynamic_cast<oi::Transform<T>*>(function) != nullptr;
+}
+
+}
+
 /*!
  * \brief Function::Function
  * \param parent
@@ -26,12 +83,12 @@ void Function::init(){
 }
 
 /*!
- * \brief Function::exec
+ * \brief Function::execChecked
  * D16/domain-model.md S5: the pipeline choke point. Every Function
  * subclass funnels through here (Feature::recalc() calls exactly this
- * overload), so this is where a NeededElement's declared pipeline is
+ * method), so this is where a NeededElement's declared pipeline is
  * applied - generically, with zero changes needed in any fit function's
- * own exec(Plane&)/exec(Point&)/etc, because they already read
+ * own Producer<T>/Transform<T>::exec(), because they already read
  * InputElement::shouldBeUsed (Stage 7c-ii/7f groundwork).
  *
  * Two passes, not a single Stream walk, because one stage type
@@ -43,108 +100,211 @@ void Function::init(){
  * exactly two passes, not iterative reweighting to convergence - see
  * domain-model.md S9 for why that is an accepted, documented limitation
  * rather than an oversight.
+ *
+ * Stage 7d/D21: this is the std::expected boundary Feature::recalc() uses
+ * directly - see feature.h/feature.cpp. exec() (below) is a thin
+ * bool-returning wrapper kept for every pre-7d caller.
  * \param feature
  * \return
  */
-bool Function::exec(const QPointer<FeatureWrapper> &feature){
+std::expected<void, QString> Function::execChecked(const QPointer<FeatureWrapper> &feature){
 
     this->applyDeterministicPipelineStages();
 
-    bool ok = this->execByFeatureType(feature);
+    std::expected<void, QString> result = this->execByFeatureType(feature);
 
-    if(ok && this->applyResidualPipelineStages()){
-        ok = this->execByFeatureType(feature);
+    if(result.has_value() && this->applyResidualPipelineStages()){
+        result = this->execByFeatureType(feature);
     }
 
-    return ok;
+    return result;
 
 }
 
 /*!
- * \brief Function::execByFeatureType
- * The original exec(feature) dispatch - unchanged, just relocated so
- * exec() can wrap it with pipeline application (see above).
+ * \brief Function::exec
+ * Thin bool-returning wrapper over execChecked(), kept unchanged in
+ * signature for every caller that predates Stage 7d (tests calling a
+ * function directly, cfvisitor.cpp, OiJob) - see execChecked() above.
  * \param feature
  * \return
  */
-bool Function::execByFeatureType(const QPointer<FeatureWrapper> &feature){
+bool Function::exec(const QPointer<FeatureWrapper> &feature){
+    return this->execChecked(feature).has_value();
+}
 
-    if(!feature.isNull()){
+/*!
+ * \brief Function::execByFeatureType
+ * Stage 7d/D21 (domain-model.md S7): the producer/transform dispatch
+ * boundary. A caller only ever holds a type-erased FeatureWrapper, so the
+ * runtime switch on feature type is unavoidable - what changed is what
+ * happens inside each case: dynamic_cast to Producer<ConcreteType>-star or
+ * Transform<ConcreteType>-star (execAs<T>(), top of this file) instead of
+ * calling a retired per-type virtual. A failed cast on both mixins *is*
+ * the "this function doesn't belong in this slot" rejection.
+ * \param feature
+ * \return
+ */
+std::expected<void, QString> Function::execByFeatureType(const QPointer<FeatureWrapper> &feature){
 
-        switch(feature->getFeatureTypeEnum()){
-        case eStationFeature:
-            if(!feature->getStation().isNull()){ return this->exec(*feature->getStation()); }
-            break;
-        case eTrafoParamFeature:
-            if(!feature->getTrafoParam().isNull()){ return this->exec(*feature->getTrafoParam()); }
-            break;
-        case eCoordinateSystemFeature:
-            if(!feature->getCoordinateSystem().isNull()){ return this->exec(*feature->getCoordinateSystem()); }
-            break;
-        case eCircleFeature:
-            if(!feature->getCircle().isNull()){ return this->exec(*feature->getCircle()); }
-            break;
-        case eConeFeature:
-            if(!feature->getCone().isNull()){ return this->exec(*feature->getCone()); }
-            break;
-        case eCylinderFeature:
-            if(!feature->getCylinder().isNull()){ return this->exec(*feature->getCylinder()); }
-            break;
-        case eEllipseFeature:
-            if(!feature->getEllipse().isNull()){ return this->exec(*feature->getEllipse()); }
-            break;
-        case eEllipsoidFeature:
-            if(!feature->getEllipsoid().isNull()){ return this->exec(*feature->getEllipsoid()); }
-            break;
-        case eHyperboloidFeature:
-            if(!feature->getHyperboloid().isNull()){ return this->exec(*feature->getHyperboloid()); }
-            break;
-        case eLineFeature:
-            if(!feature->getLine().isNull()){ return this->exec(*feature->getLine()); }
-            break;
-        case eNurbsFeature:
-            if(!feature->getNurbs().isNull()){ return this->exec(*feature->getNurbs()); }
-            break;
-        case eParaboloidFeature:
-            if(!feature->getParaboloid().isNull()){ return this->exec(*feature->getParaboloid()); }
-            break;
-        case ePlaneFeature:
-            if(!feature->getPlane().isNull()){ return this->exec(*feature->getPlane()); }
-            break;
-        case ePointFeature:
-            if(!feature->getPoint().isNull()){ return this->exec(*feature->getPoint()); }
-            break;
-        case ePointCloudFeature:
-            if(!feature->getPointCloud().isNull()){ return this->exec(*feature->getPointCloud()); }
-            break;
-        case eScalarEntityAngleFeature:
-            if(!feature->getScalarEntityAngle().isNull()){ return this->exec(*feature->getScalarEntityAngle()); }
-            break;
-        case eScalarEntityDistanceFeature:
-            if(!feature->getScalarEntityDistance().isNull()){ return this->exec(*feature->getScalarEntityDistance()); }
-            break;
-        case eScalarEntityMeasurementSeriesFeature:
-            if(!feature->getScalarEntityMeasurementSeries().isNull()){ return this->exec(*feature->getScalarEntityMeasurementSeries()); }
-            break;
-        case eScalarEntityTemperatureFeature:
-            if(!feature->getScalarEntityTemperature().isNull()){ return this->exec(*feature->getScalarEntityTemperature()); }
-            break;
-        case eSlottedHoleFeature:
-            if(!feature->getSlottedHole().isNull()){ return this->exec(*feature->getSlottedHole()); }
-            break;
-        case eSphereFeature:
-            if(!feature->getSphere().isNull()){ return this->exec(*feature->getSphere()); }
-            break;
-        case eTorusFeature:
-            if(!feature->getTorus().isNull()){ return this->exec(*feature->getTorus()); }
-            break;
-        default:
-            break;
-        }
-
+    if(feature.isNull()){
+        return std::unexpected(QString("no feature to execute against"));
     }
 
-    return false;
+    switch(feature->getFeatureTypeEnum()){
+    case eStationFeature:
+        if(!feature->getStation().isNull()){ return execAs<Station>(this, feature->getStation().data(), "station"); }
+        break;
+    case eTrafoParamFeature:
+        if(!feature->getTrafoParam().isNull()){ return execAs<TrafoParam>(this, feature->getTrafoParam().data(), "transformation parameter"); }
+        break;
+    case eCoordinateSystemFeature:
+        if(!feature->getCoordinateSystem().isNull()){ return execAs<CoordinateSystem>(this, feature->getCoordinateSystem().data(), "coordinate system"); }
+        break;
+    case eCircleFeature:
+        if(!feature->getCircle().isNull()){ return execAs<Circle>(this, feature->getCircle().data(), "circle"); }
+        break;
+    case eConeFeature:
+        if(!feature->getCone().isNull()){ return execAs<Cone>(this, feature->getCone().data(), "cone"); }
+        break;
+    case eCylinderFeature:
+        if(!feature->getCylinder().isNull()){ return execAs<Cylinder>(this, feature->getCylinder().data(), "cylinder"); }
+        break;
+    case eEllipseFeature:
+        if(!feature->getEllipse().isNull()){ return execAs<Ellipse>(this, feature->getEllipse().data(), "ellipse"); }
+        break;
+    case eEllipsoidFeature:
+        if(!feature->getEllipsoid().isNull()){ return execAs<Ellipsoid>(this, feature->getEllipsoid().data(), "ellipsoid"); }
+        break;
+    case eHyperboloidFeature:
+        if(!feature->getHyperboloid().isNull()){ return execAs<Hyperboloid>(this, feature->getHyperboloid().data(), "hyperboloid"); }
+        break;
+    case eLineFeature:
+        if(!feature->getLine().isNull()){ return execAs<Line>(this, feature->getLine().data(), "line"); }
+        break;
+    case eNurbsFeature:
+        if(!feature->getNurbs().isNull()){ return execAs<Nurbs>(this, feature->getNurbs().data(), "nurbs"); }
+        break;
+    case eParaboloidFeature:
+        if(!feature->getParaboloid().isNull()){ return execAs<Paraboloid>(this, feature->getParaboloid().data(), "paraboloid"); }
+        break;
+    case ePlaneFeature:
+        if(!feature->getPlane().isNull()){ return execAs<Plane>(this, feature->getPlane().data(), "plane"); }
+        break;
+    case ePointFeature:
+        if(!feature->getPoint().isNull()){ return execAs<Point>(this, feature->getPoint().data(), "point"); }
+        break;
+    case ePointCloudFeature:
+        if(!feature->getPointCloud().isNull()){ return execAs<PointCloud>(this, feature->getPointCloud().data(), "point cloud"); }
+        break;
+    case eScalarEntityAngleFeature:
+        if(!feature->getScalarEntityAngle().isNull()){ return execAs<ScalarEntityAngle>(this, feature->getScalarEntityAngle().data(), "angle"); }
+        break;
+    case eScalarEntityDistanceFeature:
+        if(!feature->getScalarEntityDistance().isNull()){ return execAs<ScalarEntityDistance>(this, feature->getScalarEntityDistance().data(), "distance"); }
+        break;
+    case eScalarEntityMeasurementSeriesFeature:
+        if(!feature->getScalarEntityMeasurementSeries().isNull()){ return execAs<ScalarEntityMeasurementSeries>(this, feature->getScalarEntityMeasurementSeries().data(), "measurement series"); }
+        break;
+    case eScalarEntityTemperatureFeature:
+        if(!feature->getScalarEntityTemperature().isNull()){ return execAs<ScalarEntityTemperature>(this, feature->getScalarEntityTemperature().data(), "temperature"); }
+        break;
+    case eSlottedHoleFeature:
+        if(!feature->getSlottedHole().isNull()){ return execAs<SlottedHole>(this, feature->getSlottedHole().data(), "slotted hole"); }
+        break;
+    case eSphereFeature:
+        if(!feature->getSphere().isNull()){ return execAs<Sphere>(this, feature->getSphere().data(), "sphere"); }
+        break;
+    case eTorusFeature:
+        if(!feature->getTorus().isNull()){ return execAs<Torus>(this, feature->getTorus().data(), "torus"); }
+        break;
+    default:
+        break;
+    }
+
+    return std::unexpected(QString("Function \"%1\" not implemented for this feature type").arg(this->getMetaData().name));
+
+}
+
+/*!
+ * \brief Function::canActAsProducer
+ * Stage 7d/D21: attach-time capability check - see function.h.
+ * \param type
+ * \param function
+ * \return
+ */
+bool Function::canActAsProducer(const FeatureTypes &type, Function *function){
+
+    if(function == nullptr){
+        return false;
+    }
+
+    switch(type){
+    case eStationFeature: return implementsProducer<Station>(function);
+    case eTrafoParamFeature: return implementsProducer<TrafoParam>(function);
+    case eCoordinateSystemFeature: return implementsProducer<CoordinateSystem>(function);
+    case eCircleFeature: return implementsProducer<Circle>(function);
+    case eConeFeature: return implementsProducer<Cone>(function);
+    case eCylinderFeature: return implementsProducer<Cylinder>(function);
+    case eEllipseFeature: return implementsProducer<Ellipse>(function);
+    case eEllipsoidFeature: return implementsProducer<Ellipsoid>(function);
+    case eHyperboloidFeature: return implementsProducer<Hyperboloid>(function);
+    case eLineFeature: return implementsProducer<Line>(function);
+    case eNurbsFeature: return implementsProducer<Nurbs>(function);
+    case eParaboloidFeature: return implementsProducer<Paraboloid>(function);
+    case ePlaneFeature: return implementsProducer<Plane>(function);
+    case ePointFeature: return implementsProducer<Point>(function);
+    case ePointCloudFeature: return implementsProducer<PointCloud>(function);
+    case eScalarEntityAngleFeature: return implementsProducer<ScalarEntityAngle>(function);
+    case eScalarEntityDistanceFeature: return implementsProducer<ScalarEntityDistance>(function);
+    case eScalarEntityMeasurementSeriesFeature: return implementsProducer<ScalarEntityMeasurementSeries>(function);
+    case eScalarEntityTemperatureFeature: return implementsProducer<ScalarEntityTemperature>(function);
+    case eSlottedHoleFeature: return implementsProducer<SlottedHole>(function);
+    case eSphereFeature: return implementsProducer<Sphere>(function);
+    case eTorusFeature: return implementsProducer<Torus>(function);
+    default: return false;
+    }
+
+}
+
+/*!
+ * \brief Function::canActAsTransform
+ * Stage 7d/D21: attach-time capability check - see function.h.
+ * \param type
+ * \param function
+ * \return
+ */
+bool Function::canActAsTransform(const FeatureTypes &type, Function *function){
+
+    if(function == nullptr){
+        return false;
+    }
+
+    switch(type){
+    case eStationFeature: return implementsTransform<Station>(function);
+    case eTrafoParamFeature: return implementsTransform<TrafoParam>(function);
+    case eCoordinateSystemFeature: return implementsTransform<CoordinateSystem>(function);
+    case eCircleFeature: return implementsTransform<Circle>(function);
+    case eConeFeature: return implementsTransform<Cone>(function);
+    case eCylinderFeature: return implementsTransform<Cylinder>(function);
+    case eEllipseFeature: return implementsTransform<Ellipse>(function);
+    case eEllipsoidFeature: return implementsTransform<Ellipsoid>(function);
+    case eHyperboloidFeature: return implementsTransform<Hyperboloid>(function);
+    case eLineFeature: return implementsTransform<Line>(function);
+    case eNurbsFeature: return implementsTransform<Nurbs>(function);
+    case eParaboloidFeature: return implementsTransform<Paraboloid>(function);
+    case ePlaneFeature: return implementsTransform<Plane>(function);
+    case ePointFeature: return implementsTransform<Point>(function);
+    case ePointCloudFeature: return implementsTransform<PointCloud>(function);
+    case eScalarEntityAngleFeature: return implementsTransform<ScalarEntityAngle>(function);
+    case eScalarEntityDistanceFeature: return implementsTransform<ScalarEntityDistance>(function);
+    case eScalarEntityMeasurementSeriesFeature: return implementsTransform<ScalarEntityMeasurementSeries>(function);
+    case eScalarEntityTemperatureFeature: return implementsTransform<ScalarEntityTemperature>(function);
+    case eSlottedHoleFeature: return implementsTransform<SlottedHole>(function);
+    case eSphereFeature: return implementsTransform<Sphere>(function);
+    case eTorusFeature: return implementsTransform<Torus>(function);
+    default: return false;
+    }
 
 }
 
@@ -986,226 +1146,6 @@ bool Function::fromOpenIndyXML(QDomElement &xmlElem){
 
     return true;
 
-}
-
-/*!
- * \brief Function::exec
- * \param station
- * \return
- */
-bool Function::exec(Station &/*station*/){
-    emit this->sendMessage("Function \"" + this->getMetaData().name + "\" not implemented for type station", eCriticalMessage, eMessageBoxMessage);
-    return false;
-}
-
-/*!
- * \brief Function::exec
- * \param coordinateSystem
- * \return
- */
-bool Function::exec(CoordinateSystem &/*coordinateSystem*/){
-    emit this->sendMessage("Function \"" + this->getMetaData().name + "\" not implemented for type coordinate system", eCriticalMessage, eMessageBoxMessage);
-    return false;
-}
-
-/*!
- * \brief Function::exec
- * \param trafoParam
- * \return
- */
-bool Function::exec(TrafoParam &/*trafoParam*/){
-    emit this->sendMessage("Function \"" + this->getMetaData().name + "\" not implemented for type transformation parameter", eCriticalMessage, eMessageBoxMessage);
-    return false;
-}
-
-/*!
- * \brief Function::exec
- * \param circle
- * \return
- */
-bool Function::exec(Circle &/*circle*/){
-    emit this->sendMessage("Function \"" + this->getMetaData().name + "\" not implemented for type circle", eCriticalMessage, eMessageBoxMessage);
-    return false;
-}
-
-/*!
- * \brief Function::exec
- * \param cone
- * \return
- */
-bool Function::exec(Cone &/*cone*/){
-    emit this->sendMessage("Function \"" + this->getMetaData().name + "\" not implemented for type cone", eCriticalMessage, eMessageBoxMessage);
-    return false;
-}
-
-/*!
- * \brief Function::exec
- * \param cylinder
- * \return
- */
-bool Function::exec(Cylinder &/*cylinder*/){
-    emit this->sendMessage("Function \"" + this->getMetaData().name + "\" not implemented for type cylinder", eCriticalMessage, eMessageBoxMessage);
-    return false;
-}
-
-/*!
- * \brief Function::exec
- * \param ellipse
- * \return
- */
-bool Function::exec(Ellipse &/*ellipse*/){
-    emit this->sendMessage("Function \"" + this->getMetaData().name + "\" not implemented for type ellipse", eCriticalMessage, eMessageBoxMessage);
-    return false;
-}
-
-/*!
- * \brief Function::exec
- * \param ellipsoid
- * \return
- */
-bool Function::exec(Ellipsoid &/*ellipsoid*/){
-    emit this->sendMessage("Function \"" + this->getMetaData().name + "\" not implemented for type ellipsoid", eCriticalMessage, eMessageBoxMessage);
-    return false;
-}
-
-/*!
- * \brief Function::exec
- * \param hyperboloid
- * \return
- */
-bool Function::exec(Hyperboloid &/*hyperboloid*/){
-    emit this->sendMessage("Function \"" + this->getMetaData().name + "\" not implemented for type hyperboloid", eCriticalMessage, eMessageBoxMessage);
-    return false;
-}
-
-/*!
- * \brief Function::exec
- * \param line
- * \return
- */
-bool Function::exec(Line &/*line*/){
-    emit this->sendMessage("Function \"" + this->getMetaData().name + "\" not implemented for type line", eCriticalMessage, eMessageBoxMessage);
-    return false;
-}
-
-/*!
- * \brief Function::exec
- * \param nurbs
- * \return
- */
-bool Function::exec(Nurbs &/*nurbs*/){
-    emit this->sendMessage("Function \"" + this->getMetaData().name + "\" not implemented for type nurbs", eCriticalMessage, eMessageBoxMessage);
-    return false;
-}
-
-/*!
- * \brief Function::exec
- * \param paraboloid
- * \return
- */
-bool Function::exec(Paraboloid &/*paraboloid*/){
-    emit this->sendMessage("Function \"" + this->getMetaData().name + "\" not implemented for type paraboloid", eCriticalMessage, eMessageBoxMessage);
-    return false;
-}
-
-/*!
- * \brief Function::exec
- * \param plane
- * \return
- */
-bool Function::exec(Plane &/*plane*/){
-    emit this->sendMessage("Function \"" + this->getMetaData().name + "\" not implemented for type plane", eCriticalMessage, eMessageBoxMessage);
-    return false;
-}
-
-/*!
- * \brief Function::exec
- * \param point
- * \return
- */
-bool Function::exec(Point &/*point*/){
-    emit this->sendMessage("Function \"" + this->getMetaData().name + "\" not implemented for type point", eCriticalMessage, eMessageBoxMessage);
-    return false;
-}
-
-/*!
- * \brief Function::exec
- * \param pointCloud
- * \return
- */
-bool Function::exec(PointCloud &/*pointCloud*/){
-    emit this->sendMessage("Function \"" + this->getMetaData().name + "\" not implemented for type point cloud", eCriticalMessage, eMessageBoxMessage);
-    return false;
-}
-
-/*!
- * \brief Function::exec
- * \param angle
- * \return
- */
-bool Function::exec(ScalarEntityAngle &/*angle*/){
-    emit this->sendMessage("Function \"" + this->getMetaData().name + "\" not implemented for type angle", eCriticalMessage, eMessageBoxMessage);
-    return false;
-}
-
-/*!
- * \brief Function::exec
- * \param distance
- * \return
- */
-bool Function::exec(ScalarEntityDistance &/*distance*/){
-    emit this->sendMessage("Function \"" + this->getMetaData().name + "\" not implemented for type distance", eCriticalMessage, eMessageBoxMessage);
-    return false;
-}
-
-/*!
- * \brief Function::exec
- * \param measurementSeries
- * \return
- */
-bool Function::exec(ScalarEntityMeasurementSeries &/*measurementSeries*/){
-    emit this->sendMessage("Function \"" + this->getMetaData().name + "\" not implemented for type measurement series", eCriticalMessage, eMessageBoxMessage);
-    return false;
-}
-
-/*!
- * \brief Function::exec
- * \param temperature
- * \return
- */
-bool Function::exec(ScalarEntityTemperature &/*temperature*/){
-    emit this->sendMessage("Function \"" + this->getMetaData().name + "\" not implemented for type temperature", eCriticalMessage, eMessageBoxMessage);
-    return false;
-}
-
-/*!
- * \brief Function::exec
- * \param slottedHole
- * \return
- */
-bool Function::exec(SlottedHole &/*slottedHole*/){
-    emit this->sendMessage("Function \"" + this->getMetaData().name + "\" not implemented for type slotted hole", eCriticalMessage, eMessageBoxMessage);
-    return false;
-}
-
-/*!
- * \brief Function::exec
- * \param sphere
- * \return
- */
-bool Function::exec(Sphere &/*sphere*/){
-    emit this->sendMessage("Function \"" + this->getMetaData().name + "\" not implemented for type sphere", eCriticalMessage, eMessageBoxMessage);
-    return false;
-}
-
-/*!
- * \brief Function::exec
- * \param torus
- * \return
- */
-bool Function::exec(Torus &/*torus*/){
-    emit this->sendMessage("Function \"" + this->getMetaData().name + "\" not implemented for type torus", eCriticalMessage, eMessageBoxMessage);
-    return false;
 }
 
 /*!

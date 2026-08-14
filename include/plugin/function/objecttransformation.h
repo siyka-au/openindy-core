@@ -18,15 +18,6 @@ public:
 
     virtual ~ObjectTransformation(){}
 
-protected:
-
-    //####################################
-    //methods that cannot be reimplemented
-    //####################################
-
-    bool exec(Station &station){ return Function::exec(station); }
-    bool exec(CoordinateSystem &coordinateSystem){ return Function::exec(coordinateSystem); }
-
 };
 
 }

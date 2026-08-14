@@ -17,7 +17,7 @@ namespace{
  * to stand in for an owner feature's own producer in these tests. x/y/z
  * are mutable so a test can simulate the owner moving between recalcs.
  */
-class FixedPositionFunction : public ConstructFunction {
+class FixedPositionFunction : public ConstructFunction, public Producer<Point> {
     Q_OBJECT
 public:
     FixedPositionFunction(QObject *parent = 0) : ConstructFunction(parent){
@@ -25,10 +25,10 @@ public:
         this->applicableFor.append(ePointFeature);
     }
     double x = 0.0, y = 0.0, z = 0.0;
-protected:
-    bool exec(Point &point) override {
+    std::expected<Point, QString> exec() override {
+        Point point;
         point.setPoint(Position(x, y, z));
-        return true;
+        return point;
     }
 };
 
@@ -41,7 +41,7 @@ protected:
  * given, so this exercises the generic mechanism the real Plane accessors
  * also go through.
  */
-class CopyPointFunction : public ConstructFunction {
+class CopyPointFunction : public ConstructFunction, public Producer<Point> {
     Q_OBJECT
 public:
     CopyPointFunction(QObject *parent = 0) : ConstructFunction(parent){
@@ -53,17 +53,17 @@ public:
         this->neededElements.append(param);
         this->applicableFor.append(ePointFeature);
     }
-protected:
-    bool exec(Point &point) override {
+    std::expected<Point, QString> exec() override {
         if(!this->inputElements.contains(0) || this->inputElements[0].size() != 1){
-            return false;
+            return std::unexpected(QString("CopyPointFunction: no input element"));
         }
         const InputElement &element = this->inputElements[0].first();
         if(element.point.isNull() || !element.point->getIsSolved()){
-            return false;
+            return std::unexpected(QString("CopyPointFunction: input point not solved"));
         }
+        Point point;
         point.setPoint(element.point->getPosition());
-        return true;
+        return point;
     }
 };
 

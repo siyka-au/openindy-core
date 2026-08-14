@@ -9,23 +9,31 @@
 
 using namespace oi;
 
-// Minimal stand-ins for a real fit/construct plugin function. Neither
-// overrides anything beyond what Function already default-implements -
-// FitFunction/ConstructFunction only need to be distinguishable *types*
-// for Geometry::getOwnerDescription's dynamic_cast, not do real work.
-class FakeFit : public FitFunction {
+// Minimal stand-ins for a real fit/construct plugin function. Beyond being
+// distinguishable *types* for Geometry::getOwnerDescription's dynamic_cast,
+// each now also has to implement Producer<Point> (Stage 7d/D21) - since
+// Feature::addFunction() only attaches a function that implements the
+// slot's required mixin, a fake with no real exec() would simply be
+// rejected at attach time and never become this Point's producer at all.
+class FakeFit : public FitFunction, public Producer<Point> {
     Q_OBJECT
 public:
     FakeFit(QObject *parent = 0) : FitFunction(parent){
         this->metaData.name = "FakeFit";
     }
+    std::expected<Point, QString> exec() override {
+        return Point();
+    }
 };
 
-class FakeConstruct : public ConstructFunction {
+class FakeConstruct : public ConstructFunction, public Producer<Point> {
     Q_OBJECT
 public:
     FakeConstruct(QObject *parent = 0) : ConstructFunction(parent){
         this->metaData.name = "FakeConstruct";
+    }
+    std::expected<Point, QString> exec() override {
+        return Point();
     }
 };
 

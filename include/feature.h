@@ -57,7 +57,21 @@ public:
     const bool &getIsSolved() const;
     void setIsSolved(const bool &isSolved);
 
-    const QList<QPointer<Function> > &getFunctions() const;
+    //###############################################################
+    //Stage 7d/D21 (domain-model.md S7): producer and transform are
+    //structurally distinct containers, not a validated role on one list.
+    //getFunctions() is a computed view - producerFunction (if any)
+    //followed by transformFunctions, in that order - kept for the many
+    //existing callers that still index positionally (verified fact 1:
+    //FeatureUpdater already treated position 0 as the producer by
+    //convention; this makes it true by construction instead). Prefer
+    //getProducerFunction()/getTransformFunctions() for new code that
+    //cares about the distinction.
+    //###############################################################
+
+    QList<QPointer<Function> > getFunctions() const;
+    const std::optional<QPointer<Function> > &getProducerFunction() const;
+    const QList<QPointer<Function> > &getTransformFunctions() const;
     void addFunction(const QPointer<Function> &function);
     void removeFunction(const int &index);
 
@@ -219,7 +233,16 @@ protected:
 
     bool isActiveFeature;
 
-    QList< QPointer<Function> > functionList;
+    //Stage 7d/D21 (domain-model.md S7): at most one producer - the
+    //function that defines this feature's value from external inputs (a
+    //fit, a construct function, a nominal producer) - followed by any
+    //number of transforms that refine that value in place, in order. Two
+    //producers, or a transform where a producer belongs, is not a
+    //validated-and-rejected input: it is a shape addFunction() will not
+    //construct (see Function::canActAsProducer/canActAsTransform, the
+    //runtime dynamic_cast check at the attach call site).
+    std::optional<QPointer<Function> > producerFunction;
+    QList<QPointer<Function> > transformFunctions;
 
     QList< QPointer<FeatureWrapper> > usedForList; //features which need this feature to recalc
     QMap<int, QPointer<FeatureWrapper> > usedForMap;

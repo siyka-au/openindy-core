@@ -1,5 +1,6 @@
 #include "feature.h"
 
+#include <expected>
 #include <stdexcept>
 
 #include "oijob.h"
@@ -104,7 +105,10 @@ Feature::~Feature(){
     }
 
     //delete all functions when deleting the feature
-    foreach(const QPointer<Function> &function, this->functionList){
+    if(this->producerFunction.has_value() && !this->producerFunction->isNull()){
+        delete this->producerFunction->data();
+    }
+    foreach(const QPointer<Function> &function, this->transformFunctions){
         if(!function.isNull()){
             delete function.data();
         }
@@ -277,41 +281,135 @@ void Feature::setIsSolved(const bool &isSolved){
 
 /*!
  * \brief Feature::getFunctions
+ * Computed view - see the member comment on producerFunction/
+ * transformFunctions (feature.h) and the class-level comment on the
+ * accessor declarations for why this stays a QList rather than exposing
+ * the split directly to every caller.
  * \return
  */
-const QList<QPointer<Function> > &Feature::getFunctions() const{
-    return this->functionList;
+QList<QPointer<Function> > Feature::getFunctions() const{
+    QList<QPointer<Function> > functions;
+    if(this->producerFunction.has_value() && !this->producerFunction->isNull()){
+        functions.append(this->producerFunction.value());
+    }
+    functions.append(this->transformFunctions);
+    return functions;
+}
+
+/*!
+ * \brief Feature::getProducerFunction
+ * \return
+ */
+const std::optional<QPointer<Function> > &Feature::getProducerFunction() const{
+    return this->producerFunction;
+}
+
+/*!
+ * \brief Feature::getTransformFunctions
+ * \return
+ */
+const QList<QPointer<Function> > &Feature::getTransformFunctions() const{
+    return this->transformFunctions;
 }
 
 /*!
  * \brief Feature::addFunction
+ * Stage 7d/D21 (domain-model.md S7): the attach-time enforcement point.
+ * Which slot a function goes into is decided by what it actually
+ * implements, not by attach order: a function only takes the producer
+ * slot if it implements Producer<T> for this feature's type *and* the
+ * slot is still empty; otherwise, if it implements Transform<T>, it is
+ * appended as a transform regardless of whether a producer exists yet
+ * (a station-owned Point's value can come from measurement directly, with
+ * no producer Function ever attached - a Transform must still be
+ * attachable on top of that). A function implementing neither mixin for
+ * this feature type - or a second Producer once the slot is filled - is
+ * rejected outright rather than silently accepted into a container shape
+ * that cannot represent it.
+ *
+ * Runtime, not compile-time: the real attach paths (the UI's function
+ * picker, ProjectExchanger restoring a saved project) only ever hold a
+ * dynamically-loaded Function* with no compile-time geometry type, so a
+ * template-constrained attach API could not be used at those call sites.
+ * See domain-model.md S7 "Dispatch boundary" and D21's left-open call.
  * \param function
  */
 void Feature::addFunction(const QPointer<Function> &function){
-    if(!function.isNull()){
 
-        //let the current job generate a unique id if it is valid
-        if(!this->job.isNull()){
-            function->id = this->job->generateUniqueId();
-        }
-
-        this->functionList.append(function);
-        this->isUpdated = false;
-        emit this->featureFunctionListChanged(this->id);
-
+    if(function.isNull() || this->selfFeature.isNull()){
+        return;
     }
+
+    const FeatureTypes type = this->selfFeature->getFeatureTypeEnum();
+    const bool producerCapable = Function::canActAsProducer(type, function.data());
+    const bool transformCapable = Function::canActAsTransform(type, function.data());
+
+    bool attachAsProducer = false;
+
+    if(producerCapable && !this->producerFunction.has_value()){
+        attachAsProducer = true;
+    }else if(transformCapable){
+        attachAsProducer = false;
+    }else{
+        const QString reason = (producerCapable && this->producerFunction.has_value())
+                ? QString("Function \"%1\" cannot be attached to \"%2\": a producer is already set (%3)")
+                    .arg(function->getMetaData().name, this->getFeatureName(), this->producerFunction.value()->getMetaData().name)
+                : QString("Function \"%1\" cannot be attached to \"%2\": it implements neither Producer<T> nor Transform<T> for this feature type")
+                    .arg(function->getMetaData().name, this->getFeatureName());
+        emit function->sendMessage(reason, eCriticalMessage, eMessageBoxMessage);
+        return;
+    }
+
+    //let the current job generate a unique id if it is valid
+    if(!this->job.isNull()){
+        function->id = this->job->generateUniqueId();
+    }
+
+    if(attachAsProducer){
+        this->producerFunction = function;
+    }else{
+        this->transformFunctions.append(function);
+    }
+
+    this->isUpdated = false;
+    emit this->featureFunctionListChanged(this->id);
+
 }
 
 /*!
  * \brief Feature::removeFunction
+ * Index space matches getFunctions(): 0 is the producer (if one is set),
+ * everything after is transformFunctions in order.
  * \param index
  */
 void Feature::removeFunction(const int &index){
-    if(this->functionList.size() > index && index >= 0){
-        this->functionList.removeAt(index);
+
+    if(index < 0){
+        return;
+    }
+
+    if(this->producerFunction.has_value()){
+        if(index == 0){
+            this->producerFunction = std::nullopt;
+            this->isUpdated = false;
+            emit this->featureFunctionListChanged(this->id);
+            return;
+        }
+        const int transformIndex = index - 1;
+        if(transformIndex < this->transformFunctions.size()){
+            this->transformFunctions.removeAt(transformIndex);
+            this->isUpdated = false;
+            emit this->featureFunctionListChanged(this->id);
+        }
+        return;
+    }
+
+    if(index < this->transformFunctions.size()){
+        this->transformFunctions.removeAt(index);
         this->isUpdated = false;
         emit this->featureFunctionListChanged(this->id);
     }
+
 }
 
 /*!
@@ -503,28 +601,44 @@ bool Feature::removePreviouslyNeeded(const QPointer<FeatureWrapper> &feature){
 
 /*!
  * \brief Feature::recalc
+ * Stage 7d/D21 (domain-model.md S7): run the producer once to obtain (or
+ * refresh) this feature's value, then run each transform on the result in
+ * order - std::expected<void, QString> propagating a reason on failure
+ * instead of the old "iterate one list, break on first bool false". No
+ * bool-return survives at this boundary: both producerFunction and every
+ * transformFunctions entry are run through Function::execChecked(), never
+ * the bool-returning Function::exec() kept for pre-existing callers.
+ *
+ * A feature with no producer at all (functionList was empty pre-7d) stays
+ * unsolved, matching the old behaviour exactly: the loop below never ran,
+ * so isSolved stayed false from the top of the method.
  */
 void Feature::recalc(){
 
     this->isSolved = false;
 
     try {
-        //execute all functions in the specified order
-        foreach(const QPointer<Function> &function, this->functionList){
 
-            //break if the function pointer is not valid
-            if(function.isNull()){
-                this->isSolved = false;
-                break;
-            }
-
-            //try to solve the current function
-            this->isSolved = function->exec(this->selfFeature);
-            if(!this->isSolved){
-                break;
-            }
-
+        if(!this->producerFunction.has_value() || this->producerFunction->isNull()){
+            return;
         }
+
+        std::expected<void, QString> result = this->producerFunction.value()->execChecked(this->selfFeature);
+
+        if(result.has_value()){
+            foreach(const QPointer<Function> &transform, this->transformFunctions){
+                if(transform.isNull()){
+                    result = std::unexpected(QString("a transform function on \"%1\" is no longer valid").arg(this->getFeatureName()));
+                    break;
+                }
+                result = transform->execChecked(this->selfFeature);
+                if(!result.has_value()){
+                    break;
+                }
+            }
+        }
+
+        this->isSolved = result.has_value();
 
     } catch(const std::exception &e) {
         throw std::runtime_error(QString("can not calculate feature: \"%1\", error: %2")
@@ -561,10 +675,11 @@ QDomElement Feature::toOpenIndyXML(QDomDocument &xmlDoc) const{
     feature.setAttribute("activeFeature", this->getIsActiveFeature());
 
     //add functions
-    if(this->functionList.size() > 0){
+    const QList<QPointer<Function> > allFunctions = this->getFunctions();
+    if(allFunctions.size() > 0){
         QDomElement functions = xmlDoc.createElement("functions");
         int index = 0;
-        foreach(Function *f, this->functionList){
+        foreach(Function *f, allFunctions){
             QDomElement function = f->toOpenIndyXML(xmlDoc);
             if(!function.isNull()){
                 function.setAttribute("executionIndex", index);
@@ -666,11 +781,12 @@ QString Feature::getDisplayIsUpdated() const{
  */
 QString Feature::getDisplayFunctions() const{
     QString display = "";
-    for(int i = 0; i < this->functionList.size(); i++){
-        QPointer<Function> function = this->functionList.at(i);
+    const QList<QPointer<Function> > functions = this->getFunctions();
+    for(int i = 0; i < functions.size(); i++){
+        QPointer<Function> function = functions.at(i);
         if(!function.isNull()){
             display += function->getMetaData().name
-                    +  (i < this->functionList.size() -1 ? ", " : "");
+                    +  (i < functions.size() -1 ? ", " : "");
         }
     }
     return display;
@@ -1236,7 +1352,10 @@ void Feature::setUpFeatureId(){
     this->id = job->generateUniqueId();
 
     //generate unique ids for the feature's functions
-    foreach(const QPointer<Function> &function, this->functionList){
+    if(this->producerFunction.has_value() && !this->producerFunction->isNull()){
+        this->producerFunction.value()->id = this->job->generateUniqueId();
+    }
+    foreach(const QPointer<Function> &function, this->transformFunctions){
         if(!function.isNull()){
             function->id = this->job->generateUniqueId();
         }

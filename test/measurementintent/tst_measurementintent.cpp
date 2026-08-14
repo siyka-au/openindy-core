@@ -20,8 +20,10 @@ namespace{
 //NeededElement, exactly like tst_ownership.cpp's FakeFit/FakeConstruct.
 //Used to prove tag resolution (OiJob::resolvePointIntent) feeds a
 //function's InputElements without any binding step, independent of any
-//particular plugin's math.
-class FakeConsumer : public ConstructFunction {
+//particular plugin's math. Implements Producer<Point> (Stage 7d/D21) so
+//Feature::addFunction() actually attaches it - a fake with no real exec()
+//would otherwise be rejected at attach time.
+class FakeConsumer : public ConstructFunction, public Producer<Point> {
     Q_OBJECT
 public:
     FakeConsumer(const QString &roleName = "default", QObject *parent = 0) : ConstructFunction(parent){
@@ -32,6 +34,9 @@ public:
         param.roleName = roleName;
         this->neededElements.append(param);
         this->applicableFor.append(ePointFeature);
+    }
+    std::expected<Point, QString> exec() override {
+        return Point();
     }
 };
 

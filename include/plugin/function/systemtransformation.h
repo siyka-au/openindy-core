@@ -39,33 +39,6 @@ public:
 
 protected:
 
-    //####################################
-    //methods that cannot be reimplemented
-    //####################################
-
-    bool exec(Station &station){ return Function::exec(station); }
-    bool exec(CoordinateSystem &coordinateSystem){ return Function::exec(coordinateSystem); }
-
-    bool exec(Circle &circle){ return Function::exec(circle); }
-    bool exec(Cone &cone){ return Function::exec(cone); }
-    bool exec(Cylinder &cylinder){ return Function::exec(cylinder); }
-    bool exec(Ellipse &ellipse){ return Function::exec(ellipse); }
-    bool exec(Ellipsoid &ellipsoid){ return Function::exec(ellipsoid); }
-    bool exec(Hyperboloid &hyperboloid){ return Function::exec(hyperboloid); }
-    bool exec(Line &line){ return Function::exec(line); }
-    bool exec(Nurbs &nurbs){ return Function::exec(nurbs); }
-    bool exec(Paraboloid &paraboloid){ return Function::exec(paraboloid); }
-    bool exec(Plane &plane){ return Function::exec(plane); }
-    bool exec(Point &point){ return Function::exec(point); }
-    bool exec(PointCloud &pointCloud){ return Function::exec(pointCloud); }
-    bool exec(ScalarEntityAngle &angle){ return Function::exec(angle); }
-    bool exec(ScalarEntityDistance &distance){ return Function::exec(distance); }
-    bool exec(ScalarEntityMeasurementSeries &measurementSeries){ return Function::exec(measurementSeries); }
-    bool exec(ScalarEntityTemperature &temperature){ return Function::exec(temperature); }
-    bool exec(SlottedHole &slottedHole){ return Function::exec(slottedHole); }
-    bool exec(Sphere &sphere){ return Function::exec(sphere); }
-    bool exec(Torus &torus){ return Function::exec(torus); }
-
     //special attributes for system transformations (normal transformations)
     QList<Point> inputPointsStartSystem; //input elements solved in start system
     QList<Point> inputPointsDestinationSystem; //input elements solved in destination system

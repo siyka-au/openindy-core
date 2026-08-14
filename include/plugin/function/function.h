@@ -41,7 +41,9 @@
 #include "types.h"
 #include "util.h"
 #include "pipelinestage.h"
+#include "producertransform.h"
 
+#include <expected>
 #include <optional>
 
 namespace oi{
@@ -242,7 +244,28 @@ public:
     //public exec method that calls the appropriate protected exec method
     //###################################################################
 
+    //Stage 7d/D21 (domain-model.md S7): execChecked() is the std::expected
+    //boundary Feature::recalc() calls directly - producer/transform
+    //dispatch, pipeline application, all of it, with a reason on failure
+    //instead of a bare bool. exec() is kept, unchanged in signature, for
+    //every pre-7d caller (tests calling a function directly without going
+    //through Feature::recalc(), cfvisitor.cpp, OiJob) - it is now a thin
+    //wrapper over execChecked().
+    virtual std::expected<void, QString> execChecked(const QPointer<FeatureWrapper> &feature);
     virtual bool exec(const QPointer<FeatureWrapper> &feature);
+
+    //###############################################################
+    //Stage 7d/D21: attach-time capability check - does `function`
+    //implement the mixin (Producer<T>/Transform<T>) required to act in
+    //that slot for a feature of type `type`? Used by Feature::addFunction
+    //(the runtime enforcement point - domain-model.md S7 "Dispatch
+    //boundary") and safe to call speculatively (e.g. from a UI function
+    //picker) without side effects, unlike execByFeatureType() which
+    //actually runs the function.
+    //###############################################################
+
+    static bool canActAsProducer(const FeatureTypes &type, Function *function);
+    static bool canActAsTransform(const FeatureTypes &type, Function *function);
 
     //#############################################################
     //methods to get or set further information to solve a function
@@ -350,34 +373,6 @@ signals:
 
 protected:
 
-    //############
-    //exec methods
-    //############
-
-    virtual bool exec(Station &station);
-    virtual bool exec(CoordinateSystem &coordinateSystem);
-    virtual bool exec(TrafoParam &trafoParam);
-
-    virtual bool exec(Circle &circle);
-    virtual bool exec(Cone &cone);
-    virtual bool exec(Cylinder &cylinder);
-    virtual bool exec(Ellipse &ellipse);
-    virtual bool exec(Ellipsoid &ellipsoid);
-    virtual bool exec(Hyperboloid &hyperboloid);
-    virtual bool exec(Line &line);
-    virtual bool exec(Nurbs &nurbs);
-    virtual bool exec(Paraboloid &paraboloid);
-    virtual bool exec(Plane &plane);
-    virtual bool exec(Point &point);
-    virtual bool exec(PointCloud &pointCloud);
-    virtual bool exec(ScalarEntityAngle &angle);
-    virtual bool exec(ScalarEntityDistance &distance);
-    virtual bool exec(ScalarEntityMeasurementSeries &measurementSeries);
-    virtual bool exec(ScalarEntityTemperature &temperature);
-    virtual bool exec(SlottedHole &slottedHole);
-    virtual bool exec(Sphere &sphere);
-    virtual bool exec(Torus &torus);
-
     //#################################
     //mark elements as used or not used
     //#################################
@@ -433,8 +428,14 @@ protected:
 private:
 
     //the pre-Stage-7b switch-on-feature-type dispatch, run once (or, for
-    //a residual-based pipeline stage, twice - see exec()).
-    bool execByFeatureType(const QPointer<FeatureWrapper> &feature);
+    //a residual-based pipeline stage, twice - see execChecked()). Stage
+    //7d/D21: this is now also the producer/transform dispatch boundary -
+    //dynamic_cast to Producer<ConcreteType>*/Transform<ConcreteType>* per
+    //domain-model.md S7. A failed cast on both mixins *is* the "this
+    //function doesn't belong in this slot" rejection - no separate
+    //validation step required here (attach-time validation is a distinct,
+    //additional check - see canActAsProducer/canActAsTransform above).
+    std::expected<void, QString> execByFeatureType(const QPointer<FeatureWrapper> &feature);
 
     //deterministic pipeline stages (ExplicitList, Exclude) - need no fit
     //result, so they run before the first execByFeatureType() pass.

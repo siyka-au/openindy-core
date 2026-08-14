@@ -24,7 +24,7 @@ namespace{
  * the mechanism under test lives entirely in Function::exec(), not in
  * any fit function's own body, so a fake average is a faithful proxy.
  */
-class FakeAverageFit : public FitFunction {
+class FakeAverageFit : public FitFunction, public Producer<Point> {
     Q_OBJECT
 public:
     FakeAverageFit(QObject *parent = 0) : FitFunction(parent){
@@ -38,12 +38,12 @@ public:
         this->applicableFor.append(ePointFeature);
     }
 
-    bool exec(Point &point) override {
+    std::expected<Point, QString> exec() override {
 
         this->statistic.reset();
 
         if(!this->inputElements.contains(0) || this->inputElements[0].isEmpty()){
-            return false;
+            return std::unexpected(QString("FakeAverageFit: no input elements"));
         }
 
         QList<InputElement> usable;
@@ -59,7 +59,7 @@ public:
         }
 
         if(usable.isEmpty()){
-            return false;
+            return std::unexpected(QString("FakeAverageFit: no usable input elements"));
         }
 
         double sum = 0.0;
@@ -78,9 +78,10 @@ public:
         this->statistic.setStdev(usable.size() > 1 ? std::sqrt(sqSum / (usable.size() - 1.0)) : 0.0);
         this->statistic.setIsValid(true);
 
+        Point point;
         point.setPoint(Position(avg, 0.0, 0.0));
 
-        return true;
+        return point;
 
     }
 };

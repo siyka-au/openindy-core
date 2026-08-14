@@ -18,16 +18,6 @@ public:
 
     virtual ~SpecialFunction(){}
 
-protected:
-
-    //####################################
-    //methods that cannot be reimplemented
-    //####################################
-
-    bool exec(Station &station){ return Function::exec(station); }
-    bool exec(CoordinateSystem &coordinateSystem){ return Function::exec(coordinateSystem); }
-    bool exec(TrafoParam &trafoParam){ return Function::exec(trafoParam); }
-
 };
 
 }

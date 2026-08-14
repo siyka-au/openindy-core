@@ -173,6 +173,7 @@ add_library(OpenIndyCore SHARED
     include/plugin/function/fitfunction.h
     include/plugin/function/function.h
     include/plugin/function/pipelinestage.h
+    include/plugin/function/producertransform.h
     include/plugin/function/generatefeaturefunction.h
     include/plugin/function/geodeticfunction.h
     include/plugin/function/objecttransformation.h

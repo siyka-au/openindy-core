@@ -209,7 +209,7 @@ void Point::recalc(){
 
     Geometry::recalc();
 
-    if(this->functionList.isEmpty() && !this->observations.isEmpty()){
+    if(!this->producerFunction.has_value() && !this->observations.isEmpty()){
 
         OiVec centroid(3);
         centroid.setAt(0, 0.0);
@@ -265,7 +265,7 @@ void Point::recalc(){
  */
 std::optional<QString> Point::getOwnerDescription() const{
 
-    if(this->functionList.isEmpty() && !this->observations.isEmpty()){
+    if(!this->producerFunction.has_value() && !this->observations.isEmpty()){
         const QPointer<Observation> firstObs = this->observations.constFirst();
         if(!firstObs.isNull() && !firstObs->getStation().isNull()){
             return QString("its station \"%1\"").arg(firstObs->getStation()->getFeatureName());
