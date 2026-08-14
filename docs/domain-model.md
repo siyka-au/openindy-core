@@ -234,7 +234,7 @@ calls exactly this overload), so pipeline application is generic across every fi
 and call `setIsUsed`/`addDisplayResidual` (7c-ii groundwork). Concretely: apply deterministic
 stages (`ExplicitList`/`Exclude`, need no fit result) → run the fit once → if a residual stage is
 declared, evaluate it against that pass's `Statistic` → if it excluded anything, run the fit a
-second time. Exactly two passes, never iterative reweighting to convergence — see S9.
+second time. Exactly two passes, never iterative reweighting to convergence — see §10.
 
 **Pipelines are opt-in per role.** A `NeededElement` with no declared pipeline is left completely
 alone; `Function::exec()` must never overwrite a `shouldBeUsed` nobody asked it to touch. This is
@@ -318,7 +318,88 @@ unchanged graph — including the one every project load triggers.
 
 ---
 
-## 7. Plugin ABI
+## 7. Producer and transform are structurally distinct
+
+A feature's function list conflated two jobs under one convention: whatever sat at
+position 0 defined the feature from external inputs (a fit, a construct function, a
+nominal producer); everything after refined that same geometry in place. Nothing declared
+this — code simply assumed index 0, and the failure mode of getting it wrong was silent
+nonsense, not a rejected input.
+
+**`Feature` holds two containers, not one:** `std::optional<QPointer<Function>>
+producerFunction` and `QList<QPointer<Function>> transformFunctions`. Two producers, or a
+transform sitting where a producer belongs, is not a validated-and-rejected input — it is
+a shape that cannot be constructed. Same instinct as D12 (id, not position) and D16 (a
+recorded fact, not a boolean): make the invalid state unrepresentable instead of checking
+for it.
+
+### Rejected: a declared `FunctionRole` property on one list
+
+The first-drafted version of this kept `functionList` as one container and added a role
+enum, validated at attach time. Rejected once the structural-container version was on the
+table: an enum can still be set wrong and only fails when something reads it; a container
+with room for exactly one producer cannot be set wrong.
+
+### The typing problem, and the wall it hits
+
+The natural expression is generic — `Transform<T>::exec(T) -> T`, `Producer<T>::exec() ->
+T` — but **`moc` cannot process a templated `QObject` subclass**, and `Function` must stay
+`QObject`-derived for the plugin ABI (`Q_INTERFACES`, plugin discovery). This is the same
+wall `Geometry<G>` hit (§4).
+
+**Resolved by composition, not by giving up genericity.** Two plain C++23 templates,
+never `QObject`, never seen by `moc`:
+
+```cpp
+template<typename T>
+class Producer {
+public:
+    virtual ~Producer() = default;
+    virtual std::expected<T, QString> exec() = 0;
+};
+
+template<typename T>
+class Transform {
+public:
+    virtual ~Transform() = default;
+    virtual std::expected<T, QString> exec(const T &input) = 0;
+};
+```
+
+A concrete plugin class multiply-inherits both `Function` (the moc-visible,
+plugin-discoverable base) and the mixin for its specific geometry type:
+`class BestFitPlane : public Function, public Producer<Plane>`. `moc` only ever processes
+`Function`/`BestFitPlane` — never the template itself.
+
+### Why a producer takes no argument
+
+`Transform<T>::exec` takes a `T` because there is a genuine prior value — whatever the
+producer already built. A producer has nothing prior to consume; its actual inputs (a
+`NeededElement`/`InputElement` list resolved by tag per D12, or scalar parameters for a
+nominal producer per D18) already live as **member state** on the `Function` object,
+populated by the caller before `exec()` runs — exactly how `Function` already works today.
+An out-only signature is not a simplification that drops information; it is accurate
+about where the information already is.
+
+### Why `std::expected`, not `bool` plus in-place mutation
+
+The pre-existing `exec(Circle&)`/`exec(Plane&)`/... family mutated an already-allocated
+geometry in place and returned `bool`. These two mixins are new types with no legacy call
+sites, so this is a clean place to actually apply a principle stated from the start of this
+project but never yet used anywhere: `std::expected<T, QString>` carries a reason on
+failure instead of a bare `false` — the same "make failure traceable, not silent" instinct
+as D16's `Exclude(reason)`.
+
+### Dispatch boundary
+
+`Function::execByFeatureType`'s existing runtime switch (unavoidable — a caller only holds
+a type-erased `FeatureWrapper`) is where the `dynamic_cast` to `Producer<ConcreteType>*` or
+`Transform<ConcreteType>*` happens. A cast that fails **is** the "this function does not
+belong in this slot" rejection — no separate validation step required.
+
+---
+
+## 8. Plugin ABI
 
 `OI_PLUGIN_ABI_VERSION` in [`include/plugin/pluginabi.h`](../include/plugin/pluginabi.h)
 is a **hand-declared integer**, never derived.
@@ -353,7 +434,7 @@ surface rather than reducing it. Revisit only if a genuinely thin interface emer
 
 ---
 
-## 8. Other standing decisions
+## 9. Other standing decisions
 
 - **`SensorType` is one open concept**, resolved from plugin interface IDs. A closed enum
   meant a core release per new instrument type. Proven: a whole instrument family now
@@ -384,7 +465,7 @@ surface rather than reducing it. Revisit only if a genuinely thin interface emer
 
 ---
 
-## 9. Traps this codebase has already sprung
+## 10. Traps this codebase has already sprung
 
 Recorded because each was silent, and the same class of bug keeps recurring.
 
