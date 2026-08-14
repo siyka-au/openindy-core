@@ -1,8 +1,39 @@
 #include "function.h"
+#include "specialfunction.h"
 
 using namespace oi;
 
 namespace {
+
+/*!
+ * Stage 7d/D21 trap, found via tst_function/tst_calibratedconstellation
+ * regressions while migrating: Geometry subtypes' and TrafoParam's
+ * hand-written operator= (Plane::operator=, TrafoParam::operator=, ...)
+ * only ever copy that *subtype's own* added fields (xyz/ijk/d for Plane,
+ * rotation/translation/scale for TrafoParam, ...), never Geometry's or
+ * TrafoParam's own "statistic" member - because before Stage 7d, exec()
+ * mutated the live target object directly and operator= was never in the
+ * loop at all. Now that a Producer/Transform builds a fresh local T and
+ * `*target = result.value()` uses that type's operator= to write it back
+ * (see execAs() below), the same operator= gap silently drops whatever
+ * statistic the function's own setUpResult()-style helper set on its
+ * local result - visible as getStatistic().getStdev() reading back 0.
+ * Recorded in domain-model.md S10 as trap #12. Fixed generically here,
+ * not by editing every affected operator=, so it also covers any future T
+ * with the same shape without another silent gap.
+ */
+template<typename T>
+concept HasStatisticAccessors = requires(T &mutableTarget, const T &constSource){
+    { constSource.getStatistic() } -> std::convertible_to<const Statistic&>;
+    mutableTarget.setStatistic(constSource.getStatistic());
+};
+
+template<typename T>
+void propagateStatisticIfPresent(T &target, const T &source){
+    if constexpr (HasStatisticAccessors<T>){
+        target.setStatistic(source.getStatistic());
+    }
+}
 
 /*!
  * Stage 7d/D21 (domain-model.md S7): the one place a Function is actually
@@ -10,9 +41,9 @@ namespace {
  * back into the feature's own geometry object via that type's ordinary
  * operator= (which - like Plane::operator=, Point::operator=, ... -
  * copies only the geometric fields, never id/parent/functionList, exactly
- * matching what the old in-place exec(Type&) family did). A cast that
- * fails on both mixins is the "this function doesn't belong in this slot"
- * rejection.
+ * matching what the old in-place exec(Type&) family did) plus statistic,
+ * explicitly, per the trap above. A cast that fails on both mixins is the
+ * "this function doesn't belong in this slot" rejection.
  */
 template<typename T>
 std::expected<void, QString> execAs(oi::Function *function, T *target, const QString &typeName){
@@ -23,6 +54,7 @@ std::expected<void, QString> execAs(oi::Function *function, T *target, const QSt
             return std::unexpected(result.error());
         }
         *target = result.value();
+        propagateStatisticIfPresent(*target, result.value());
         return {};
     }
 
@@ -32,6 +64,7 @@ std::expected<void, QString> execAs(oi::Function *function, T *target, const QSt
             return std::unexpected(result.error());
         }
         *target = result.value();
+        propagateStatisticIfPresent(*target, result.value());
         return {};
     }
 
@@ -239,6 +272,18 @@ bool Function::canActAsProducer(const FeatureTypes &type, Function *function){
         return false;
     }
 
+    //SpecialFunction (e.g. ConfiguredFunction, openindy-default-plugin's
+    //cf/) manages its own execution by overriding the top-level
+    //Function::exec()/execChecked() directly (specialfunction.h: "handles
+    //special function e.g. configured functions") - it never goes through
+    //execByFeatureType's Producer<T>/Transform<T> dispatch, so the mixin
+    //check does not apply. Exempt here rather than in execByFeatureType,
+    //since a SpecialFunction's own exec() override means it never reaches
+    //execAs<T>() in the first place regardless of this check.
+    if(dynamic_cast<SpecialFunction*>(function) != nullptr){
+        return true;
+    }
+
     switch(type){
     case eStationFeature: return implementsProducer<Station>(function);
     case eTrafoParamFeature: return implementsProducer<TrafoParam>(function);
@@ -278,6 +323,11 @@ bool Function::canActAsTransform(const FeatureTypes &type, Function *function){
 
     if(function == nullptr){
         return false;
+    }
+
+    //see canActAsProducer() above for why SpecialFunction is exempt.
+    if(dynamic_cast<SpecialFunction*>(function) != nullptr){
+        return true;
     }
 
     switch(type){

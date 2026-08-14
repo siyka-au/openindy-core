@@ -54,6 +54,16 @@ TrafoParam::TrafoParam(const TrafoParam &copy, QObject *parent) : Feature(copy, 
     this->scale = copy.scale;
     this->homogenMatrix = copy.homogenMatrix;
 
+    //Stage 7d/D21 trap (domain-model.md S10): unlike Geometry's copy
+    //constructor, this one never copied `statistic` - harmless while
+    //exec(TrafoParam&) only ever mutated a live object in place, but a
+    //real bug once a Producer<TrafoParam> builds a fresh local and hands
+    //it back by value (Helmert7Param::exec()), because *this* copy
+    //constructor runs on the way into std::expected<TrafoParam, QString>,
+    //before execAs<T>'s explicit statistic propagation ever gets a chance
+    //to see it. Found via tst_calibratedconstellation while migrating.
+    this->statistic = copy.statistic;
+
 }
 
 /*!
@@ -77,6 +87,9 @@ TrafoParam &TrafoParam::operator=(const TrafoParam &copy){
     this->translation = copy.translation;
     this->scale = copy.scale;
     this->homogenMatrix = copy.homogenMatrix;
+
+    //see the copy constructor above for why this was missing
+    this->statistic = copy.statistic;
 
     return *this;
 
