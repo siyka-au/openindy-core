@@ -442,7 +442,7 @@ The original scope below is retained for the reasoning it records (particularly 
 - **Registration spheres are a `Group`, emphatically not a `CalibratedConstellation`** — a constellation's relative geometry is *certified and known going in* (solve for pose given trusted geometry); registration spheres' relative positions are exactly what is *being solved for*. Do not conflate.
 - A quick manual pick still creates a **real, explicitly named `Group`** — no anonymous domain object. The UI may auto-generate a default name and create it transparently so it never feels like ceremony, but the model never carries a "doesn't really count" special case.
 
-**Acceptance:** a `Group` of planes and a `Group` of spheres both persist, reload, and are selectable as function inputs; a type-constrained group rejects a wrong-typed member with a clear error.
+**Acceptance:** a `Group` of planes and a `Group` of spheres both persist and reload correctly as organizational folders; a type-constrained group rejects a wrong-typed member with a clear error; the retired fit-binding path (`InputElement::group`/`pointGroup`/`asPointCollection()`, `ePointCollectionElement` as a declarable `NeededElement` type, and the now-unreachable `case ePointCollectionElement` in `OiJob`) is removed rather than left as dead code nothing can reach; every remaining reference to `PointCollection`/`PointGroup` in the codebase is for organization, never for function input resolution.
 
 ---
 
