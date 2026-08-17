@@ -205,6 +205,11 @@ QDomElement Group::toOpenIndyXML(QDomDocument &xmlDoc) const{
 
     group.setTagName("group");
 
+    //distinguishes a plain Group from a PointGroup on load. PointGroup's
+    //own toOpenIndyXML() calls this one and then overwrites just this
+    //attribute - the rest of the XML shape is identical between the two.
+    group.setAttribute("type", getFeatureTypeName(eGroupFeature));
+
     if(this->constraint.has_value()){
         group.setAttribute("constraint", getFeatureTypeName(this->constraint.value()));
     }
@@ -254,6 +259,18 @@ bool Group::fromOpenIndyXML(QDomElement &xmlElem){
     }
 
     return true;
+
+}
+
+void Group::restoreMembers(const QMap<int, QPointer<FeatureWrapper> > &resolvedFeatures){
+
+    foreach(const int &memberId, this->pendingMemberIds){
+        if(resolvedFeatures.contains(memberId)){
+            this->addMember(resolvedFeatures.value(memberId));
+        }
+    }
+
+    this->pendingMemberIds.clear();
 
 }
 

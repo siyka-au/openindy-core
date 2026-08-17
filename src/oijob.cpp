@@ -1429,23 +1429,6 @@ void OiJob::addInputFeature(const QPointer<FeatureWrapper> &target, const int &f
 
         break;
 
-    }case ePointCollectionElement:{
-
-        //"a collection of points" - satisfied by either a point group or a
-        //point cloud. Which one it is is provenance, not geometry, and a
-        //fit function consuming the collection does not need to care.
-        if(!feature->getPointGroup().isNull()){
-            element.pointGroup = feature->getPointGroup();
-            element.group = feature->getGroup();
-        }else if(!feature->getPointCloud().isNull()){
-            element.pointCloud = feature->getPointCloud();
-            element.geometry = feature->getGeometry();
-        }else{
-            return;
-        }
-
-        break;
-
     }case eScalarEntityAngleElement:{
 
         //check angle

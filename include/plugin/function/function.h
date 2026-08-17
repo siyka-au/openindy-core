@@ -20,9 +20,6 @@
 #include "nurbs.h"
 #include "paraboloid.h"
 #include "pointcloud.h"
-#include "group.h"
-#include "pointgroup.h"
-#include "pointcollection.h"
 #include "station.h"
 #include "coordinatesystem.h"
 #include "trafoparam.h"
@@ -131,17 +128,6 @@ public:
     QPointer<Plane> plane;
     QPointer<Point> point;
     QPointer<PointCloud> pointCloud;
-    QPointer<Group> group;
-    QPointer<PointGroup> pointGroup;
-
-    //! the collection this element resolves to, whatever kind it is. A fit
-    //! function needing ePointCollectionElement reads this and never has to
-    //! ask whether it got a scan or a group of individually aimed shots.
-    PointCollection *asPointCollection() const {
-        if(!this->pointGroup.isNull()){ return this->pointGroup.data(); }
-        if(!this->pointCloud.isNull()){ return this->pointCloud.data(); }
-        return nullptr;
-    }
     QPointer<ScalarEntityAngle> scalarEntityAngle;
     QPointer<ScalarEntityDistance> scalarEntityDistance;
     QPointer<ScalarEntityMeasurementSeries> scalarEntityMeasurementSeries;

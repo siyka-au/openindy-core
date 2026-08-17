@@ -1148,7 +1148,17 @@ bool getIsObservation(const ElementTypes &type){
 bool getIsGeometry(const FeatureTypes &type){
     if(type == eCoordinateSystemFeature
             || type == eStationFeature
-            || type == eTrafoParamFeature){
+            || type == eTrafoParamFeature
+            //Stage 7e: Group is a Feature, not a Geometry (domain-model.md
+            //S5 - "it has no position, solves to nothing"). Every caller of
+            //this function uses it to guard a feature->getGeometry() access,
+            //which is null for a Group/PointGroup and would otherwise crash
+            //the moment a Group actually reaches one of those call sites -
+            //found via OiJob::checkAndSetUpNewFeature's identical getGeometry()
+            //dereference while adding the first real Group to a job in
+            //tst_projectexchange.cpp, not a hypothetical.
+            || type == eGroupFeature
+            || type == ePointGroupFeature){
         return false;
     }
     return true;

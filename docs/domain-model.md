@@ -272,6 +272,40 @@ months-to-years of research. Until then, using V-STARS or a scanner means accept
 responsibility for hand-allocating data — which retroactive tagging makes a first-class
 operation rather than a workaround.
 
+### Shipped (Stage 7e): `Group` persistence, and the fit-binding retirement
+
+The fit-binding mechanism this section describes as retired (`InputElement::group`/
+`pointGroup`/`asPointCollection()`, the `ePointCollectionElement`-typed `NeededElement`
+case in `OiJob`) is now actually gone from the code, not just superseded in practice —
+confirmed by grep before deletion that nothing declared it any more. `ePointCollectionElement`
+itself (the `ElementTypes` enum value) was deliberately kept: it still has a real,
+unrelated use classifying a feature's type for display (feature-tree badges,
+`FeatureUpdater::copyGeometry`), so "retired as a fit-binding mechanism" does not mean
+"delete the enum value" — only the machinery that consumed it as a `NeededElement` type.
+
+**A `Group` did not survive save/reload at all before this stage — not just its
+membership.** `ProjectExchanger` never wrote a `Group`/`PointGroup` feature to the project
+XML and never read one back; `Group::pendingMemberIds` (populated by `fromOpenIndyXML`
+since Stage 7a-ii) was populated correctly but nothing above `Group` itself ever called
+`fromOpenIndyXML` on a saved project, because `Group` was never included in `saveProject`'s
+`<geometries>` section in the first place (`Group` is a `Feature`, not a `Geometry`, so
+`FeatureContainer::addFeature`'s `!feature->getGeometry().isNull()` guard for
+`geometriesList` was never true for one). Fixed with a dedicated `<groups>` XML section,
+a `loadGroups` pass, and a `restoreGroupDependencies` pass in `ProjectExchanger` — the same
+two-pass load-then-resolve shape §6 already uses for `realises`/`ownerFeature` — plus a new
+public `Group::restoreMembers()` that resolves `pendingMemberIds` into real member
+references. See §10 trap #14 for why this was missed for as long as it was.
+
+A second, previously-dormant bug surfaced while writing the round-trip test for this:
+`getIsGeometry(FeatureTypes)` never excluded `eGroupFeature`/`ePointGroupFeature`, so every
+caller that guards a `feature->getGeometry()` access with it (including
+`OiJob::checkAndSetUpNewFeature`, the only path that adds a fully-formed feature to a job)
+null-derefed the instant a real `Group` reached it. Nothing had ever exercised this before —
+no UI or controller code anywhere calls `OiJob::addFeature`/`addFeatures` with a
+`Group`/`PointGroup` type — which is also the answer to "does a quick manual pick create a
+real, named `Group`": there is currently no quick-pick path at all, and creating one is
+Stage 9's job now that doing so will not crash.
+
 ---
 
 ## 6. Derived features
@@ -624,3 +658,30 @@ Recorded because each was silent, and the same class of bug keeps recurring.
    right mixin; only ad-hoc test doubles ever triggered it, and every one found during this
    stage was fixed to implement a mixin rather than worked around), but a real gap if a
    future plugin ships a function that doesn't declare the mixin its `applicableFor` implies.
+14. **A plan document's claim that work "folds into" a later stage is not evidence that stage's
+   agent actually delivered it.** The Stage 7f section of `plan-domain-model-rework.md` stated,
+   verbatim, "Task #52 (`Group::pendingMemberIds` on load) folds into this." It did not: 7f
+   shipped tag resolution for points, and `Group::pendingMemberIds` resolution was never
+   written by any stage before 7e actually did it (Stage 7e, above) — `ProjectExchanger` did
+   not even write a `Group` to the project file, let alone read one back and resolve its
+   members. The gap sat unnoticed through however many stages read that line and took it at
+   face value. The only way to verify a "folds into"/"covered by" claim is to check the code
+   the claim is about, not the sentence that asserts it — the same discipline this document
+   already applies to code claims, extended to claims about *other documents*.
+15. **A blanket-exclusion helper silently stops covering a new case the moment that case is
+   added, and nothing forces anyone back to update it.** `getIsGeometry(FeatureTypes)` was
+   written as "false for these three named types, true for everything else" before `Group`/
+   `PointGroup` existed as feature types. When Stage 7a-ii added them, nobody had a reason to
+   revisit `getIsGeometry` — it is defined once, far from either call site or enum
+   declaration, and an enum growing a new value gives no compiler signal that a exclusion-list
+   function elsewhere needs the same value added (the inverse of trap #3's exhaustive-switch
+   problem: this shape has no `default:` to silently swallow a case, it has no case-list to be
+   exhaustive over at all). Every caller of `getIsGeometry` guards a `feature->getGeometry()`
+   access, which is null for a `Group` — so `OiJob::checkAndSetUpNewFeature`,
+   `OiJob::connectFeature`, and several `openindy` UI models were all one `addFeature(group)`
+   call away from a null-pointer crash for three stages running, undiscovered only because
+   nothing had ever added a `Group` to a job through the real API before Stage 7e's round-trip
+   test did. An inclusion list (name every type a function's positive case applies to) fails
+   safe when a new type is added — the new type simply isn't handled, usually loudly. An
+   exclusion list fails unsafe — the new type is silently swept into the "handled" branch
+   until something crashes.

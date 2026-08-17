@@ -109,6 +109,16 @@ public:
     QDomElement toOpenIndyXML(QDomDocument &xmlDoc) const;
     bool fromOpenIndyXML(QDomElement &xmlElem);
 
+    //! resolves pendingMemberIds (recorded by fromOpenIndyXML, before the
+    //! referenced features necessarily existed) into real member
+    //! references now that every feature in the job has been loaded. Same
+    //! two-pass ref-resolution shape ProjectExchanger already uses for
+    //! Geometry::realises/ownerFeature (Stage 7h): load everything, then
+    //! walk a second pass wiring pointers. An id with no resolvable
+    //! feature (e.g. one that failed to load) is silently skipped rather
+    //! than failing the whole project load.
+    void restoreMembers(const QMap<int, QPointer<FeatureWrapper> > &resolvedFeatures);
+
     //###############
     //display methods
     //###############
