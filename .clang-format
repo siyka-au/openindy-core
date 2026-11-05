@@ -1,0 +1,4 @@
+---
+# Cosmetic layout (indentation, spacing, margins, braces, includes) is Google
+# style unmodified. Logic/structure/safety rules live in .clang-tidy.
+BasedOnStyle: Google

@@ -1,0 +1,26 @@
+---
+# C++ Core Guidelines are the style rule set. Checks disabled below are
+# deliberate, with the reason given.
+Checks: >
+  -*,
+  cppcoreguidelines-*,
+  modernize-use-nullptr,
+  modernize-use-override,
+  modernize-loop-convert,
+  modernize-use-nodiscard,
+  modernize-use-using,
+  modernize-make-unique,
+  modernize-make-shared,
+  -cppcoreguidelines-owning-memory,
+  -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -cppcoreguidelines-macro-usage,
+  -cppcoreguidelines-non-private-member-variables-in-classes,
+  -cppcoreguidelines-avoid-non-const-global-variables
+# owning-memory: Qt parent/child ownership makes raw `new QObject(parent)` idiomatic.
+# macro-usage: Q_OBJECT/Q_DECLARE_*/Q_PLUGIN_METADATA are unavoidable.
+# magic-numbers / non-private-members / non-const-globals: too noisy for the
+#   legacy code; revisit once the rest is clean.
+WarningsAsErrors: ''
+HeaderFilterRegex: '(include|src|controller|models|ui|functions|sensors|exchange|cf|tools|simulations)/.*'
+FormatStyle: file
