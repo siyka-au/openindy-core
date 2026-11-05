@@ -125,7 +125,8 @@ const QList<MeasurementConfigKey>& FeatureContainer::getUsedMeasurementConfigs()
  */
 QPointer<FeatureWrapper> FeatureContainer::getFeatureById(
     const int& featureId) const {
-  return this->featuresIdMap.value(featureId, QPointer<FeatureWrapper>(NULL));
+  return this->featuresIdMap.value(featureId,
+                                   QPointer<FeatureWrapper>(nullptr));
 }
 
 /*!

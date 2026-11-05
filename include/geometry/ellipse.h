@@ -18,15 +18,16 @@ class OI_CORE_EXPORT Ellipse : public Geometry {
   Q_OBJECT
 
  public:
-  Ellipse(QObject* parent = 0);
+  Ellipse(QObject* parent = nullptr);
   Ellipse(const Position& center, const Direction& normal, const double& a,
-          const double& b, const Direction& semiMajorAxis, QObject* parent = 0);
+          const double& b, const Direction& semiMajorAxis,
+          QObject* parent = nullptr);
 
-  Ellipse(const Ellipse& copy, QObject* parent = 0);
+  Ellipse(const Ellipse& copy, QObject* parent = nullptr);
 
   Ellipse& operator=(const Ellipse& copy);
 
-  ~Ellipse();
+  ~Ellipse() override;
 
   // ########################################
   // order of unknown parameters (Qxx-matrix)
@@ -50,8 +51,8 @@ class OI_CORE_EXPORT Ellipse : public Geometry {
   // check wether this geometry has a direction, a position and a radius
   // ###################################################################
 
-  bool hasDirection() const;
-  bool hasPosition() const;
+  bool hasDirection() const override;
+  bool hasPosition() const override;
 
   // #############################
   // get or set ellipse parameters
@@ -69,39 +70,39 @@ class OI_CORE_EXPORT Ellipse : public Geometry {
   // get or set unknown parameters
   // #############################
 
-  virtual QMap<GeometryParameters, QString> getUnknownParameters(
+  QMap<GeometryParameters, QString> getUnknownParameters(
       const QMap<DimensionType, UnitType>& displayUnits,
-      const QMap<DimensionType, int>& displayDigits) const;
-  virtual void applyUnknownParameters(
-      const QMap<GeometryParameters, double>& parameters);
+      const QMap<DimensionType, int>& displayDigits) const override;
+  void applyUnknownParameters(
+      const QMap<GeometryParameters, double>& parameters) override;
 
   // ###########################
   // reexecute the function list
   // ###########################
 
-  void recalc();
+  void recalc() override;
 
   // #################
   // save and load XML
   // #################
 
-  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const;
-  bool fromOpenIndyXML(QDomElement& xmlElem);
+  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const override;
+  bool fromOpenIndyXML(QDomElement& xmlElem) override;
 
   // ###############
   // display methods
   // ###############
 
   QString getDisplaySecondaryI(const int& digits,
-                               const bool& showDiff = false) const;
+                               const bool& showDiff = false) const override;
   QString getDisplaySecondaryJ(const int& digits,
-                               const bool& showDiff = false) const;
+                               const bool& showDiff = false) const override;
   QString getDisplaySecondaryK(const int& digits,
-                               const bool& showDiff = false) const;
+                               const bool& showDiff = false) const override;
   QString getDisplayA(const UnitType& type, const int& digits,
-                      const bool& showDiff = false) const;
+                      const bool& showDiff = false) const override;
   QString getDisplayB(const UnitType& type, const int& digits,
-                      const bool& showDiff = false) const;
+                      const bool& showDiff = false) const override;
 
  private:
   // ##################

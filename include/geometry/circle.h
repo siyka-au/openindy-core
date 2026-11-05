@@ -18,15 +18,15 @@ class OI_CORE_EXPORT Circle : public Geometry {
   Q_OBJECT
 
  public:
-  Circle(QObject* parent = 0);
+  Circle(QObject* parent = nullptr);
   Circle(const Position& center, const Direction& normal, const Radius& radius,
-         QObject* parent = 0);
+         QObject* parent = nullptr);
 
-  Circle(const Circle& copy, QObject* parent = 0);
+  Circle(const Circle& copy, QObject* parent = nullptr);
 
   Circle& operator=(const Circle& copy);
 
-  ~Circle();
+  ~Circle() override;
 
   // ########################################
   // order of unknown parameters (Qxx-matrix)
@@ -46,9 +46,9 @@ class OI_CORE_EXPORT Circle : public Geometry {
   // check wether this geometry has a direction, a position and a radius
   // ###################################################################
 
-  bool hasDirection() const;
-  bool hasPosition() const;
-  bool hasRadius() const;
+  bool hasDirection() const override;
+  bool hasPosition() const override;
+  bool hasRadius() const override;
 
   void setCircle(const Position& center, const Direction& normal,
                  const Radius& radius);
@@ -57,24 +57,24 @@ class OI_CORE_EXPORT Circle : public Geometry {
   // get or set unknown parameters
   // #############################
 
-  virtual QMap<GeometryParameters, QString> getUnknownParameters(
+  QMap<GeometryParameters, QString> getUnknownParameters(
       const QMap<DimensionType, UnitType>& displayUnits,
-      const QMap<DimensionType, int>& displayDigits) const;
-  virtual void applyUnknownParameters(
-      const QMap<GeometryParameters, double>& parameters);
+      const QMap<DimensionType, int>& displayDigits) const override;
+  void applyUnknownParameters(
+      const QMap<GeometryParameters, double>& parameters) override;
 
   // ###########################
   // reexecute the function list
   // ###########################
 
-  void recalc();
+  void recalc() override;
 
   // #################
   // save and load XML
   // #################
 
-  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const;
-  bool fromOpenIndyXML(QDomElement& xmlElem);
+  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const override;
+  bool fromOpenIndyXML(QDomElement& xmlElem) override;
 };
 
 }  // namespace oi

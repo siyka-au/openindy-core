@@ -686,7 +686,7 @@ QDomElement Feature::toOpenIndyXML(QDomDocument& xmlDoc) const {
   if (this->usedForList.size() > 0) {
     QDomElement usedForFeatures = xmlDoc.createElement("usedFor");
     foreach (FeatureWrapper* f, this->usedForList) {
-      if (f != NULL && f->getFeature() != NULL) {
+      if (f != nullptr && f->getFeature() != nullptr) {
         QDomElement usedFor = xmlDoc.createElement("feature");
         usedFor.setAttribute("ref", f->getFeature()->getId());
         usedForFeatures.appendChild(usedFor);
@@ -700,7 +700,7 @@ QDomElement Feature::toOpenIndyXML(QDomDocument& xmlDoc) const {
     QDomElement previouslyNeededFeatures =
         xmlDoc.createElement("previouslyNeeded");
     foreach (FeatureWrapper* f, this->previouslyNeededList) {
-      if (f != NULL && f->getFeature() != NULL) {
+      if (f != nullptr && f->getFeature() != nullptr) {
         QDomElement previouslyNeeded = xmlDoc.createElement("feature");
         previouslyNeeded.setAttribute("ref", f->getFeature()->getId());
         previouslyNeededFeatures.appendChild(previouslyNeeded);

@@ -270,7 +270,7 @@ void Station::setSensor(const QPointer<Sensor>& sensor) {
 QPointer<Sensor> Station::takeSensor() {
   // check sensor control
   if (this->sensorControl.isNull()) {
-    return QPointer<Sensor>(NULL);
+    return QPointer<Sensor>(nullptr);
   }
 
   QPointer<Sensor> sensor = this->sensorControl->takeSensor();

@@ -20,9 +20,9 @@ class OI_CORE_EXPORT ExchangeInterface : public QObject {
   Q_OBJECT
 
  public:
-  explicit ExchangeInterface(QObject* parent = 0);
+  explicit ExchangeInterface(QObject* parent = nullptr);
 
-  virtual ~ExchangeInterface();
+  ~ExchangeInterface() override;
 
   // ##############################
   // exchange initialization method

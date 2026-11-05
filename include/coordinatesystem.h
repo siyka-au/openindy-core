@@ -33,16 +33,16 @@ class OI_CORE_EXPORT CoordinateSystem : public Feature {
   Q_OBJECT
 
  public:
-  explicit CoordinateSystem(QObject* parent = 0);
-  explicit CoordinateSystem(bool isBundleSystem, QObject* parent = 0);
+  explicit CoordinateSystem(QObject* parent = nullptr);
+  explicit CoordinateSystem(bool isBundleSystem, QObject* parent = nullptr);
   explicit CoordinateSystem(const QPointer<Station>& station,
-                            QObject* parent = 0);
+                            QObject* parent = nullptr);
 
-  CoordinateSystem(const CoordinateSystem& copy, QObject* parent = 0);
+  CoordinateSystem(const CoordinateSystem& copy, QObject* parent = nullptr);
 
   CoordinateSystem& operator=(const CoordinateSystem& copy);
 
-  ~CoordinateSystem();
+  ~CoordinateSystem() override;
 
   // #######################################
   // get or set coordinate system attributes
@@ -108,47 +108,47 @@ class OI_CORE_EXPORT CoordinateSystem : public Feature {
   // reexecute the function list
   // ###########################
 
-  void recalc();
+  void recalc() override;
 
   // #################
   // save and load XML
   // #################
 
-  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const;
-  bool fromOpenIndyXML(QDomElement& xmlElem);
+  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const override;
+  bool fromOpenIndyXML(QDomElement& xmlElem) override;
 
   // ###############
   // display methods
   // ###############
 
   QString getDisplayX(const UnitType& type, const int& digits,
-                      const bool& showDiff = false) const;
+                      const bool& showDiff = false) const override;
   QString getDisplayY(const UnitType& type, const int& digits,
-                      const bool& showDiff = false) const;
+                      const bool& showDiff = false) const override;
   QString getDisplayZ(const UnitType& type, const int& digits,
-                      const bool& showDiff = false) const;
+                      const bool& showDiff = false) const override;
   QString getDisplayPrimaryI(const int& digits,
-                             const bool& showDiff = false) const;
+                             const bool& showDiff = false) const override;
   QString getDisplayPrimaryJ(const int& digits,
-                             const bool& showDiff = false) const;
+                             const bool& showDiff = false) const override;
   QString getDisplayPrimaryK(const int& digits,
-                             const bool& showDiff = false) const;
+                             const bool& showDiff = false) const override;
 
   QString getDisplayExpansionOriginX(const UnitType& type,
-                                     const int& digits) const;
+                                     const int& digits) const override;
   QString getDisplayExpansionOriginY(const UnitType& type,
-                                     const int& digits) const;
+                                     const int& digits) const override;
   QString getDisplayExpansionOriginZ(const UnitType& type,
-                                     const int& digits) const;
-  QString getDisplayXAxisI(const int& digits) const;
-  QString getDisplayXAxisJ(const int& digits) const;
-  QString getDisplayXAxisK(const int& digits) const;
-  QString getDisplayYAxisI(const int& digits) const;
-  QString getDisplayYAxisJ(const int& digits) const;
-  QString getDisplayYAxisK(const int& digits) const;
-  QString getDisplayZAxisI(const int& digits) const;
-  QString getDisplayZAxisJ(const int& digits) const;
-  QString getDisplayZAxisK(const int& digits) const;
+                                     const int& digits) const override;
+  QString getDisplayXAxisI(const int& digits) const override;
+  QString getDisplayXAxisJ(const int& digits) const override;
+  QString getDisplayXAxisK(const int& digits) const override;
+  QString getDisplayYAxisI(const int& digits) const override;
+  QString getDisplayYAxisJ(const int& digits) const override;
+  QString getDisplayYAxisK(const int& digits) const override;
+  QString getDisplayZAxisI(const int& digits) const override;
+  QString getDisplayZAxisJ(const int& digits) const override;
+  QString getDisplayZAxisK(const int& digits) const override;
 
  signals:
 
@@ -167,7 +167,7 @@ class OI_CORE_EXPORT CoordinateSystem : public Feature {
   // update feature id when the job was set
   // ######################################
 
-  void setUpFeatureId();
+  void setUpFeatureId() override;
 
  private slots:
 

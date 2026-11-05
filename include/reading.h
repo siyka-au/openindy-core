@@ -164,23 +164,25 @@ class OI_CORE_EXPORT Reading : public Element {
   Q_OBJECT
 
  private:
-  explicit Reading(QObject* parent = 0);
+  explicit Reading(QObject* parent = nullptr);
 
  public:
-  explicit Reading(const ReadingPolar& reading, QObject* parent = 0);
-  explicit Reading(const ReadingCartesian& reading, QObject* parent = 0);
-  explicit Reading(const ReadingCartesian6D& reading, QObject* parent = 0);
-  explicit Reading(const ReadingDirection& reading, QObject* parent = 0);
-  explicit Reading(const ReadingDistance& reading, QObject* parent = 0);
-  explicit Reading(const ReadingTemperature& reading, QObject* parent = 0);
-  explicit Reading(const ReadingLevel& reading, QObject* parent = 0);
-  explicit Reading(const ReadingUndefined& reading, QObject* parent = 0);
+  explicit Reading(const ReadingPolar& reading, QObject* parent = nullptr);
+  explicit Reading(const ReadingCartesian& reading, QObject* parent = nullptr);
+  explicit Reading(const ReadingCartesian6D& reading,
+                   QObject* parent = nullptr);
+  explicit Reading(const ReadingDirection& reading, QObject* parent = nullptr);
+  explicit Reading(const ReadingDistance& reading, QObject* parent = nullptr);
+  explicit Reading(const ReadingTemperature& reading,
+                   QObject* parent = nullptr);
+  explicit Reading(const ReadingLevel& reading, QObject* parent = nullptr);
+  explicit Reading(const ReadingUndefined& reading, QObject* parent = nullptr);
 
-  Reading(const Reading& copy, QObject* parent = 0);
+  Reading(const Reading& copy, QObject* parent = nullptr);
 
   Reading& operator=(const Reading& copy);
 
-  ~Reading();
+  ~Reading() override;
 
   // ###########################
   // get reading type and values
@@ -281,8 +283,8 @@ class OI_CORE_EXPORT Reading : public Element {
   // save and load XML
   // #################
 
-  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const;
-  bool fromOpenIndyXML(QDomElement& xmlElem);
+  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const override;
+  bool fromOpenIndyXML(QDomElement& xmlElem) override;
 
  private:
   // #######################

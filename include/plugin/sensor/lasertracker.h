@@ -12,15 +12,16 @@ class OI_CORE_EXPORT LaserTracker : public Sensor {
   Q_OBJECT
 
  public:
-  explicit LaserTracker(QObject* parent = 0) : Sensor(parent) {}
+  explicit LaserTracker(QObject* parent = nullptr) : Sensor(parent) {}
 
-  virtual ~LaserTracker() {}
+  ~LaserTracker() override {}
 
   // ##########################################
   // calls the appropriate laser tracker method
   // ##########################################
 
-  bool accept(const SensorFunctions& method, const SensorAttributes& sAttr) {
+  bool accept(const SensorFunctions& method,
+              const SensorAttributes& sAttr) override {
     switch (method) {
       case (eMoveAngle):
         return this->move(sAttr.moveAzimuth, sAttr.moveZenith,
@@ -136,7 +137,7 @@ class OI_CORE_EXPORT LaserTracker : public Sensor {
     return false;
   }
 
-  virtual bool search() {
+  bool search() override {
     emit this->sensorMessage(
         QString(
             "Laser Tracker not implemented correctly: search method missing"),

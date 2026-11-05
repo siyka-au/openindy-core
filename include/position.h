@@ -17,17 +17,17 @@ class OI_CORE_EXPORT Position : public Element {
   Q_OBJECT
 
  public:
-  explicit Position(QObject* parent = 0);
-  explicit Position(bool isNullObject, QObject* parent = 0);
-  explicit Position(const OiVec& v, QObject* parent = 0);
+  explicit Position(QObject* parent = nullptr);
+  explicit Position(bool isNullObject, QObject* parent = nullptr);
+  explicit Position(const OiVec& v, QObject* parent = nullptr);
   explicit Position(const double& x, const double& y, const double& z,
-                    const double& h = 1.0, QObject* parent = 0);
+                    const double& h = 1.0, QObject* parent = nullptr);
 
-  Position(const Position& copy, QObject* parent = 0);
+  Position(const Position& copy, QObject* parent = nullptr);
 
   Position& operator=(const Position& copy);
 
-  ~Position();
+  ~Position() override;
 
   // ##########################
   // get or set position vector

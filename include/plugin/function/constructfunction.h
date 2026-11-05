@@ -13,9 +13,9 @@ class OI_CORE_EXPORT ConstructFunction : public Function {
   Q_OBJECT
 
  public:
-  ConstructFunction(QObject* parent = 0) : Function(parent) {}
+  ConstructFunction(QObject* parent = nullptr) : Function(parent) {}
 
-  virtual ~ConstructFunction() {}
+  ~ConstructFunction() override {}
 };
 
 }  // namespace oi

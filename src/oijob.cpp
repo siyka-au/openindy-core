@@ -2109,7 +2109,7 @@ void OiJob::setActiveFeature(const int& featureId) {
 
     // if the feature was deactivated without specifying a new active feature
     if (!this->activeFeature.isNull() && this->activeFeature == feature) {
-      this->activeFeature = QPointer<FeatureWrapper>(NULL);
+      this->activeFeature = QPointer<FeatureWrapper>(nullptr);
       emit this->activeFeatureChanged();
       return;
     }
@@ -2153,7 +2153,7 @@ void OiJob::setActiveStation(const int& featureId) {
     // set sensor of the new station and reset sensor of old one
     if (!this->activeStation.isNull()) {
       // take sensor from the active station
-      QPointer<Sensor> sensor(NULL);
+      QPointer<Sensor> sensor(nullptr);
       if (this->activeStation->getIsSensorSet()) {
         sensor = this->activeStation->takeSensor();
       }
@@ -2182,7 +2182,7 @@ void OiJob::setActiveStation(const int& featureId) {
       this->activeStation->resetSensor();
 
       // reset active station
-      this->activeStation = QPointer<Station>(NULL);
+      this->activeStation = QPointer<Station>(nullptr);
       emit this->activeStationChanged();
       return;
     }
@@ -2227,7 +2227,7 @@ void OiJob::setActiveCoordinateSystem(const int& featureId) {
     // if the system was deactivated without specifying a new active system
     if (!this->activeCoordinateSystem.isNull() &&
         this->activeCoordinateSystem == feature->getCoordinateSystem()) {
-      this->activeCoordinateSystem = QPointer<CoordinateSystem>(NULL);
+      this->activeCoordinateSystem = QPointer<CoordinateSystem>(nullptr);
       emit this->activeCoordinateSystemChanged();
       return;
     }
@@ -3013,7 +3013,7 @@ bool OiJob::checkAndSetUpNewFeature(const QPointer<FeatureWrapper>& feature,
   QPointer<CoordinateSystem> nominalSystem =
       (!feature->getGeometry().isNull())
           ? feature->getGeometry()->getNominalSystem()
-          : QPointer<CoordinateSystem>(NULL);
+          : QPointer<CoordinateSystem>(nullptr);
   if (!this->validateFeatureName(feature->getFeature()->getFeatureName(),
                                  feature->getFeatureTypeEnum())) {
     // check if feature should be overwritten
@@ -3126,7 +3126,7 @@ bool OiJob::checkAndSetUpNewFeature(const QPointer<FeatureWrapper>& feature,
       const QPointer<Geometry> nominal =
           feature->getGeometry()->getRealises().value();
       QPointer<FeatureWrapper> jobNominal =
-          nominal.isNull() ? QPointer<FeatureWrapper>(NULL)
+          nominal.isNull() ? QPointer<FeatureWrapper>(nullptr)
                            : this->getFeatureById(nominal->getId());
       if (jobNominal.isNull() || jobNominal->getGeometry().isNull() ||
           jobNominal->getGeometry() != nominal) {

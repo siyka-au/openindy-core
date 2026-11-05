@@ -15,16 +15,17 @@ class OI_CORE_EXPORT ScalarEntityMeasurementSeries : public Geometry {
   Q_OBJECT
 
  public:
-  ScalarEntityMeasurementSeries(QObject* parent = 0);
-  ScalarEntityMeasurementSeries(const double& seriesValue, QObject* parent = 0);
+  ScalarEntityMeasurementSeries(QObject* parent = nullptr);
+  ScalarEntityMeasurementSeries(const double& seriesValue,
+                                QObject* parent = nullptr);
 
   ScalarEntityMeasurementSeries(const ScalarEntityMeasurementSeries& copy,
-                                QObject* parent = 0);
+                                QObject* parent = nullptr);
 
   ScalarEntityMeasurementSeries& operator=(
       const ScalarEntityMeasurementSeries& copy);
 
-  ~ScalarEntityMeasurementSeries();
+  ~ScalarEntityMeasurementSeries() override;
 
   // ########################################
   // order of unknown parameters (Qxx-matrix)
@@ -44,31 +45,32 @@ class OI_CORE_EXPORT ScalarEntityMeasurementSeries : public Geometry {
   // get or set unknown parameters
   // #############################
 
-  virtual QMap<GeometryParameters, QString> getUnknownParameters(
+  QMap<GeometryParameters, QString> getUnknownParameters(
       const QMap<DimensionType, UnitType>& displayUnits,
-      const QMap<DimensionType, int>& displayDigits) const;
-  virtual void applyUnknownParameters(
-      const QMap<GeometryParameters, double>& parameters);
+      const QMap<DimensionType, int>& displayDigits) const override;
+  void applyUnknownParameters(
+      const QMap<GeometryParameters, double>& parameters) override;
 
   // ###########################
   // reexecute the function list
   // ###########################
 
-  void recalc();
+  void recalc() override;
 
   // #################
   // save and load XML
   // #################
 
-  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const;
-  bool fromOpenIndyXML(QDomElement& xmlElem);
+  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const override;
+  bool fromOpenIndyXML(QDomElement& xmlElem) override;
 
   // ###############
   // display methods
   // ###############
 
-  QString getDisplayMeasurementSeries(const UnitType& type, const int& digits,
-                                      const bool& showDiff = false) const;
+  QString getDisplayMeasurementSeries(
+      const UnitType& type, const int& digits,
+      const bool& showDiff = false) const override;
 
  private:
   // #############################

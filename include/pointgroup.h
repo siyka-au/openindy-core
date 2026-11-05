@@ -35,13 +35,13 @@ class OI_CORE_EXPORT PointGroup : public Group, public PointCollection {
   Q_OBJECT
 
  public:
-  explicit PointGroup(QObject* parent = 0);
-  PointGroup(const QString& name, QObject* parent = 0);
+  explicit PointGroup(QObject* parent = nullptr);
+  PointGroup(const QString& name, QObject* parent = nullptr);
 
-  PointGroup(const PointGroup& copy, QObject* parent = 0);
+  PointGroup(const PointGroup& copy, QObject* parent = nullptr);
   PointGroup& operator=(const PointGroup& copy);
 
-  ~PointGroup();
+  ~PointGroup() override;
 
   // #########################
   // PointCollection interface
@@ -67,13 +67,13 @@ class OI_CORE_EXPORT PointGroup : public Group, public PointCollection {
   //! delegates to Group::toOpenIndyXML for everything except the "type"
   //! attribute, which ProjectExchanger reads to decide whether to
   //! reconstruct a Group or a PointGroup on load
-  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const;
+  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const override;
 
   // ###############
   // display methods
   // ###############
 
-  QString getDisplayType() const;
+  QString getDisplayType() const override;
 };
 
 }  // namespace oi

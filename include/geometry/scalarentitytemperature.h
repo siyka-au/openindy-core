@@ -15,15 +15,15 @@ class OI_CORE_EXPORT ScalarEntityTemperature : public Geometry {
   Q_OBJECT
 
  public:
-  ScalarEntityTemperature(QObject* parent = 0);
-  ScalarEntityTemperature(const double& temperature, QObject* parent = 0);
+  ScalarEntityTemperature(QObject* parent = nullptr);
+  ScalarEntityTemperature(const double& temperature, QObject* parent = nullptr);
 
   ScalarEntityTemperature(const ScalarEntityTemperature& copy,
-                          QObject* parent = 0);
+                          QObject* parent = nullptr);
 
   ScalarEntityTemperature& operator=(const ScalarEntityTemperature& copy);
 
-  ~ScalarEntityTemperature();
+  ~ScalarEntityTemperature() override;
 
   // ########################################
   // order of unknown parameters (Qxx-matrix)
@@ -43,31 +43,31 @@ class OI_CORE_EXPORT ScalarEntityTemperature : public Geometry {
   // get or set unknown parameters
   // #############################
 
-  virtual QMap<GeometryParameters, QString> getUnknownParameters(
+  QMap<GeometryParameters, QString> getUnknownParameters(
       const QMap<DimensionType, UnitType>& displayUnits,
-      const QMap<DimensionType, int>& displayDigits) const;
-  virtual void applyUnknownParameters(
-      const QMap<GeometryParameters, double>& parameters);
+      const QMap<DimensionType, int>& displayDigits) const override;
+  void applyUnknownParameters(
+      const QMap<GeometryParameters, double>& parameters) override;
 
   // ###########################
   // reexecute the function list
   // ###########################
 
-  void recalc();
+  void recalc() override;
 
   // #################
   // save and load XML
   // #################
 
-  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const;
-  bool fromOpenIndyXML(QDomElement& xmlElem);
+  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const override;
+  bool fromOpenIndyXML(QDomElement& xmlElem) override;
 
   // ###############
   // display methods
   // ###############
 
   QString getDisplayTemperature(const UnitType& type, const int& digits,
-                                const bool& showDiff = false) const;
+                                const bool& showDiff = false) const override;
 
  private:
   // ######################

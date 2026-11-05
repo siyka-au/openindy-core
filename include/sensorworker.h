@@ -21,9 +21,9 @@ class OI_CORE_EXPORT SensorWorker : public QObject {
   Q_OBJECT
 
  public:
-  SensorWorker(QObject* parent = 0);
+  SensorWorker(QObject* parent = nullptr);
 
-  ~SensorWorker();
+  ~SensorWorker() override;
 
  signals:
 

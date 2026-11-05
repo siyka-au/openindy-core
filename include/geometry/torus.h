@@ -19,15 +19,15 @@ class OI_CORE_EXPORT Torus : public Geometry {
   Q_OBJECT
 
  public:
-  Torus(QObject* parent = 0);
+  Torus(QObject* parent = nullptr);
   Torus(const Position& center, const Direction& normal, const Radius& radiusA,
-        const Radius& radiusB, QObject* parent = 0);
+        const Radius& radiusB, QObject* parent = nullptr);
 
-  Torus(const Torus& copy, QObject* parent = 0);
+  Torus(const Torus& copy, QObject* parent = nullptr);
 
   Torus& operator=(const Torus& copy);
 
-  ~Torus();
+  ~Torus() override;
 
   // ########################################
   // order of unknown parameters (Qxx-matrix)
@@ -48,9 +48,9 @@ class OI_CORE_EXPORT Torus : public Geometry {
   // check wether this geometry has a direction, a position and a radius
   // ###################################################################
 
-  bool hasDirection() const;
-  bool hasPosition() const;
-  bool hasRadius() const;
+  bool hasDirection() const override;
+  bool hasPosition() const override;
+  bool hasRadius() const override;
 
   // ###########################
   // get or set torus parameters
@@ -65,31 +65,31 @@ class OI_CORE_EXPORT Torus : public Geometry {
   // get or set unknown parameters
   // #############################
 
-  virtual QMap<GeometryParameters, QString> getUnknownParameters(
+  QMap<GeometryParameters, QString> getUnknownParameters(
       const QMap<DimensionType, UnitType>& displayUnits,
-      const QMap<DimensionType, int>& displayDigits) const;
-  virtual void applyUnknownParameters(
-      const QMap<GeometryParameters, double>& parameters);
+      const QMap<DimensionType, int>& displayDigits) const override;
+  void applyUnknownParameters(
+      const QMap<GeometryParameters, double>& parameters) override;
 
   // ###########################
   // reexecute the function list
   // ###########################
 
-  void recalc();
+  void recalc() override;
 
   // #################
   // save and load XML
   // #################
 
-  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const;
-  bool fromOpenIndyXML(QDomElement& xmlElem);
+  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const override;
+  bool fromOpenIndyXML(QDomElement& xmlElem) override;
 
   // ###############
   // display methods
   // ###############
 
   QString getDisplayRadiusB(const UnitType& type, const int& digits,
-                            const bool& showDiff = false) const;
+                            const bool& showDiff = false) const override;
 
  private:
   // ################

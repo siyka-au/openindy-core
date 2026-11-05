@@ -48,13 +48,13 @@ class OI_CORE_EXPORT Geometry : public Feature {
   Q_OBJECT
 
  public:
-  explicit Geometry(QObject* parent = 0);
+  explicit Geometry(QObject* parent = nullptr);
 
-  Geometry(const Geometry& copy, QObject* parent = 0);
+  Geometry(const Geometry& copy, QObject* parent = nullptr);
 
   Geometry& operator=(const Geometry& copy);
 
-  virtual ~Geometry();
+  ~Geometry() override;
 
   // ##############################
   // get or set geometry attributes
@@ -155,42 +155,43 @@ class OI_CORE_EXPORT Geometry : public Feature {
   // reexecute the function list
   // ###########################
 
-  virtual void recalc();
+  void recalc() override;
 
   // #################
   // save and load XML
   // #################
 
-  virtual QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const;
-  virtual bool fromOpenIndyXML(QDomElement& xmlElem);
+  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const override;
+  bool fromOpenIndyXML(QDomElement& xmlElem) override;
 
   // ###############
   // display methods
   // ###############
 
-  QString getDisplayStDev(const UnitType& type, const int& digits) const;
+  QString getDisplayStDev(const UnitType& type,
+                          const int& digits) const override;
   QString getDisplayFormError(const UnitType& type,
                               const int& digits) const override;
 
-  QString getDisplayMeasurementConfig() const;
-  QString getDisplayObservations() const;
-  QString getDisplayIsCommon() const;
-  QString getDisplayIsActual() const;
+  QString getDisplayMeasurementConfig() const override;
+  QString getDisplayObservations() const override;
+  QString getDisplayIsCommon() const override;
+  QString getDisplayIsActual() const override;
 
   QString getDisplayX(const UnitType& type, const int& digits,
-                      const bool& showDiff = false) const;
+                      const bool& showDiff = false) const override;
   QString getDisplayY(const UnitType& type, const int& digits,
-                      const bool& showDiff = false) const;
+                      const bool& showDiff = false) const override;
   QString getDisplayZ(const UnitType& type, const int& digits,
-                      const bool& showDiff = false) const;
+                      const bool& showDiff = false) const override;
   QString getDisplayPrimaryI(const int& digits,
-                             const bool& showDiff = false) const;
+                             const bool& showDiff = false) const override;
   QString getDisplayPrimaryJ(const int& digits,
-                             const bool& showDiff = false) const;
+                             const bool& showDiff = false) const override;
   QString getDisplayPrimaryK(const int& digits,
-                             const bool& showDiff = false) const;
+                             const bool& showDiff = false) const override;
   QString getDisplayRadiusA(const UnitType& type, const int& digits,
-                            const bool& showDiff = false) const;
+                            const bool& showDiff = false) const override;
 
  signals:
 

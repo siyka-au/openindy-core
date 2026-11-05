@@ -15,13 +15,13 @@ class OI_CORE_EXPORT Nurbs : public Geometry {
   Q_OBJECT
 
  public:
-  Nurbs(QObject* parent = 0);
+  Nurbs(QObject* parent = nullptr);
 
-  Nurbs(const Nurbs& copy, QObject* parent = 0);
+  Nurbs(const Nurbs& copy, QObject* parent = nullptr);
 
   Nurbs& operator=(const Nurbs& copy);
 
-  ~Nurbs();
+  ~Nurbs() override;
 
   // ########################################
   // order of unknown parameters (Qxx-matrix)
@@ -43,14 +43,14 @@ class OI_CORE_EXPORT Nurbs : public Geometry {
   // reexecute the function list
   // ###########################
 
-  void recalc();
+  void recalc() override;
 
   // #################
   // save and load XML
   // #################
 
-  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const;
-  bool fromOpenIndyXML(QDomElement& xmlElem);
+  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const override;
+  bool fromOpenIndyXML(QDomElement& xmlElem) override;
 };
 
 }  // namespace oi

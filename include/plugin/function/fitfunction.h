@@ -62,7 +62,7 @@ class OI_CORE_EXPORT FitFunction : public Function {
   friend class BestFitCylinderUtil;
 
  public:
-  FitFunction(QObject* parent = 0) : Function(parent) {
+  FitFunction(QObject* parent = nullptr) : Function(parent) {
     // needed elements are only observations
     NeededElement element;
     element.typeOfElement = eObservationElement;
@@ -74,7 +74,7 @@ class OI_CORE_EXPORT FitFunction : public Function {
     this->neededElements.append(element);
   }
 
-  virtual ~FitFunction() {}
+  ~FitFunction() override {}
 };
 
 // D12/domain-model.md S3: replaces the old InputElementKey::eDummyPoint

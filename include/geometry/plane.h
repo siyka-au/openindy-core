@@ -17,15 +17,16 @@ class OI_CORE_EXPORT Plane : public Geometry {
   Q_OBJECT
 
  public:
-  Plane(QObject* parent = 0);
-  Plane(const Position& xyz, const Direction& normal, QObject* parent = 0);
-  Plane(const Direction& normal, const double& d, QObject* parent = 0);
+  Plane(QObject* parent = nullptr);
+  Plane(const Position& xyz, const Direction& normal,
+        QObject* parent = nullptr);
+  Plane(const Direction& normal, const double& d, QObject* parent = nullptr);
 
-  Plane(const Plane& copy, QObject* parent = 0);
+  Plane(const Plane& copy, QObject* parent = nullptr);
 
   Plane& operator=(const Plane& copy);
 
-  ~Plane();
+  ~Plane() override;
 
   // ########################################
   // order of unknown parameters (Qxx-matrix)
@@ -44,8 +45,8 @@ class OI_CORE_EXPORT Plane : public Geometry {
   // check wether this geometry has a direction, a position and a radius
   // ###################################################################
 
-  bool hasDirection() const;
-  bool hasPosition() const;
+  bool hasDirection() const override;
+  bool hasPosition() const override;
 
   // ###########################
   // get or set plane parameters
@@ -63,24 +64,24 @@ class OI_CORE_EXPORT Plane : public Geometry {
   // get or set unknown parameters
   // #############################
 
-  virtual QMap<GeometryParameters, QString> getUnknownParameters(
+  QMap<GeometryParameters, QString> getUnknownParameters(
       const QMap<DimensionType, UnitType>& displayUnits,
-      const QMap<DimensionType, int>& displayDigits) const;
-  virtual void applyUnknownParameters(
-      const QMap<GeometryParameters, double>& parameters);
+      const QMap<DimensionType, int>& displayDigits) const override;
+  void applyUnknownParameters(
+      const QMap<GeometryParameters, double>& parameters) override;
 
   // ###########################
   // reexecute the function list
   // ###########################
 
-  void recalc();
+  void recalc() override;
 
   // #################
   // save and load XML
   // #################
 
-  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const;
-  bool fromOpenIndyXML(QDomElement& xmlElem);
+  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const override;
+  bool fromOpenIndyXML(QDomElement& xmlElem) override;
 
  private:
   // ################

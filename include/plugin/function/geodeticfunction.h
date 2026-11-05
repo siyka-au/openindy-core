@@ -13,9 +13,9 @@ class OI_CORE_EXPORT GeodeticFunction : public Function {
   Q_OBJECT
 
  public:
-  GeodeticFunction(QObject* parent = 0) : Function(parent) {}
+  GeodeticFunction(QObject* parent = nullptr) : Function(parent) {}
 
-  virtual ~GeodeticFunction() {}
+  ~GeodeticFunction() override {}
 };
 
 }  // namespace oi

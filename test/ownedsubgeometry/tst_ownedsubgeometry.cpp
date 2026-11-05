@@ -20,7 +20,7 @@ namespace {
 class FixedPositionFunction : public ConstructFunction, public Producer<Point> {
   Q_OBJECT
  public:
-  FixedPositionFunction(QObject* parent = 0) : ConstructFunction(parent) {
+  FixedPositionFunction(QObject* parent = nullptr) : ConstructFunction(parent) {
     this->metaData.name = "FixedPositionFunction";
     this->applicableFor.append(ePointFeature);
   }
@@ -44,7 +44,7 @@ class FixedPositionFunction : public ConstructFunction, public Producer<Point> {
 class CopyPointFunction : public ConstructFunction, public Producer<Point> {
   Q_OBJECT
  public:
-  CopyPointFunction(QObject* parent = 0) : ConstructFunction(parent) {
+  CopyPointFunction(QObject* parent = nullptr) : ConstructFunction(parent) {
     this->metaData.name = "CopyPointFunction";
     NeededElement param;
     param.typeOfElement = ePointElement;

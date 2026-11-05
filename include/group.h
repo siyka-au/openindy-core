@@ -39,17 +39,17 @@ class OI_CORE_EXPORT Group : public Feature {
   Q_OBJECT
 
  public:
-  explicit Group(QObject* parent = 0);
-  Group(const QString& name, QObject* parent = 0);
+  explicit Group(QObject* parent = nullptr);
+  Group(const QString& name, QObject* parent = nullptr);
 
   //! a group that will only accept members of one feature type
   Group(const QString& name, const FeatureTypes& constraint,
-        QObject* parent = 0);
+        QObject* parent = nullptr);
 
-  Group(const Group& copy, QObject* parent = 0);
+  Group(const Group& copy, QObject* parent = nullptr);
   Group& operator=(const Group& copy);
 
-  ~Group();
+  ~Group() override;
 
   // #################
   // group constraints
@@ -98,14 +98,14 @@ class OI_CORE_EXPORT Group : public Feature {
   // reexecute the function list
   // ###########################
 
-  void recalc();
+  void recalc() override;
 
   // #################
   // save and load XML
   // #################
 
-  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const;
-  bool fromOpenIndyXML(QDomElement& xmlElem);
+  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const override;
+  bool fromOpenIndyXML(QDomElement& xmlElem) override;
 
   //! resolves pendingMemberIds (recorded by fromOpenIndyXML, before the
   //! referenced features necessarily existed) into real member
@@ -122,7 +122,7 @@ class OI_CORE_EXPORT Group : public Feature {
   // display methods
   // ###############
 
-  QString getDisplayType() const;
+  QString getDisplayType() const override;
 
  signals:
 

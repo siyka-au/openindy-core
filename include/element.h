@@ -19,13 +19,13 @@ class OI_CORE_EXPORT Element : public QObject {
   Q_OBJECT
 
  public:
-  explicit Element(QObject* parent = 0);
+  explicit Element(QObject* parent = nullptr);
 
-  Element(const Element& copy, QObject* parent = 0);
+  Element(const Element& copy, QObject* parent = nullptr);
 
   Element& operator=(const Element& copy);
 
-  virtual ~Element();
+  ~Element() override;
 
   // #############
   // get or set id

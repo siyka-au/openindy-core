@@ -23,13 +23,13 @@ class OI_CORE_EXPORT Feature : public Element {
   Q_OBJECT
 
  public:
-  explicit Feature(QObject* parent = 0);
+  explicit Feature(QObject* parent = nullptr);
 
-  Feature(const Feature& copy, QObject* parent = 0);
+  Feature(const Feature& copy, QObject* parent = nullptr);
 
   Feature& operator=(const Feature& copy);
 
-  virtual ~Feature();
+  ~Feature() override;
 
   // ############################################
   // get the feature wrapped by a feature wrapper
@@ -108,8 +108,8 @@ class OI_CORE_EXPORT Feature : public Element {
   // save and load XML
   // #################
 
-  virtual QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const;
-  virtual bool fromOpenIndyXML(QDomElement& xmlElem);
+  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const override;
+  bool fromOpenIndyXML(QDomElement& xmlElem) override;
 
   // ###############
   // display methods

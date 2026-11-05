@@ -39,7 +39,7 @@ class OI_CORE_EXPORT FeatureWrapper : public QObject {
   Q_OBJECT
 
  public:
-  explicit FeatureWrapper(QObject* parent = 0);
+  explicit FeatureWrapper(QObject* parent = nullptr);
 
   bool operator==(const FeatureWrapper& other);
 

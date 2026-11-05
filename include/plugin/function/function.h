@@ -219,9 +219,9 @@ class OI_CORE_EXPORT Function : public QObject {
   Q_OBJECT
 
  public:
-  Function(QObject* parent = 0);
+  Function(QObject* parent = nullptr);
 
-  virtual ~Function();
+  ~Function() override;
 
   // ##############################
   // function initialization method

@@ -59,15 +59,16 @@ class OI_CORE_EXPORT Observation : public Point {
   Q_OBJECT
 
  public:
-  explicit Observation(QObject* parent = 0);
+  explicit Observation(QObject* parent = nullptr);
 
-  Observation(const Observation& copy, QObject* parent = 0);
-  Observation(const OiVec& xyz, bool isValid, QObject* parent = 0);
-  Observation(const OiVec& xyz, int id, bool isValid, QObject* parent = 0);
+  Observation(const Observation& copy, QObject* parent = nullptr);
+  Observation(const OiVec& xyz, bool isValid, QObject* parent = nullptr);
+  Observation(const OiVec& xyz, int id, bool isValid,
+              QObject* parent = nullptr);
 
   Observation& operator=(const Observation& copy);
 
-  ~Observation();
+  ~Observation() override;
 
   // ##################################
   // get or set observations attributes
@@ -165,14 +166,14 @@ class OI_CORE_EXPORT Observation : public Point {
   QString getDisplaySigmaJ(const int& digits) const;
   QString getDisplaySigmaK(const int& digits) const;
   QString getDisplayIsValid() const;
-  QString getDisplayIsSolved() const;
+  QString getDisplayIsSolved() const override;
 
   // #################
   // save and load XML
   // #################
 
-  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const;
-  bool fromOpenIndyXML(QDomElement& xmlElem);
+  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const override;
+  bool fromOpenIndyXML(QDomElement& xmlElem) override;
 
  private:
   // ####################################################

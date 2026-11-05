@@ -79,7 +79,7 @@ QPointer<Sensor> SensorControl::takeSensor() {
   }
 
   // call method of sensor worker
-  QPointer<Sensor> sensor(NULL);
+  QPointer<Sensor> sensor(nullptr);
   bool hasInvoked = QMetaObject::invokeMethod(
       this->worker, "takeSensor", Qt::DirectConnection,
       Q_RETURN_ARG(QPointer<Sensor>, sensor));

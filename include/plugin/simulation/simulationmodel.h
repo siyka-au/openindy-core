@@ -150,9 +150,9 @@ class OI_CORE_EXPORT SimulationModel : public QObject {
   Q_OBJECT
 
  public:
-  explicit SimulationModel(QObject* parent = 0);
+  explicit SimulationModel(QObject* parent = nullptr);
 
-  virtual ~SimulationModel();
+  ~SimulationModel() override;
 
   // ################################
   // simulation initialization method

@@ -27,14 +27,14 @@ class OI_CORE_EXPORT Station : public Feature {
   Q_OBJECT
 
  public:
-  explicit Station(QObject* parent = 0);
-  explicit Station(const QString& name, QObject* parent = 0);
+  explicit Station(QObject* parent = nullptr);
+  explicit Station(const QString& name, QObject* parent = nullptr);
 
-  Station(const Station& copy, QObject* parent = 0);
+  Station(const Station& copy, QObject* parent = nullptr);
 
   Station& operator=(const Station& copy);
 
-  ~Station();
+  ~Station() override;
 
   // #############################
   // get or set station attributes
@@ -103,31 +103,31 @@ class OI_CORE_EXPORT Station : public Feature {
   // reexecute the function list
   // ###########################
 
-  void recalc();
+  void recalc() override;
 
   // #################
   // save and load XML
   // #################
 
-  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const;
-  bool fromOpenIndyXML(QDomElement& xmlElem);
+  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const override;
+  bool fromOpenIndyXML(QDomElement& xmlElem) override;
 
   // ###############
   // display methods
   // ###############
 
   QString getDisplayX(const UnitType& type, const int& digits,
-                      const bool& showDiff = false) const;
+                      const bool& showDiff = false) const override;
   QString getDisplayY(const UnitType& type, const int& digits,
-                      const bool& showDiff = false) const;
+                      const bool& showDiff = false) const override;
   QString getDisplayZ(const UnitType& type, const int& digits,
-                      const bool& showDiff = false) const;
+                      const bool& showDiff = false) const override;
   QString getDisplayPrimaryI(const int& digits,
-                             const bool& showDiff = false) const;
+                             const bool& showDiff = false) const override;
   QString getDisplayPrimaryJ(const int& digits,
-                             const bool& showDiff = false) const;
+                             const bool& showDiff = false) const override;
   QString getDisplayPrimaryK(const int& digits,
-                             const bool& showDiff = false) const;
+                             const bool& showDiff = false) const override;
 
   void setSensorWorkerThread(QPointer<QThread> t);
  signals:
@@ -222,7 +222,7 @@ class OI_CORE_EXPORT Station : public Feature {
   // update feature id when the job was set
   // ######################################
 
-  void setUpFeatureId();
+  void setUpFeatureId() override;
 
  private:
   // ##########################
@@ -285,7 +285,7 @@ class OI_CORE_EXPORT Station : public Feature {
   // pointer to OiJob that this feature belongs to
   // #############################################
 
-  void setJob(const QPointer<OiJob>& job);
+  void setJob(const QPointer<OiJob>& job) override;
 };
 
 }  // namespace oi

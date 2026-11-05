@@ -13,9 +13,9 @@ class OI_CORE_EXPORT ObjectTransformation : public Function {
   Q_OBJECT
 
  public:
-  ObjectTransformation(QObject* parent = 0) : Function(parent) {}
+  ObjectTransformation(QObject* parent = nullptr) : Function(parent) {}
 
-  virtual ~ObjectTransformation() {}
+  ~ObjectTransformation() override {}
 };
 
 }  // namespace oi

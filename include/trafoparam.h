@@ -26,13 +26,13 @@ class OI_CORE_EXPORT TrafoParam : public Feature {
   Q_OBJECT
 
  public:
-  explicit TrafoParam(QObject* parent = 0);
+  explicit TrafoParam(QObject* parent = nullptr);
 
-  TrafoParam(const TrafoParam& copy, QObject* parent = 0);
+  TrafoParam(const TrafoParam& copy, QObject* parent = nullptr);
 
   TrafoParam& operator=(const TrafoParam& copy);
 
-  ~TrafoParam();
+  ~TrafoParam() override;
 
   // #################################
   // get or set trafo param attributes
@@ -93,34 +93,41 @@ class OI_CORE_EXPORT TrafoParam : public Feature {
   // reexecute the function list
   // ###########################
 
-  void recalc();
+  void recalc() override;
 
   // #################
   // save and load XML
   // #################
 
-  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const;
-  bool fromOpenIndyXML(QDomElement& xmlElem);
+  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const override;
+  bool fromOpenIndyXML(QDomElement& xmlElem) override;
 
   // ###############
   // display methods
   // ###############
 
-  QString getDisplayStDev(const UnitType& type, const int& digits) const;
+  QString getDisplayStDev(const UnitType& type,
+                          const int& digits) const override;
 
-  QString getDisplayStartSystem() const;
-  QString getDisplayDestinationSystem() const;
-  QString getDisplayTranslationX(const UnitType& type, const int& digits) const;
-  QString getDisplayTranslationY(const UnitType& type, const int& digits) const;
-  QString getDisplayTranslationZ(const UnitType& type, const int& digits) const;
-  QString getDisplayRotationX(const UnitType& type, const int& digits) const;
-  QString getDisplayRotationY(const UnitType& type, const int& digits) const;
-  QString getDisplayRotationZ(const UnitType& type, const int& digits) const;
-  QString getDisplayScaleX(const int& digits) const;
-  QString getDisplayScaleY(const int& digits) const;
-  QString getDisplayScaleZ(const int& digits) const;
-  QString getDisplayIsUsed() const;
-  QString getDisplayIsDatumTransformation() const;
+  QString getDisplayStartSystem() const override;
+  QString getDisplayDestinationSystem() const override;
+  QString getDisplayTranslationX(const UnitType& type,
+                                 const int& digits) const override;
+  QString getDisplayTranslationY(const UnitType& type,
+                                 const int& digits) const override;
+  QString getDisplayTranslationZ(const UnitType& type,
+                                 const int& digits) const override;
+  QString getDisplayRotationX(const UnitType& type,
+                              const int& digits) const override;
+  QString getDisplayRotationY(const UnitType& type,
+                              const int& digits) const override;
+  QString getDisplayRotationZ(const UnitType& type,
+                              const int& digits) const override;
+  QString getDisplayScaleX(const int& digits) const override;
+  QString getDisplayScaleY(const int& digits) const override;
+  QString getDisplayScaleZ(const int& digits) const override;
+  QString getDisplayIsUsed() const override;
+  QString getDisplayIsDatumTransformation() const override;
 
  signals:
 

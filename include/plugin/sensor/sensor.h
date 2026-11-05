@@ -38,7 +38,7 @@ class OI_CORE_EXPORT SensorInterface : public QObject {
   Q_OBJECT
 
  public:
-  SensorInterface(QObject* parent = 0);
+  SensorInterface(QObject* parent = nullptr);
   // ############################
   // sensor initialization method
   // ############################
@@ -162,13 +162,13 @@ class OI_CORE_EXPORT SensorInterface : public QObject {
  */
 class OI_CORE_EXPORT Sensor : public SensorInterface {
  public:
-  explicit Sensor(QObject* parent = 0);
+  explicit Sensor(QObject* parent = nullptr);
 
-  Sensor(const Sensor& copy, QObject* parent = 0);
+  Sensor(const Sensor& copy, QObject* parent = nullptr);
 
   Sensor& operator=(const Sensor& copy);
 
-  virtual ~Sensor();
+  ~Sensor() override;
 
   enum SensorMessage { eSensorOk, eSensorWarning, eSensorError };
 
@@ -176,87 +176,90 @@ class OI_CORE_EXPORT Sensor : public SensorInterface {
   // sensor initialization method
   // ############################
 
-  void init();
+  void init() override;
 
   // ####################################
   // get or set general sensor attributes
   // ####################################
 
-  const SensorConfiguration& getSensorConfiguration() const;
-  void setSensorConfiguration(const SensorConfiguration& sConfig);
+  const SensorConfiguration& getSensorConfiguration() const override;
+  void setSensorConfiguration(const SensorConfiguration& sConfig) override;
 
-  void setMeasurementConfig(const MeasurementConfig& mConfig);
+  void setMeasurementConfig(const MeasurementConfig& mConfig) override;
 
-  const QPair<ReadingTypes, QPointer<Reading> >& getLastReading() const;
+  const QPair<ReadingTypes, QPointer<Reading> >& getLastReading()
+      const override;
 
-  bool isSensorAsync() const;
+  bool isSensorAsync() const override;
 
   // #########################################################
   // methods to get or set further information to use a sensor
   // #########################################################
 
   // reading types, sensor actions and connection types
-  const QList<ReadingTypes>& getSupportedReadingTypes() const;
-  const QList<SensorFunctions>& getSupportedSensorActions() const;
-  const QList<ConnectionKind>& getSupportedConnectionTypes() const;
+  const QList<ReadingTypes>& getSupportedReadingTypes() const override;
+  const QList<SensorFunctions>& getSupportedSensorActions() const override;
+  const QList<ConnectionKind>& getSupportedConnectionTypes() const override;
 
-  const QList<MeasurementConfig>& getSupportedMeasurementConfigs() const;
-  const QList<AcquisitionMode>& getSupportedAcquisitionModes() const;
-  AcquisitionResultShape getAcquisitionResultShape() const;
+  const QList<MeasurementConfig>& getSupportedMeasurementConfigs()
+      const override;
+  const QList<AcquisitionMode>& getSupportedAcquisitionModes() const override;
+  AcquisitionResultShape getAcquisitionResultShape() const override;
 
   // meta data
-  const PluginMetaData& getMetaData() const;
+  const PluginMetaData& getMetaData() const override;
 
   // integer, double and string parameter
-  const QMap<QString, int>& getIntegerParameter() const;
-  const QMap<QString, double>& getDoubleParameter() const;
-  const QMultiMap<QString, QString>& getStringParameter() const;
+  const QMap<QString, int>& getIntegerParameter() const override;
+  const QMap<QString, double>& getDoubleParameter() const override;
+  const QMultiMap<QString, QString>& getStringParameter() const override;
 
   // self deined actions
-  const QStringList& getSelfDefinedActions() const;
+  const QStringList& getSelfDefinedActions() const override;
 
   // accuracy
-  const Accuracy& getDefaultAccuracy() const;
+  const Accuracy& getDefaultAccuracy() const override;
 
   // ########################
   // sensor state and actions
   // ########################
 
   // sensor actions
-  bool accept(const SensorFunctions& method, const SensorAttributes& sAttr);
+  bool accept(const SensorFunctions& method,
+              const SensorAttributes& sAttr) override;
 
-  QJsonObject performAsyncSensorCommand(const QJsonObject& request);
+  QJsonObject performAsyncSensorCommand(const QJsonObject& request) override;
 
   // abort actions
-  bool abortAction();
+  bool abortAction() override;
 
   // connect or disconnect
-  bool connectSensor();
-  bool disconnectSensor();
+  bool connectSensor() override;
+  bool disconnectSensor() override;
 
   // measurements
-  QList<QPointer<Reading> > measure(const MeasurementConfig& mConfig);
-  QVariantMap readingStream(const ReadingTypes& streamFormat);
+  QList<QPointer<Reading> > measure(const MeasurementConfig& mConfig) override;
+  QVariantMap readingStream(const ReadingTypes& streamFormat) override;
 
   // status information
-  bool getConnectionState();
-  bool getIsReadyForMeasurement();
-  bool getIsBusy();
-  QMap<QString, QString> getSensorStatus();
+  bool getConnectionState() override;
+  bool getIsReadyForMeasurement() override;
+  bool getIsBusy() override;
+  QMap<QString, QString> getSensorStatus() override;
 
   // self defined actions
-  bool doSelfDefinedAction(const QString& action);
+  bool doSelfDefinedAction(const QString& action) override;
 
-  bool search();
+  bool search() override;
 
-  ReadingTypes getReadingType(const MeasurementConfig& mConfig) const;
+  ReadingTypes getReadingType(const MeasurementConfig& mConfig) const override;
 
   // #################
   // save and load XML
   // #################
 
-  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const;
-  bool fromOpenIndyXML(QDomElement& xmlElem);
+  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const override;
+  bool fromOpenIndyXML(QDomElement& xmlElem) override;
 
  protected:
   // #########################

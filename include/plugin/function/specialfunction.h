@@ -13,9 +13,9 @@ class OI_CORE_EXPORT SpecialFunction : public Function {
   Q_OBJECT
 
  public:
-  SpecialFunction(QObject* parent = 0) : Function(parent) {}
+  SpecialFunction(QObject* parent = nullptr) : Function(parent) {}
 
-  virtual ~SpecialFunction() {}
+  ~SpecialFunction() override {}
 };
 
 }  // namespace oi

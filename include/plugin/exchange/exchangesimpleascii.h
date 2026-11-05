@@ -18,9 +18,9 @@ class OI_CORE_EXPORT ExchangeSimpleAscii : public ExchangeInterface {
   Q_OBJECT
 
  public:
-  explicit ExchangeSimpleAscii(QObject* parent = 0);
+  explicit ExchangeSimpleAscii(QObject* parent = nullptr);
 
-  virtual ~ExchangeSimpleAscii();
+  ~ExchangeSimpleAscii() override;
 
   // ###############################################
   // all possible column types (geometry attributes)

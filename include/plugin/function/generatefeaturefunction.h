@@ -13,9 +13,9 @@ class OI_CORE_EXPORT GenerateFeatureFunction : public Function {
   Q_OBJECT
 
  public:
-  GenerateFeatureFunction(QObject* parent = 0) : Function(parent) {}
+  GenerateFeatureFunction(QObject* parent = nullptr) : Function(parent) {}
 
-  virtual ~GenerateFeatureFunction() {}
+  ~GenerateFeatureFunction() override {}
 
  signals:
   void addFeature(const QPointer<FeatureWrapper>& feature);

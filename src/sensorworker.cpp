@@ -78,7 +78,7 @@ QPointer<Sensor> SensorWorker::takeSensor() {
   }
 
   // set sensor pointer to NULL pointer
-  this->sensor = QPointer<Sensor>(NULL);
+  this->sensor = QPointer<Sensor>(nullptr);
 
   return sensor;
 }

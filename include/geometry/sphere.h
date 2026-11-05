@@ -18,14 +18,15 @@ class OI_CORE_EXPORT Sphere : public Geometry {
   Q_OBJECT
 
  public:
-  Sphere(QObject* parent = 0);
-  Sphere(const Position& center, const Radius& radius, QObject* parent = 0);
+  Sphere(QObject* parent = nullptr);
+  Sphere(const Position& center, const Radius& radius,
+         QObject* parent = nullptr);
 
-  Sphere(const Sphere& copy, QObject* parent = 0);
+  Sphere(const Sphere& copy, QObject* parent = nullptr);
 
   Sphere& operator=(const Sphere& copy);
 
-  ~Sphere();
+  ~Sphere() override;
 
   // ########################################
   // order of unknown parameters (Qxx-matrix)
@@ -42,8 +43,8 @@ class OI_CORE_EXPORT Sphere : public Geometry {
   // check wether this geometry has a direction, a position and a radius
   // ###################################################################
 
-  bool hasPosition() const;
-  bool hasRadius() const;
+  bool hasPosition() const override;
+  bool hasRadius() const override;
 
   // ############################
   // get or set sphere parameters
@@ -55,24 +56,24 @@ class OI_CORE_EXPORT Sphere : public Geometry {
   // get or set unknown parameters
   // #############################
 
-  virtual QMap<GeometryParameters, QString> getUnknownParameters(
+  QMap<GeometryParameters, QString> getUnknownParameters(
       const QMap<DimensionType, UnitType>& displayUnits,
-      const QMap<DimensionType, int>& displayDigits) const;
-  virtual void applyUnknownParameters(
-      const QMap<GeometryParameters, double>& parameters);
+      const QMap<DimensionType, int>& displayDigits) const override;
+  void applyUnknownParameters(
+      const QMap<GeometryParameters, double>& parameters) override;
 
   // ###########################
   // reexecute the function list
   // ###########################
 
-  void recalc();
+  void recalc() override;
 
   // #################
   // save and load XML
   // #################
 
-  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const;
-  bool fromOpenIndyXML(QDomElement& xmlElem);
+  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const override;
+  bool fromOpenIndyXML(QDomElement& xmlElem) override;
 
   // ###############
   // display methods

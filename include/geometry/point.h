@@ -18,15 +18,15 @@ class OI_CORE_EXPORT Point : public Geometry {
   Q_OBJECT
 
  public:
-  Point(QObject* parent = 0);
-  Point(const Position& xyz, QObject* parent = 0);
-  Point(int id, const Position& xyz, QObject* parent = 0);
+  Point(QObject* parent = nullptr);
+  Point(const Position& xyz, QObject* parent = nullptr);
+  Point(int id, const Position& xyz, QObject* parent = nullptr);
 
-  Point(const Point& copy, QObject* parent = 0);
+  Point(const Point& copy, QObject* parent = nullptr);
 
   Point& operator=(const Point& copy);
 
-  ~Point();
+  ~Point() override;
 
   // ########################################
   // order of unknown parameters (Qxx-matrix)
@@ -38,13 +38,13 @@ class OI_CORE_EXPORT Point : public Geometry {
   // check wether this geometry has a direction, a position and a radius
   // ###################################################################
 
-  bool hasPosition() const;
+  bool hasPosition() const override;
 
   // ###########################
   // get or set point parameters
   // ###########################
 
-  const Position& getPosition() const;
+  const Position& getPosition() const override;
 
   void setPoint(const Position& xyz);
 
@@ -55,17 +55,17 @@ class OI_CORE_EXPORT Point : public Geometry {
   // get or set unknown parameters
   // #############################
 
-  virtual QMap<GeometryParameters, QString> getUnknownParameters(
+  QMap<GeometryParameters, QString> getUnknownParameters(
       const QMap<DimensionType, UnitType>& displayUnits,
-      const QMap<DimensionType, int>& displayDigits) const;
-  virtual void applyUnknownParameters(
-      const QMap<GeometryParameters, double>& parameters);
+      const QMap<DimensionType, int>& displayDigits) const override;
+  void applyUnknownParameters(
+      const QMap<GeometryParameters, double>& parameters) override;
 
   // ###########################
   // reexecute the function list
   // ###########################
 
-  void recalc();
+  void recalc() override;
 
   // ###############################################################
   // D19: a Point produced directly by an acquisition (has readings
@@ -94,11 +94,11 @@ class OI_CORE_EXPORT Point : public Geometry {
   // save and load XML
   // #################
 
-  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const;
-  bool fromOpenIndyXML(QDomElement& xmlElem);
+  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const override;
+  bool fromOpenIndyXML(QDomElement& xmlElem) override;
 
   QString getDisplayDistance(const UnitType& type, const int& digits,
-                             const bool& showDiff) const;
+                             const bool& showDiff) const override;
   double distance;  // depends on function
 
  protected:

@@ -115,8 +115,8 @@ class OI_CORE_EXPORT BundleAdjustment : public QObject {
   Q_OBJECT
 
  public:
-  BundleAdjustment(QObject* parent = 0);
-  virtual ~BundleAdjustment();
+  BundleAdjustment(QObject* parent = nullptr);
+  ~BundleAdjustment() override;
 
   // ############################
   // bundle initialization method

@@ -46,13 +46,13 @@ class OI_CORE_EXPORT PointCloud : public Geometry, public PointCollection {
   Q_OBJECT
 
  public:
-  PointCloud(QObject* parent = 0);
+  PointCloud(QObject* parent = nullptr);
 
-  PointCloud(const PointCloud& copy, QObject* parent = 0);
+  PointCloud(const PointCloud& copy, QObject* parent = nullptr);
 
   PointCloud& operator=(const PointCloud& copy);
 
-  ~PointCloud();
+  ~PointCloud() override;
 
   // ###########################
   // general point cloud methods
@@ -67,7 +67,7 @@ class OI_CORE_EXPORT PointCloud : public Geometry, public PointCollection {
   // check wether this geometry has a direction, a position and a radius
   // ###################################################################
 
-  bool hasPosition() const;
+  bool hasPosition() const override;
 
   // #################################
   // get or set point cloud parameters
@@ -90,14 +90,14 @@ class OI_CORE_EXPORT PointCloud : public Geometry, public PointCollection {
   // reexecute the function list
   // ###########################
 
-  void recalc();
+  void recalc() override;
 
   // #################
   // save and load XML
   // #################
 
-  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const;
-  bool fromOpenIndyXML(QDomElement& xmlElem);
+  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const override;
+  bool fromOpenIndyXML(QDomElement& xmlElem) override;
 
   // ###############
   // display methods

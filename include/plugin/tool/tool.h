@@ -16,9 +16,9 @@ class OI_CORE_EXPORT Tool : public QWidget {
   Q_OBJECT
 
  public:
-  explicit Tool(QWidget* parent = 0);
+  explicit Tool(QWidget* parent = nullptr);
 
-  virtual ~Tool();
+  ~Tool() override;
 
   // ##########################
   // tool initialization method
@@ -43,7 +43,7 @@ class OI_CORE_EXPORT Tool : public QWidget {
   // override QWidget methods
   // #########################
 
-  void closeEvent(QCloseEvent* event);
+  void closeEvent(QCloseEvent* event) override;
 
  public slots:
 

@@ -26,7 +26,7 @@ namespace {
 class FakeConsumer : public ConstructFunction, public Producer<Point> {
   Q_OBJECT
  public:
-  FakeConsumer(const QString& roleName = "default", QObject* parent = 0)
+  FakeConsumer(const QString& roleName = "default", QObject* parent = nullptr)
       : ConstructFunction(parent) {
     this->metaData.name = "FakeConsumer";
     NeededElement param;

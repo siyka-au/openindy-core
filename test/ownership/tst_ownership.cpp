@@ -18,7 +18,7 @@ using namespace oi;
 class FakeFit : public FitFunction, public Producer<Point> {
   Q_OBJECT
  public:
-  FakeFit(QObject* parent = 0) : FitFunction(parent) {
+  FakeFit(QObject* parent = nullptr) : FitFunction(parent) {
     this->metaData.name = "FakeFit";
   }
   std::expected<Point, QString> exec() override { return Point(); }
@@ -27,7 +27,7 @@ class FakeFit : public FitFunction, public Producer<Point> {
 class FakeConstruct : public ConstructFunction, public Producer<Point> {
   Q_OBJECT
  public:
-  FakeConstruct(QObject* parent = 0) : ConstructFunction(parent) {
+  FakeConstruct(QObject* parent = nullptr) : ConstructFunction(parent) {
     this->metaData.name = "FakeConstruct";
   }
   std::expected<Point, QString> exec() override { return Point(); }

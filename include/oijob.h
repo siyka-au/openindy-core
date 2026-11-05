@@ -40,9 +40,9 @@ class OI_CORE_EXPORT OiJob : public QObject {
   Q_OBJECT
 
  public:
-  explicit OiJob(QObject* parent = 0);
+  explicit OiJob(QObject* parent = nullptr);
 
-  ~OiJob();
+  ~OiJob() override;
 
   // ####################################
   // get or set meta information of a job

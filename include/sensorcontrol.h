@@ -13,7 +13,7 @@
 
 namespace oi {
 
-typedef QMap<QString, QString> StringStringMap;
+using StringStringMap = QMap<QString, QString>;
 
 class Station;
 
@@ -26,9 +26,9 @@ class OI_CORE_EXPORT SensorControl : public QObject {
   Q_OBJECT
 
  public:
-  SensorControl(QPointer<Station>& station, QObject* parent = 0);
+  SensorControl(QPointer<Station>& station, QObject* parent = nullptr);
 
-  ~SensorControl();
+  ~SensorControl() override;
 
   void setSensorWorkerThread(QPointer<QThread> t);
  public slots:

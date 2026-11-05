@@ -14,16 +14,16 @@ class OI_CORE_EXPORT Direction : public Element {
   Q_OBJECT
 
  public:
-  explicit Direction(QObject* parent = 0);
-  explicit Direction(const OiVec& v, QObject* parent = 0);
+  explicit Direction(QObject* parent = nullptr);
+  explicit Direction(const OiVec& v, QObject* parent = nullptr);
   explicit Direction(const double& x, const double& y, const double& z,
-                     const double& h = 1.0, QObject* parent = 0);
+                     const double& h = 1.0, QObject* parent = nullptr);
 
-  Direction(const Direction& copy, QObject* parent = 0);
+  Direction(const Direction& copy, QObject* parent = nullptr);
 
   Direction& operator=(const Direction& copy);
 
-  ~Direction();
+  ~Direction() override;
 
   // ###########################
   // get or set direction vector

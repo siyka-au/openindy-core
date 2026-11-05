@@ -19,15 +19,15 @@ class OI_CORE_EXPORT Cylinder : public Geometry {
   Q_OBJECT
 
  public:
-  Cylinder(QObject* parent = 0);
+  Cylinder(QObject* parent = nullptr);
   Cylinder(const Position& axisPoint, const Direction& axis,
-           const Radius& radius, QObject* parent = 0);
+           const Radius& radius, QObject* parent = nullptr);
 
-  Cylinder(const Cylinder& copy, QObject* parent = 0);
+  Cylinder(const Cylinder& copy, QObject* parent = nullptr);
 
   Cylinder& operator=(const Cylinder& copy);
 
-  ~Cylinder();
+  ~Cylinder() override;
 
   // ########################################
   // order of unknown parameters (Qxx-matrix)
@@ -47,9 +47,9 @@ class OI_CORE_EXPORT Cylinder : public Geometry {
   // check wether this geometry has a direction, a position and a radius
   // ###################################################################
 
-  bool hasDirection() const;
-  bool hasPosition() const;
-  bool hasRadius() const;
+  bool hasDirection() const override;
+  bool hasPosition() const override;
+  bool hasRadius() const override;
 
   // ##############################
   // get or set cylinder parameters
@@ -62,24 +62,24 @@ class OI_CORE_EXPORT Cylinder : public Geometry {
   // get or set unknown parameters
   // #############################
 
-  virtual QMap<GeometryParameters, QString> getUnknownParameters(
+  QMap<GeometryParameters, QString> getUnknownParameters(
       const QMap<DimensionType, UnitType>& displayUnits,
-      const QMap<DimensionType, int>& displayDigits) const;
-  virtual void applyUnknownParameters(
-      const QMap<GeometryParameters, double>& parameters);
+      const QMap<DimensionType, int>& displayDigits) const override;
+  void applyUnknownParameters(
+      const QMap<GeometryParameters, double>& parameters) override;
 
   // ###########################
   // reexecute the function list
   // ###########################
 
-  void recalc();
+  void recalc() override;
 
   // #################
   // save and load XML
   // #################
 
-  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const;
-  bool fromOpenIndyXML(QDomElement& xmlElem);
+  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const override;
+  bool fromOpenIndyXML(QDomElement& xmlElem) override;
 };
 
 }  // namespace oi

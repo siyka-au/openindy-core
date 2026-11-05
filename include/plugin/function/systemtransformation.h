@@ -17,13 +17,13 @@ class OI_CORE_EXPORT SystemTransformation : public Function {
   Q_OBJECT
 
  public:
-  SystemTransformation(QObject* parent = 0) : Function(parent) {
+  SystemTransformation(QObject* parent = nullptr) : Function(parent) {
     // only applicable for trafo params
     this->applicableFor.clear();
     this->applicableFor.append(eTrafoParamFeature);
   }
 
-  virtual ~SystemTransformation() {}
+  ~SystemTransformation() override {}
 
   void setInputPoint(const QList<Point>& startSystem,
                      const QList<Point>& destinationSystem) {

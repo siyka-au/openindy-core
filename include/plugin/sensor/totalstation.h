@@ -12,15 +12,16 @@ class OI_CORE_EXPORT TotalStation : public Sensor {
   Q_OBJECT
 
  public:
-  TotalStation(QObject* parent = 0) : Sensor(parent) {}
+  TotalStation(QObject* parent = nullptr) : Sensor(parent) {}
 
-  virtual ~TotalStation() {}
+  ~TotalStation() override {}
 
   // ##########################################
   // calls the appropriate laser tracker method
   // ##########################################
 
-  bool accept(const SensorFunctions& method, const SensorAttributes& sAttr) {
+  bool accept(const SensorFunctions& method,
+              const SensorAttributes& sAttr) override {
     switch (method) {
       case (eMoveAngle):
         return this->move(sAttr.moveAzimuth, sAttr.moveZenith,

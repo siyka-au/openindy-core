@@ -14,14 +14,14 @@ class OI_CORE_EXPORT Radius : public Element {
   Q_OBJECT
 
  public:
-  explicit Radius(QObject* parent = 0);
-  explicit Radius(const double& r, QObject* parent = 0);
+  explicit Radius(QObject* parent = nullptr);
+  explicit Radius(const double& r, QObject* parent = nullptr);
 
-  Radius(const Radius& copy, QObject* parent = 0);
+  Radius(const Radius& copy, QObject* parent = nullptr);
 
   Radius& operator=(const Radius& copy);
 
-  ~Radius();
+  ~Radius() override;
 
   // #################
   // get or set radius

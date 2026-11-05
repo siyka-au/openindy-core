@@ -14,9 +14,9 @@ class OI_CORE_EXPORT ExchangeDefinedFormat : public ExchangeInterface {
   Q_OBJECT
 
  public:
-  explicit ExchangeDefinedFormat(QObject* parent = 0);
+  explicit ExchangeDefinedFormat(QObject* parent = nullptr);
 
-  virtual ~ExchangeDefinedFormat();
+  ~ExchangeDefinedFormat() override;
 
   // #########################################
   // methods to get or set further information

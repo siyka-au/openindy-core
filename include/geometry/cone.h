@@ -18,15 +18,15 @@ class OI_CORE_EXPORT Cone : public Geometry {
   Q_OBJECT
 
  public:
-  Cone(QObject* parent = 0);
+  Cone(QObject* parent = nullptr);
   Cone(const Position& apex, const Direction& axis, const double& aperture,
-       QObject* parent = 0);
+       QObject* parent = nullptr);
 
-  Cone(const Cone& copy, QObject* parent = 0);
+  Cone(const Cone& copy, QObject* parent = nullptr);
 
   Cone& operator=(const Cone& copy);
 
-  ~Cone();
+  ~Cone() override;
 
   // ########################################
   // order of unknown parameters (Qxx-matrix)
@@ -46,8 +46,8 @@ class OI_CORE_EXPORT Cone : public Geometry {
   // check wether this geometry has a direction, a position and a radius
   // ###################################################################
 
-  bool hasDirection() const;
-  bool hasPosition() const;
+  bool hasDirection() const override;
+  bool hasPosition() const override;
 
   // ##########################
   // get or set cone parameters
@@ -62,24 +62,24 @@ class OI_CORE_EXPORT Cone : public Geometry {
   // get or set unknown parameters
   // #############################
 
-  virtual QMap<GeometryParameters, QString> getUnknownParameters(
+  QMap<GeometryParameters, QString> getUnknownParameters(
       const QMap<DimensionType, UnitType>& displayUnits,
-      const QMap<DimensionType, int>& displayDigits) const;
-  virtual void applyUnknownParameters(
-      const QMap<GeometryParameters, double>& parameters);
+      const QMap<DimensionType, int>& displayDigits) const override;
+  void applyUnknownParameters(
+      const QMap<GeometryParameters, double>& parameters) override;
 
   // ###########################
   // reexecute the function list
   // ###########################
 
-  void recalc();
+  void recalc() override;
 
   // #################
   // save and load XML
   // #################
 
-  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const;
-  bool fromOpenIndyXML(QDomElement& xmlElem);
+  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const override;
+  bool fromOpenIndyXML(QDomElement& xmlElem) override;
 
  private:
   // ###############
