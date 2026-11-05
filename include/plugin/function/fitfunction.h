@@ -828,12 +828,12 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
     OiVec s(3);
 
     // rotated 2D points
-    QList<float> points2D_x;
-    QList<float> points2D_y;
+    QList<double> points2D_x;
+    QList<double> points2D_y;
 
     // rotated centroid reduced 2D points
-    QList<float> centroidreduced2D_x;
-    QList<float> centroidreduced2D_y;
+    QList<double> centroidreduced2D_x;
+    QList<double> centroidreduced2D_y;
 
     // calculate rotation angles
     if (pn.getAt(1) == 0 && pn.getAt(2) == 0) {
@@ -936,21 +936,21 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
            Rall.getAt(1, 1) * obs.xyz.getAt(1) +
            Rall.getAt(1, 2) * obs.xyz.getAt(2);
 
-      points2D_x.append(static_cast<float>(tx));
-      points2D_y.append(static_cast<float>(ty));
+      points2D_x.append(static_cast<double>(tx));
+      points2D_y.append(static_cast<double>(ty));
 
       centroid2D.setAt(0, centroid2D.getAt(0) + tx);
       centroid2D.setAt(1, centroid2D.getAt(1) + ty);
     }
-    centroid2D.setAt(0, centroid2D.getAt(0) / (float)numPoints);
-    centroid2D.setAt(1, centroid2D.getAt(1) / (float)numPoints);
+    centroid2D.setAt(0, centroid2D.getAt(0) / static_cast<double>(numPoints));
+    centroid2D.setAt(1, centroid2D.getAt(1) / static_cast<double>(numPoints));
 
     // calculate centroid reduced 2D coordinates
     for (int j = 0; j < numPoints; j++) {
       centroidreduced2D_x.append(
-          static_cast<float>(points2D_x.at(j) - centroid2D.getAt(0)));
+          static_cast<double>(points2D_x.at(j) - centroid2D.getAt(0)));
       centroidreduced2D_y.append(
-          static_cast<float>(points2D_y.at(j) - centroid2D.getAt(1)));
+          static_cast<double>(points2D_y.at(j) - centroid2D.getAt(1)));
     }
 
     // fill a matrices
@@ -1320,39 +1320,39 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
 
     // calculate sum vv
     double sumVV = 0.0;
-    float vrMin = numeric_limits<float>::max();
-    float vrMax = numeric_limits<float>::min();
+    double vrMin = numeric_limits<double>::max();
+    double vrMax = numeric_limits<double>::lowest();
     foreach (const IdPoint& observation, allUsableObservations) {
       OiVec v_obs(3);
       _x = observation.xyz.getAt(0);
       _y = observation.xyz.getAt(1);
       _z = observation.xyz.getAt(2);
 
-      std::array<float, 3> b;  // vector between point on cylinder axis and
-                               // point p which is probably on cylinder
-      b[0] = static_cast<float>(_x - xyz.getAt(0));
-      b[1] = static_cast<float>(_y - xyz.getAt(1));
-      b[2] = static_cast<float>(_z - xyz.getAt(2));
+      std::array<double, 3> b;  // vector between point on cylinder axis and
+                                // point p which is probably on cylinder
+      b[0] = static_cast<double>(_x - xyz.getAt(0));
+      b[1] = static_cast<double>(_y - xyz.getAt(1));
+      b[2] = static_cast<double>(_z - xyz.getAt(2));
 
-      std::array<float, 3>
+      std::array<double, 3>
           n0CrossB;  // cross product of cylinder axis (length 1) and b
       n0CrossB[0] =
-          static_cast<float>(axis.getAt(1) * b[2] - axis.getAt(2) * b[1]);
+          static_cast<double>(axis.getAt(1) * b[2] - axis.getAt(2) * b[1]);
       n0CrossB[1] =
-          static_cast<float>(axis.getAt(2) * b[0] - axis.getAt(0) * b[2]);
+          static_cast<double>(axis.getAt(2) * b[0] - axis.getAt(0) * b[2]);
       n0CrossB[2] =
-          static_cast<float>(axis.getAt(0) * b[1] - axis.getAt(1) * b[0]);
+          static_cast<double>(axis.getAt(0) * b[1] - axis.getAt(1) * b[0]);
 
-      float radiusActual =
-          0.0f;  // smallest distance of point p to cylinder axis
+      double radiusActual =
+          0.0;  // smallest distance of point p to cylinder axis
 
       radiusActual =
           qSqrt(n0CrossB[0] * n0CrossB[0] + n0CrossB[1] * n0CrossB[1] +
                 n0CrossB[2] * n0CrossB[2]);
 
-      float distance = 0.0f;
+      double distance = 0.0;
 
-      distance = static_cast<float>(radiusActual - _r);  // distance error
+      distance = static_cast<double>(radiusActual - _r);  // distance error
       if (inputObservations.contains(
               observation)) {  // calculate form error from "used" observations
         vrMin = min(vrMin, distance);
