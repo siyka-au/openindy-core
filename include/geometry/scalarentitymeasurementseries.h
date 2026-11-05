@@ -37,7 +37,7 @@ class OI_CORE_EXPORT ScalarEntityMeasurementSeries : public Geometry {
   // get or set measurement series parameters
   // ########################################
 
-  const double& getSeriesValue() const;
+  [[nodiscard]] const double& getSeriesValue() const;
 
   void setSeriesValue(const double& seriesValue);
 
@@ -45,7 +45,7 @@ class OI_CORE_EXPORT ScalarEntityMeasurementSeries : public Geometry {
   // get or set unknown parameters
   // #############################
 
-  QMap<GeometryParameters, QString> getUnknownParameters(
+  [[nodiscard]] QMap<GeometryParameters, QString> getUnknownParameters(
       const QMap<DimensionType, UnitType>& displayUnits,
       const QMap<DimensionType, int>& displayDigits) const override;
   void applyUnknownParameters(
@@ -68,7 +68,7 @@ class OI_CORE_EXPORT ScalarEntityMeasurementSeries : public Geometry {
   // display methods
   // ###############
 
-  QString getDisplayMeasurementSeries(
+  [[nodiscard]] QString getDisplayMeasurementSeries(
       const UnitType& type, const int& digits,
       const bool& showDiff = false) const override;
 

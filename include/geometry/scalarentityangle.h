@@ -34,7 +34,7 @@ class OI_CORE_EXPORT ScalarEntityAngle : public Geometry {
   // get or set angle parameters
   // ###########################
 
-  const double& getAngle() const;
+  [[nodiscard]] const double& getAngle() const;
 
   void setAngle(const double& angle);
 
@@ -42,7 +42,7 @@ class OI_CORE_EXPORT ScalarEntityAngle : public Geometry {
   // get or set unknown parameters
   // #############################
 
-  QMap<GeometryParameters, QString> getUnknownParameters(
+  [[nodiscard]] QMap<GeometryParameters, QString> getUnknownParameters(
       const QMap<DimensionType, UnitType>& displayUnits,
       const QMap<DimensionType, int>& displayDigits) const override;
   void applyUnknownParameters(
@@ -65,8 +65,9 @@ class OI_CORE_EXPORT ScalarEntityAngle : public Geometry {
   // display methods
   // ###############
 
-  QString getDisplayAngle(const UnitType& type, const int& digits,
-                          const bool& showDiff = false) const override;
+  [[nodiscard]] QString getDisplayAngle(
+      const UnitType& type, const int& digits,
+      const bool& showDiff = false) const override;
 
  private:
   // ################

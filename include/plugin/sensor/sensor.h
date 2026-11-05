@@ -49,52 +49,60 @@ class OI_CORE_EXPORT SensorInterface : public QObject {
   // get or set general sensor attributes
   // ####################################
 
-  virtual const SensorConfiguration& getSensorConfiguration() const = 0;
+  [[nodiscard]] virtual const SensorConfiguration& getSensorConfiguration()
+      const = 0;
   virtual void setSensorConfiguration(const SensorConfiguration& sConfig) = 0;
 
   virtual void setMeasurementConfig(const MeasurementConfig& mConfig) = 0;
 
-  virtual const QPair<ReadingTypes, QPointer<Reading> >& getLastReading()
-      const = 0;
+  [[nodiscard]] virtual const QPair<ReadingTypes, QPointer<Reading>>&
+  getLastReading() const = 0;
 
-  virtual bool isSensorAsync() const = 0;
+  [[nodiscard]] virtual bool isSensorAsync() const = 0;
 
   // #########################################################
   // methods to get or set further information to use a sensor
   // #########################################################
 
   // reading types, sensor actions and connection types
-  virtual const QList<ReadingTypes>& getSupportedReadingTypes() const = 0;
-  virtual const QList<SensorFunctions>& getSupportedSensorActions() const = 0;
-  virtual const QList<ConnectionKind>& getSupportedConnectionTypes() const = 0;
+  [[nodiscard]] virtual const QList<ReadingTypes>& getSupportedReadingTypes()
+      const = 0;
+  [[nodiscard]] virtual const QList<SensorFunctions>&
+  getSupportedSensorActions() const = 0;
+  [[nodiscard]] virtual const QList<ConnectionKind>&
+  getSupportedConnectionTypes() const = 0;
 
   // the measurement configurations this sensor publishes, and how it can
   // acquire - both are declared by the driver rather than inferred from its
   // type
-  virtual const QList<MeasurementConfig>& getSupportedMeasurementConfigs()
-      const = 0;
-  virtual const QList<AcquisitionMode>& getSupportedAcquisitionModes()
-      const = 0;
+  [[nodiscard]] virtual const QList<MeasurementConfig>&
+  getSupportedMeasurementConfigs() const = 0;
+  [[nodiscard]] virtual const QList<AcquisitionMode>&
+  getSupportedAcquisitionModes() const = 0;
 
   // how many Points one acquisition action yields (D2/D15a) - a capability,
   // never inferred from sensor type. Every current driver is eOnePoint;
   // declared here so eManyPoints/eCloud are expressible without an ABI
   // change when a V-STARS/scanner driver needs them.
-  virtual AcquisitionResultShape getAcquisitionResultShape() const = 0;
+  [[nodiscard]] virtual AcquisitionResultShape getAcquisitionResultShape()
+      const = 0;
 
   // meta data
-  virtual const PluginMetaData& getMetaData() const = 0;
+  [[nodiscard]] virtual const PluginMetaData& getMetaData() const = 0;
 
   // integer, double and string parameter
-  virtual const QMap<QString, int>& getIntegerParameter() const = 0;
-  virtual const QMap<QString, double>& getDoubleParameter() const = 0;
-  virtual const QMultiMap<QString, QString>& getStringParameter() const = 0;
+  [[nodiscard]] virtual const QMap<QString, int>& getIntegerParameter()
+      const = 0;
+  [[nodiscard]] virtual const QMap<QString, double>& getDoubleParameter()
+      const = 0;
+  [[nodiscard]] virtual const QMultiMap<QString, QString>& getStringParameter()
+      const = 0;
 
   // self deined actions
-  virtual const QStringList& getSelfDefinedActions() const = 0;
+  [[nodiscard]] virtual const QStringList& getSelfDefinedActions() const = 0;
 
   // accuracy
-  virtual const Accuracy& getDefaultAccuracy() const = 0;
+  [[nodiscard]] virtual const Accuracy& getDefaultAccuracy() const = 0;
 
   // ########################
   // sensor state and actions
@@ -114,7 +122,7 @@ class OI_CORE_EXPORT SensorInterface : public QObject {
   virtual bool disconnectSensor() = 0;
 
   // measurements
-  virtual QList<QPointer<Reading> > measure(
+  virtual QList<QPointer<Reading>> measure(
       const MeasurementConfig& mConfig) = 0;
   virtual QVariantMap readingStream(const ReadingTypes& streamFormat) = 0;
 
@@ -129,7 +137,7 @@ class OI_CORE_EXPORT SensorInterface : public QObject {
 
   virtual bool search() = 0;
 
-  virtual ReadingTypes getReadingType(
+  [[nodiscard]] virtual ReadingTypes getReadingType(
       const MeasurementConfig& mConfig) const = 0;
 
   // #################
@@ -152,7 +160,7 @@ class OI_CORE_EXPORT SensorInterface : public QObject {
       const QJsonObject& response,
       const SensorAction sensorAction = SensorAction::eSensorActionUndefind);
   void asyncMeasurementResult(
-      const int& geomId, const QList<QPointer<Reading> >& measurements,
+      const int& geomId, const QList<QPointer<Reading>>& measurements,
       const SensorAction sensorAction = SensorAction::eSensorActionUndefind);
   void asyncStreamResult(const QVariantMap& reading);
   void asyncSensorNotification(const QJsonObject& response);
@@ -183,43 +191,51 @@ class OI_CORE_EXPORT Sensor : public SensorInterface {
   // get or set general sensor attributes
   // ####################################
 
-  const SensorConfiguration& getSensorConfiguration() const override;
+  [[nodiscard]] const SensorConfiguration& getSensorConfiguration()
+      const override;
   void setSensorConfiguration(const SensorConfiguration& sConfig) override;
 
   void setMeasurementConfig(const MeasurementConfig& mConfig) override;
 
-  const QPair<ReadingTypes, QPointer<Reading> >& getLastReading()
+  [[nodiscard]] const QPair<ReadingTypes, QPointer<Reading>>& getLastReading()
       const override;
 
-  bool isSensorAsync() const override;
+  [[nodiscard]] bool isSensorAsync() const override;
 
   // #########################################################
   // methods to get or set further information to use a sensor
   // #########################################################
 
   // reading types, sensor actions and connection types
-  const QList<ReadingTypes>& getSupportedReadingTypes() const override;
-  const QList<SensorFunctions>& getSupportedSensorActions() const override;
-  const QList<ConnectionKind>& getSupportedConnectionTypes() const override;
-
-  const QList<MeasurementConfig>& getSupportedMeasurementConfigs()
+  [[nodiscard]] const QList<ReadingTypes>& getSupportedReadingTypes()
       const override;
-  const QList<AcquisitionMode>& getSupportedAcquisitionModes() const override;
-  AcquisitionResultShape getAcquisitionResultShape() const override;
+  [[nodiscard]] const QList<SensorFunctions>& getSupportedSensorActions()
+      const override;
+  [[nodiscard]] const QList<ConnectionKind>& getSupportedConnectionTypes()
+      const override;
+
+  [[nodiscard]] const QList<MeasurementConfig>& getSupportedMeasurementConfigs()
+      const override;
+  [[nodiscard]] const QList<AcquisitionMode>& getSupportedAcquisitionModes()
+      const override;
+  [[nodiscard]] AcquisitionResultShape getAcquisitionResultShape()
+      const override;
 
   // meta data
-  const PluginMetaData& getMetaData() const override;
+  [[nodiscard]] const PluginMetaData& getMetaData() const override;
 
   // integer, double and string parameter
-  const QMap<QString, int>& getIntegerParameter() const override;
-  const QMap<QString, double>& getDoubleParameter() const override;
-  const QMultiMap<QString, QString>& getStringParameter() const override;
+  [[nodiscard]] const QMap<QString, int>& getIntegerParameter() const override;
+  [[nodiscard]] const QMap<QString, double>& getDoubleParameter()
+      const override;
+  [[nodiscard]] const QMultiMap<QString, QString>& getStringParameter()
+      const override;
 
   // self deined actions
-  const QStringList& getSelfDefinedActions() const override;
+  [[nodiscard]] const QStringList& getSelfDefinedActions() const override;
 
   // accuracy
-  const Accuracy& getDefaultAccuracy() const override;
+  [[nodiscard]] const Accuracy& getDefaultAccuracy() const override;
 
   // ########################
   // sensor state and actions
@@ -239,7 +255,7 @@ class OI_CORE_EXPORT Sensor : public SensorInterface {
   bool disconnectSensor() override;
 
   // measurements
-  QList<QPointer<Reading> > measure(const MeasurementConfig& mConfig) override;
+  QList<QPointer<Reading>> measure(const MeasurementConfig& mConfig) override;
   QVariantMap readingStream(const ReadingTypes& streamFormat) override;
 
   // status information
@@ -253,7 +269,8 @@ class OI_CORE_EXPORT Sensor : public SensorInterface {
 
   bool search() override;
 
-  ReadingTypes getReadingType(const MeasurementConfig& mConfig) const override;
+  [[nodiscard]] ReadingTypes getReadingType(
+      const MeasurementConfig& mConfig) const override;
 
   // #################
   // save and load XML
@@ -270,7 +287,7 @@ class OI_CORE_EXPORT Sensor : public SensorInterface {
   SensorConfiguration sensorConfiguration;
   MeasurementConfig actualMeasurementConfig;
 
-  QPair<ReadingTypes, QPointer<Reading> >
+  QPair<ReadingTypes, QPointer<Reading>>
       lastReading;  // the last reading produced by this sensor
 
   // ###########################

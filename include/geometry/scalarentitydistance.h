@@ -36,7 +36,7 @@ class OI_CORE_EXPORT ScalarEntityDistance : public Geometry {
   // get or set distance parameters
   // ##############################
 
-  const double& getDistance() const;
+  [[nodiscard]] const double& getDistance() const;
 
   void setDistance(const double& distance);
 
@@ -44,7 +44,7 @@ class OI_CORE_EXPORT ScalarEntityDistance : public Geometry {
   // get or set unknown parameters
   // #############################
 
-  QMap<GeometryParameters, QString> getUnknownParameters(
+  [[nodiscard]] QMap<GeometryParameters, QString> getUnknownParameters(
       const QMap<DimensionType, UnitType>& displayUnits,
       const QMap<DimensionType, int>& displayDigits) const override;
   void applyUnknownParameters(
@@ -67,8 +67,9 @@ class OI_CORE_EXPORT ScalarEntityDistance : public Geometry {
   // display methods
   // ###############
 
-  QString getDisplayDistance(const UnitType& type, const int& digits,
-                             const bool& showDiff = false) const override;
+  [[nodiscard]] QString getDisplayDistance(
+      const UnitType& type, const int& digits,
+      const bool& showDiff = false) const override;
 
  private:
   // ###################

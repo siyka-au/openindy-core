@@ -46,14 +46,14 @@ class OI_CORE_EXPORT Cone : public Geometry {
   // check wether this geometry has a direction, a position and a radius
   // ###################################################################
 
-  bool hasDirection() const override;
-  bool hasPosition() const override;
+  [[nodiscard]] bool hasDirection() const override;
+  [[nodiscard]] bool hasPosition() const override;
 
   // ##########################
   // get or set cone parameters
   // ##########################
 
-  const double& getAperture() const;
+  [[nodiscard]] const double& getAperture() const;
 
   void setCone(const Position& apex, const Direction& axis,
                const double& aperture);
@@ -62,7 +62,7 @@ class OI_CORE_EXPORT Cone : public Geometry {
   // get or set unknown parameters
   // #############################
 
-  QMap<GeometryParameters, QString> getUnknownParameters(
+  [[nodiscard]] QMap<GeometryParameters, QString> getUnknownParameters(
       const QMap<DimensionType, UnitType>& displayUnits,
       const QMap<DimensionType, int>& displayDigits) const override;
   void applyUnknownParameters(

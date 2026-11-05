@@ -41,9 +41,9 @@ class OI_CORE_EXPORT LocalPoint {
   LocalPoint(const QString& label, const OiVec& position,
              bool isMeasured = true);
 
-  const QString& label() const;
-  const OiVec& position() const;
-  bool isMeasured() const;
+  [[nodiscard]] const QString& label() const;
+  [[nodiscard]] const OiVec& position() const;
+  [[nodiscard]] bool isMeasured() const;
 
  private:
   QString m_label;
@@ -74,18 +74,19 @@ class OI_CORE_EXPORT CalibratedConstellation {
                           const QString& certificateId = QString(),
                           const QDate& calibratedAt = QDate());
 
-  const QString& name() const;
-  const QList<LocalPoint>& points() const;
+  [[nodiscard]] const QString& name() const;
+  [[nodiscard]] const QList<LocalPoint>& points() const;
 
-  QList<LocalPoint> measuredPoints() const;
-  QList<LocalPoint> derivedPoints() const;
+  [[nodiscard]] QList<LocalPoint> measuredPoints() const;
+  [[nodiscard]] QList<LocalPoint> derivedPoints() const;
 
-  std::optional<LocalPoint> pointByLabel(const QString& label) const;
+  [[nodiscard]] std::optional<LocalPoint> pointByLabel(
+      const QString& label) const;
 
-  const QString& certificateId() const;
-  const QDate& calibratedAt() const;
+  [[nodiscard]] const QString& certificateId() const;
+  [[nodiscard]] const QDate& calibratedAt() const;
 
-  bool isValid() const;
+  [[nodiscard]] bool isValid() const;
 
  private:
   QString m_name;

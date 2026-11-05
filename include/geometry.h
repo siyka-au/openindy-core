@@ -60,19 +60,19 @@ class OI_CORE_EXPORT Geometry : public Feature {
   // get or set geometry attributes
   // ##############################
 
-  const bool& getIsCommon() const;
+  [[nodiscard]] const bool& getIsCommon() const;
   void setCommonState(const bool& isCommon);
 
   // D19: empty when the user owns this geometry (no producer yet, or a
   // scalar-only "nominal" producer); otherwise names the fit that owns
   // it. See the class comment.
-  std::optional<QString> getOwnerDescription() const override;
+  [[nodiscard]] std::optional<QString> getOwnerDescription() const override;
 
   // the nominal this geometry realises, if any (D17). Only ever
   // meaningful on an actual; a nominal's own realises is always empty.
   // Many actuals may share one nominal, so there is deliberately no
   // back-reference list on the nominal side.
-  const std::optional<QPointer<Geometry> >& getRealises() const;
+  [[nodiscard]] const std::optional<QPointer<Geometry>>& getRealises() const;
   bool setRealises(const QPointer<Geometry>& nominal);
   void clearRealises();
 
@@ -84,7 +84,8 @@ class OI_CORE_EXPORT Geometry : public Feature {
   // generated the owned accessor (OiJob::addOwnedSubGeometry), not a user
   // edit. See getOwnedSubGeometries() for the reverse (owner -> children)
   // direction.
-  const std::optional<QPointer<Geometry> >& getOwnerFeature() const;
+  [[nodiscard]] const std::optional<QPointer<Geometry>>& getOwnerFeature()
+      const;
   bool setOwnerFeature(const QPointer<Geometry>& owner);
 
   // the geometries this geometry owns and regenerates on its own recalc
@@ -95,49 +96,49 @@ class OI_CORE_EXPORT Geometry : public Feature {
   // children when this geometry's own value actually changes, and by
   // OiJob::removeFeature to cascade-delete them when this geometry is
   // removed.
-  const QList<QPointer<Geometry> >& getOwnedSubGeometries() const;
+  [[nodiscard]] const QList<QPointer<Geometry>>& getOwnedSubGeometries() const;
 
-  const QList<QPointer<Observation> >& getObservations() const;
+  [[nodiscard]] const QList<QPointer<Observation>>& getObservations() const;
   void addObservation(const QPointer<Observation>& obs);
   void removeObservation(const QPointer<Observation>& obs);
 
-  const QPointer<CoordinateSystem>& getNominalSystem() const;
+  [[nodiscard]] const QPointer<CoordinateSystem>& getNominalSystem() const;
   bool setNominalSystem(const QPointer<CoordinateSystem>& nomSys);
 
-  const MeasurementConfigKey& getMeasurementConfig() const;
+  [[nodiscard]] const MeasurementConfigKey& getMeasurementConfig() const;
   void setMeasurementConfig(const MeasurementConfigKey& myConfig);
 
-  const Statistic& getStatistic() const;
+  [[nodiscard]] const Statistic& getStatistic() const;
   void setStatistic(const Statistic& myStatistic);
 
   const SimulationData& getSimulationData();
   void setSimulationData(const SimulationData& s);
 
-  const QList<ReadingTypes>& getUsedReadingTypes() const;
+  [[nodiscard]] const QList<ReadingTypes>& getUsedReadingTypes() const;
 
   // ###################################################################
   // check wether this geometry has a direction, a position and a radius
   // ###################################################################
 
-  virtual bool hasDirection() const;
-  virtual bool hasPosition() const;
-  virtual bool hasRadius() const;
+  [[nodiscard]] virtual bool hasDirection() const;
+  [[nodiscard]] virtual bool hasPosition() const;
+  [[nodiscard]] virtual bool hasRadius() const;
 
   // #############################################################
   // getter to access radius, direction and position of a geometry
   // #############################################################
 
-  virtual const Radius& getRadius() const;
-  virtual const Direction& getDirection() const;
+  [[nodiscard]] virtual const Radius& getRadius() const;
+  [[nodiscard]] virtual const Direction& getDirection() const;
   virtual void setDirection(Direction& direction);
-  virtual const Position& getPosition() const;
+  [[nodiscard]] virtual const Position& getPosition() const;
   virtual void setPosition(Position& position);
 
   // #############################
   // get or set unknown parameters
   // #############################
 
-  virtual QMap<GeometryParameters, QString> getUnknownParameters(
+  [[nodiscard]] virtual QMap<GeometryParameters, QString> getUnknownParameters(
       const QMap<DimensionType, UnitType>& displayUnits,
       const QMap<DimensionType, int>& displayDigits) const;
 
@@ -168,30 +169,34 @@ class OI_CORE_EXPORT Geometry : public Feature {
   // display methods
   // ###############
 
-  QString getDisplayStDev(const UnitType& type,
-                          const int& digits) const override;
-  QString getDisplayFormError(const UnitType& type,
-                              const int& digits) const override;
+  [[nodiscard]] QString getDisplayStDev(const UnitType& type,
+                                        const int& digits) const override;
+  [[nodiscard]] QString getDisplayFormError(const UnitType& type,
+                                            const int& digits) const override;
 
-  QString getDisplayMeasurementConfig() const override;
-  QString getDisplayObservations() const override;
-  QString getDisplayIsCommon() const override;
-  QString getDisplayIsActual() const override;
+  [[nodiscard]] QString getDisplayMeasurementConfig() const override;
+  [[nodiscard]] QString getDisplayObservations() const override;
+  [[nodiscard]] QString getDisplayIsCommon() const override;
+  [[nodiscard]] QString getDisplayIsActual() const override;
 
-  QString getDisplayX(const UnitType& type, const int& digits,
-                      const bool& showDiff = false) const override;
-  QString getDisplayY(const UnitType& type, const int& digits,
-                      const bool& showDiff = false) const override;
-  QString getDisplayZ(const UnitType& type, const int& digits,
-                      const bool& showDiff = false) const override;
-  QString getDisplayPrimaryI(const int& digits,
-                             const bool& showDiff = false) const override;
-  QString getDisplayPrimaryJ(const int& digits,
-                             const bool& showDiff = false) const override;
-  QString getDisplayPrimaryK(const int& digits,
-                             const bool& showDiff = false) const override;
-  QString getDisplayRadiusA(const UnitType& type, const int& digits,
-                            const bool& showDiff = false) const override;
+  [[nodiscard]] QString getDisplayX(
+      const UnitType& type, const int& digits,
+      const bool& showDiff = false) const override;
+  [[nodiscard]] QString getDisplayY(
+      const UnitType& type, const int& digits,
+      const bool& showDiff = false) const override;
+  [[nodiscard]] QString getDisplayZ(
+      const UnitType& type, const int& digits,
+      const bool& showDiff = false) const override;
+  [[nodiscard]] QString getDisplayPrimaryI(
+      const int& digits, const bool& showDiff = false) const override;
+  [[nodiscard]] QString getDisplayPrimaryJ(
+      const int& digits, const bool& showDiff = false) const override;
+  [[nodiscard]] QString getDisplayPrimaryK(
+      const int& digits, const bool& showDiff = false) const override;
+  [[nodiscard]] QString getDisplayRadiusA(
+      const UnitType& type, const int& digits,
+      const bool& showDiff = false) const override;
 
  signals:
 
@@ -233,15 +238,15 @@ class OI_CORE_EXPORT Geometry : public Feature {
   // an actual (an actual's fit set it when it was told which nominal it
   // was measuring); a nominal's own value is always nullopt. See the
   // class comment for why this is not a back-reference list.
-  std::optional<QPointer<Geometry> > realises;
+  std::optional<QPointer<Geometry>> realises;
 
   // D19 applied to functions (Stage 7h): the feature that owns this
   // geometry, if any (see getOwnerFeature() above), and the geometries
   // this geometry itself owns (see getOwnedSubGeometries() above). A
   // geometry can be an owner, an owned accessor, or neither, but not both
   // at once in this stage - nothing nests owned accessors yet.
-  std::optional<QPointer<Geometry> > ownerFeature;
-  QList<QPointer<Geometry> > ownedSubGeometries;
+  std::optional<QPointer<Geometry>> ownerFeature;
+  QList<QPointer<Geometry>> ownedSubGeometries;
 
   // the coordinate system a *nominal* geometry is defined in (unused by
   // an actual). Kept as a plain field rather than being nominal-only by
@@ -249,7 +254,7 @@ class OI_CORE_EXPORT Geometry : public Feature {
   QPointer<CoordinateSystem> nominalSystem;
 
   // observations
-  QList<QPointer<Observation> > observations;
+  QList<QPointer<Observation>> observations;
 
   // statistic
   Statistic statistic;

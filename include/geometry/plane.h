@@ -45,8 +45,8 @@ class OI_CORE_EXPORT Plane : public Geometry {
   // check wether this geometry has a direction, a position and a radius
   // ###################################################################
 
-  bool hasDirection() const override;
-  bool hasPosition() const override;
+  [[nodiscard]] bool hasDirection() const override;
+  [[nodiscard]] bool hasPosition() const override;
 
   // ###########################
   // get or set plane parameters
@@ -55,7 +55,7 @@ class OI_CORE_EXPORT Plane : public Geometry {
   // const Direction &getDirection() const;
   // const Position &getPosition() const;
 
-  const double& getDistanceFromOrigin() const;
+  [[nodiscard]] const double& getDistanceFromOrigin() const;
 
   void setPlane(const Position& xyz, const Direction& normal);
   void setPlane(const Direction& normal, const double& d);
@@ -64,7 +64,7 @@ class OI_CORE_EXPORT Plane : public Geometry {
   // get or set unknown parameters
   // #############################
 
-  QMap<GeometryParameters, QString> getUnknownParameters(
+  [[nodiscard]] QMap<GeometryParameters, QString> getUnknownParameters(
       const QMap<DimensionType, UnitType>& displayUnits,
       const QMap<DimensionType, int>& displayDigits) const override;
   void applyUnknownParameters(

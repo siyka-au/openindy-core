@@ -46,9 +46,9 @@ class OI_CORE_EXPORT Circle : public Geometry {
   // check wether this geometry has a direction, a position and a radius
   // ###################################################################
 
-  bool hasDirection() const override;
-  bool hasPosition() const override;
-  bool hasRadius() const override;
+  [[nodiscard]] bool hasDirection() const override;
+  [[nodiscard]] bool hasPosition() const override;
+  [[nodiscard]] bool hasRadius() const override;
 
   void setCircle(const Position& center, const Direction& normal,
                  const Radius& radius);
@@ -57,7 +57,7 @@ class OI_CORE_EXPORT Circle : public Geometry {
   // get or set unknown parameters
   // #############################
 
-  QMap<GeometryParameters, QString> getUnknownParameters(
+  [[nodiscard]] QMap<GeometryParameters, QString> getUnknownParameters(
       const QMap<DimensionType, UnitType>& displayUnits,
       const QMap<DimensionType, int>& displayDigits) const override;
   void applyUnknownParameters(

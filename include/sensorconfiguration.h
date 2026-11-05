@@ -102,39 +102,40 @@ class OI_CORE_EXPORT SensorConfiguration {
   // get or set sensor configuration attributes
   // ##########################################
 
-  const QString& getName() const;
+  [[nodiscard]] const QString& getName() const;
   void setName(const QString& name);
 
-  const bool& getIsSaved() const;
+  [[nodiscard]] const bool& getIsSaved() const;
   void setIsSaved(const bool& isSaved);
 
-  bool getIsValid() const;
+  [[nodiscard]] bool getIsValid() const;
 
-  const SensorType& getTypeOfSensor() const;
+  [[nodiscard]] const SensorType& getTypeOfSensor() const;
   void setTypeOfSensor(const SensorType& type);
 
-  const QString& getPluginName() const;
+  [[nodiscard]] const QString& getPluginName() const;
   void setPluginName(const QString& name);
 
-  const QString& getSensorName() const;
+  [[nodiscard]] const QString& getSensorName() const;
   void setSensorName(const QString& name);
 
-  const Accuracy& getAccuracy() const;
+  [[nodiscard]] const Accuracy& getAccuracy() const;
   void setAccuracy(const Accuracy& accuracy);
 
-  const ConnectionConfig& getConnectionConfig() const;
+  [[nodiscard]] const ConnectionConfig& getConnectionConfig() const;
   void setConnectionConfig(const ConnectionConfig& cConfig);
 
-  const QMap<QString, int>& getIntegerParameter() const;
+  [[nodiscard]] const QMap<QString, int>& getIntegerParameter() const;
   void setIntegerParameter(const QMap<QString, int>& intParams);
 
-  const QMap<QString, double>& getDoubleParameter() const;
+  [[nodiscard]] const QMap<QString, double>& getDoubleParameter() const;
   void setDoubleParameter(const QMap<QString, double>& doubleParams);
 
-  const QMap<QString, QString>& getStringParameter() const;
+  [[nodiscard]] const QMap<QString, QString>& getStringParameter() const;
   void setStringParameter(const QMap<QString, QString>& stringParams);
 
-  const QMultiMap<QString, QString>& getAvailableStringParameter() const;
+  [[nodiscard]] const QMultiMap<QString, QString>& getAvailableStringParameter()
+      const;
   void setAvailableStringParameter(
       const QMultiMap<QString, QString>& stringParams);
 

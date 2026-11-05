@@ -164,23 +164,28 @@ class OI_CORE_EXPORT SimulationModel : public QObject {
   // methods to get or set further information
   // #########################################
 
-  const PluginMetaData& getMetaData() const;
+  [[nodiscard]] const PluginMetaData& getMetaData() const;
 
-  const SimulationConfiguration& getSimulationConfiguration() const;
+  [[nodiscard]] const SimulationConfiguration& getSimulationConfiguration()
+      const;
   void setSimulationConfiguration(const SimulationConfiguration& sConfig);
 
-  const QMap<QString, int>& getIntegerParameter() const;
-  const QMap<QString, double>& getDoubleParameter() const;
-  const QMultiMap<QString, QString>& getStringParameter() const;
+  [[nodiscard]] const QMap<QString, int>& getIntegerParameter() const;
+  [[nodiscard]] const QMap<QString, double>& getDoubleParameter() const;
+  [[nodiscard]] const QMultiMap<QString, QString>& getStringParameter() const;
 
   // ##################
   // simulation methods
   // ##################
 
-  const QMap<QString, UncertaintyComponent>& getSensorUncertainties() const;
-  const QMap<QString, UncertaintyComponent>& getObjectUncertainties() const;
-  const QMap<QString, UncertaintyComponent>& getEnviromentUncertainties() const;
-  const QMap<QString, UncertaintyComponent>& getHumanInfluence() const;
+  [[nodiscard]] const QMap<QString, UncertaintyComponent>&
+  getSensorUncertainties() const;
+  [[nodiscard]] const QMap<QString, UncertaintyComponent>&
+  getObjectUncertainties() const;
+  [[nodiscard]] const QMap<QString, UncertaintyComponent>&
+  getEnviromentUncertainties() const;
+  [[nodiscard]] const QMap<QString, UncertaintyComponent>& getHumanInfluence()
+      const;
 
   virtual bool distort(const QPointer<Reading>& r, const OiMat& objectRelation,
                        const bool& newIterationStart);

@@ -31,7 +31,7 @@ class OI_CORE_EXPORT Element : public QObject {
   // get or set id
   // #############
 
-  int getId() const;
+  [[nodiscard]] int getId() const;
 
   // ################
   // save or load XML

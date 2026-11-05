@@ -58,26 +58,28 @@ class OI_CORE_EXPORT ExchangeSimpleAscii : public ExchangeInterface {
   // methods to get or set further information
   // #########################################
 
-  virtual QList<ExchangeSimpleAscii::ColumnType> getDefaultColumnOrder(
-      const GeometryTypes& typeOfGeometry) const;
+  [[nodiscard]] virtual QList<ExchangeSimpleAscii::ColumnType>
+  getDefaultColumnOrder(const GeometryTypes& typeOfGeometry) const;
+  [[nodiscard]]
   virtual QMap<ExchangeSimpleAscii::ColumnType, QVariantList> getFilePreview(
       const GeometryTypes& typeOfGeometry) const;
-  virtual QList<ExchangeSimpleAscii::ColumnType> getPossibleColumns(
-      const GeometryTypes& typeOfGeometry) const;
+  [[nodiscard]] virtual QList<ExchangeSimpleAscii::ColumnType>
+  getPossibleColumns(const GeometryTypes& typeOfGeometry) const;
 
-  const QStringList& getSupportedDelimiters() const;
+  [[nodiscard]] const QStringList& getSupportedDelimiters() const;
 
-  const QList<ExchangeSimpleAscii::ColumnType>& getUserDefinedColumns() const;
+  [[nodiscard]] const QList<ExchangeSimpleAscii::ColumnType>&
+  getUserDefinedColumns() const;
   void setUserDefinedColumns(
       const QList<ExchangeSimpleAscii::ColumnType>& userDefinedColumns);
 
-  const GeometryTypes& getTypeOfGeometry() const;
+  [[nodiscard]] const GeometryTypes& getTypeOfGeometry() const;
   void setGeometryType(const GeometryTypes& typeOfGeometry);
 
-  const bool& getSkipFirstLine() const;
+  [[nodiscard]] const bool& getSkipFirstLine() const;
   void setSkipFirstLine(const bool& skipFirstLine);
 
-  const QString& getUsedDelimiter() const;
+  [[nodiscard]] const QString& getUsedDelimiter() const;
   void setDelimiter(const QString& usedDelimiter);
 
   void setCurrentJob(QPointer<OiJob> job);

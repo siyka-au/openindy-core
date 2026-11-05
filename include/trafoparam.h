@@ -39,24 +39,24 @@ class OI_CORE_EXPORT TrafoParam : public Feature {
   // #################################
 
   // used state
-  const bool& getIsUsed() const;
+  [[nodiscard]] const bool& getIsUsed() const;
   void setIsUsed(const bool& isUsed);
 
   // coordinate systems
-  const QPointer<CoordinateSystem>& getStartSystem() const;
-  const QPointer<CoordinateSystem>& getDestinationSystem() const;
+  [[nodiscard]] const QPointer<CoordinateSystem>& getStartSystem() const;
+  [[nodiscard]] const QPointer<CoordinateSystem>& getDestinationSystem() const;
   bool setCoordinateSystems(const QPointer<CoordinateSystem>& from,
                             const QPointer<CoordinateSystem>& to);
 
   // bundle
-  bool getIsBundle() const;
+  [[nodiscard]] bool getIsBundle() const;
 
   // statistic
-  const Statistic& getStatistic() const;
+  [[nodiscard]] const Statistic& getStatistic() const;
   void setStatistic(const Statistic& statistic);
 
   // datum transformation
-  const bool& getIsDatumTrafo() const;
+  [[nodiscard]] const bool& getIsDatumTrafo() const;
   void setIsDatumTrafo(const bool& isDatumTrafo);
 
   // ####################################
@@ -64,10 +64,10 @@ class OI_CORE_EXPORT TrafoParam : public Feature {
   // ####################################
 
   // getter
-  const OiMat& getHomogenMatrix() const;
-  const OiVec& getTranslation() const;
-  const OiVec& getRotation() const;
-  const OiVec& getScale() const;
+  [[nodiscard]] const OiMat& getHomogenMatrix() const;
+  [[nodiscard]] const OiVec& getTranslation() const;
+  [[nodiscard]] const OiVec& getRotation() const;
+  [[nodiscard]] const OiVec& getScale() const;
 
   // setter
   bool setTransformationParameters(const OiVec& rotation,
@@ -83,9 +83,9 @@ class OI_CORE_EXPORT TrafoParam : public Feature {
   // #############################
 
   // unknown parameters
-  virtual QMap<TrafoParamParameters, QString> getUnknownParameters(
-      const QMap<DimensionType, UnitType>& displayUnits,
-      const QMap<DimensionType, int>& displayDigits) const;
+  [[nodiscard]] virtual QMap<TrafoParamParameters, QString>
+  getUnknownParameters(const QMap<DimensionType, UnitType>& displayUnits,
+                       const QMap<DimensionType, int>& displayDigits) const;
   virtual void setUnknownParameters(
       const QMap<TrafoParamParameters, double>& parameters);
 
@@ -106,28 +106,28 @@ class OI_CORE_EXPORT TrafoParam : public Feature {
   // display methods
   // ###############
 
-  QString getDisplayStDev(const UnitType& type,
-                          const int& digits) const override;
+  [[nodiscard]] QString getDisplayStDev(const UnitType& type,
+                                        const int& digits) const override;
 
-  QString getDisplayStartSystem() const override;
-  QString getDisplayDestinationSystem() const override;
-  QString getDisplayTranslationX(const UnitType& type,
-                                 const int& digits) const override;
-  QString getDisplayTranslationY(const UnitType& type,
-                                 const int& digits) const override;
-  QString getDisplayTranslationZ(const UnitType& type,
-                                 const int& digits) const override;
-  QString getDisplayRotationX(const UnitType& type,
-                              const int& digits) const override;
-  QString getDisplayRotationY(const UnitType& type,
-                              const int& digits) const override;
-  QString getDisplayRotationZ(const UnitType& type,
-                              const int& digits) const override;
-  QString getDisplayScaleX(const int& digits) const override;
-  QString getDisplayScaleY(const int& digits) const override;
-  QString getDisplayScaleZ(const int& digits) const override;
-  QString getDisplayIsUsed() const override;
-  QString getDisplayIsDatumTransformation() const override;
+  [[nodiscard]] QString getDisplayStartSystem() const override;
+  [[nodiscard]] QString getDisplayDestinationSystem() const override;
+  [[nodiscard]] QString getDisplayTranslationX(
+      const UnitType& type, const int& digits) const override;
+  [[nodiscard]] QString getDisplayTranslationY(
+      const UnitType& type, const int& digits) const override;
+  [[nodiscard]] QString getDisplayTranslationZ(
+      const UnitType& type, const int& digits) const override;
+  [[nodiscard]] QString getDisplayRotationX(const UnitType& type,
+                                            const int& digits) const override;
+  [[nodiscard]] QString getDisplayRotationY(const UnitType& type,
+                                            const int& digits) const override;
+  [[nodiscard]] QString getDisplayRotationZ(const UnitType& type,
+                                            const int& digits) const override;
+  [[nodiscard]] QString getDisplayScaleX(const int& digits) const override;
+  [[nodiscard]] QString getDisplayScaleY(const int& digits) const override;
+  [[nodiscard]] QString getDisplayScaleZ(const int& digits) const override;
+  [[nodiscard]] QString getDisplayIsUsed() const override;
+  [[nodiscard]] QString getDisplayIsDatumTransformation() const override;
 
  signals:
 

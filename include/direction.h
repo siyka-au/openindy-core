@@ -33,8 +33,8 @@ class OI_CORE_EXPORT Direction : public Element {
                  const double& h = 1.0);
   void setVector(const OiVec& v);
 
-  const OiVec& getVector() const;
-  const OiVec& getVectorH() const;
+  [[nodiscard]] const OiVec& getVector() const;
+  [[nodiscard]] const OiVec& getVectorH() const;
 
  private:
   OiVec ijk;   // vector of size 3 (i, j, k)

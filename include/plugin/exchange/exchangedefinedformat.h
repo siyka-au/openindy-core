@@ -22,9 +22,9 @@ class OI_CORE_EXPORT ExchangeDefinedFormat : public ExchangeInterface {
   // methods to get or set further information
   // #########################################
 
-  const QStringList& getSupportedFileExtensions() const;
+  [[nodiscard]] const QStringList& getSupportedFileExtensions() const;
 
-  const QList<ElementTypes>& getUsedElements() const;
+  [[nodiscard]] const QList<ElementTypes>& getUsedElements() const;
   void setUsedElements(const QList<ElementTypes>& usedElementTypes);
 
  protected:

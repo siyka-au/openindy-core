@@ -47,14 +47,14 @@ class OI_CORE_EXPORT Paraboloid : public Geometry {
   // check wether this geometry has a direction, a position and a radius
   // ###################################################################
 
-  bool hasDirection() const override;
-  bool hasPosition() const override;
+  [[nodiscard]] bool hasDirection() const override;
+  [[nodiscard]] bool hasPosition() const override;
 
   // ################################
   // get or set paraboloid parameters
   // ################################
 
-  const double& getA() const;
+  [[nodiscard]] const double& getA() const;
 
   void setParaboloid(const Position& apex, const Direction& axis,
                      const double& a);
@@ -63,7 +63,7 @@ class OI_CORE_EXPORT Paraboloid : public Geometry {
   // get or set unknown parameters
   // #############################
 
-  QMap<GeometryParameters, QString> getUnknownParameters(
+  [[nodiscard]] QMap<GeometryParameters, QString> getUnknownParameters(
       const QMap<DimensionType, UnitType>& displayUnits,
       const QMap<DimensionType, int>& displayDigits) const override;
   void applyUnknownParameters(
@@ -86,8 +86,9 @@ class OI_CORE_EXPORT Paraboloid : public Geometry {
   // display methods
   // ###############
 
-  QString getDisplayA(const UnitType& type, const int& digits,
-                      const bool& showDiff = false) const override;
+  [[nodiscard]] QString getDisplayA(
+      const UnitType& type, const int& digits,
+      const bool& showDiff = false) const override;
 
  private:
   // #####################

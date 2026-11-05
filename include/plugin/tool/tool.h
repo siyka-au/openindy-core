@@ -32,11 +32,11 @@ class OI_CORE_EXPORT Tool : public QWidget {
   // methods to get or set further information
   // #########################################
 
-  const PluginMetaData& getMetaData() const;
+  [[nodiscard]] const PluginMetaData& getMetaData() const;
 
-  const ToolTypes& getToolType() const;
+  [[nodiscard]] const ToolTypes& getToolType() const;
 
-  const QPointer<OiJob>& getJob() const;
+  [[nodiscard]] const QPointer<OiJob>& getJob() const;
   void setJob(const QPointer<OiJob>& job);
 
   // #########################

@@ -40,11 +40,11 @@ class OI_CORE_EXPORT SensorType {
   //! for the bare sensor interface or anything unparseable
   static SensorType fromInterfaceId(const QString& interfaceId);
 
-  const QString& id() const;
-  const QString& displayName() const;
-  const QString& iconKey() const;
+  [[nodiscard]] const QString& id() const;
+  [[nodiscard]] const QString& displayName() const;
+  [[nodiscard]] const QString& iconKey() const;
 
-  bool isValid() const;
+  [[nodiscard]] bool isValid() const;
 
   bool operator==(const SensorType& other) const;
   bool operator!=(const SensorType& other) const;

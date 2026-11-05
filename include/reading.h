@@ -179,16 +179,16 @@ class OI_CORE_EXPORT Reading : public Element {
   // get reading type and values
   // ###########################
 
-  const ReadingTypes& getTypeOfReading() const;
+  [[nodiscard]] const ReadingTypes& getTypeOfReading() const;
 
-  const ReadingPolar& getPolarReading() const;
-  const ReadingCartesian& getCartesianReading() const;
-  const ReadingCartesian6D& getCartesianReading6D() const;
-  const ReadingDirection& getDirectionReading() const;
-  const ReadingDistance& getDistanceReading() const;
-  const ReadingTemperature& getTemperatureReading() const;
-  const ReadingLevel& getLevelReading() const;
-  const ReadingUndefined& getUndefinedReading() const;
+  [[nodiscard]] const ReadingPolar& getPolarReading() const;
+  [[nodiscard]] const ReadingCartesian& getCartesianReading() const;
+  [[nodiscard]] const ReadingCartesian6D& getCartesianReading6D() const;
+  [[nodiscard]] const ReadingDirection& getDirectionReading() const;
+  [[nodiscard]] const ReadingDistance& getDistanceReading() const;
+  [[nodiscard]] const ReadingTemperature& getTemperatureReading() const;
+  [[nodiscard]] const ReadingLevel& getLevelReading() const;
+  [[nodiscard]] const ReadingUndefined& getUndefinedReading() const;
 
   // ##############################
   // set polar reading (simulation)
@@ -218,57 +218,69 @@ class OI_CORE_EXPORT Reading : public Element {
   const MeasurementConfigKey& getMeasurementConfig();
   void setMeasurementConfig(const MeasurementConfigKey& mConfig);
 
-  const QDateTime& getMeasuredAt() const;
+  [[nodiscard]] const QDateTime& getMeasuredAt() const;
   void setMeasuredAt(const QDateTime& measuredAt);
 
-  const SensorFaces& getFace() const;
+  [[nodiscard]] const SensorFaces& getFace() const;
   void setSensorFace(const SensorFaces& face);
 
-  const bool& isImported() const;
+  [[nodiscard]] const bool& isImported() const;
   void setImported(const bool& imported);
 
   // #################################################
   // get and set sensor configuration and observations
   // #################################################
 
-  const SensorConfiguration& getSensorConfiguration() const;
+  [[nodiscard]] const SensorConfiguration& getSensorConfiguration() const;
   void setSensorConfiguration(const SensorConfiguration& sConfig);
 
-  const QPointer<Observation>& getObservation() const;
+  [[nodiscard]] const QPointer<Observation>& getObservation() const;
   void setObservation(const QPointer<Observation>& observation);
 
   // ###############
   // display methods
   // ###############
 
-  QString getDisplayId() const;
-  QString getDisplayType() const;
-  QString getDisplayTime() const;
-  QString getDisplaySensorConfigName() const;
-  QString getDisplayMeasurementConfigName() const;
-  QString getDisplaySide() const;
-  QString getDisplayAzimuth(const UnitType& type, const int& digits) const;
-  QString getDisplayZenith(const UnitType& type, const int& digits) const;
-  QString getDisplayDistance(const UnitType& type, const int& digits) const;
-  QString getDisplayX(const UnitType& type, const int& digits) const;
-  QString getDisplayY(const UnitType& type, const int& digits) const;
-  QString getDisplayZ(const UnitType& type, const int& digits) const;
-  QString getDisplayI(const int& digits) const;
-  QString getDisplayJ(const int& digits) const;
-  QString getDisplayK(const int& digits) const;
-  QString getDisplayTemperature(const UnitType& type, const int& digits) const;
-  QString getDisplaySigmaAzimuth(const UnitType& type, const int& digits) const;
-  QString getDisplaySigmaZenith(const UnitType& type, const int& digits) const;
-  QString getDisplaySigmaDistance(const UnitType& type,
-                                  const int& digits) const;
-  QString getDisplaySigmaX(const UnitType& type, const int& digits) const;
-  QString getDisplaySigmaY(const UnitType& type, const int& digits) const;
-  QString getDisplaySigmaZ(const UnitType& type, const int& digits) const;
-  QString getDisplaySigmaI(const int& digits) const;
-  QString getDisplaySigmaJ(const int& digits) const;
-  QString getDisplaySigmaK(const int& digits) const;
-  QString getDisplaySigmaTemperature(const UnitType& type,
-                                     const int& digits) const;
+  [[nodiscard]] QString getDisplayId() const;
+  [[nodiscard]] QString getDisplayType() const;
+  [[nodiscard]] QString getDisplayTime() const;
+  [[nodiscard]] QString getDisplaySensorConfigName() const;
+  [[nodiscard]] QString getDisplayMeasurementConfigName() const;
+  [[nodiscard]] QString getDisplaySide() const;
+  [[nodiscard]] QString getDisplayAzimuth(const UnitType& type,
+                                          const int& digits) const;
+  [[nodiscard]] QString getDisplayZenith(const UnitType& type,
+                                         const int& digits) const;
+  [[nodiscard]] QString getDisplayDistance(const UnitType& type,
+                                           const int& digits) const;
+  [[nodiscard]] QString getDisplayX(const UnitType& type,
+                                    const int& digits) const;
+  [[nodiscard]] QString getDisplayY(const UnitType& type,
+                                    const int& digits) const;
+  [[nodiscard]] QString getDisplayZ(const UnitType& type,
+                                    const int& digits) const;
+  [[nodiscard]] QString getDisplayI(const int& digits) const;
+  [[nodiscard]] QString getDisplayJ(const int& digits) const;
+  [[nodiscard]] QString getDisplayK(const int& digits) const;
+  [[nodiscard]] QString getDisplayTemperature(const UnitType& type,
+                                              const int& digits) const;
+  [[nodiscard]] QString getDisplaySigmaAzimuth(const UnitType& type,
+                                               const int& digits) const;
+  [[nodiscard]] QString getDisplaySigmaZenith(const UnitType& type,
+                                              const int& digits) const;
+  [[nodiscard]] QString getDisplaySigmaDistance(const UnitType& type,
+                                                const int& digits) const;
+  [[nodiscard]] QString getDisplaySigmaX(const UnitType& type,
+                                         const int& digits) const;
+  [[nodiscard]] QString getDisplaySigmaY(const UnitType& type,
+                                         const int& digits) const;
+  [[nodiscard]] QString getDisplaySigmaZ(const UnitType& type,
+                                         const int& digits) const;
+  [[nodiscard]] QString getDisplaySigmaI(const int& digits) const;
+  [[nodiscard]] QString getDisplaySigmaJ(const int& digits) const;
+  [[nodiscard]] QString getDisplaySigmaK(const int& digits) const;
+  [[nodiscard]] QString getDisplaySigmaTemperature(const UnitType& type,
+                                                   const int& digits) const;
 
   // #################
   // save and load XML

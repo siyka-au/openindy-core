@@ -56,17 +56,17 @@ class OI_CORE_EXPORT Group : public Feature {
   // #################
 
   //! the feature type this group accepts, if it is constrained at all
-  const std::optional<FeatureTypes>& getConstraint() const;
+  [[nodiscard]] const std::optional<FeatureTypes>& getConstraint() const;
 
   //! true if the feature may be added: either the group is unconstrained,
   //! or the feature's type matches the constraint
-  bool accepts(const QPointer<FeatureWrapper>& feature) const;
+  [[nodiscard]] bool accepts(const QPointer<FeatureWrapper>& feature) const;
 
   // ##########
   // membership
   // ##########
 
-  const QList<QPointer<FeatureWrapper> >& getMembers() const;
+  [[nodiscard]] const QList<QPointer<FeatureWrapper>>& getMembers() const;
 
   //! adds a reference. Rejects a null feature, a duplicate, a feature
   //! whose type the constraint forbids, and the group itself.
@@ -78,15 +78,16 @@ class OI_CORE_EXPORT Group : public Feature {
   //! identity is the underlying Feature, not its id: a feature that has
   //! not been added to a job yet still carries the default id of -1, so
   //! id comparison would collapse every unmanaged feature into one member
-  bool containsMember(const QPointer<FeatureWrapper>& feature) const;
+  [[nodiscard]] bool containsMember(
+      const QPointer<FeatureWrapper>& feature) const;
 
   //! only meaningful for job-managed features, which are the only ones
   //! guaranteed to have been assigned a real id
-  bool containsMemberId(const int& featureId) const;
+  [[nodiscard]] bool containsMemberId(const int& featureId) const;
 
   //! how many members the group holds, ignoring any whose feature has
   //! since been deleted out from under it
-  int memberCount() const;
+  [[nodiscard]] int memberCount() const;
 
   //! drops references whose target has been deleted. Deleting a feature
   //! that several groups reference is legal and does not disturb them
@@ -116,13 +117,13 @@ class OI_CORE_EXPORT Group : public Feature {
   //! feature (e.g. one that failed to load) is silently skipped rather
   //! than failing the whole project load.
   void restoreMembers(
-      const QMap<int, QPointer<FeatureWrapper> >& resolvedFeatures);
+      const QMap<int, QPointer<FeatureWrapper>>& resolvedFeatures);
 
   // ###############
   // display methods
   // ###############
 
-  QString getDisplayType() const override;
+  [[nodiscard]] QString getDisplayType() const override;
 
  signals:
 
@@ -132,7 +133,7 @@ class OI_CORE_EXPORT Group : public Feature {
   void groupMembersChanged(const int& featureId);
 
  protected:
-  QList<QPointer<FeatureWrapper> > members;
+  QList<QPointer<FeatureWrapper>> members;
   std::optional<FeatureTypes> constraint;
 
   //! member ids as loaded from XML, before the referenced features exist.

@@ -34,25 +34,25 @@ class OI_CORE_EXPORT ExchangeInterface : public QObject {
   // methods to get or set further information
   // #########################################
 
-  const PluginMetaData& getMetaData() const;
+  [[nodiscard]] const PluginMetaData& getMetaData() const;
   const QList<GeometryTypes>& getSupportedGeometries();
 
-  const QPointer<QIODevice>& getDevice() const;
+  [[nodiscard]] const QPointer<QIODevice>& getDevice() const;
   void setDevice(const QPointer<QIODevice>& device);
 
-  const QList<QPointer<FeatureWrapper> >& getFeatures() const;
-  void setFeatures(const QList<QPointer<FeatureWrapper> >& features);
+  [[nodiscard]] const QList<QPointer<FeatureWrapper>>& getFeatures() const;
+  void setFeatures(const QList<QPointer<FeatureWrapper>>& features);
 
-  const bool& getExportObservations() const;
+  [[nodiscard]] const bool& getExportObservations() const;
   void setExportObservations(const bool& exportObservations);
 
-  const QString& getGroupName() const;
+  [[nodiscard]] const QString& getGroupName() const;
   void setGroupName(const QString& groupName);
 
-  const QPointer<CoordinateSystem>& getNominalSystem() const;
+  [[nodiscard]] const QPointer<CoordinateSystem>& getNominalSystem() const;
   void setNominalSystem(const QPointer<CoordinateSystem>& nominalSystem);
 
-  const QMap<DimensionType, UnitType>& getUnits() const;
+  [[nodiscard]] const QMap<DimensionType, UnitType>& getUnits() const;
   void setUnit(const DimensionType& dimension, const UnitType& unit);
 
  public slots:
@@ -94,7 +94,7 @@ class OI_CORE_EXPORT ExchangeInterface : public QObject {
 
   QPointer<QIODevice>
       device;  // the device used for the im- or export (e.g. a file)
-  QList<QPointer<FeatureWrapper> >
+  QList<QPointer<FeatureWrapper>>
       features;  // the features that shall be exported or were imported
 
   PluginMetaData metaData;

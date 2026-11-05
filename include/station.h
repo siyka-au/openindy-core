@@ -41,37 +41,38 @@ class OI_CORE_EXPORT Station : public Feature {
   // #############################
 
   // active state
-  const bool& getIsActiveStation() const;
+  [[nodiscard]] const bool& getIsActiveStation() const;
   void setActiveStationState(const bool& isActiveStation);
 
   // position
-  const QPointer<Point>& getPosition() const;
-  const Direction& getXAxis() const;
-  const Direction& getYAxis() const;
-  const Direction& getZAxis() const;
+  [[nodiscard]] const QPointer<Point>& getPosition() const;
+  [[nodiscard]] const Direction& getXAxis() const;
+  [[nodiscard]] const Direction& getYAxis() const;
+  [[nodiscard]] const Direction& getZAxis() const;
   void setCoordinateSystem(const Position& origin, const Direction& xAxis,
                            const Direction& yAxis, const Direction& zAxis);
 
   // coordinate system
-  const QPointer<CoordinateSystem>& getCoordinateSystem() const;
+  [[nodiscard]] const QPointer<CoordinateSystem>& getCoordinateSystem() const;
   void setEstimatedCoordinateSystem(QPointer<CoordinateSystem> cs);
-  const QPointer<CoordinateSystem>& getEstimatedCoordinateSystem() const;
+  [[nodiscard]] const QPointer<CoordinateSystem>& getEstimatedCoordinateSystem()
+      const;
 
   // get or set sensor configuration
   SensorConfiguration getSensorConfiguration();
   void setSensorConfiguration(const SensorConfiguration& sConfig);
 
   // get or set sensor
-  Sensor getSensor() const;
+  [[nodiscard]] Sensor getSensor() const;
   void setSensor(const QPointer<Sensor>& sensor);
   QPointer<Sensor> takeSensor();
   void resetSensor();
 
   // previously used sensors
-  const QList<Sensor> getUsedSensors() const;
+  [[nodiscard]] const QList<Sensor> getUsedSensors() const;
 
   // get geometries measured from this station
-  QList<QPointer<Geometry> > getTargetGeometries() const;
+  [[nodiscard]] QList<QPointer<Geometry>> getTargetGeometries() const;
 
   // ####################################################
   // get information about the currently connected sensor
@@ -85,15 +86,15 @@ class OI_CORE_EXPORT Station : public Feature {
   QMap<QString, QString> getSensorStatus();
 
   // sensor type
-  SensorType getActiveSensorType() const;
+  [[nodiscard]] SensorType getActiveSensorType() const;
 
   // reading and connection types
-  QList<ReadingTypes> getSupportedReadingTypes() const;
-  QList<ConnectionKind> getSupportedConnectionTypes() const;
+  [[nodiscard]] QList<ReadingTypes> getSupportedReadingTypes() const;
+  [[nodiscard]] QList<ConnectionKind> getSupportedConnectionTypes() const;
 
   // sensor actions
-  QList<SensorFunctions> getSupportedSensorActions() const;
-  QStringList getSelfDefinedActions() const;
+  [[nodiscard]] QList<SensorFunctions> getSupportedSensorActions() const;
+  [[nodiscard]] QStringList getSelfDefinedActions() const;
 
   // stream format
   ReadingTypes getStreamFormat();
@@ -116,18 +117,21 @@ class OI_CORE_EXPORT Station : public Feature {
   // display methods
   // ###############
 
-  QString getDisplayX(const UnitType& type, const int& digits,
-                      const bool& showDiff = false) const override;
-  QString getDisplayY(const UnitType& type, const int& digits,
-                      const bool& showDiff = false) const override;
-  QString getDisplayZ(const UnitType& type, const int& digits,
-                      const bool& showDiff = false) const override;
-  QString getDisplayPrimaryI(const int& digits,
-                             const bool& showDiff = false) const override;
-  QString getDisplayPrimaryJ(const int& digits,
-                             const bool& showDiff = false) const override;
-  QString getDisplayPrimaryK(const int& digits,
-                             const bool& showDiff = false) const override;
+  [[nodiscard]] QString getDisplayX(
+      const UnitType& type, const int& digits,
+      const bool& showDiff = false) const override;
+  [[nodiscard]] QString getDisplayY(
+      const UnitType& type, const int& digits,
+      const bool& showDiff = false) const override;
+  [[nodiscard]] QString getDisplayZ(
+      const UnitType& type, const int& digits,
+      const bool& showDiff = false) const override;
+  [[nodiscard]] QString getDisplayPrimaryI(
+      const int& digits, const bool& showDiff = false) const override;
+  [[nodiscard]] QString getDisplayPrimaryJ(
+      const int& digits, const bool& showDiff = false) const override;
+  [[nodiscard]] QString getDisplayPrimaryK(
+      const int& digits, const bool& showDiff = false) const override;
 
   void setSensorWorkerThread(QPointer<QThread> t);
  signals:
@@ -206,7 +210,7 @@ class OI_CORE_EXPORT Station : public Feature {
   void commandFinished(
       bool success, QString msg,
       SensorAction sensorAction = SensorAction::eSensorActionUndefind);
-  void measurementFinished(int geomId, QList<QPointer<Reading> > readings);
+  void measurementFinished(int geomId, QList<QPointer<Reading>> readings);
 
   // #######################
   // special sensor messages
@@ -252,13 +256,13 @@ class OI_CORE_EXPORT Station : public Feature {
   // readings made by this station
   // #############################
 
-  QList<QPointer<Reading> > cartesianReadings;
-  QList<QPointer<Reading> > directionReadings;
-  QList<QPointer<Reading> > distanceReadings;
-  QList<QPointer<Reading> > polarReadings;
-  QList<QPointer<Reading> > levelReadings;
-  QList<QPointer<Reading> > temperatureRadings;
-  QList<QPointer<Reading> > undefinedReadings;
+  QList<QPointer<Reading>> cartesianReadings;
+  QList<QPointer<Reading>> directionReadings;
+  QList<QPointer<Reading>> distanceReadings;
+  QList<QPointer<Reading>> polarReadings;
+  QList<QPointer<Reading>> levelReadings;
+  QList<QPointer<Reading>> temperatureRadings;
+  QList<QPointer<Reading>> undefinedReadings;
 
  private slots:
 
@@ -274,8 +278,7 @@ class OI_CORE_EXPORT Station : public Feature {
   void disconnectSensorControl();
 
   // add or remove readings
-  void addReadings(const int& geomId,
-                   const QList<QPointer<Reading> >& readings);
+  void addReadings(const int& geomId, const QList<QPointer<Reading>>& readings);
   void removeReading(const QPointer<Reading>& reading);
 
   // set previously used sensors

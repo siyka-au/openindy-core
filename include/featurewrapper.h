@@ -47,42 +47,44 @@ class OI_CORE_EXPORT FeatureWrapper : public QObject {
   // type information
   // ################
 
-  QString getFeatureTypeString() const;
-  const FeatureTypes& getFeatureTypeEnum() const;
+  [[nodiscard]] QString getFeatureTypeString() const;
+  [[nodiscard]] const FeatureTypes& getFeatureTypeEnum() const;
 
   // ###################
   // get feature pointer
   // ###################
 
-  const QPointer<Feature>& getFeature() const;
-  const QPointer<Geometry>& getGeometry() const;
+  [[nodiscard]] const QPointer<Feature>& getFeature() const;
+  [[nodiscard]] const QPointer<Geometry>& getGeometry() const;
 
-  const QPointer<CoordinateSystem>& getCoordinateSystem() const;
-  const QPointer<TrafoParam>& getTrafoParam() const;
-  const QPointer<Station>& getStation() const;
-  const QPointer<Group>& getGroup() const;
-  const QPointer<PointGroup>& getPointGroup() const;
+  [[nodiscard]] const QPointer<CoordinateSystem>& getCoordinateSystem() const;
+  [[nodiscard]] const QPointer<TrafoParam>& getTrafoParam() const;
+  [[nodiscard]] const QPointer<Station>& getStation() const;
+  [[nodiscard]] const QPointer<Group>& getGroup() const;
+  [[nodiscard]] const QPointer<PointGroup>& getPointGroup() const;
 
-  const QPointer<Point>& getPoint() const;
-  const QPointer<Line>& getLine() const;
-  const QPointer<Plane>& getPlane() const;
-  const QPointer<Sphere>& getSphere() const;
-  const QPointer<Circle>& getCircle() const;
-  const QPointer<Cone>& getCone() const;
-  const QPointer<Cylinder>& getCylinder() const;
-  const QPointer<Ellipsoid>& getEllipsoid() const;
-  const QPointer<Hyperboloid>& getHyperboloid() const;
-  const QPointer<Paraboloid>& getParaboloid() const;
-  const QPointer<PointCloud>& getPointCloud() const;
-  const QPointer<Nurbs>& getNurbs() const;
-  const QPointer<Ellipse>& getEllipse() const;
-  const QPointer<SlottedHole>& getSlottedHole() const;
-  const QPointer<Torus>& getTorus() const;
+  [[nodiscard]] const QPointer<Point>& getPoint() const;
+  [[nodiscard]] const QPointer<Line>& getLine() const;
+  [[nodiscard]] const QPointer<Plane>& getPlane() const;
+  [[nodiscard]] const QPointer<Sphere>& getSphere() const;
+  [[nodiscard]] const QPointer<Circle>& getCircle() const;
+  [[nodiscard]] const QPointer<Cone>& getCone() const;
+  [[nodiscard]] const QPointer<Cylinder>& getCylinder() const;
+  [[nodiscard]] const QPointer<Ellipsoid>& getEllipsoid() const;
+  [[nodiscard]] const QPointer<Hyperboloid>& getHyperboloid() const;
+  [[nodiscard]] const QPointer<Paraboloid>& getParaboloid() const;
+  [[nodiscard]] const QPointer<PointCloud>& getPointCloud() const;
+  [[nodiscard]] const QPointer<Nurbs>& getNurbs() const;
+  [[nodiscard]] const QPointer<Ellipse>& getEllipse() const;
+  [[nodiscard]] const QPointer<SlottedHole>& getSlottedHole() const;
+  [[nodiscard]] const QPointer<Torus>& getTorus() const;
 
-  const QPointer<ScalarEntityAngle>& getScalarEntityAngle() const;
-  const QPointer<ScalarEntityDistance>& getScalarEntityDistance() const;
-  const QPointer<ScalarEntityTemperature>& getScalarEntityTemperature() const;
-  const QPointer<ScalarEntityMeasurementSeries>&
+  [[nodiscard]] const QPointer<ScalarEntityAngle>& getScalarEntityAngle() const;
+  [[nodiscard]] const QPointer<ScalarEntityDistance>& getScalarEntityDistance()
+      const;
+  [[nodiscard]] const QPointer<ScalarEntityTemperature>&
+  getScalarEntityTemperature() const;
+  [[nodiscard]] const QPointer<ScalarEntityMeasurementSeries>&
   getScalarEntityMeasurementSeries() const;
 
   // ###################

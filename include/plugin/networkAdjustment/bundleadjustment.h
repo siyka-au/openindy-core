@@ -21,7 +21,7 @@ class BundleException : public std::exception {
 
   int getFeatureId() { return featureId; }
 
-  const char* what() const noexcept override { return message; }
+  [[nodiscard]] const char* what() const noexcept override { return message; }
 
  private:
   const char* message;
@@ -129,29 +129,29 @@ class OI_CORE_EXPORT BundleAdjustment : public QObject {
   // ###########################################################
 
   // meta data
-  const PluginMetaData& getMetaData() const;
+  [[nodiscard]] const PluginMetaData& getMetaData() const;
 
   // available scalar parameters
-  const QMap<QString, int>& getIntegerParameter() const;
-  const QMap<QString, double>& getDoubleParameter() const;
-  const QMultiMap<QString, QString>& getStringParameter() const;
+  [[nodiscard]] const QMap<QString, int>& getIntegerParameter() const;
+  [[nodiscard]] const QMap<QString, double>& getDoubleParameter() const;
+  [[nodiscard]] const QMultiMap<QString, QString>& getStringParameter() const;
 
   // scalar input parameters
   const ScalarInputParams& getScalarInputParams();
   void setScalarInputParams(const ScalarInputParams& params);
 
   // input stations
-  const QList<BundleStation>& getInputStations() const;
+  [[nodiscard]] const QList<BundleStation>& getInputStations() const;
   void setInputStations(const QList<BundleStation>& stations);
-  const BundleStation& getBaseStation() const;
+  [[nodiscard]] const BundleStation& getBaseStation() const;
   void setBaseStation(const BundleStation& station);
 
   // bundle coordinate system
-  const QPointer<CoordinateSystem>& getBundleSystem() const;
+  [[nodiscard]] const QPointer<CoordinateSystem>& getBundleSystem() const;
   void setBundleSystem(const QPointer<CoordinateSystem>& system);
 
   // OpenIndy job
-  const QPointer<OiJob>& getCurrentJob() const;
+  [[nodiscard]] const QPointer<OiJob>& getCurrentJob() const;
   void setCurrentJob(const QPointer<OiJob>& job);
 
   // ###############
@@ -159,11 +159,12 @@ class OI_CORE_EXPORT BundleAdjustment : public QObject {
   // ###############
 
   // id
-  const int& getId() const;
+  [[nodiscard]] const int& getId() const;
 
   // bundle results
-  const QList<BundleGeometry>& getOutputGeometries() const;
-  const QList<BundleTransformation>& getOutputTransformations() const;
+  [[nodiscard]] const QList<BundleGeometry>& getOutputGeometries() const;
+  [[nodiscard]] const QList<BundleTransformation>& getOutputTransformations()
+      const;
 
   // #############
   // clear results

@@ -37,8 +37,8 @@ class OI_CORE_EXPORT Position : public Element {
   void setVector(const double& x, const double& y, const double& z,
                  const double& h = 1.0);
 
-  const OiVec& getVector() const;
-  const OiVec& getVectorH() const;
+  [[nodiscard]] const OiVec& getVector() const;
+  [[nodiscard]] const OiVec& getVectorH() const;
 
   const static Position NullObject;
 

@@ -47,8 +47,8 @@ class OI_CORE_EXPORT PointGroup : public Group, public PointCollection {
   // PointCollection interface
   // #########################
 
-  QList<Position> collectionPoints() const override;
-  int collectionPointCount() const override;
+  [[nodiscard]] QList<Position> collectionPoints() const override;
+  [[nodiscard]] int collectionPointCount() const override;
 
   // ####################
   // point-specific access
@@ -58,7 +58,7 @@ class OI_CORE_EXPORT PointGroup : public Group, public PointCollection {
   //! Use this rather than collectionPoints() when per-point pedigree
   //! (observations, sigma, solved state) matters - that information is
   //! exactly what a PointGroup has and a PointCloud does not.
-  QList<QPointer<Point> > getPoints() const;
+  [[nodiscard]] QList<QPointer<Point>> getPoints() const;
 
   // #################
   // save and load XML
@@ -73,7 +73,7 @@ class OI_CORE_EXPORT PointGroup : public Group, public PointCollection {
   // display methods
   // ###############
 
-  QString getDisplayType() const override;
+  [[nodiscard]] QString getDisplayType() const override;
 };
 
 }  // namespace oi

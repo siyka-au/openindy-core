@@ -49,28 +49,28 @@ class OI_CORE_EXPORT CoordinateSystem : public Feature {
   // #######################################
 
   // is active system
-  const bool& getIsActiveCoordinateSystem() const;
+  [[nodiscard]] const bool& getIsActiveCoordinateSystem() const;
   void setActiveCoordinateSystemState(const bool& isActiveCoordinateSystem);
 
   // is stations system
-  const bool& getIsStationSystem() const;
-  const QPointer<Station>& getStation() const;
+  [[nodiscard]] const bool& getIsStationSystem() const;
+  [[nodiscard]] const QPointer<Station>& getStation() const;
 
   // is bundle system
-  const bool& getIsBundleSystem() const;
+  [[nodiscard]] const bool& getIsBundleSystem() const;
 
   // system parameters
-  const Position& getOrigin() const;
-  const Direction& getXAxis() const;
-  const Direction& getYAxis() const;
-  const Direction& getZAxis() const;
+  [[nodiscard]] const Position& getOrigin() const;
+  [[nodiscard]] const Direction& getXAxis() const;
+  [[nodiscard]] const Direction& getYAxis() const;
+  [[nodiscard]] const Direction& getZAxis() const;
   void setCoordinateSystem(const Position& origin, const Direction& xAxis,
                            const Direction& yAxis, const Direction& zAxis);
   void resetOriginAndAxis();                    // TODO OI-42 to feature ?
   void transformOriginAndAxis(OiMat trafoMat);  // TODO OI-42 to feature ?
 
   // expansion origin
-  const Position& getExpansionOrigin() const;
+  [[nodiscard]] const Position& getExpansionOrigin() const;
   void setExpansionOrigin(const Position& expansionOrigin);
 
   // ##################################################
@@ -78,30 +78,32 @@ class OI_CORE_EXPORT CoordinateSystem : public Feature {
   // ##################################################
 
   // observations
-  const QList<QPointer<Observation> >& getObservations() const;
-  QPointer<Observation> getObservation(const int& observationId) const;
+  [[nodiscard]] const QList<QPointer<Observation>>& getObservations() const;
+  [[nodiscard]] QPointer<Observation> getObservation(
+      const int& observationId) const;
   bool addObservation(const QPointer<Observation>& observation);
 
   // transformation parameters
-  const QList<QPointer<TrafoParam> >& getTransformationParameters() const;
-  const QList<QPointer<TrafoParam> > getTransformationParameters(
+  [[nodiscard]] const QList<QPointer<TrafoParam>>& getTransformationParameters()
+      const;
+  [[nodiscard]] const QList<QPointer<TrafoParam>> getTransformationParameters(
       const QPointer<CoordinateSystem>& to) const;
   bool addTransformationParameter(const QPointer<TrafoParam>& trafoParam);
   bool removeTransformationParameter(const QPointer<TrafoParam>& trafoParam);
 
   // nominals
-  const QList<QPointer<FeatureWrapper> >& getNominals() const;
+  [[nodiscard]] const QList<QPointer<FeatureWrapper>>& getNominals() const;
   bool addNominal(const QPointer<FeatureWrapper>& nominal);
-  bool addNominals(const QList<QPointer<FeatureWrapper> >& nominals);
+  bool addNominals(const QList<QPointer<FeatureWrapper>>& nominals);
   bool removeNominal(const QPointer<FeatureWrapper>& nominal);
   bool removeNominal(const int& featureId);
 
   // bundle template
-  const QJsonObject& getBundleTemplate() const;
+  [[nodiscard]] const QJsonObject& getBundleTemplate() const;
   void setBundleTemplate(const QJsonObject& bundleTemplate);
 
   // bundle adjustment
-  const QPointer<BundleAdjustment>& getBundlePlugin() const;
+  [[nodiscard]] const QPointer<BundleAdjustment>& getBundlePlugin() const;
   void setBundlePlugin(const QPointer<BundleAdjustment>& bundle);
 
   // ###########################
@@ -121,34 +123,35 @@ class OI_CORE_EXPORT CoordinateSystem : public Feature {
   // display methods
   // ###############
 
-  QString getDisplayX(const UnitType& type, const int& digits,
-                      const bool& showDiff = false) const override;
-  QString getDisplayY(const UnitType& type, const int& digits,
-                      const bool& showDiff = false) const override;
-  QString getDisplayZ(const UnitType& type, const int& digits,
-                      const bool& showDiff = false) const override;
-  QString getDisplayPrimaryI(const int& digits,
-                             const bool& showDiff = false) const override;
-  QString getDisplayPrimaryJ(const int& digits,
-                             const bool& showDiff = false) const override;
-  QString getDisplayPrimaryK(const int& digits,
-                             const bool& showDiff = false) const override;
+  [[nodiscard]] QString getDisplayX(const UnitType& type, const int& digits, const bool& showDiff = false) const override;
+  [[nodiscard]] QString getDisplayY(
+      const UnitType& type, const int& digits,
+      const bool& showDiff = false) const override;
+  [[nodiscard]] QString getDisplayZ(
+      const UnitType& type, const int& digits,
+      const bool& showDiff = false) const override;
+  [[nodiscard]] QString getDisplayPrimaryI(
+      const int& digits, const bool& showDiff = false) const override;
+  [[nodiscard]] QString getDisplayPrimaryJ(
+      const int& digits, const bool& showDiff = false) const override;
+  [[nodiscard]] QString getDisplayPrimaryK(
+      const int& digits, const bool& showDiff = false) const override;
 
-  QString getDisplayExpansionOriginX(const UnitType& type,
-                                     const int& digits) const override;
-  QString getDisplayExpansionOriginY(const UnitType& type,
-                                     const int& digits) const override;
-  QString getDisplayExpansionOriginZ(const UnitType& type,
-                                     const int& digits) const override;
-  QString getDisplayXAxisI(const int& digits) const override;
-  QString getDisplayXAxisJ(const int& digits) const override;
-  QString getDisplayXAxisK(const int& digits) const override;
-  QString getDisplayYAxisI(const int& digits) const override;
-  QString getDisplayYAxisJ(const int& digits) const override;
-  QString getDisplayYAxisK(const int& digits) const override;
-  QString getDisplayZAxisI(const int& digits) const override;
-  QString getDisplayZAxisJ(const int& digits) const override;
-  QString getDisplayZAxisK(const int& digits) const override;
+  [[nodiscard]] QString getDisplayExpansionOriginX(
+      const UnitType& type, const int& digits) const override;
+  [[nodiscard]] QString getDisplayExpansionOriginY(
+      const UnitType& type, const int& digits) const override;
+  [[nodiscard]] QString getDisplayExpansionOriginZ(
+      const UnitType& type, const int& digits) const override;
+  [[nodiscard]] QString getDisplayXAxisI(const int& digits) const override;
+  [[nodiscard]] QString getDisplayXAxisJ(const int& digits) const override;
+  [[nodiscard]] QString getDisplayXAxisK(const int& digits) const override;
+  [[nodiscard]] QString getDisplayYAxisI(const int& digits) const override;
+  [[nodiscard]] QString getDisplayYAxisJ(const int& digits) const override;
+  [[nodiscard]] QString getDisplayYAxisK(const int& digits) const override;
+  [[nodiscard]] QString getDisplayZAxisI(const int& digits) const override;
+  [[nodiscard]] QString getDisplayZAxisJ(const int& digits) const override;
+  [[nodiscard]] QString getDisplayZAxisK(const int& digits) const override;
 
  signals:
 
@@ -211,16 +214,16 @@ class OI_CORE_EXPORT CoordinateSystem : public Feature {
   // #######################################
 
   // observations
-  QList<QPointer<Observation> > observationsList;
-  QMap<int, QPointer<Observation> >
+  QList<QPointer<Observation>> observationsList;
+  QMap<int, QPointer<Observation>>
       observationsMap;  // same observations but id as key
 
   // trafo params
-  QList<QPointer<TrafoParam> > trafoParams;
+  QList<QPointer<TrafoParam>> trafoParams;
 
   // nominals
-  QList<QPointer<FeatureWrapper> > nominalsList;
-  QMap<int, QPointer<FeatureWrapper> >
+  QList<QPointer<FeatureWrapper>> nominalsList;
+  QMap<int, QPointer<FeatureWrapper>>
       nominalsMap;  // same geometries but id as key
 };
 

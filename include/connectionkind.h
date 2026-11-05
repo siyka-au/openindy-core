@@ -40,10 +40,10 @@ class OI_CORE_EXPORT ConnectionKind {
   static ConnectionKind byId(
       const QString& id);  // returns an invalid kind if unknown
 
-  const QString& id() const;
-  const QString& displayName() const;
+  [[nodiscard]] const QString& id() const;
+  [[nodiscard]] const QString& displayName() const;
 
-  bool isValid() const;
+  [[nodiscard]] bool isValid() const;
 
   bool operator==(const ConnectionKind& other) const;
   bool operator!=(const ConnectionKind& other) const;

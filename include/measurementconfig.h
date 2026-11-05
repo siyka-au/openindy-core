@@ -83,23 +83,25 @@ class OI_CORE_EXPORT MeasurementConfigKey {
     }
   }
 
-  const QString getName() const { return this->name; }
+  [[nodiscard]] const QString getName() const { return this->name; }
 
-  ConfigTypes getConfigType() const { return this->configType; }
+  [[nodiscard]] ConfigTypes getConfigType() const { return this->configType; }
 
-  const SensorType& getSensorType() const { return this->sensorType; }
+  [[nodiscard]] const SensorType& getSensorType() const {
+    return this->sensorType;
+  }
 
-  bool isUserConfig() const {
+  [[nodiscard]] bool isUserConfig() const {
     return ConfigTypes::eUserConfig == this->configType;
   }
-  bool isProjectConfig() const {
+  [[nodiscard]] bool isProjectConfig() const {
     return ConfigTypes::eProjectConfig == this->configType ||
            ConfigTypes::eStandardConfig == this->configType;
   }
-  bool isStandardConfig() const {
+  [[nodiscard]] bool isStandardConfig() const {
     return ConfigTypes::eStandardConfig == this->configType;
   }
-  bool isValid() const {
+  [[nodiscard]] bool isValid() const {
     return !this->name.isEmpty() &&
            this->configType != ConfigTypes::eUndefinded;
   }
@@ -141,35 +143,35 @@ class OI_CORE_EXPORT MeasurementConfig {
   // get or set measurement config attributes
   // ########################################
 
-  const QString& getName() const;
+  [[nodiscard]] const QString& getName() const;
   void setName(const QString& name);
-  MeasurementConfigKey getKey() const;
+  [[nodiscard]] MeasurementConfigKey getKey() const;
 
-  bool isUserConfig() const;
-  bool isProjectConfig() const;
-  bool isEditable() const;
-  bool isStandardConfig() const;
-  bool isValid() const;
+  [[nodiscard]] bool isUserConfig() const;
+  [[nodiscard]] bool isProjectConfig() const;
+  [[nodiscard]] bool isEditable() const;
+  [[nodiscard]] bool isStandardConfig() const;
+  [[nodiscard]] bool isValid() const;
 
-  const bool& getMeasureTwoSides() const;
+  [[nodiscard]] const bool& getMeasureTwoSides() const;
   void setMeasureTwoSides(const bool& measureTwoSides);
 
-  const double& getTimeInterval() const;
+  [[nodiscard]] const double& getTimeInterval() const;
   void setTimeInterval(const double& interval);
 
-  const double& getDistanceInterval() const;
+  [[nodiscard]] const double& getDistanceInterval() const;
   void setDistanceInterval(const double& interval);
 
-  const QVariant getTransientData(const QString key) const;
+  [[nodiscard]] const QVariant getTransientData(const QString key) const;
   void setTransientData(const QString key, const QVariant value);
 
   void setMeasurementMode(const MeasurementModes mode);
-  MeasurementModes getMeasurementMode() const;
+  [[nodiscard]] MeasurementModes getMeasurementMode() const;
 
   void setMeasurementType(const MeasurementTypes type);
-  MeasurementTypes getMeasurementType() const;
+  [[nodiscard]] MeasurementTypes getMeasurementType() const;
 
-  const int& getMaxObservations() const;
+  [[nodiscard]] const int& getMaxObservations() const;
   void setMaxObservations(const int& maxObservations);
 
   //! which sensor type published this config (set once, at creation, by
@@ -178,7 +180,7 @@ class OI_CORE_EXPORT MeasurementConfig {
   //! anything the user can edit after the fact. An invalid SensorType
   //! (isValid() == false) means this config predates the tag or was
   //! authored generically and isn't gated to any one type.
-  const SensorType& getSensorType() const;
+  [[nodiscard]] const SensorType& getSensorType() const;
   void setSensorType(const SensorType& type);
 
   void makeUserConfig();

@@ -264,18 +264,18 @@ class OI_CORE_EXPORT Function : public QObject {
   // methods to get or set further information to solve a function
   // #############################################################
 
-  const QList<NeededElement>& getNeededElements() const;
-  const QList<FeatureTypes>& getApplicableFor() const;
-  const PluginMetaData& getMetaData() const;
+  [[nodiscard]] const QList<NeededElement>& getNeededElements() const;
+  [[nodiscard]] const QList<FeatureTypes>& getApplicableFor() const;
+  [[nodiscard]] const PluginMetaData& getMetaData() const;
 
-  const QMap<QString, int>& getIntegerParameter() const;
-  const QMap<QString, double>& getDoubleParameter() const;
-  const QMultiMap<QString, QString>& getStringParameter() const;
+  [[nodiscard]] const QMap<QString, int>& getIntegerParameter() const;
+  [[nodiscard]] const QMap<QString, double>& getDoubleParameter() const;
+  [[nodiscard]] const QMultiMap<QString, QString>& getStringParameter() const;
 
   void setScalarInputParams(const ScalarInputParams& params);
   const ScalarInputParams& getScalarInputParams();
 
-  const QList<FixedParameter>& getFixedParameters() const;
+  [[nodiscard]] const QList<FixedParameter>& getFixedParameters() const;
   void fixParameter(const FixedParameter& parameter);
   void unfixParameter(const GeometryParameters& parameter);
   void unfixAllParameters();
@@ -284,15 +284,15 @@ class OI_CORE_EXPORT Function : public QObject {
   // get function results
   // ####################
 
-  const QStringList& getResultProtocol() const;
+  [[nodiscard]] const QStringList& getResultProtocol() const;
 
-  const Statistic& getStatistic() const;
+  [[nodiscard]] const Statistic& getStatistic() const;
 
   // ###############
   // general getters
   // ###############
 
-  const int& getId() const;
+  [[nodiscard]] const int& getId() const;
 
   const bool& getSupportWeights();
   void setSupportWeights(bool supports);
@@ -301,10 +301,11 @@ class OI_CORE_EXPORT Function : public QObject {
   // get or set elements
   // ###################
 
-  const QMap<int, QList<InputElement> >& getInputElements() const;
-  InputElement getInputElement(const int& id) const;
-  InputElement getInputElement(const int& id, const int& position) const;
-  bool hasInputElement(const int& id) const;
+  [[nodiscard]] const QMap<int, QList<InputElement>>& getInputElements() const;
+  [[nodiscard]] InputElement getInputElement(const int& id) const;
+  [[nodiscard]] InputElement getInputElement(const int& id,
+                                             const int& position) const;
+  [[nodiscard]] bool hasInputElement(const int& id) const;
   virtual void addInputElement(const InputElement& element,
                                const int& position);
   void removeInputElement(const int& id, const int& position);
@@ -329,7 +330,8 @@ class OI_CORE_EXPORT Function : public QObject {
   // that mutate this still need to trigger an ordinary recalc for it to
   // take effect, exactly like every other input-set change (OiJob does
   // not auto-recalc on tagPoint either; see oijob.h).
-  const QList<PipelineStage>& getPipeline(const int& position) const;
+  [[nodiscard]] const QList<PipelineStage>& getPipeline(
+      const int& position) const;
   void setPipeline(const int& position, const QList<PipelineStage>& stages);
   void addPipelineStage(const int& position, const PipelineStage& stage);
   void clearPipeline(const int& position);
@@ -338,7 +340,7 @@ class OI_CORE_EXPORT Function : public QObject {
   // most recently excluded at `position`, and why. Repopulated every
   // exec(); empty until the function has run at least once, the same
   // way isUsed is only meaningful post-exec.
-  const QList<PipelineExclusion>& getPipelineExclusions(
+  [[nodiscard]] const QList<PipelineExclusion>& getPipelineExclusions(
       const int& position) const;
 
   // #############
@@ -408,17 +410,17 @@ class OI_CORE_EXPORT Function : public QObject {
 
   Statistic statistic;
 
-  QMap<int, QList<InputElement> > inputElements;
+  QMap<int, QList<InputElement>> inputElements;
 
   // D16/domain-model.md S5: what each NeededElement position's pipeline
   // most recently excluded, and why - keyed the same way inputElements
   // is. Rebuilt every exec(), not persisted separately (it is fully
   // re-derivable from the declared pipeline plus current data, exactly
   // like isUsed).
-  QMap<int, QList<PipelineExclusion> > pipelineExclusions;
+  QMap<int, QList<PipelineExclusion>> pipelineExclusions;
 
-  void filterObservations(QList<QPointer<Observation> >& allUsableObservations,
-                          QList<QPointer<Observation> >& inputObservations);
+  void filterObservations(QList<QPointer<Observation>>& allUsableObservations,
+                          QList<QPointer<Observation>>& inputObservations);
   void addDisplayResidual(int elementId, double vr);
   void addDisplayResidual(int elementId, double vx, double vy, double vz,
                           double v);
@@ -453,7 +455,7 @@ class OI_CORE_EXPORT Function : public QObject {
   //(most fit functions) then "vr" (e.g. BestFitSphere). Not every fit
   // function reports one under either key (domain-model.md S9) - this
   // degrades to nullopt rather than guessing.
-  std::optional<double> residualMagnitude(int elementId) const;
+  [[nodiscard]] std::optional<double> residualMagnitude(int elementId) const;
 };
 
 }  // namespace oi

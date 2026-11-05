@@ -37,7 +37,7 @@ class OI_CORE_EXPORT Statistic {
   // get valid state and reset statistic
   // ###################################
 
-  const bool& getIsValid() const;
+  [[nodiscard]] const bool& getIsValid() const;
   void setIsValid(const bool& isValid);
 
   void reset();
@@ -46,30 +46,30 @@ class OI_CORE_EXPORT Statistic {
   // get or set statistical parameters
   // #################################
 
-  const double& getS0APriori() const;
+  [[nodiscard]] const double& getS0APriori() const;
   void setS0APriori(const double& s0);
 
-  const double& getS0APosteriori() const;
+  [[nodiscard]] const double& getS0APosteriori() const;
   void setS0APosteriori(const double& s0);
 
-  const double& getStdev() const;
+  [[nodiscard]] const double& getStdev() const;
   void setStdev(const double& stdev);
 
-  const OiMat& getP() const;
+  [[nodiscard]] const OiMat& getP() const;
   void setP(const OiMat& p);
 
-  const OiMat& getQxx() const;
+  [[nodiscard]] const OiMat& getQxx() const;
   void setQxx(const OiMat& qxx);
 
-  const OiVec& getV() const;
+  [[nodiscard]] const OiVec& getV() const;
   void setV(const OiVec& v);
 
-  const QList<Residual> getDisplayResiduals() const;
-  Residual getDisplayResidual(const int& elementId) const;
+  [[nodiscard]] const QList<Residual> getDisplayResiduals() const;
+  [[nodiscard]] Residual getDisplayResidual(const int& elementId) const;
   void addDisplayResidual(const Residual& residual);
 
   void setFormError(const double& formError);
-  const double& getFormError() const;
+  [[nodiscard]] const double& getFormError() const;
 
  private:
   bool isValid;

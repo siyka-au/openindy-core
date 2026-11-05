@@ -59,7 +59,7 @@ class OI_CORE_EXPORT PointCloud : public Geometry, public PointCollection {
   // general point cloud methods
   // ###########################
 
-  unsigned long getPointCount() const;
+  [[nodiscard]] unsigned long getPointCount() const;
 
   bool addSegment(const QPointer<FeatureWrapper>& segment);
   void clearSegmentation();
@@ -68,23 +68,23 @@ class OI_CORE_EXPORT PointCloud : public Geometry, public PointCollection {
   // check wether this geometry has a direction, a position and a radius
   // ###################################################################
 
-  bool hasPosition() const override;
+  [[nodiscard]] bool hasPosition() const override;
 
   // #################################
   // get or set point cloud parameters
   // #################################
 
-  const QList<Point_PC*>& getPointCloudPoints() const;
+  [[nodiscard]] const QList<Point_PC*>& getPointCloudPoints() const;
   void addPointCloudPoint(Point_PC* point);
 
   // #########################
   // PointCollection interface
   // #########################
 
-  QList<Position> collectionPoints() const override;
-  int collectionPointCount() const override;
+  [[nodiscard]] QList<Position> collectionPoints() const override;
+  [[nodiscard]] int collectionPointCount() const override;
 
-  const BoundingBox_PC& getBoundingBox() const;
+  [[nodiscard]] const BoundingBox_PC& getBoundingBox() const;
   void setBoundingBox(const BoundingBox_PC& bbox);
 
   // ###########################

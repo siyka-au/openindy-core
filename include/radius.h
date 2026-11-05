@@ -29,7 +29,7 @@ class OI_CORE_EXPORT Radius : public Element {
 
   void setRadius(const double& r);
 
-  const double& getRadius() const;
+  [[nodiscard]] const double& getRadius() const;
 
  protected:
   double radius;

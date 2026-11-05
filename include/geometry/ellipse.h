@@ -51,16 +51,16 @@ class OI_CORE_EXPORT Ellipse : public Geometry {
   // check wether this geometry has a direction, a position and a radius
   // ###################################################################
 
-  bool hasDirection() const override;
-  bool hasPosition() const override;
+  [[nodiscard]] bool hasDirection() const override;
+  [[nodiscard]] bool hasPosition() const override;
 
   // #############################
   // get or set ellipse parameters
   // #############################
 
-  const double& getA() const;
-  const double& getB() const;
-  const Direction& getSemiMajorAxisDirection() const;
+  [[nodiscard]] const double& getA() const;
+  [[nodiscard]] const double& getB() const;
+  [[nodiscard]] const Direction& getSemiMajorAxisDirection() const;
 
   void setEllipse(const Position& center, const Direction& normal,
                   const double& a, const double& b,
@@ -70,7 +70,7 @@ class OI_CORE_EXPORT Ellipse : public Geometry {
   // get or set unknown parameters
   // #############################
 
-  QMap<GeometryParameters, QString> getUnknownParameters(
+  [[nodiscard]] QMap<GeometryParameters, QString> getUnknownParameters(
       const QMap<DimensionType, UnitType>& displayUnits,
       const QMap<DimensionType, int>& displayDigits) const override;
   void applyUnknownParameters(
@@ -93,16 +93,18 @@ class OI_CORE_EXPORT Ellipse : public Geometry {
   // display methods
   // ###############
 
-  QString getDisplaySecondaryI(const int& digits,
-                               const bool& showDiff = false) const override;
-  QString getDisplaySecondaryJ(const int& digits,
-                               const bool& showDiff = false) const override;
-  QString getDisplaySecondaryK(const int& digits,
-                               const bool& showDiff = false) const override;
-  QString getDisplayA(const UnitType& type, const int& digits,
-                      const bool& showDiff = false) const override;
-  QString getDisplayB(const UnitType& type, const int& digits,
-                      const bool& showDiff = false) const override;
+  [[nodiscard]] QString getDisplaySecondaryI(
+      const int& digits, const bool& showDiff = false) const override;
+  [[nodiscard]] QString getDisplaySecondaryJ(
+      const int& digits, const bool& showDiff = false) const override;
+  [[nodiscard]] QString getDisplaySecondaryK(
+      const int& digits, const bool& showDiff = false) const override;
+  [[nodiscard]] QString getDisplayA(
+      const UnitType& type, const int& digits,
+      const bool& showDiff = false) const override;
+  [[nodiscard]] QString getDisplayB(
+      const UnitType& type, const int& digits,
+      const bool& showDiff = false) const override;
 
  private:
   // ##################

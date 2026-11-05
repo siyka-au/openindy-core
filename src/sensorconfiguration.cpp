@@ -13,13 +13,18 @@ SensorConfiguration::SensorConfiguration() {}
  * \brief SensorConfiguration::SensorConfiguration
  * \param copy
  */
-SensorConfiguration::SensorConfiguration(const SensorConfiguration &copy)
-    : name(copy.name), accuracy(copy.accuracy),
+SensorConfiguration::SensorConfiguration(const SensorConfiguration& copy)
+    : name(copy.name),
+      accuracy(copy.accuracy),
       availableStringParameter(copy.availableStringParameter),
-      cConfig(copy.cConfig), doubleParameter(copy.doubleParameter),
-      integerParameter(copy.integerParameter), isSaved(copy.isSaved),
-      pluginName(copy.pluginName), sensorName(copy.sensorName),
-      stringParameter(copy.stringParameter), typeOfSensor(copy.typeOfSensor) {
+      cConfig(copy.cConfig),
+      doubleParameter(copy.doubleParameter),
+      integerParameter(copy.integerParameter),
+      isSaved(copy.isSaved),
+      pluginName(copy.pluginName),
+      sensorName(copy.sensorName),
+      stringParameter(copy.stringParameter),
+      typeOfSensor(copy.typeOfSensor) {
   // copy sensor config attributes
 }
 

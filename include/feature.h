@@ -35,25 +35,25 @@ class OI_CORE_EXPORT Feature : public Element {
   // get the feature wrapped by a feature wrapper
   // ############################################
 
-  const QPointer<FeatureWrapper>& getFeatureWrapper() const;
+  [[nodiscard]] const QPointer<FeatureWrapper>& getFeatureWrapper() const;
 
   // #############################
   // get or set feature attributes
   // #############################
 
-  const QString& getFeatureName() const;
+  [[nodiscard]] const QString& getFeatureName() const;
   void setFeatureName(const QString& name);
 
-  const QString& getGroupName() const;
+  [[nodiscard]] const QString& getGroupName() const;
   void setGroupName(const QString& group);
 
-  const QString& getComment() const;
+  [[nodiscard]] const QString& getComment() const;
   void setComment(const QString& comment);
 
-  const bool& getIsUpdated() const;
+  [[nodiscard]] const bool& getIsUpdated() const;
   void setIsUpdated(const bool& isUpdated);
 
-  const bool& getIsSolved() const;
+  [[nodiscard]] const bool& getIsSolved() const;
   void setIsSolved(const bool& isSolved);
 
   // ###############################################################
@@ -68,20 +68,22 @@ class OI_CORE_EXPORT Feature : public Element {
   // cares about the distinction.
   // ###############################################################
 
-  QList<QPointer<Function> > getFunctions() const;
-  const std::optional<QPointer<Function> >& getProducerFunction() const;
-  const QList<QPointer<Function> >& getTransformFunctions() const;
+  [[nodiscard]] QList<QPointer<Function>> getFunctions() const;
+  [[nodiscard]] const std::optional<QPointer<Function>>& getProducerFunction()
+      const;
+  [[nodiscard]] const QList<QPointer<Function>>& getTransformFunctions() const;
   void addFunction(const QPointer<Function>& function);
   void removeFunction(const int& index);
 
-  const bool& getIsActiveFeature() const;
+  [[nodiscard]] const bool& getIsActiveFeature() const;
   void setActiveFeatureState(const bool& isActiveFeature);
 
-  const QList<QPointer<FeatureWrapper> >& getUsedFor() const;
+  [[nodiscard]] const QList<QPointer<FeatureWrapper>>& getUsedFor() const;
   bool addUsedFor(const QPointer<FeatureWrapper>& feature);
   bool removeUsedFor(const QPointer<FeatureWrapper>& feature);
 
-  const QList<QPointer<FeatureWrapper> >& getPreviouslyNeeded() const;
+  [[nodiscard]] const QList<QPointer<FeatureWrapper>>& getPreviouslyNeeded()
+      const;
   bool addPreviouslyNeeded(const QPointer<FeatureWrapper>& feature);
   bool removePreviouslyNeeded(const QPointer<FeatureWrapper>& feature);
 
@@ -96,7 +98,7 @@ class OI_CORE_EXPORT Feature : public Element {
   // station-owned Observation will when it becomes a Point).
   // ###############################################################
 
-  virtual std::optional<QString> getOwnerDescription() const;
+  [[nodiscard]] virtual std::optional<QString> getOwnerDescription() const;
 
   // ###########################
   // reexecute the function list
@@ -116,105 +118,118 @@ class OI_CORE_EXPORT Feature : public Element {
   // ###############
 
   // general attributes
-  virtual QString getDisplayType() const;
-  virtual QString getDisplayIsSolved() const;
-  virtual QString getDisplayIsUpdated() const;
-  virtual QString getDisplayFunctions() const;
-  virtual QString getDisplayUsedFor() const;
-  virtual QString getDisplayPreviouslyNeeded() const;
-  virtual QString getDisplayStDev(const UnitType& type,
-                                  const int& digits) const;
+  [[nodiscard]] virtual QString getDisplayType() const;
+  [[nodiscard]] virtual QString getDisplayIsSolved() const;
+  [[nodiscard]] virtual QString getDisplayIsUpdated() const;
+  [[nodiscard]] virtual QString getDisplayFunctions() const;
+  [[nodiscard]] virtual QString getDisplayUsedFor() const;
+  [[nodiscard]] virtual QString getDisplayPreviouslyNeeded() const;
+  [[nodiscard]] virtual QString getDisplayStDev(const UnitType& type,
+                                                const int& digits) const;
 
   // geometry specific attributes
-  virtual QString getDisplayMeasurementConfig() const;
-  virtual QString getDisplayObservations() const;
-  virtual QString getDisplayIsCommon() const;
-  virtual QString getDisplayIsActual() const;
+  [[nodiscard]] virtual QString getDisplayMeasurementConfig() const;
+  [[nodiscard]] virtual QString getDisplayObservations() const;
+  [[nodiscard]] virtual QString getDisplayIsCommon() const;
+  [[nodiscard]] virtual QString getDisplayIsActual() const;
 
   // unknown geometry parameters
-  virtual QString getDisplayX(const UnitType& type, const int& digits,
-                              const bool& showDiff = false) const;
-  virtual QString getDisplayY(const UnitType& type, const int& digits,
-                              const bool& showDiff = false) const;
-  virtual QString getDisplayZ(const UnitType& type, const int& digits,
-                              const bool& showDiff = false) const;
-  virtual QString getDisplayPrimaryI(const int& digits,
-                                     const bool& showDiff = false) const;
-  virtual QString getDisplayPrimaryJ(const int& digits,
-                                     const bool& showDiff = false) const;
-  virtual QString getDisplayPrimaryK(const int& digits,
-                                     const bool& showDiff = false) const;
-  virtual QString getDisplayRadiusA(const UnitType& type, const int& digits,
-                                    const bool& showDiff = false) const;
-  virtual QString getDisplayRadiusB(const UnitType& type, const int& digits,
-                                    const bool& showDiff = false) const;
-  virtual QString getDisplaySecondaryI(const int& digits,
-                                       const bool& showDiff = false) const;
-  virtual QString getDisplaySecondaryJ(const int& digits,
-                                       const bool& showDiff = false) const;
-  virtual QString getDisplaySecondaryK(const int& digits,
-                                       const bool& showDiff = false) const;
-  virtual QString getDisplayAperture(const UnitType& type, const int& digits,
-                                     const bool& showDiff = false) const;
-  virtual QString getDisplayA(const UnitType& type, const int& digits,
-                              const bool& showDiff = false) const;
-  virtual QString getDisplayB(const UnitType& type, const int& digits,
-                              const bool& showDiff = false) const;
-  virtual QString getDisplayC(const UnitType& type, const int& digits,
-                              const bool& showDiff = false) const;
-  virtual QString getDisplayAngle(const UnitType& type, const int& digits,
-                                  const bool& showDiff = false) const;
-  virtual QString getDisplayDistance(const UnitType& type, const int& digits,
-                                     const bool& showDiff = false) const;
-  virtual QString getDisplayMeasurementSeries(
+  [[nodiscard]] virtual QString getDisplayX(const UnitType& type,
+                                            const int& digits,
+                                            const bool& showDiff = false) const;
+  [[nodiscard]] virtual QString getDisplayY(const UnitType& type,
+                                            const int& digits,
+                                            const bool& showDiff = false) const;
+  [[nodiscard]] virtual QString getDisplayZ(const UnitType& type,
+                                            const int& digits,
+                                            const bool& showDiff = false) const;
+  [[nodiscard]] virtual QString getDisplayPrimaryI(
+      const int& digits, const bool& showDiff = false) const;
+  [[nodiscard]] virtual QString getDisplayPrimaryJ(
+      const int& digits, const bool& showDiff = false) const;
+  [[nodiscard]] virtual QString getDisplayPrimaryK(
+      const int& digits, const bool& showDiff = false) const;
+  [[nodiscard]] virtual QString getDisplayRadiusA(
       const UnitType& type, const int& digits,
       const bool& showDiff = false) const;
-  virtual QString getDisplayTemperature(const UnitType& type, const int& digits,
-                                        const bool& showDiff = false) const;
-  virtual QString getDisplayLength(const UnitType& type, const int& digits,
-                                   const bool& showDiff = false) const;
-  virtual QString getDisplayFormError(const UnitType& type,
-                                      const int& digits) const;
+  [[nodiscard]] virtual QString getDisplayRadiusB(
+      const UnitType& type, const int& digits,
+      const bool& showDiff = false) const;
+  [[nodiscard]] virtual QString getDisplaySecondaryI(
+      const int& digits, const bool& showDiff = false) const;
+  [[nodiscard]] virtual QString getDisplaySecondaryJ(
+      const int& digits, const bool& showDiff = false) const;
+  [[nodiscard]] virtual QString getDisplaySecondaryK(
+      const int& digits, const bool& showDiff = false) const;
+  [[nodiscard]] virtual QString getDisplayAperture(
+      const UnitType& type, const int& digits,
+      const bool& showDiff = false) const;
+  [[nodiscard]] virtual QString getDisplayA(const UnitType& type,
+                                            const int& digits,
+                                            const bool& showDiff = false) const;
+  [[nodiscard]] virtual QString getDisplayB(const UnitType& type,
+                                            const int& digits,
+                                            const bool& showDiff = false) const;
+  [[nodiscard]] virtual QString getDisplayC(const UnitType& type,
+                                            const int& digits,
+                                            const bool& showDiff = false) const;
+  [[nodiscard]] virtual QString getDisplayAngle(
+      const UnitType& type, const int& digits,
+      const bool& showDiff = false) const;
+  [[nodiscard]] virtual QString getDisplayDistance(
+      const UnitType& type, const int& digits,
+      const bool& showDiff = false) const;
+  [[nodiscard]] virtual QString getDisplayMeasurementSeries(
+      const UnitType& type, const int& digits,
+      const bool& showDiff = false) const;
+  [[nodiscard]] virtual QString getDisplayTemperature(
+      const UnitType& type, const int& digits,
+      const bool& showDiff = false) const;
+  [[nodiscard]] virtual QString getDisplayLength(
+      const UnitType& type, const int& digits,
+      const bool& showDiff = false) const;
+  [[nodiscard]] virtual QString getDisplayFormError(const UnitType& type,
+                                                    const int& digits) const;
 
   // coordinate system specific
-  virtual QString getDisplayExpansionOriginX(const UnitType& type,
-                                             const int& digits) const;
-  virtual QString getDisplayExpansionOriginY(const UnitType& type,
-                                             const int& digits) const;
-  virtual QString getDisplayExpansionOriginZ(const UnitType& type,
-                                             const int& digits) const;
-  virtual QString getDisplayXAxisI(const int& digits) const;
-  virtual QString getDisplayXAxisJ(const int& digits) const;
-  virtual QString getDisplayXAxisK(const int& digits) const;
-  virtual QString getDisplayYAxisI(const int& digits) const;
-  virtual QString getDisplayYAxisJ(const int& digits) const;
-  virtual QString getDisplayYAxisK(const int& digits) const;
-  virtual QString getDisplayZAxisI(const int& digits) const;
-  virtual QString getDisplayZAxisJ(const int& digits) const;
-  virtual QString getDisplayZAxisK(const int& digits) const;
+  [[nodiscard]] virtual QString getDisplayExpansionOriginX(
+      const UnitType& type, const int& digits) const;
+  [[nodiscard]] virtual QString getDisplayExpansionOriginY(
+      const UnitType& type, const int& digits) const;
+  [[nodiscard]] virtual QString getDisplayExpansionOriginZ(
+      const UnitType& type, const int& digits) const;
+  [[nodiscard]] virtual QString getDisplayXAxisI(const int& digits) const;
+  [[nodiscard]] virtual QString getDisplayXAxisJ(const int& digits) const;
+  [[nodiscard]] virtual QString getDisplayXAxisK(const int& digits) const;
+  [[nodiscard]] virtual QString getDisplayYAxisI(const int& digits) const;
+  [[nodiscard]] virtual QString getDisplayYAxisJ(const int& digits) const;
+  [[nodiscard]] virtual QString getDisplayYAxisK(const int& digits) const;
+  [[nodiscard]] virtual QString getDisplayZAxisI(const int& digits) const;
+  [[nodiscard]] virtual QString getDisplayZAxisJ(const int& digits) const;
+  [[nodiscard]] virtual QString getDisplayZAxisK(const int& digits) const;
 
   // trafo param specific
-  virtual QString getDisplayStartSystem() const;
-  virtual QString getDisplayDestinationSystem() const;
-  virtual QString getDisplayTranslationX(const UnitType& type,
-                                         const int& digits) const;
-  virtual QString getDisplayTranslationY(const UnitType& type,
-                                         const int& digits) const;
-  virtual QString getDisplayTranslationZ(const UnitType& type,
-                                         const int& digits) const;
-  virtual QString getDisplayRotationX(const UnitType& type,
-                                      const int& digits) const;
-  virtual QString getDisplayRotationY(const UnitType& type,
-                                      const int& digits) const;
-  virtual QString getDisplayRotationZ(const UnitType& type,
-                                      const int& digits) const;
-  virtual QString getDisplayScaleX(const int& digits) const;
-  virtual QString getDisplayScaleY(const int& digits) const;
-  virtual QString getDisplayScaleZ(const int& digits) const;
-  virtual QString getDisplayIsUsed() const;
-  virtual QString getDisplayValidTime() const;
-  virtual QString getDisplayIsMovement() const;
-  virtual QString getDisplayIsDatumTransformation() const;
+  [[nodiscard]] virtual QString getDisplayStartSystem() const;
+  [[nodiscard]] virtual QString getDisplayDestinationSystem() const;
+  [[nodiscard]] virtual QString getDisplayTranslationX(const UnitType& type,
+                                                       const int& digits) const;
+  [[nodiscard]] virtual QString getDisplayTranslationY(const UnitType& type,
+                                                       const int& digits) const;
+  [[nodiscard]] virtual QString getDisplayTranslationZ(const UnitType& type,
+                                                       const int& digits) const;
+  [[nodiscard]] virtual QString getDisplayRotationX(const UnitType& type,
+                                                    const int& digits) const;
+  [[nodiscard]] virtual QString getDisplayRotationY(const UnitType& type,
+                                                    const int& digits) const;
+  [[nodiscard]] virtual QString getDisplayRotationZ(const UnitType& type,
+                                                    const int& digits) const;
+  [[nodiscard]] virtual QString getDisplayScaleX(const int& digits) const;
+  [[nodiscard]] virtual QString getDisplayScaleY(const int& digits) const;
+  [[nodiscard]] virtual QString getDisplayScaleZ(const int& digits) const;
+  [[nodiscard]] virtual QString getDisplayIsUsed() const;
+  [[nodiscard]] virtual QString getDisplayValidTime() const;
+  [[nodiscard]] virtual QString getDisplayIsMovement() const;
+  [[nodiscard]] virtual QString getDisplayIsDatumTransformation() const;
 
  signals:
 
@@ -242,7 +257,7 @@ class OI_CORE_EXPORT Feature : public Element {
   // without it ownership would be convention only.
   // ###############################################################
 
-  bool rejectIfNotEditable(const QString& attemptedEdit) const;
+  [[nodiscard]] bool rejectIfNotEditable(const QString& attemptedEdit) const;
 
   // ######################################
   // update feature id when the job was set
@@ -273,15 +288,15 @@ class OI_CORE_EXPORT Feature : public Element {
   // validated-and-rejected input: it is a shape addFunction() will not
   // construct (see Function::canActAsProducer/canActAsTransform, the
   // runtime dynamic_cast check at the attach call site).
-  std::optional<QPointer<Function> > producerFunction;
-  QList<QPointer<Function> > transformFunctions;
+  std::optional<QPointer<Function>> producerFunction;
+  QList<QPointer<Function>> transformFunctions;
 
-  QList<QPointer<FeatureWrapper> >
+  QList<QPointer<FeatureWrapper>>
       usedForList;  // features which need this feature to recalc
-  QMap<int, QPointer<FeatureWrapper> > usedForMap;
-  QList<QPointer<FeatureWrapper> >
+  QMap<int, QPointer<FeatureWrapper>> usedForMap;
+  QList<QPointer<FeatureWrapper>>
       previouslyNeededList;  // features which are needed to recalc this feature
-  QMap<int, QPointer<FeatureWrapper> > previouslyNeededMap;
+  QMap<int, QPointer<FeatureWrapper>> previouslyNeededMap;
 
   // ######################################
   // this pointer wrapped by FeatureWrapper

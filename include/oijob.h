@@ -48,16 +48,16 @@ class OI_CORE_EXPORT OiJob : public QObject {
   // get or set meta information of a job
   // ####################################
 
-  const QString& getJobName() const;
+  [[nodiscard]] const QString& getJobName() const;
   void setJobName(const QString& jobName);
 
-  const QPointer<QFileDevice>& getJobDevice() const;
+  [[nodiscard]] const QPointer<QFileDevice>& getJobDevice() const;
   void setJobDevice(const QPointer<QFileDevice>& jobDevice);
 
   void setDigest(const QString&);
-  const QString& getDigest() const;
+  [[nodiscard]] const QString& getDigest() const;
 
-  CompatibilyCheckResult checkCompatibilty() const;
+  [[nodiscard]] CompatibilyCheckResult checkCompatibilty() const;
   void setLoadedProjectVersion(const QString& loadedVersion);
 
   int generateUniqueId();
@@ -69,47 +69,54 @@ class OI_CORE_EXPORT OiJob : public QObject {
   // ###########################################
 
   // number of features
-  int getFeatureCount() const;
-  int getGeometryCount() const;
-  int getFeatureCount(const FeatureTypes& type) const;
-  int getFeatureCount(const QString& group) const;
+  [[nodiscard]] int getFeatureCount() const;
+  [[nodiscard]] int getGeometryCount() const;
+  [[nodiscard]] int getFeatureCount(const FeatureTypes& type) const;
+  [[nodiscard]] int getFeatureCount(const QString& group) const;
 
   // access a list of all feature ids and names
-  const QList<int>& getFeatureIdList() const;
-  const QStringList& getFeatureNameList() const;
-  const QStringList& getFeatureGroupList() const;
-  const QList<MeasurementConfigKey>& getUsedMeasurementConfigs() const;
+  [[nodiscard]] const QList<int>& getFeatureIdList() const;
+  [[nodiscard]] const QStringList& getFeatureNameList() const;
+  [[nodiscard]] const QStringList& getFeatureGroupList() const;
+  [[nodiscard]] const QList<MeasurementConfigKey>& getUsedMeasurementConfigs()
+      const;
 
   // access feature lists
-  const QList<QPointer<FeatureWrapper> >& getFeaturesList() const;
-  const QList<QPointer<CoordinateSystem> >& getCoordinateSystemsList() const;
-  QList<QPointer<CoordinateSystem> > getStationSystemsList() const;
-  QList<QPointer<CoordinateSystem> > getBundleSystemList() const;
-  const QList<QPointer<Station> >& getStationsList() const;
-  const QList<QPointer<TrafoParam> >& getTransformationParametersList() const;
-  const QList<QPointer<FeatureWrapper> >& getGeometriesList() const;
+  [[nodiscard]] const QList<QPointer<FeatureWrapper>>& getFeaturesList() const;
+  [[nodiscard]] const QList<QPointer<CoordinateSystem>>&
+  getCoordinateSystemsList() const;
+  [[nodiscard]] QList<QPointer<CoordinateSystem>> getStationSystemsList() const;
+  [[nodiscard]] QList<QPointer<CoordinateSystem>> getBundleSystemList() const;
+  [[nodiscard]] const QList<QPointer<Station>>& getStationsList() const;
+  [[nodiscard]] const QList<QPointer<TrafoParam>>&
+  getTransformationParametersList() const;
+  [[nodiscard]] const QList<QPointer<FeatureWrapper>>& getGeometriesList()
+      const;
 
   // access specific features
-  QPointer<FeatureWrapper> getFeatureById(const int& featureId) const;
-  QList<QPointer<FeatureWrapper> > getFeaturesByName(
+  [[nodiscard]] QPointer<FeatureWrapper> getFeatureById(
+      const int& featureId) const;
+  [[nodiscard]] QList<QPointer<FeatureWrapper>> getFeaturesByName(
       const QString& name, const bool startWith = false) const;
-  QList<QPointer<FeatureWrapper> > getFeaturesByGroup(
+  [[nodiscard]] QList<QPointer<FeatureWrapper>> getFeaturesByGroup(
       const QString& group) const;
-  QList<QPointer<FeatureWrapper> > getFeaturesByType(
+  [[nodiscard]] QList<QPointer<FeatureWrapper>> getFeaturesByType(
       const FeatureTypes& type) const;
-  QList<QPointer<Geometry> > getGeometriesByMConfig(
+  [[nodiscard]] QList<QPointer<Geometry>> getGeometriesByMConfig(
       const MeasurementConfigKey& key) const;
 
   // access active features
-  const QPointer<FeatureWrapper>& getActiveFeature() const;
-  const QPointer<Station>& getActiveStation() const;
-  const QPointer<CoordinateSystem>& getActiveCoordinateSystem() const;
-  const QPointer<CoordinateSystem>& getActiveBundleSystem() const;
-  const QPointer<oi::BundleAdjustment>& getActiveBundleAdjustment() const;
-  const QJsonObject getActiveBundleTemplate() const;
+  [[nodiscard]] const QPointer<FeatureWrapper>& getActiveFeature() const;
+  [[nodiscard]] const QPointer<Station>& getActiveStation() const;
+  [[nodiscard]] const QPointer<CoordinateSystem>& getActiveCoordinateSystem()
+      const;
+  [[nodiscard]] const QPointer<CoordinateSystem>& getActiveBundleSystem() const;
+  [[nodiscard]] const QPointer<oi::BundleAdjustment>&
+  getActiveBundleAdjustment() const;
+  [[nodiscard]] const QJsonObject getActiveBundleTemplate() const;
 
   // get or set feature groups
-  const QString& getActiveGroup() const;
+  [[nodiscard]] const QString& getActiveGroup() const;
   bool setActiveGroup(const QString& group);
 
   // ######################
@@ -118,15 +125,15 @@ class OI_CORE_EXPORT OiJob : public QObject {
 
   // add features
   bool addFeature(const QPointer<FeatureWrapper>& feature);
-  QList<QPointer<FeatureWrapper> > addFeatures(const FeatureAttributes& fAttr);
-  bool addFeatures(const QList<QPointer<FeatureWrapper> >& features,
+  QList<QPointer<FeatureWrapper>> addFeatures(const FeatureAttributes& fAttr);
+  bool addFeatures(const QList<QPointer<FeatureWrapper>>& features,
                    bool overwrite = false);
 
   // remove features
   bool removeFeature(const int& featureId);
   bool removeFeature(const QPointer<FeatureWrapper>& feature);
   bool removeFeatures(const QSet<int>& featureIds);
-  bool removeFeatures(const QList<QPointer<FeatureWrapper> >& features);
+  bool removeFeatures(const QList<QPointer<FeatureWrapper>>& features);
   void removeAll();
 
   // ##########################################
@@ -195,7 +202,7 @@ class OI_CORE_EXPORT OiJob : public QObject {
 
   // add new observations
   void addMeasurementResults(const int& geomId,
-                             const QList<QPointer<Reading> >& readings);
+                             const QList<QPointer<Reading>>& readings);
 
   // remove existing observations
   void removeObservations(const int& featureId);
@@ -390,12 +397,15 @@ class OI_CORE_EXPORT OiJob : public QObject {
   // helper methods
   // ##############
 
-  QStringList createFeatureNames(const QString& name, const int& count) const;
-  QPointer<FeatureWrapper> createFeatureWrapper(const FeatureTypes& type) const;
+  [[nodiscard]] QStringList createFeatureNames(const QString& name,
+                                               const int& count) const;
+  [[nodiscard]] QPointer<FeatureWrapper> createFeatureWrapper(
+      const FeatureTypes& type) const;
   bool checkAndSetUpNewFeature(const QPointer<FeatureWrapper>& feature,
                                bool overwrite = false);
 
-  bool canRemoveFeature(const QPointer<FeatureWrapper>& feature) const;
+  [[nodiscard]] bool canRemoveFeature(
+      const QPointer<FeatureWrapper>& feature) const;
 
   // D19 applied to functions (Stage 7h): "deleting the owner deletes its
   // owned sub-geometry" - called from removeFeature() before the feature
@@ -426,7 +436,7 @@ class OI_CORE_EXPORT OiJob : public QObject {
   // ProjectExchanger)
   // ###################################################################################
 
-  void addFeaturesFromXml(const QList<QPointer<FeatureWrapper> >& features);
+  void addFeaturesFromXml(const QList<QPointer<FeatureWrapper>>& features);
 
  private:
   // #########################

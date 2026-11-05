@@ -38,24 +38,24 @@ class OI_CORE_EXPORT Point : public Geometry {
   // check wether this geometry has a direction, a position and a radius
   // ###################################################################
 
-  bool hasPosition() const override;
+  [[nodiscard]] bool hasPosition() const override;
 
   // ###########################
   // get or set point parameters
   // ###########################
 
-  const Position& getPosition() const override;
+  [[nodiscard]] const Position& getPosition() const override;
 
   void setPoint(const Position& xyz);
 
-  const double& getDistance() const;
+  [[nodiscard]] const double& getDistance() const;
   void setDistance(const double distance);
 
   // #############################
   // get or set unknown parameters
   // #############################
 
-  QMap<GeometryParameters, QString> getUnknownParameters(
+  [[nodiscard]] QMap<GeometryParameters, QString> getUnknownParameters(
       const QMap<DimensionType, UnitType>& displayUnits,
       const QMap<DimensionType, int>& displayDigits) const override;
   void applyUnknownParameters(
@@ -76,7 +76,7 @@ class OI_CORE_EXPORT Point : public Geometry {
   // point.cpp for the rule.
   // ###############################################################
 
-  std::optional<QString> getOwnerDescription() const override;
+  [[nodiscard]] std::optional<QString> getOwnerDescription() const override;
 
   // ###############################################################
   // D12: what this point was shot for, stamped at acquisition (or by
@@ -85,10 +85,10 @@ class OI_CORE_EXPORT Point : public Geometry {
   // membership list on the consuming feature.
   // ###############################################################
 
-  const QList<MeasurementIntent>& getIntents() const;
+  [[nodiscard]] const QList<MeasurementIntent>& getIntents() const;
   void addIntent(const MeasurementIntent& intent);
   bool removeIntent(const MeasurementIntent& intent);
-  bool hasIntent(int featureId, const QString& roleName) const;
+  [[nodiscard]] bool hasIntent(int featureId, const QString& roleName) const;
 
   // #################
   // save and load XML
@@ -97,8 +97,9 @@ class OI_CORE_EXPORT Point : public Geometry {
   QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const override;
   bool fromOpenIndyXML(QDomElement& xmlElem) override;
 
-  QString getDisplayDistance(const UnitType& type, const int& digits,
-                             const bool& showDiff) const override;
+  [[nodiscard]] QString getDisplayDistance(const UnitType& type,
+                                           const int& digits,
+                                           const bool& showDiff) const override;
   double distance;  // depends on function
 
  protected:

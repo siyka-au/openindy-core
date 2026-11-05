@@ -36,7 +36,7 @@ class OI_CORE_EXPORT ScalarEntityTemperature : public Geometry {
   // get or set temperature parameters
   // #################################
 
-  const double& getTemperature() const;
+  [[nodiscard]] const double& getTemperature() const;
 
   void setTemperature(const double& temperature);
 
@@ -44,7 +44,7 @@ class OI_CORE_EXPORT ScalarEntityTemperature : public Geometry {
   // get or set unknown parameters
   // #############################
 
-  QMap<GeometryParameters, QString> getUnknownParameters(
+  [[nodiscard]] QMap<GeometryParameters, QString> getUnknownParameters(
       const QMap<DimensionType, UnitType>& displayUnits,
       const QMap<DimensionType, int>& displayDigits) const override;
   void applyUnknownParameters(
@@ -67,8 +67,9 @@ class OI_CORE_EXPORT ScalarEntityTemperature : public Geometry {
   // display methods
   // ###############
 
-  QString getDisplayTemperature(const UnitType& type, const int& digits,
-                                const bool& showDiff = false) const override;
+  [[nodiscard]] QString getDisplayTemperature(
+      const UnitType& type, const int& digits,
+      const bool& showDiff = false) const override;
 
  private:
   // ######################
