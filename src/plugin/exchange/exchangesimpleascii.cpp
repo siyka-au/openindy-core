@@ -159,7 +159,7 @@ QPointer<OiJob> ExchangeSimpleAscii::getCurrentJob() {
  * \brief ExchangeSimpleAscii::setDistanceDigits
  * \param value
  */
-void ExchangeSimpleAscii::setDistanceDigits(double value) {
+void ExchangeSimpleAscii::setDistanceDigits(int value) {
   this->distanceDigits = value;
 }
 
@@ -167,13 +167,13 @@ void ExchangeSimpleAscii::setDistanceDigits(double value) {
  * \brief ExchangeSimpleAscii::getDistanceDigits
  * \return
  */
-double ExchangeSimpleAscii::getDistanceDigits() { return this->distanceDigits; }
+int ExchangeSimpleAscii::getDistanceDigits() { return this->distanceDigits; }
 
 /*!
  * \brief ExchangeSimpleAscii::setAngleDigits
  * \param value
  */
-void ExchangeSimpleAscii::setAngleDigits(double value) {
+void ExchangeSimpleAscii::setAngleDigits(int value) {
   this->angleDigits = value;
 }
 
@@ -181,13 +181,13 @@ void ExchangeSimpleAscii::setAngleDigits(double value) {
  * \brief ExchangeSimpleAscii::getAngleDigits
  * \return
  */
-double ExchangeSimpleAscii::getAngleDigits() { return this->angleDigits; }
+int ExchangeSimpleAscii::getAngleDigits() { return this->angleDigits; }
 
 /*!
  * \brief ExchangeSimpleAscii::setTemperatureDigits
  * \param value
  */
-void ExchangeSimpleAscii::setTemperatureDigits(double value) {
+void ExchangeSimpleAscii::setTemperatureDigits(int value) {
   this->temperatureDigits = value;
 }
 
@@ -195,6 +195,6 @@ void ExchangeSimpleAscii::setTemperatureDigits(double value) {
  * \brief ExchangeSimpleAscii::getTemperatureDigits
  * \return
  */
-double ExchangeSimpleAscii::getTemperatureDigits() {
+int ExchangeSimpleAscii::getTemperatureDigits() {
   return this->temperatureDigits;
 }

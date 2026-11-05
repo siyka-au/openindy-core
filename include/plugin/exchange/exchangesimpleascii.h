@@ -83,14 +83,14 @@ class OI_CORE_EXPORT ExchangeSimpleAscii : public ExchangeInterface {
   void setCurrentJob(QPointer<OiJob> job);
   QPointer<OiJob> getCurrentJob();
 
-  void setDistanceDigits(double value);
-  double getDistanceDigits();
+  void setDistanceDigits(int value);
+  int getDistanceDigits();
 
-  void setAngleDigits(double value);
-  double getAngleDigits();
+  void setAngleDigits(int value);
+  int getAngleDigits();
 
-  void setTemperatureDigits(double value);
-  double getTemperatureDigits();
+  void setTemperatureDigits(int value);
+  int getTemperatureDigits();
 
  protected:
   // ###########################
@@ -112,9 +112,9 @@ class OI_CORE_EXPORT ExchangeSimpleAscii : public ExchangeInterface {
 
   QPointer<OiJob> currentJob;
 
-  double distanceDigits;
-  double angleDigits;
-  double temperatureDigits;
+  int distanceDigits;
+  int angleDigits;
+  int temperatureDigits;
 };
 
 }  // namespace oi

@@ -162,7 +162,7 @@ class OI_CORE_EXPORT BestFitPlaneUtil : public BestFitUtil {
       }
       mean = mean + xyz;
     }
-    mean = mean * (1.0 / points.size());
+    mean = mean * (1.0 / static_cast<double>(points.size()));
 
     centroid = mean;
 
@@ -454,7 +454,8 @@ class OI_CORE_EXPORT BestFitCircleUtil : public BestFitUtil {
       double v_i = circleDistances.getAt(i);
       stdev += v_i * v_i;
     }
-    stdev = qSqrt(stdev / (centroidReducedCoordinates.size() - 3.0));
+    stdev = qSqrt(
+        stdev / (static_cast<double>(centroidReducedCoordinates.size()) - 3.0));
     function->statistic.setIsValid(true);
     function->statistic.setStdev(stdev);
     circle.setStatistic(function->statistic);
@@ -934,8 +935,8 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
            Rall.getAt(1, 1) * obs.xyz.getAt(1) +
            Rall.getAt(1, 2) * obs.xyz.getAt(2);
 
-      points2D_x.append(tx);
-      points2D_y.append(ty);
+      points2D_x.append(static_cast<float>(tx));
+      points2D_y.append(static_cast<float>(ty));
 
       centroid2D.setAt(0, centroid2D.getAt(0) + tx);
       centroid2D.setAt(1, centroid2D.getAt(1) + ty);
@@ -945,8 +946,10 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
 
     // calculate centroid reduced 2D coordinates
     for (int j = 0; j < numPoints; j++) {
-      centroidreduced2D_x.append(points2D_x.at(j) - centroid2D.getAt(0));
-      centroidreduced2D_y.append(points2D_y.at(j) - centroid2D.getAt(1));
+      centroidreduced2D_x.append(
+          static_cast<float>(points2D_x.at(j) - centroid2D.getAt(0)));
+      centroidreduced2D_y.append(
+          static_cast<float>(points2D_y.at(j) - centroid2D.getAt(1)));
     }
 
     // fill a matrices
@@ -1326,15 +1329,18 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
 
       std::array<float, 3> b;  // vector between point on cylinder axis and
                                // point p which is probably on cylinder
-      b[0] = _x - xyz.getAt(0);
-      b[1] = _y - xyz.getAt(1);
-      b[2] = _z - xyz.getAt(2);
+      b[0] = static_cast<float>(_x - xyz.getAt(0));
+      b[1] = static_cast<float>(_y - xyz.getAt(1));
+      b[2] = static_cast<float>(_z - xyz.getAt(2));
 
       std::array<float, 3>
           n0CrossB;  // cross product of cylinder axis (length 1) and b
-      n0CrossB[0] = axis.getAt(1) * b[2] - axis.getAt(2) * b[1];
-      n0CrossB[1] = axis.getAt(2) * b[0] - axis.getAt(0) * b[2];
-      n0CrossB[2] = axis.getAt(0) * b[1] - axis.getAt(1) * b[0];
+      n0CrossB[0] =
+          static_cast<float>(axis.getAt(1) * b[2] - axis.getAt(2) * b[1]);
+      n0CrossB[1] =
+          static_cast<float>(axis.getAt(2) * b[0] - axis.getAt(0) * b[2]);
+      n0CrossB[2] =
+          static_cast<float>(axis.getAt(0) * b[1] - axis.getAt(1) * b[0]);
 
       float radiusActual =
           0.0f;  // smallest distance of point p to cylinder axis
@@ -1345,7 +1351,7 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
 
       float distance = 0.0f;
 
-      distance = radiusActual - _r;  // distance error
+      distance = static_cast<float>(radiusActual - _r);  // distance error
       if (inputObservations.contains(
               observation)) {  // calculate form error from "used" observations
         vrMin = min(vrMin, distance);

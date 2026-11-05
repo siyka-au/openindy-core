@@ -66,7 +66,7 @@ class FakeAverageFit : public FitFunction, public Producer<Point> {
     foreach (const InputElement& element, usable) {
       sum += element.point->getPosition().getVector().getAt(0);
     }
-    const double avg = sum / usable.size();
+    const double avg = sum / static_cast<double>(usable.size());
 
     double sqSum = 0.0;
     foreach (const InputElement& element, usable) {
@@ -76,7 +76,9 @@ class FakeAverageFit : public FitFunction, public Producer<Point> {
       sqSum += v * v;
     }
     this->statistic.setStdev(
-        usable.size() > 1 ? std::sqrt(sqSum / (usable.size() - 1.0)) : 0.0);
+        usable.size() > 1
+            ? std::sqrt(sqSum / (static_cast<double>(usable.size()) - 1.0))
+            : 0.0);
     this->statistic.setIsValid(true);
 
     Point point;
