@@ -77,7 +77,7 @@ class OI_CORE_EXPORT ScalarEntityMeasurementSeries : public Geometry {
   // measurement series attributes
   // #############################
 
-  double seriesValue;
+  double seriesValue{};
 };
 
 }  // namespace oi

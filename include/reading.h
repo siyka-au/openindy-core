@@ -131,12 +131,12 @@ class OI_CORE_EXPORT ReadingUndefined {
 class OI_CORE_EXPORT ReadingLevel {
  public:
   ReadingLevel() {}
-  double i;
-  double j;
-  double k;
-  double sigmaI;
-  double sigmaJ;
-  double sigmaK;
+  double i{};
+  double j{};
+  double k{};
+  double sigmaI{};
+  double sigmaJ{};
+  double sigmaK{};
   bool isValid{false};
 };
 

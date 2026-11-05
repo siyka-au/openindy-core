@@ -84,8 +84,8 @@ class OI_CORE_EXPORT ExchangeInterface : public QObject {
 
   QMap<DimensionType, UnitType> units;
 
-  bool exportObservations;  // true if only the observations of the selected
-                            // geometries shall be exported
+  bool exportObservations{};  // true if only the observations of the selected
+                              // geometries shall be exported
   QString groupName;  // group that the imported nominals shall be added to
   QPointer<CoordinateSystem>
       nominalSystem;  // nominal coordinate system the imported geometries are

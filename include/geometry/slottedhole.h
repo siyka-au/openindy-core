@@ -138,8 +138,8 @@ class OI_CORE_EXPORT SlottedHole : public Geometry {
   Position center;   // center of the slotted hole
   Direction normal;  // normal vector
   Radius radius;     // radius of the outer circles
-  double length;     // length of the slotted hole (= distance of the circle
-                  // centers + 2 * radius)
+  double length{};   // length of the slotted hole (= distance of the circle
+                     // centers + 2 * radius)
   Direction holeAxis;  // vector pointing from one circle center to the other)
 
   Position circleCenterA;  // center of one circle

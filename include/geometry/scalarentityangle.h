@@ -73,7 +73,7 @@ class OI_CORE_EXPORT ScalarEntityAngle : public Geometry {
   // angle attributes
   // ################
 
-  double angle;
+  double angle{};
 };
 
 }  // namespace oi

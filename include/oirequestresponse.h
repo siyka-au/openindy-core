@@ -82,8 +82,8 @@ class OiRequestResponse {
   RequestType myRequestType;  // defines the type of request
   QDomDocument request;       // holds the XML structure of the request
   QDomDocument response;      // holds the XML structure of the response
-  int requesterId;  // identifies the requester so that the response is send
-                    // only to him
+  int requesterId{};  // identifies the requester so that the response is send
+                      // only to him
 };
 
 }  // namespace oi

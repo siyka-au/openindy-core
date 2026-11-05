@@ -27,8 +27,8 @@ class OI_CORE_EXPORT UncertaintyComponent {
  public:
   QString name;
 
-  double value;          // magnitude of the error
-  double uncertainty;    // uncertainty of the error
+  double value{};        // magnitude of the error
+  double uncertainty{};  // uncertainty of the error
   QString distribution;  // the distribution of the uncertainty component
 
   QString errorUnit;  // unit of the uncertainty value (mm, m ,...)
@@ -60,22 +60,22 @@ class OI_CORE_EXPORT UncertaintyData {
                          // readings and recalculation
 
   // maximum and minimum of the data series
-  double maxValue;
-  double minValue;
+  double maxValue{};
+  double minValue{};
 
-  double expectation;
-  double uncertainty;  // uncertainty of the data series
+  double expectation{};
+  double uncertainty{};  // uncertainty of the data series
 
   QString distribution;  // name of the distribution of the data series
 
   // function pointers that calculate density and distribution values
   double (*densityFunction)(const double& x, const double& expectation,
                             const double& uncertainty, const double& lowerLimit,
-                            const double& upperLimit);
+                            const double& upperLimit){};
   double (*distributionFunction)(const double& x, const double& expectation,
                                  const double& uncertainty,
                                  const double& lowerLimit,
-                                 const double& upperLimit);
+                                 const double& upperLimit){};
 
   QMap<QString, QString> info;  // custom information
 };

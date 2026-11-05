@@ -1,6 +1,8 @@
 #ifndef FUNCTION_H
 #define FUNCTION_H
 
+#include <math.h>
+
 #include <QMap>
 #include <QMultiMap>
 #include <QObject>
@@ -69,7 +71,7 @@ class NeededElement {
   ElementTypes typeOfElement;  // type of the needed input element
   QString description;  // optional description for the needed element to show
                         // in the GUI
-  bool infinite;     // only one element or as many elements as one wants?
+  bool infinite{};      // only one element or as many elements as one wants?
   QString roleName;  // stable role name for tag-based resolution (D12); empty
                      // for an undistinguished single input
 
@@ -189,7 +191,7 @@ class OI_CORE_EXPORT FunctionUtil {
   void registerPointToPlane(OiVec& point, OiVec planeOrigin,
                             OiVec planeNormal) {
     // calculate the distance of the plane from the origin
-    double d;
+    double d = NAN;
     OiVec::dot(d, planeOrigin, planeNormal);
     if (d < 0.0) {
       planeNormal = -1.0 * planeNormal;
@@ -197,7 +199,7 @@ class OI_CORE_EXPORT FunctionUtil {
     }
 
     // calculate the distance of the point position from the plane
-    double s;
+    double s = NAN;
     OiVec::dot(s, point, planeNormal);
     s = s - d;
 
@@ -399,7 +401,7 @@ class OI_CORE_EXPORT Function : public QObject {
   // general attributes
   // ##################
 
-  int id;
+  int id{};
 
   bool supportsWeights;
 

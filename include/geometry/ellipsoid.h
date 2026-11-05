@@ -97,8 +97,8 @@ class OI_CORE_EXPORT Ellipsoid : public Geometry {
   // ellipsoid attributes
   // ####################
 
-  double a;  // semi-major axis
-  double b;  // semi-minor axis
+  double a{};  // semi-major axis
+  double b{};  // semi-minor axis
 };
 
 }  // namespace oi

@@ -109,8 +109,8 @@ class OI_CORE_EXPORT Ellipse : public Geometry {
   // ellipse attributes
   // ##################
 
-  double a;                 // semi-major axis length
-  double b;                 // semi-minor axis length
+  double a{};               // semi-major axis length
+  double b{};               // semi-minor axis length
   Direction semiMajorAxis;  // semi-major axis direction
 };
 

@@ -103,8 +103,8 @@ class OI_CORE_EXPORT ExchangeSimpleAscii : public ExchangeInterface {
   GeometryTypes typeOfGeometry{
       eUndefinedGeometry};  // specifies which type of geometry shall be
                             // im- or exported
-  bool skipFirstLine;  // Skip the first line in a file during import / do not
-                       // write headers to file during export
+  bool skipFirstLine{};  // Skip the first line in a file during import / do not
+                         // write headers to file during export
   QString
       usedDelimiter;  // the delimiter that shall be used when parsing the file
 

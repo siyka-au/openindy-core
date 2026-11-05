@@ -75,7 +75,7 @@ class OI_CORE_EXPORT ScalarEntityTemperature : public Geometry {
   // temperature attributes
   // ######################
 
-  double temperature;
+  double temperature{};
 };
 
 }  // namespace oi

@@ -238,7 +238,7 @@ class OI_CORE_EXPORT BundleAdjustment : public QObject {
   // general attributes
   // ##################
 
-  int id;
+  int id{};
 };
 
 }  // namespace oi

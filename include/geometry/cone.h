@@ -86,7 +86,7 @@ class OI_CORE_EXPORT Cone : public Geometry {
   // cone attributes
   // ###############
 
-  double aperture;  // opening angle = 2 * angle between surface line and r
+  double aperture{};  // opening angle = 2 * angle between surface line and r
 };
 
 }  // namespace oi

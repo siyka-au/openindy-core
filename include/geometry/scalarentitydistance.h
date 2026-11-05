@@ -75,7 +75,7 @@ class OI_CORE_EXPORT ScalarEntityDistance : public Geometry {
   // distance attributes
   // ###################
 
-  double distance;
+  double distance{};
 };
 
 }  // namespace oi

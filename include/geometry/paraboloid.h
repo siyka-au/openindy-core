@@ -94,7 +94,7 @@ class OI_CORE_EXPORT Paraboloid : public Geometry {
   // paraboloid attributes
   // #####################
 
-  double a;  // compression or streatch parameter
+  double a{};  // compression or streatch parameter
 };
 
 }  // namespace oi

@@ -24,13 +24,13 @@ namespace oi {
  */
 class OI_CORE_EXPORT SensorAttributes {
  public:
-  double moveAzimuth;
-  double moveZenith;
-  double moveDistance;
-  bool moveIsRelative;
-  double moveX;
-  double moveY;
-  double moveZ;
+  double moveAzimuth{};
+  double moveZenith{};
+  double moveDistance{};
+  bool moveIsRelative{};
+  double moveX{};
+  double moveY{};
+  double moveZ{};
   QString action;
 };
 

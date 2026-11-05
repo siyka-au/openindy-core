@@ -16,11 +16,11 @@ class OI_CORE_EXPORT PluginMetaData {
   QString author;
   QString compiler;
   QString operatingSystem;
-  bool dependencies;
+  bool dependencies{};
   QJsonArray dependenciesPath;
   QString description;
   QString path;
-  bool isValid;
+  bool isValid{};
   QString pluginType;
 };
 

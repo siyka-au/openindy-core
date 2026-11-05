@@ -88,7 +88,7 @@ class OI_CORE_EXPORT Plane : public Geometry {
   // plane attributes
   // ################
 
-  double d;  // smallest distance from origin
+  double d{};  // smallest distance from origin
 };
 
 }  // namespace oi

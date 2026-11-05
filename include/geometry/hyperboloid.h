@@ -98,8 +98,8 @@ class OI_CORE_EXPORT Hyperboloid : public Geometry {
   // hyperboloid attributes
   // ######################
 
-  double a;
-  double c;
+  double a{};
+  double c{};
 };
 
 }  // namespace oi

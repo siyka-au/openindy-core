@@ -1,6 +1,8 @@
 #ifndef FITFUNCTION_H
 #define FITFUNCTION_H
 
+#include <math.h>
+
 #include <random>
 
 #include "function.h"
@@ -13,7 +15,7 @@ int sgn(T val) {
 }
 
 struct IdPoint {
-  int id;
+  int id{};
   OiVec xyz;
 };
 inline bool operator==(const IdPoint& p1, const IdPoint& p2) {
@@ -22,12 +24,12 @@ inline bool operator==(const IdPoint& p1, const IdPoint& p2) {
 
 class CylinderApproximation {
  public:
-  double approxRadius;
-  double approxXm;
-  double approxYm;
-  double approxAlpha;
-  double approxBeta;
-  double stdev;
+  double approxRadius{};
+  double approxXm{};
+  double approxYm{};
+  double approxAlpha{};
+  double approxBeta{};
+  double stdev{};
   QString comment;
 
   explicit operator QString() const {
@@ -133,7 +135,7 @@ class OI_CORE_EXPORT BestFitUtil : public FunctionUtil {
       return false;
     }
 
-    double angle;
+    double angle = NAN;
     OiVec::dot(angle, dummyPoint - point, point);
     direction = -angle * dummyPoint;
     direction.normalize();
