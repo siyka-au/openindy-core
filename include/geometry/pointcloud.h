@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QtXml>
+#include <array>
 
 #include "geometry.h"
 #include "pointcollection.h"
@@ -24,7 +25,7 @@ class OI_CORE_EXPORT Point_PC {
   // is the defining difference from a Point feature in a PointGroup, not
   // an omission - a scanner produces undifferentiated bulk data, and
   // pretending otherwise would invent provenance that doesn't exist.
-  float xyz[3];
+  std::array<float, 3> xyz{};
   bool isUsed;
 };
 
@@ -35,8 +36,8 @@ class OI_CORE_EXPORT BoundingBox_PC {
  public:
   BoundingBox_PC() {}
 
-  float min[3]{0.0f, 0.0f, 0.0f};
-  float max[3]{0.0f, 0.0f, 0.0f};
+  std::array<float, 3> min{0.0f, 0.0f, 0.0f};
+  std::array<float, 3> max{0.0f, 0.0f, 0.0f};
 };
 
 /*!

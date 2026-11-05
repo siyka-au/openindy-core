@@ -3,6 +3,7 @@
 
 #include <math.h>
 
+#include <array>
 #include <random>
 
 #include "function.h"
@@ -1062,7 +1063,7 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
     int numIterations = 0;
 
     double stopAA = 0.0, stopBB = 0.0, stopXX = 0.0, stopVV = 0.0;
-    do {
+    while (true) {
       // improve unknowns
       _r += x.getAt(0);
       _X0 += x.getAt(1);
@@ -1202,7 +1203,7 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
                     res.getAt(i));
       }
 
-      do {
+      while (true) {
         sigma = sigma / 2.0;
 
         _r_armijo = _r + sigma * x.getAt(0);
@@ -1250,7 +1251,10 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
         OiVec::dot(stopAA, a, a);
         OiVec::dot(stopBB, b, b);
 
-      } while (stopAA > stopBB);
+        if (!(stopAA > stopBB)) {
+          break;
+        }
+      }
 
       OiVec::dot(stopXX, x, x);
       OiVec::dot(stopVV, v, v);
@@ -1262,7 +1266,10 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
 
       numIterations++;
 
-    } while (stopXX > 0.0000000000001 && numIterations < 1000);
+      if (!(stopXX > 0.0000000000001 && numIterations < 1000)) {
+        break;
+      }
+    }
 
     if (numIterations >= 1000) {
       emit function->sendMessage(
@@ -1317,13 +1324,14 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
       _y = observation.xyz.getAt(1);
       _z = observation.xyz.getAt(2);
 
-      float b[3];  // vector between point on cylinder axis and point p which is
-                   // probably on cylinder
+      std::array<float, 3> b;  // vector between point on cylinder axis and
+                               // point p which is probably on cylinder
       b[0] = _x - xyz.getAt(0);
       b[1] = _y - xyz.getAt(1);
       b[2] = _z - xyz.getAt(2);
 
-      float n0CrossB[3];  // cross product of cylinder axis (length 1) and b
+      std::array<float, 3>
+          n0CrossB;  // cross product of cylinder axis (length 1) and b
       n0CrossB[0] = axis.getAt(1) * b[2] - axis.getAt(2) * b[1];
       n0CrossB[1] = axis.getAt(2) * b[0] - axis.getAt(0) * b[2];
       n0CrossB[2] = axis.getAt(0) * b[1] - axis.getAt(1) * b[0];
