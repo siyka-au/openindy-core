@@ -1,7 +1,7 @@
 #include "trafoparam.h"
 
-#include "oijob.h"
 #include "featurewrapper.h"
+#include "oijob.h"
 
 using namespace oi;
 using namespace oi::math;
@@ -10,26 +10,29 @@ using namespace oi::math;
  * \brief TrafoParam::TrafoParam
  * \param parent
  */
-TrafoParam::TrafoParam(QObject *parent) : Feature(parent), translation(3), rotation(3), scale(3), homogenMatrix(4, 4){
+TrafoParam::TrafoParam(QObject* parent)
+    : Feature(parent),
+      translation(3),
+      rotation(3),
+      scale(3),
+      homogenMatrix(4, 4) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setTrafoParam(this);
+  }
 
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setTrafoParam(this);
-    }
+  // default values for trafo param attributes
+  this->isUsed = false;
+  this->isDatumTrafo = false;
 
-    //default values for trafo param attributes
-    this->isUsed = false;
-    this->isDatumTrafo = false;
-
-    //default values for transformation parameters
-    this->scale.setAt(0, 1.0);
-    this->scale.setAt(1, 1.0);
-    this->scale.setAt(2, 1.0);
-    this->homogenMatrix.setAt(0, 0, 1.0);
-    this->homogenMatrix.setAt(1, 1, 1.0);
-    this->homogenMatrix.setAt(2, 2, 1.0);
-    this->homogenMatrix.setAt(3, 3, 1.0);
-
+  // default values for transformation parameters
+  this->scale.setAt(0, 1.0);
+  this->scale.setAt(1, 1.0);
+  this->scale.setAt(2, 1.0);
+  this->homogenMatrix.setAt(0, 0, 1.0);
+  this->homogenMatrix.setAt(1, 1, 1.0);
+  this->homogenMatrix.setAt(2, 2, 1.0);
+  this->homogenMatrix.setAt(3, 3, 1.0);
 }
 
 /*!
@@ -37,33 +40,32 @@ TrafoParam::TrafoParam(QObject *parent) : Feature(parent), translation(3), rotat
  * \param copy
  * \param parent
  */
-TrafoParam::TrafoParam(const TrafoParam &copy, QObject *parent) : Feature(copy, parent){
+TrafoParam::TrafoParam(const TrafoParam& copy, QObject* parent)
+    : Feature(copy, parent) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setTrafoParam(this);
+  }
 
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setTrafoParam(this);
-    }
+  // copy attributes
+  this->isUsed = copy.isUsed;
+  this->isDatumTrafo = copy.isDatumTrafo;
 
-    //copy attributes
-    this->isUsed = copy.isUsed;
-    this->isDatumTrafo = copy.isDatumTrafo;
+  // copy transformation parameters
+  this->rotation = copy.rotation;
+  this->translation = copy.translation;
+  this->scale = copy.scale;
+  this->homogenMatrix = copy.homogenMatrix;
 
-    //copy transformation parameters
-    this->rotation = copy.rotation;
-    this->translation = copy.translation;
-    this->scale = copy.scale;
-    this->homogenMatrix = copy.homogenMatrix;
-
-    //Stage 7d/D21 trap (domain-model.md S10): unlike Geometry's copy
-    //constructor, this one never copied `statistic` - harmless while
-    //exec(TrafoParam&) only ever mutated a live object in place, but a
-    //real bug once a Producer<TrafoParam> builds a fresh local and hands
-    //it back by value (Helmert7Param::exec()), because *this* copy
-    //constructor runs on the way into std::expected<TrafoParam, QString>,
-    //before execAs<T>'s explicit statistic propagation ever gets a chance
-    //to see it. Found via tst_calibratedconstellation while migrating.
-    this->statistic = copy.statistic;
-
+  // Stage 7d/D21 trap (domain-model.md S10): unlike Geometry's copy
+  // constructor, this one never copied `statistic` - harmless while
+  // exec(TrafoParam&) only ever mutated a live object in place, but a
+  // real bug once a Producer<TrafoParam> builds a fresh local and hands
+  // it back by value (Helmert7Param::exec()), because *this* copy
+  // constructor runs on the way into std::expected<TrafoParam, QString>,
+  // before execAs<T>'s explicit statistic propagation ever gets a chance
+  // to see it. Found via tst_calibratedconstellation while migrating.
+  this->statistic = copy.statistic;
 }
 
 /*!
@@ -71,84 +73,76 @@ TrafoParam::TrafoParam(const TrafoParam &copy, QObject *parent) : Feature(copy, 
  * \param copy
  * \return
  */
-TrafoParam &TrafoParam::operator=(const TrafoParam &copy){
+TrafoParam& TrafoParam::operator=(const TrafoParam& copy) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setTrafoParam(this);
+  }
 
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setTrafoParam(this);
-    }
+  // copy attributes
+  this->isUsed = copy.isUsed;
+  this->isDatumTrafo = copy.isDatumTrafo;
 
-    //copy attributes
-    this->isUsed = copy.isUsed;
-    this->isDatumTrafo = copy.isDatumTrafo;
+  // copy transformation parameters
+  this->rotation = copy.rotation;
+  this->translation = copy.translation;
+  this->scale = copy.scale;
+  this->homogenMatrix = copy.homogenMatrix;
 
-    //copy transformation parameters
-    this->rotation = copy.rotation;
-    this->translation = copy.translation;
-    this->scale = copy.scale;
-    this->homogenMatrix = copy.homogenMatrix;
+  // see the copy constructor above for why this was missing
+  this->statistic = copy.statistic;
 
-    //see the copy constructor above for why this was missing
-    this->statistic = copy.statistic;
-
-    return *this;
-
+  return *this;
 }
 
 /*!
  * \brief TrafoParam::~TrafoParam
  */
-TrafoParam::~TrafoParam(){
+TrafoParam::~TrafoParam() {
+  // delete this trafo set in from system
+  if (!this->from.isNull()) {
+    this->from->removeTransformationParameter(this);
+  }
 
-    //delete this trafo set in from system
-    if(!this->from.isNull()){
-        this->from->removeTransformationParameter(this);
-    }
-
-    //delete this trafo set in to system
-    if(!this->to.isNull()){
-        this->to->removeTransformationParameter(this);
-    }
-
+  // delete this trafo set in to system
+  if (!this->to.isNull()) {
+    this->to->removeTransformationParameter(this);
+  }
 }
 
 /*!
  * \brief TrafoParam::getIsUsed
  * \return
  */
-const bool &TrafoParam::getIsUsed() const{
-    return this->isUsed;
-}
+const bool& TrafoParam::getIsUsed() const { return this->isUsed; }
 
 /*!
  * \brief TrafoParam::setIsUsed
  * \param isUsed
  */
-void TrafoParam::setIsUsed(const bool &isUsed){
-    if(this->isUsed != isUsed){
+void TrafoParam::setIsUsed(const bool& isUsed) {
+  if (this->isUsed != isUsed) {
+    // set used state
+    this->isUsed = isUsed;
 
-        //set used state
-        this->isUsed = isUsed;
-
-        emit this->isUsedChanged(this->id);
-
-    }
+    emit this->isUsedChanged(this->id);
+  }
 }
 
 /*!
  * \brief TrafoParam::getStartSystem
  * \return
  */
-const QPointer<CoordinateSystem> &TrafoParam::getStartSystem() const{
-    return this->from;
+const QPointer<CoordinateSystem>& TrafoParam::getStartSystem() const {
+  return this->from;
 }
 
 /*!
  * \brief TrafoParam::getDestinationSystem
  * \return
  */
-const QPointer<CoordinateSystem> &TrafoParam::getDestinationSystem() const{
-    return this->to;
+const QPointer<CoordinateSystem>& TrafoParam::getDestinationSystem() const {
+  return this->to;
 }
 
 /*!
@@ -157,123 +151,111 @@ const QPointer<CoordinateSystem> &TrafoParam::getDestinationSystem() const{
  * \param to
  * \return
  */
-bool TrafoParam::setCoordinateSystems(const QPointer<CoordinateSystem> &from, const QPointer<CoordinateSystem> &to){
-
-    //check if to and from were already set
-    if(!this->to.isNull() || !this->from.isNull()){
-        return false;
-    }
-
-    if(!from.isNull() && !to.isNull()){
-
-        //check if to and from are in the same job
-        if(!this->job.isNull()){
-            QPointer<FeatureWrapper> jobFrom = this->job->getFeatureById(from->getId());
-            QPointer<FeatureWrapper> jobTo = this->job->getFeatureById(to->getId());
-            if(jobFrom.isNull() || jobTo.isNull() || jobFrom->getCoordinateSystem().isNull()
-                    || jobTo->getCoordinateSystem().isNull() || jobFrom->getCoordinateSystem() != from ||
-                    jobTo->getCoordinateSystem() != to){
-                return false;
-            }
-        }
-
-        this->from = from;
-        this->to = to;
-        from->addTransformationParameter(this);
-        to->addTransformationParameter(this);
-
-        emit this->coordinateSystemsChanged(this->id);
-
-        return true;
-
-    }
-
+bool TrafoParam::setCoordinateSystems(const QPointer<CoordinateSystem>& from,
+                                      const QPointer<CoordinateSystem>& to) {
+  // check if to and from were already set
+  if (!this->to.isNull() || !this->from.isNull()) {
     return false;
+  }
 
+  if (!from.isNull() && !to.isNull()) {
+    // check if to and from are in the same job
+    if (!this->job.isNull()) {
+      QPointer<FeatureWrapper> jobFrom =
+          this->job->getFeatureById(from->getId());
+      QPointer<FeatureWrapper> jobTo = this->job->getFeatureById(to->getId());
+      if (jobFrom.isNull() || jobTo.isNull() ||
+          jobFrom->getCoordinateSystem().isNull() ||
+          jobTo->getCoordinateSystem().isNull() ||
+          jobFrom->getCoordinateSystem() != from ||
+          jobTo->getCoordinateSystem() != to) {
+        return false;
+      }
+    }
+
+    this->from = from;
+    this->to = to;
+    from->addTransformationParameter(this);
+    to->addTransformationParameter(this);
+
+    emit this->coordinateSystemsChanged(this->id);
+
+    return true;
+  }
+
+  return false;
 }
 
 /*!
  * \brief TrafoParam::getIsBundle
  * \return
  */
-bool TrafoParam::getIsBundle() const{
-
-    if(!this->from.isNull() && !this->to.isNull()){
-        if(this->from->getIsBundleSystem() || this->to->getIsBundleSystem()){
-            return true;
-        }
+bool TrafoParam::getIsBundle() const {
+  if (!this->from.isNull() && !this->to.isNull()) {
+    if (this->from->getIsBundleSystem() || this->to->getIsBundleSystem()) {
+      return true;
     }
-    return false;
-
+  }
+  return false;
 }
 
 /*!
  * \brief TrafoParam::getStatistic
  * \return
  */
-const Statistic &TrafoParam::getStatistic() const{
-    return this->statistic;
-}
+const Statistic& TrafoParam::getStatistic() const { return this->statistic; }
 
 /*!
  * \brief TrafoParam::setStatistic
  * \param statistic
  */
-void TrafoParam::setStatistic(const Statistic &statistic){
-    this->statistic = statistic;
+void TrafoParam::setStatistic(const Statistic& statistic) {
+  this->statistic = statistic;
 }
 
 /*!
  * \brief TrafoParam::getIsDatumTrafo
  * \return
  */
-const bool &TrafoParam::getIsDatumTrafo() const{
-    return this->isDatumTrafo;
-}
+const bool& TrafoParam::getIsDatumTrafo() const { return this->isDatumTrafo; }
 
 /*!
  * \brief TrafoParam::setIsDatumTrafo
  * \param isDatumTrafo
  */
-void TrafoParam::setIsDatumTrafo(const bool &isDatumTrafo){
-    if(this->isDatumTrafo != isDatumTrafo){
-        this->isDatumTrafo = isDatumTrafo;
-    }
+void TrafoParam::setIsDatumTrafo(const bool& isDatumTrafo) {
+  if (this->isDatumTrafo != isDatumTrafo) {
+    this->isDatumTrafo = isDatumTrafo;
+  }
 
-    emit this->isDatumTrafoChanged(this->id);
+  emit this->isDatumTrafoChanged(this->id);
 }
 
 /*!
  * \brief TrafoParam::getHomogenMatrix
  * \return
  */
-const OiMat &TrafoParam::getHomogenMatrix() const{
-    return this->homogenMatrix;
+const OiMat& TrafoParam::getHomogenMatrix() const {
+  return this->homogenMatrix;
 }
 
 /*!
  * \brief TrafoParam::getTranslation
  * \return
  */
-const OiVec &TrafoParam::getTranslation() const{
-    return this->translation;
-}
+const OiVec& TrafoParam::getTranslation() const { return this->translation; }
 
 /*!
  * \brief TrafoParam::getRotation
  * \return
  */
-const OiVec &TrafoParam::getRotation() const{
-    return this->rotation;
-}
+const OiVec& TrafoParam::getRotation() const { return this->rotation; }
 
 /*!
  * \brief TrafoParam::getScale
  * \return
  */
-const OiVec &TrafoParam::getScale() const{
-    return this->scale;
-}
+const OiVec& TrafoParam::getScale() const { return this->scale; }
 
 /*!
  * \brief TrafoParam::setTransformationParameters
@@ -283,111 +265,112 @@ const OiVec &TrafoParam::getScale() const{
  * \param scale
  * \return
  */
-bool TrafoParam::setTransformationParameters(const OiVec &rotation, const OiVec &translation, const OiVec &scale){
+bool TrafoParam::setTransformationParameters(const OiVec& rotation,
+                                             const OiVec& translation,
+                                             const OiVec& scale) {
+  if (rotation.getSize() == 3 && translation.getSize() == 3 &&
+      scale.getSize() == 3) {
+    // update transformation parameters
+    this->translation = translation;
+    this->scale = scale;
+    this->rotation = rotation;
 
-    if(rotation.getSize() == 3 && translation.getSize() == 3 && scale.getSize() == 3){
-
-        //update transformation parameters
-        this->translation = translation;
-        this->scale = scale;
-        this->rotation = rotation;
-
-        //set up translation matrix
-        OiMat tMat(4, 4);
-        for(int i = 0; i < 4; i++){
-            tMat.setAt(i, i, 1.0);
-        }
-        tMat.setAt(0, 3, translation.getAt(0));
-        tMat.setAt(1, 3, translation.getAt(1));
-        tMat.setAt(2, 3, translation.getAt(2));
-
-        //set up scale matrix
-        OiMat sMat(4, 4);
-        sMat.setAt(0, 0, scale.getAt(0));
-        sMat.setAt(1, 1, scale.getAt(1));
-        sMat.setAt(2, 2, scale.getAt(2));
-        sMat.setAt(3, 3, 1.0);
-
-        //set up rotation matrix
-        double rx = rotation.getAt(0);
-        double ry = rotation.getAt(1);
-        double rz = rotation.getAt(2);
-        OiMat rMat(4, 4);
-        rMat.setAt(0,0,qCos(ry)*qCos(rz));
-        rMat.setAt(0,1,qCos(rx)*qSin(rz)+qSin(rx)*qSin(ry)*qCos(rz));
-        rMat.setAt(0,2,qSin(rx)*qSin(rz)-qCos(rx)*qSin(ry)*qCos(rz));
-        rMat.setAt(0,3,0.0);
-        rMat.setAt(1,0,-qCos(ry)*qSin(rz));
-        rMat.setAt(1,1,qCos(rx)*qCos(rz)-qSin(rx)*qSin(ry)*qSin(rz));
-        rMat.setAt(1,2,qSin(rx)*qCos(rz)+qCos(rx)*qSin(ry)*qSin(rz));
-        rMat.setAt(1,3,0.0);
-        rMat.setAt(2,0,qSin(ry));
-        rMat.setAt(2,1,-qSin(rx)*qCos(ry));
-        rMat.setAt(2,2,qCos(rx)*qCos(ry));
-        rMat.setAt(2,3,0.0);
-        rMat.setAt(3,0,0.0);
-        rMat.setAt(3,1,0.0);
-        rMat.setAt(3,2,0.0);
-        rMat.setAt(3,3,1.0);
-
-        //update homogeneous matrix
-        this->homogenMatrix = tMat * rMat * sMat;
-        this->isSolved = true;
-
-        emit this->transformationParameterChanged(this->id);
-
-        return true;
-
+    // set up translation matrix
+    OiMat tMat(4, 4);
+    for (int i = 0; i < 4; i++) {
+      tMat.setAt(i, i, 1.0);
     }
+    tMat.setAt(0, 3, translation.getAt(0));
+    tMat.setAt(1, 3, translation.getAt(1));
+    tMat.setAt(2, 3, translation.getAt(2));
 
-    return false;
+    // set up scale matrix
+    OiMat sMat(4, 4);
+    sMat.setAt(0, 0, scale.getAt(0));
+    sMat.setAt(1, 1, scale.getAt(1));
+    sMat.setAt(2, 2, scale.getAt(2));
+    sMat.setAt(3, 3, 1.0);
 
+    // set up rotation matrix
+    double rx = rotation.getAt(0);
+    double ry = rotation.getAt(1);
+    double rz = rotation.getAt(2);
+    OiMat rMat(4, 4);
+    rMat.setAt(0, 0, qCos(ry) * qCos(rz));
+    rMat.setAt(0, 1, qCos(rx) * qSin(rz) + qSin(rx) * qSin(ry) * qCos(rz));
+    rMat.setAt(0, 2, qSin(rx) * qSin(rz) - qCos(rx) * qSin(ry) * qCos(rz));
+    rMat.setAt(0, 3, 0.0);
+    rMat.setAt(1, 0, -qCos(ry) * qSin(rz));
+    rMat.setAt(1, 1, qCos(rx) * qCos(rz) - qSin(rx) * qSin(ry) * qSin(rz));
+    rMat.setAt(1, 2, qSin(rx) * qCos(rz) + qCos(rx) * qSin(ry) * qSin(rz));
+    rMat.setAt(1, 3, 0.0);
+    rMat.setAt(2, 0, qSin(ry));
+    rMat.setAt(2, 1, -qSin(rx) * qCos(ry));
+    rMat.setAt(2, 2, qCos(rx) * qCos(ry));
+    rMat.setAt(2, 3, 0.0);
+    rMat.setAt(3, 0, 0.0);
+    rMat.setAt(3, 1, 0.0);
+    rMat.setAt(3, 2, 0.0);
+    rMat.setAt(3, 3, 1.0);
+
+    // update homogeneous matrix
+    this->homogenMatrix = tMat * rMat * sMat;
+    this->isSolved = true;
+
+    emit this->transformationParameterChanged(this->id);
+
+    return true;
+  }
+
+  return false;
 }
 
 /*!
  * \brief TrafoParam::setTransformationParameters
- * Sets the transformation parameters. Input are 3 homogeneous matrices of size 4x4.
+ * Sets the transformation parameters. Input are 3 homogeneous matrices of size
+ * 4x4.
  * \param rotation
  * \param translation
  * \param scale
  * \return
  */
-bool TrafoParam::setTransformationParameters(const OiMat &rotation, const OiMat &translation, const OiMat &scale){
-
-    if(rotation.getColCount() == 4 && rotation.getRowCount() == 4
-            && translation.getColCount() == 4 && translation.getRowCount() == 4
-            && scale.getColCount() == 4 && scale.getRowCount() == 4){
-
-        OiVec t(3);
-        OiVec r(3);
-        OiVec s(3);
-        for(int i = 0; i < 3; i++){
-            t.setAt(i, translation.getAt(i, 3));
-            s.setAt(i, scale.getAt(i, i));
-        }
-
-        r.setAt(0, qAtan2(-rotation.getAt(2,1), rotation.getAt(2,2))); //alpha
-        r.setAt(1, qAsin(rotation.getAt(2,0))); //beta
-        r.setAt(2, qAtan2(-rotation.getAt(1,0), rotation.getAt(0,0))); //gamma
-        if( qFabs(qCos(r.getAt(1)) * qCos(r.getAt(2))) - qFabs(rotation.getAt(0,0)) > 0.01 ){
-            r.setAt(1, PI - r.getAt(1));
-        }
-
-        this->translation = t;
-        this->scale = s;
-        this->rotation = r;
-
-        this->homogenMatrix = translation * rotation * scale;
-        this->isSolved = true;
-
-        emit this->transformationParameterChanged(this->id);
-
-    }else{
-        return false;
+bool TrafoParam::setTransformationParameters(const OiMat& rotation,
+                                             const OiMat& translation,
+                                             const OiMat& scale) {
+  if (rotation.getColCount() == 4 && rotation.getRowCount() == 4 &&
+      translation.getColCount() == 4 && translation.getRowCount() == 4 &&
+      scale.getColCount() == 4 && scale.getRowCount() == 4) {
+    OiVec t(3);
+    OiVec r(3);
+    OiVec s(3);
+    for (int i = 0; i < 3; i++) {
+      t.setAt(i, translation.getAt(i, 3));
+      s.setAt(i, scale.getAt(i, i));
     }
 
-    return true;
+    r.setAt(0, qAtan2(-rotation.getAt(2, 1), rotation.getAt(2, 2)));  // alpha
+    r.setAt(1, qAsin(rotation.getAt(2, 0)));                          // beta
+    r.setAt(2, qAtan2(-rotation.getAt(1, 0), rotation.getAt(0, 0)));  // gamma
+    if (qFabs(qCos(r.getAt(1)) * qCos(r.getAt(2))) -
+            qFabs(rotation.getAt(0, 0)) >
+        0.01) {
+      r.setAt(1, PI - r.getAt(1));
+    }
 
+    this->translation = t;
+    this->scale = s;
+    this->rotation = r;
+
+    this->homogenMatrix = translation * rotation * scale;
+    this->isSolved = true;
+
+    emit this->transformationParameterChanged(this->id);
+
+  } else {
+    return false;
+  }
+
+  return true;
 }
 
 /*!
@@ -396,8 +379,8 @@ bool TrafoParam::setTransformationParameters(const OiMat &rotation, const OiMat 
  * \param homogenMatrix
  * \return
  */
-bool TrafoParam::setTransformationParameters(const OiMat &/*homogenMatrix*/){
-    return false;
+bool TrafoParam::setTransformationParameters(const OiMat& /*homogenMatrix*/) {
+  return false;
 }
 
 /*!
@@ -406,126 +389,137 @@ bool TrafoParam::setTransformationParameters(const OiMat &/*homogenMatrix*/){
  * \param displayDigits
  * \return
  */
-QMap<TrafoParamParameters, QString> TrafoParam::getUnknownParameters(const QMap<DimensionType, UnitType> &displayUnits, const QMap<DimensionType, int> &displayDigits) const{
+QMap<TrafoParamParameters, QString> TrafoParam::getUnknownParameters(
+    const QMap<DimensionType, UnitType>& displayUnits,
+    const QMap<DimensionType, int>& displayDigits) const {
+  QMap<TrafoParamParameters, QString> parameters;
 
-    QMap<TrafoParamParameters, QString> parameters;
+  parameters.insert(eUnknownTX, this->getDisplayTranslationX(
+                                    displayUnits.value(eMetric, eUnitMeter),
+                                    displayDigits.value(eMetric, 0)));
+  parameters.insert(eUnknownTY, this->getDisplayTranslationY(
+                                    displayUnits.value(eMetric, eUnitMeter),
+                                    displayDigits.value(eMetric, 0)));
+  parameters.insert(eUnknownTZ, this->getDisplayTranslationZ(
+                                    displayUnits.value(eMetric, eUnitMeter),
+                                    displayDigits.value(eMetric, 0)));
+  parameters.insert(eUnknownRX, this->getDisplayRotationX(
+                                    displayUnits.value(eAngular, eUnitRadiant),
+                                    displayDigits.value(eAngular, 0)));
+  parameters.insert(eUnknownRY, this->getDisplayRotationY(
+                                    displayUnits.value(eAngular, eUnitRadiant),
+                                    displayDigits.value(eAngular, 0)));
+  parameters.insert(eUnknownRZ, this->getDisplayRotationZ(
+                                    displayUnits.value(eAngular, eUnitRadiant),
+                                    displayDigits.value(eAngular, 0)));
+  parameters.insert(eUnknownSX, this->getDisplayScaleX(
+                                    displayDigits.value(eDimensionless, 0)));
+  parameters.insert(eUnknownSY, this->getDisplayScaleY(
+                                    displayDigits.value(eDimensionless, 0)));
+  parameters.insert(eUnknownSZ, this->getDisplayScaleZ(
+                                    displayDigits.value(eDimensionless, 0)));
 
-    parameters.insert(eUnknownTX, this->getDisplayTranslationX(displayUnits.value(eMetric, eUnitMeter), displayDigits.value(eMetric, 0)));
-    parameters.insert(eUnknownTY, this->getDisplayTranslationY(displayUnits.value(eMetric, eUnitMeter), displayDigits.value(eMetric, 0)));
-    parameters.insert(eUnknownTZ, this->getDisplayTranslationZ(displayUnits.value(eMetric, eUnitMeter), displayDigits.value(eMetric, 0)));
-    parameters.insert(eUnknownRX, this->getDisplayRotationX(displayUnits.value(eAngular, eUnitRadiant), displayDigits.value(eAngular, 0)));
-    parameters.insert(eUnknownRY, this->getDisplayRotationY(displayUnits.value(eAngular, eUnitRadiant), displayDigits.value(eAngular, 0)));
-    parameters.insert(eUnknownRZ, this->getDisplayRotationZ(displayUnits.value(eAngular, eUnitRadiant), displayDigits.value(eAngular, 0)));
-    parameters.insert(eUnknownSX, this->getDisplayScaleX(displayDigits.value(eDimensionless, 0)));
-    parameters.insert(eUnknownSY, this->getDisplayScaleY(displayDigits.value(eDimensionless, 0)));
-    parameters.insert(eUnknownSZ, this->getDisplayScaleZ(displayDigits.value(eDimensionless, 0)));
-
-    return parameters;
-
+  return parameters;
 }
 
 /*!
  * \brief TrafoParam::setUnknownParameters
  * \param parameters
  */
-void TrafoParam::setUnknownParameters(const QMap<TrafoParamParameters, double> &parameters){
+void TrafoParam::setUnknownParameters(
+    const QMap<TrafoParamParameters, double>& parameters) {
+  // get current parameters
+  OiVec translation = this->translation;
+  OiVec rotation = this->rotation;
+  OiVec scale = this->scale;
 
-    //get current parameters
-    OiVec translation = this->translation;
-    OiVec rotation = this->rotation;
-    OiVec scale = this->scale;
-
-    //update parameters
-    QList<TrafoParamParameters> keys = parameters.keys();
-    foreach(const TrafoParamParameters &key, keys){
-        switch(key){
-        case eUnknownTX:
-            translation.setAt(0, parameters.value(eUnknownTX));
-            break;
-        case eUnknownTY:
-            translation.setAt(1, parameters.value(eUnknownTY));
-            break;
-        case eUnknownTZ:
-            translation.setAt(2, parameters.value(eUnknownTZ));
-            break;
-        case eUnknownRX:
-            rotation.setAt(0, parameters.value(eUnknownRX));
-            break;
-        case eUnknownRY:
-            rotation.setAt(1, parameters.value(eUnknownRY));
-            break;
-        case eUnknownRZ:
-            rotation.setAt(2, parameters.value(eUnknownRZ));
-            break;
-        case eUnknownSX:
-            scale.setAt(0, parameters.value(eUnknownSX));
-            break;
-        case eUnknownSY:
-            scale.setAt(1, parameters.value(eUnknownSY));
-            break;
-        case eUnknownSZ:
-            scale.setAt(2, parameters.value(eUnknownSZ));
-            break;
-        }
+  // update parameters
+  QList<TrafoParamParameters> keys = parameters.keys();
+  foreach (const TrafoParamParameters& key, keys) {
+    switch (key) {
+      case eUnknownTX:
+        translation.setAt(0, parameters.value(eUnknownTX));
+        break;
+      case eUnknownTY:
+        translation.setAt(1, parameters.value(eUnknownTY));
+        break;
+      case eUnknownTZ:
+        translation.setAt(2, parameters.value(eUnknownTZ));
+        break;
+      case eUnknownRX:
+        rotation.setAt(0, parameters.value(eUnknownRX));
+        break;
+      case eUnknownRY:
+        rotation.setAt(1, parameters.value(eUnknownRY));
+        break;
+      case eUnknownRZ:
+        rotation.setAt(2, parameters.value(eUnknownRZ));
+        break;
+      case eUnknownSX:
+        scale.setAt(0, parameters.value(eUnknownSX));
+        break;
+      case eUnknownSY:
+        scale.setAt(1, parameters.value(eUnknownSY));
+        break;
+      case eUnknownSZ:
+        scale.setAt(2, parameters.value(eUnknownSZ));
+        break;
     }
+  }
 
-    //update trafo param definition
-    bool check = this->setTransformationParameters(rotation, translation, scale);
-    if(check){
-        this->isSolved = true;
-    }
-
+  // update trafo param definition
+  bool check = this->setTransformationParameters(rotation, translation, scale);
+  if (check) {
+    this->isSolved = true;
+  }
 }
 
 /*!
  * \brief TrafoParam::recalc
  */
-void TrafoParam::recalc(){
-    Feature::recalc();
-}
+void TrafoParam::recalc() { Feature::recalc(); }
 
 /*!
  * \brief TrafoParam::toOpenIndyXML
  * \param xmlDoc
  * \return
  */
-QDomElement TrafoParam::toOpenIndyXML(QDomDocument &xmlDoc) const{
+QDomElement TrafoParam::toOpenIndyXML(QDomDocument& xmlDoc) const {
+  QDomElement trafoParam = Feature::toOpenIndyXML(xmlDoc);
 
-    QDomElement trafoParam = Feature::toOpenIndyXML(xmlDoc);
-
-    if(trafoParam.isNull()){
-        return trafoParam;
-    }
-
-    trafoParam.setTagName("transformationParameter");
-
-    //add trafoParam attributes
-    if(this->translation.getSize() >= 3 && this->rotation.getSize() >= 3 && this->getScale().getSize() >= 3){
-        trafoParam.setAttribute("tx", this->translation.getAt(0));
-        trafoParam.setAttribute("ty", this->translation.getAt(1));
-        trafoParam.setAttribute("tz", this->translation.getAt(2));
-        trafoParam.setAttribute("rx", this->rotation.getAt(0));
-        trafoParam.setAttribute("ry", this->rotation.getAt(1));
-        trafoParam.setAttribute("rz", this->rotation.getAt(2));
-        trafoParam.setAttribute("mx", this->scale.getAt(0));
-        trafoParam.setAttribute("my", this->scale.getAt(1));
-        trafoParam.setAttribute("mz", this->scale.getAt(2));
-    }
-    trafoParam.setAttribute("datumtrafo", this->isDatumTrafo);
-    trafoParam.setAttribute("use", this->isUsed);
-
-    //add from and to coordinate systems
-    if(!this->from.isNull() && !this->to.isNull()){
-        QDomElement from = xmlDoc.createElement("from");
-        from.setAttribute("ref", this->from->getId());
-        trafoParam.appendChild(from);
-        QDomElement to = xmlDoc.createElement("to");
-        to.setAttribute("ref", this->to->getId());
-        trafoParam.appendChild(to);
-    }
-
+  if (trafoParam.isNull()) {
     return trafoParam;
+  }
 
+  trafoParam.setTagName("transformationParameter");
+
+  // add trafoParam attributes
+  if (this->translation.getSize() >= 3 && this->rotation.getSize() >= 3 &&
+      this->getScale().getSize() >= 3) {
+    trafoParam.setAttribute("tx", this->translation.getAt(0));
+    trafoParam.setAttribute("ty", this->translation.getAt(1));
+    trafoParam.setAttribute("tz", this->translation.getAt(2));
+    trafoParam.setAttribute("rx", this->rotation.getAt(0));
+    trafoParam.setAttribute("ry", this->rotation.getAt(1));
+    trafoParam.setAttribute("rz", this->rotation.getAt(2));
+    trafoParam.setAttribute("mx", this->scale.getAt(0));
+    trafoParam.setAttribute("my", this->scale.getAt(1));
+    trafoParam.setAttribute("mz", this->scale.getAt(2));
+  }
+  trafoParam.setAttribute("datumtrafo", this->isDatumTrafo);
+  trafoParam.setAttribute("use", this->isUsed);
+
+  // add from and to coordinate systems
+  if (!this->from.isNull() && !this->to.isNull()) {
+    QDomElement from = xmlDoc.createElement("from");
+    from.setAttribute("ref", this->from->getId());
+    trafoParam.appendChild(from);
+    QDomElement to = xmlDoc.createElement("to");
+    to.setAttribute("ref", this->to->getId());
+    trafoParam.appendChild(to);
+  }
+
+  return trafoParam;
 }
 
 /*!
@@ -533,66 +527,84 @@ QDomElement TrafoParam::toOpenIndyXML(QDomDocument &xmlDoc) const{
  * \param xmlElem
  * \return
  */
-bool TrafoParam::fromOpenIndyXML(QDomElement &xmlElem){
+bool TrafoParam::fromOpenIndyXML(QDomElement& xmlElem) {
+  bool result = Feature::fromOpenIndyXML(xmlElem);
 
-    bool result = Feature::fromOpenIndyXML(xmlElem);
-
-    if(result){
-
-        //set trafoParam attributes
-        if(!xmlElem.hasAttribute("tx") || !xmlElem.hasAttribute("ty") || !xmlElem.hasAttribute("tz")
-                || !xmlElem.hasAttribute("rx") || !xmlElem.hasAttribute("ry") || !xmlElem.hasAttribute("rz")
-                || !xmlElem.hasAttribute("mx") || !xmlElem.hasAttribute("my") || !xmlElem.hasAttribute("mz")
-                || !xmlElem.hasAttribute("use") || !xmlElem.hasAttribute("datumtrafo")){
-            return false;
-        }
-        this->translation.setAt(0, xmlElem.attribute("tx").toDouble());
-        this->translation.setAt(1, xmlElem.attribute("ty").toDouble());
-        this->translation.setAt(2, xmlElem.attribute("tz").toDouble());
-        this->rotation.setAt(0, xmlElem.attribute("rx").toDouble());
-        this->rotation.setAt(1, xmlElem.attribute("ry").toDouble());
-        this->rotation.setAt(2, xmlElem.attribute("rz").toDouble());
-        this->scale.setAt(0, xmlElem.attribute("mx").toDouble());
-        this->scale.setAt(1, xmlElem.attribute("my").toDouble());
-        this->scale.setAt(2, xmlElem.attribute("mz").toDouble());
-        this->isUsed = xmlElem.attribute("use").toInt();
-        this->isDatumTrafo = xmlElem.attribute("datumtrafo").toInt();
-
-        //calculate homogeneous matrix
-        OiMat tmpTranslation(4,4);
-        OiMat tmpRotation(4,4);
-        OiMat tmpScale(4,4);
-
-        tmpTranslation.setAt(0,0,1.0);
-        tmpTranslation.setAt(0,3,this->translation.getAt(0));
-        tmpTranslation.setAt(1,1,1.0);
-        tmpTranslation.setAt(1,3,this->translation.getAt(1));
-        tmpTranslation.setAt(2,2,1.0);
-        tmpTranslation.setAt(2,3,this->translation.getAt(2));
-        tmpTranslation.setAt(3,3,1.0);
-
-        tmpScale.setAt(0,0,this->scale.getAt(0));
-        tmpScale.setAt(1,1,this->scale.getAt(1));
-        tmpScale.setAt(2,2,this->scale.getAt(2));
-        tmpScale.setAt(3,3,1.0);
-
-        tmpRotation.setAt(0,0,qCos(this->rotation.getAt(1))*qCos(this->rotation.getAt(2)));
-        tmpRotation.setAt(0,1,qCos(this->rotation.getAt(0))*qSin(this->rotation.getAt(2))+qSin(this->rotation.getAt(0))*qSin(this->rotation.getAt(1))*qCos(this->rotation.getAt(2)));
-        tmpRotation.setAt(0,2,qSin(this->rotation.getAt(0))*qSin(this->rotation.getAt(2))-qCos(this->rotation.getAt(0))*qSin(this->rotation.getAt(1))*qCos(this->rotation.getAt(2)));
-        tmpRotation.setAt(1,0,-qCos(this->rotation.getAt(1))*qSin(this->rotation.getAt(2)));
-        tmpRotation.setAt(1,1,qCos(this->rotation.getAt(0))*qCos(this->rotation.getAt(2))-qSin(this->rotation.getAt(0))*qSin(this->rotation.getAt(1))*qSin(this->rotation.getAt(2)));
-        tmpRotation.setAt(1,2,qSin(this->rotation.getAt(0))*qCos(this->rotation.getAt(2))+qCos(this->rotation.getAt(0))*qSin(this->rotation.getAt(1))*qSin(this->rotation.getAt(2)));
-        tmpRotation.setAt(2,0,qSin(this->rotation.getAt(1)));
-        tmpRotation.setAt(2,1,-qSin(this->rotation.getAt(0))*qCos(this->rotation.getAt(1)));
-        tmpRotation.setAt(2,2,qCos(this->rotation.getAt(0))*qCos(this->rotation.getAt(1)));
-        tmpRotation.setAt(3,3,1.0);
-
-        this->homogenMatrix = tmpTranslation*tmpScale*tmpRotation;
-
+  if (result) {
+    // set trafoParam attributes
+    if (!xmlElem.hasAttribute("tx") || !xmlElem.hasAttribute("ty") ||
+        !xmlElem.hasAttribute("tz") || !xmlElem.hasAttribute("rx") ||
+        !xmlElem.hasAttribute("ry") || !xmlElem.hasAttribute("rz") ||
+        !xmlElem.hasAttribute("mx") || !xmlElem.hasAttribute("my") ||
+        !xmlElem.hasAttribute("mz") || !xmlElem.hasAttribute("use") ||
+        !xmlElem.hasAttribute("datumtrafo")) {
+      return false;
     }
+    this->translation.setAt(0, xmlElem.attribute("tx").toDouble());
+    this->translation.setAt(1, xmlElem.attribute("ty").toDouble());
+    this->translation.setAt(2, xmlElem.attribute("tz").toDouble());
+    this->rotation.setAt(0, xmlElem.attribute("rx").toDouble());
+    this->rotation.setAt(1, xmlElem.attribute("ry").toDouble());
+    this->rotation.setAt(2, xmlElem.attribute("rz").toDouble());
+    this->scale.setAt(0, xmlElem.attribute("mx").toDouble());
+    this->scale.setAt(1, xmlElem.attribute("my").toDouble());
+    this->scale.setAt(2, xmlElem.attribute("mz").toDouble());
+    this->isUsed = xmlElem.attribute("use").toInt();
+    this->isDatumTrafo = xmlElem.attribute("datumtrafo").toInt();
 
-    return result;
+    // calculate homogeneous matrix
+    OiMat tmpTranslation(4, 4);
+    OiMat tmpRotation(4, 4);
+    OiMat tmpScale(4, 4);
 
+    tmpTranslation.setAt(0, 0, 1.0);
+    tmpTranslation.setAt(0, 3, this->translation.getAt(0));
+    tmpTranslation.setAt(1, 1, 1.0);
+    tmpTranslation.setAt(1, 3, this->translation.getAt(1));
+    tmpTranslation.setAt(2, 2, 1.0);
+    tmpTranslation.setAt(2, 3, this->translation.getAt(2));
+    tmpTranslation.setAt(3, 3, 1.0);
+
+    tmpScale.setAt(0, 0, this->scale.getAt(0));
+    tmpScale.setAt(1, 1, this->scale.getAt(1));
+    tmpScale.setAt(2, 2, this->scale.getAt(2));
+    tmpScale.setAt(3, 3, 1.0);
+
+    tmpRotation.setAt(
+        0, 0, qCos(this->rotation.getAt(1)) * qCos(this->rotation.getAt(2)));
+    tmpRotation.setAt(
+        0, 1,
+        qCos(this->rotation.getAt(0)) * qSin(this->rotation.getAt(2)) +
+            qSin(this->rotation.getAt(0)) * qSin(this->rotation.getAt(1)) *
+                qCos(this->rotation.getAt(2)));
+    tmpRotation.setAt(
+        0, 2,
+        qSin(this->rotation.getAt(0)) * qSin(this->rotation.getAt(2)) -
+            qCos(this->rotation.getAt(0)) * qSin(this->rotation.getAt(1)) *
+                qCos(this->rotation.getAt(2)));
+    tmpRotation.setAt(
+        1, 0, -qCos(this->rotation.getAt(1)) * qSin(this->rotation.getAt(2)));
+    tmpRotation.setAt(
+        1, 1,
+        qCos(this->rotation.getAt(0)) * qCos(this->rotation.getAt(2)) -
+            qSin(this->rotation.getAt(0)) * qSin(this->rotation.getAt(1)) *
+                qSin(this->rotation.getAt(2)));
+    tmpRotation.setAt(
+        1, 2,
+        qSin(this->rotation.getAt(0)) * qCos(this->rotation.getAt(2)) +
+            qCos(this->rotation.getAt(0)) * qSin(this->rotation.getAt(1)) *
+                qSin(this->rotation.getAt(2)));
+    tmpRotation.setAt(2, 0, qSin(this->rotation.getAt(1)));
+    tmpRotation.setAt(
+        2, 1, -qSin(this->rotation.getAt(0)) * qCos(this->rotation.getAt(1)));
+    tmpRotation.setAt(
+        2, 2, qCos(this->rotation.getAt(0)) * qCos(this->rotation.getAt(1)));
+    tmpRotation.setAt(3, 3, 1.0);
+
+    this->homogenMatrix = tmpTranslation * tmpScale * tmpRotation;
+  }
+
+  return result;
 }
 
 /*!
@@ -601,30 +613,32 @@ bool TrafoParam::fromOpenIndyXML(QDomElement &xmlElem){
  * \param digits
  * \return
  */
-QString TrafoParam::getDisplayStDev(const UnitType &type, const int &digits) const{
-    return QString::number(convertFromDefault(this->statistic.getStdev(), type), 'f', digits);
+QString TrafoParam::getDisplayStDev(const UnitType& type,
+                                    const int& digits) const {
+  return QString::number(convertFromDefault(this->statistic.getStdev(), type),
+                         'f', digits);
 }
 
 /*!
  * \brief TrafoParam::getDisplayStartSystem
  * \return
  */
-QString TrafoParam::getDisplayStartSystem() const{
-    if(!this->from.isNull()){
-        return this->from->getFeatureName();
-    }
-    return QString("");
+QString TrafoParam::getDisplayStartSystem() const {
+  if (!this->from.isNull()) {
+    return this->from->getFeatureName();
+  }
+  return QString("");
 }
 
 /*!
  * \brief TrafoParam::getDisplayDestinationSystem
  * \return
  */
-QString TrafoParam::getDisplayDestinationSystem() const{
-    if(!this->to.isNull()){
-        return this->to->getFeatureName();
-    }
-    return QString("");
+QString TrafoParam::getDisplayDestinationSystem() const {
+  if (!this->to.isNull()) {
+    return this->to->getFeatureName();
+  }
+  return QString("");
 }
 
 /*!
@@ -633,11 +647,13 @@ QString TrafoParam::getDisplayDestinationSystem() const{
  * \param digits
  * \return
  */
-QString TrafoParam::getDisplayTranslationX(const UnitType &type, const int &digits) const{
-    if(this->isSolved){
-        return QString::number(convertFromDefault(this->translation.getAt(0), type), 'f', digits);
-    }
-    return QString("");
+QString TrafoParam::getDisplayTranslationX(const UnitType& type,
+                                           const int& digits) const {
+  if (this->isSolved) {
+    return QString::number(convertFromDefault(this->translation.getAt(0), type),
+                           'f', digits);
+  }
+  return QString("");
 }
 
 /*!
@@ -646,11 +662,13 @@ QString TrafoParam::getDisplayTranslationX(const UnitType &type, const int &digi
  * \param digits
  * \return
  */
-QString TrafoParam::getDisplayTranslationY(const UnitType &type, const int &digits) const{
-    if(this->isSolved){
-        return QString::number(convertFromDefault(this->translation.getAt(1), type), 'f', digits);
-    }
-    return QString("");
+QString TrafoParam::getDisplayTranslationY(const UnitType& type,
+                                           const int& digits) const {
+  if (this->isSolved) {
+    return QString::number(convertFromDefault(this->translation.getAt(1), type),
+                           'f', digits);
+  }
+  return QString("");
 }
 
 /*!
@@ -659,11 +677,13 @@ QString TrafoParam::getDisplayTranslationY(const UnitType &type, const int &digi
  * \param digits
  * \return
  */
-QString TrafoParam::getDisplayTranslationZ(const UnitType &type, const int &digits) const{
-    if(this->isSolved){
-        return QString::number(convertFromDefault(this->translation.getAt(2), type), 'f', digits);
-    }
-    return QString("");
+QString TrafoParam::getDisplayTranslationZ(const UnitType& type,
+                                           const int& digits) const {
+  if (this->isSolved) {
+    return QString::number(convertFromDefault(this->translation.getAt(2), type),
+                           'f', digits);
+  }
+  return QString("");
 }
 
 /*!
@@ -672,11 +692,13 @@ QString TrafoParam::getDisplayTranslationZ(const UnitType &type, const int &digi
  * \param digits
  * \return
  */
-QString TrafoParam::getDisplayRotationX(const UnitType &type, const int &digits) const{
-    if(this->isSolved){
-        return QString::number(convertFromDefault(this->rotation.getAt(0), type), 'f', digits);
-    }
-    return QString("");
+QString TrafoParam::getDisplayRotationX(const UnitType& type,
+                                        const int& digits) const {
+  if (this->isSolved) {
+    return QString::number(convertFromDefault(this->rotation.getAt(0), type),
+                           'f', digits);
+  }
+  return QString("");
 }
 
 /*!
@@ -685,11 +707,13 @@ QString TrafoParam::getDisplayRotationX(const UnitType &type, const int &digits)
  * \param digits
  * \return
  */
-QString TrafoParam::getDisplayRotationY(const UnitType &type, const int &digits) const{
-    if(this->isSolved){
-        return QString::number(convertFromDefault(this->rotation.getAt(1), type), 'f', digits);
-    }
-    return QString("");
+QString TrafoParam::getDisplayRotationY(const UnitType& type,
+                                        const int& digits) const {
+  if (this->isSolved) {
+    return QString::number(convertFromDefault(this->rotation.getAt(1), type),
+                           'f', digits);
+  }
+  return QString("");
 }
 
 /*!
@@ -698,11 +722,13 @@ QString TrafoParam::getDisplayRotationY(const UnitType &type, const int &digits)
  * \param digits
  * \return
  */
-QString TrafoParam::getDisplayRotationZ(const UnitType &type, const int &digits) const{
-    if(this->isSolved){
-        return QString::number(convertFromDefault(this->rotation.getAt(2), type), 'f', digits);
-    }
-    return QString("");
+QString TrafoParam::getDisplayRotationZ(const UnitType& type,
+                                        const int& digits) const {
+  if (this->isSolved) {
+    return QString::number(convertFromDefault(this->rotation.getAt(2), type),
+                           'f', digits);
+  }
+  return QString("");
 }
 
 /*!
@@ -710,11 +736,11 @@ QString TrafoParam::getDisplayRotationZ(const UnitType &type, const int &digits)
  * \param digits
  * \return
  */
-QString TrafoParam::getDisplayScaleX(const int &digits) const{
-    if(this->isSolved){
-        return QString::number(this->scale.getAt(0), 'f', digits);
-    }
-    return QString("");
+QString TrafoParam::getDisplayScaleX(const int& digits) const {
+  if (this->isSolved) {
+    return QString::number(this->scale.getAt(0), 'f', digits);
+  }
+  return QString("");
 }
 
 /*!
@@ -722,11 +748,11 @@ QString TrafoParam::getDisplayScaleX(const int &digits) const{
  * \param digits
  * \return
  */
-QString TrafoParam::getDisplayScaleY(const int &digits) const{
-    if(this->isSolved){
-        return QString::number(this->scale.getAt(1), 'f', digits);
-    }
-    return QString("");
+QString TrafoParam::getDisplayScaleY(const int& digits) const {
+  if (this->isSolved) {
+    return QString::number(this->scale.getAt(1), 'f', digits);
+  }
+  return QString("");
 }
 
 /*!
@@ -734,25 +760,25 @@ QString TrafoParam::getDisplayScaleY(const int &digits) const{
  * \param digits
  * \return
  */
-QString TrafoParam::getDisplayScaleZ(const int &digits) const{
-    if(this->isSolved){
-        return QString::number(this->scale.getAt(2), 'f', digits);
-    }
-    return QString("");
+QString TrafoParam::getDisplayScaleZ(const int& digits) const {
+  if (this->isSolved) {
+    return QString::number(this->scale.getAt(2), 'f', digits);
+  }
+  return QString("");
 }
 
 /*!
  * \brief TrafoParam::getDisplayIsUsed
  * \return
  */
-QString TrafoParam::getDisplayIsUsed() const{
-    return this->isUsed?"true":"false";
+QString TrafoParam::getDisplayIsUsed() const {
+  return this->isUsed ? "true" : "false";
 }
 
 /*!
  * \brief TrafoParam::getDisplayIsDatumTransformation
  * \return
  */
-QString TrafoParam::getDisplayIsDatumTransformation() const{
-    return this->isDatumTrafo?"true":"false";
+QString TrafoParam::getDisplayIsDatumTransformation() const {
+  return this->isDatumTrafo ? "true" : "false";
 }

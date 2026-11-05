@@ -9,29 +9,26 @@ using namespace oi::math;
  * \brief PointCloud::PointCloud
  * \param parent
  */
-PointCloud::PointCloud(QObject *parent) : Geometry(parent){
-
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setPointCloud(this);
-    }
-
+PointCloud::PointCloud(QObject* parent) : Geometry(parent) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setPointCloud(this);
+  }
 }
 
 /*!
  * \brief PointCloud::PointCloud
  * \param copy
  */
-PointCloud::PointCloud(const PointCloud &copy, QObject *parent) : Geometry(copy, parent){
+PointCloud::PointCloud(const PointCloud& copy, QObject* parent)
+    : Geometry(copy, parent) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setPointCloud(this);
+  }
 
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setPointCloud(this);
-    }
-
-    this->xyz = copy.xyz;
-    this->setBoundingBox(copy.bbox);
-
+  this->xyz = copy.xyz;
+  this->setBoundingBox(copy.bbox);
 }
 
 /*!
@@ -39,100 +36,88 @@ PointCloud::PointCloud(const PointCloud &copy, QObject *parent) : Geometry(copy,
  * \param copy
  * \return
  */
-PointCloud &PointCloud::operator=(const PointCloud &copy){
+PointCloud& PointCloud::operator=(const PointCloud& copy) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setPointCloud(this);
+  }
 
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setPointCloud(this);
-    }
+  this->xyz = copy.xyz;
+  this->setBoundingBox(copy.bbox);
 
-     this->xyz = copy.xyz;
-    this->setBoundingBox(copy.bbox);
-
-    return *this;
-
+  return *this;
 }
 
 /*!
  * \brief PointCloud::~PointCloud
  */
-PointCloud::~PointCloud(){
-
-}
+PointCloud::~PointCloud() {}
 
 /*!
  * \brief PointCloud::getPointCount
  * \return
  */
-unsigned long PointCloud::getPointCount() const{
-    return this->points.size();
-}
+unsigned long PointCloud::getPointCount() const { return this->points.size(); }
 
 /*!
  * \brief PointCloud::addSegment
  * \param segment
  * \return
  */
-bool PointCloud::addSegment(const QPointer<FeatureWrapper> &segment){
+bool PointCloud::addSegment(const QPointer<FeatureWrapper>& segment) {
+  // check segment
+  if (segment.isNull() || segment->getGeometry().isNull()) {
+    return false;
+  }
 
-    //check segment
-    if(segment.isNull() || segment->getGeometry().isNull()){
-        return false;
+  // check if a segment with that name already exists
+  foreach (const QPointer<FeatureWrapper>& detectedSegment,
+           this->detectedSegments) {
+    if (!detectedSegment.isNull() && !detectedSegment->getFeature().isNull() &&
+        detectedSegment->getFeature()->getFeatureName().compare(
+            segment->getGeometry()->getFeatureName()) == 0) {
+      return false;
     }
+  }
 
-    //check if a segment with that name already exists
-    foreach(const QPointer<FeatureWrapper> &detectedSegment, this->detectedSegments){
+  segment->getGeometry()->setNominalSystem(this->nominalSystem);
 
-        if(!detectedSegment.isNull() && !detectedSegment->getFeature().isNull()
-                && detectedSegment->getFeature()->getFeatureName().compare(segment->getGeometry()->getFeatureName()) == 0){
-            return false;
-        }
+  this->detectedSegments.append(segment);
 
-    }
+  emit this->pcSegmentAdded(segment);
 
-    segment->getGeometry()->setNominalSystem(this->nominalSystem);
-
-    this->detectedSegments.append(segment);
-
-    emit this->pcSegmentAdded(segment);
-
-    return true;
-
+  return true;
 }
 
 /*!
  * \brief PointCloud::clearSegmentation
  */
-void PointCloud::clearSegmentation(){
-    this->detectedSegments.clear();
-}
+void PointCloud::clearSegmentation() { this->detectedSegments.clear(); }
 
 /*!
  * \brief PointCloud::hasPosition
  * \return
  */
-bool PointCloud::hasPosition() const{
-    return true;
-}
+bool PointCloud::hasPosition() const { return true; }
 
 /*!
  * \brief PointCloud::getPointCloudPoints
  * Returns a list of all point cloud points
  * \return
  */
-const QList<Point_PC *> &PointCloud::getPointCloudPoints() const{
-    return this->points;
+const QList<Point_PC*>& PointCloud::getPointCloudPoints() const {
+  return this->points;
 }
 
 /*!
  * \brief PointCloud::addPointCloudPoint
  * \param point
  */
-void PointCloud::addPointCloudPoint(Point_PC *point){
-    if(point == nullptr){
-        return;
-    }
-    this->points.append(point);
+void PointCloud::addPointCloudPoint(Point_PC* point) {
+  if (point == nullptr) {
+    return;
+  }
+  this->points.append(point);
 }
 
 /*!
@@ -142,44 +127,38 @@ void PointCloud::addPointCloudPoint(Point_PC *point){
  * thousand individually aimed shots.
  * \return
  */
-QList<Position> PointCloud::collectionPoints() const{
+QList<Position> PointCloud::collectionPoints() const {
+  QList<Position> positions;
+  positions.reserve(this->points.size());
 
-    QList<Position> positions;
-    positions.reserve(this->points.size());
-
-    foreach(Point_PC *point, this->points){
-
-        //isUsed is the cloud's own inclusion flag - a point excluded by
-        //segmentation or filtering is still stored, but is not part of the
-        //collection a fit should see
-        if(point == nullptr || !point->isUsed){
-            continue;
-        }
-
-        positions.append(Position(point->xyz[0], point->xyz[1], point->xyz[2]));
-
+  foreach (Point_PC* point, this->points) {
+    // isUsed is the cloud's own inclusion flag - a point excluded by
+    // segmentation or filtering is still stored, but is not part of the
+    // collection a fit should see
+    if (point == nullptr || !point->isUsed) {
+      continue;
     }
 
-    return positions;
+    positions.append(Position(point->xyz[0], point->xyz[1], point->xyz[2]));
+  }
 
+  return positions;
 }
 
 /*!
  * \brief PointCloud::collectionPointCount
  * \return
  */
-int PointCloud::collectionPointCount() const{
-
-    //counted without materialising positions - a real scan is millions of
-    //points and this gets asked just to answer "is there enough data yet"
-    int count = 0;
-    foreach(Point_PC *point, this->points){
-        if(point != nullptr && point->isUsed){
-            ++count;
-        }
+int PointCloud::collectionPointCount() const {
+  // counted without materialising positions - a real scan is millions of
+  // points and this gets asked just to answer "is there enough data yet"
+  int count = 0;
+  foreach (Point_PC* point, this->points) {
+    if (point != nullptr && point->isUsed) {
+      ++count;
     }
-    return count;
-
+  }
+  return count;
 }
 
 /*!
@@ -187,44 +166,36 @@ int PointCloud::collectionPointCount() const{
  * Returns the bounding box of the point cloud
  * \return
  */
-const BoundingBox_PC &PointCloud::getBoundingBox() const{
-    return this->bbox;
-}
+const BoundingBox_PC& PointCloud::getBoundingBox() const { return this->bbox; }
 
 /*!
  * \brief PointCloud::setBoundingBox
  * \param bbox
  */
-void PointCloud::setBoundingBox(const BoundingBox_PC &bbox){
-    this->bbox = bbox;
+void PointCloud::setBoundingBox(const BoundingBox_PC& bbox) {
+  this->bbox = bbox;
 }
 
 /*!
  * \brief PointCloud::recalc
  */
-void PointCloud::recalc(){
-
-    Geometry::recalc();
-
-}
+void PointCloud::recalc() { Geometry::recalc(); }
 
 /*!
  * \brief PointCloud::toOpenIndyXML
  * \param xmlDoc
  * \return
  */
-QDomElement PointCloud::toOpenIndyXML(QDomDocument &xmlDoc) const{
+QDomElement PointCloud::toOpenIndyXML(QDomDocument& xmlDoc) const {
+  QDomElement pointCloud = Geometry::toOpenIndyXML(xmlDoc);
 
-    QDomElement pointCloud = Geometry::toOpenIndyXML(xmlDoc);
-
-    if(pointCloud.isNull()){
-        return pointCloud;
-    }
-
-    pointCloud.setAttribute("type", getGeometryTypeName(ePointCloudGeometry));
-
+  if (pointCloud.isNull()) {
     return pointCloud;
+  }
 
+  pointCloud.setAttribute("type", getGeometryTypeName(ePointCloudGeometry));
+
+  return pointCloud;
 }
 
 /*!
@@ -232,17 +203,11 @@ QDomElement PointCloud::toOpenIndyXML(QDomDocument &xmlDoc) const{
  * \param xmlElem
  * \return
  */
-bool PointCloud::fromOpenIndyXML(QDomElement &xmlElem){
+bool PointCloud::fromOpenIndyXML(QDomElement& xmlElem) {
+  bool result = Geometry::fromOpenIndyXML(xmlElem);
 
-    bool result = Geometry::fromOpenIndyXML(xmlElem);
+  if (result) {
+  }
 
-    if(result){
-
-
-
-    }
-
-    return result;
-
+  return result;
 }
-

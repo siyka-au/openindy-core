@@ -4,7 +4,7 @@
 #include "group.h"
 #include "pointcollection.h"
 
-namespace oi{
+namespace oi {
 
 class Point;
 
@@ -30,55 +30,52 @@ class Point;
  * undifferentiated bulk data would throw away exactly the pedigree that
  * makes them worth having.
  */
-class OI_CORE_EXPORT PointGroup : public Group, public PointCollection
-{
-    friend class OiJob;
-    Q_OBJECT
+class OI_CORE_EXPORT PointGroup : public Group, public PointCollection {
+  friend class OiJob;
+  Q_OBJECT
 
-public:
+ public:
+  explicit PointGroup(QObject* parent = 0);
+  PointGroup(const QString& name, QObject* parent = 0);
 
-    explicit PointGroup(QObject *parent = 0);
-    PointGroup(const QString &name, QObject *parent = 0);
+  PointGroup(const PointGroup& copy, QObject* parent = 0);
+  PointGroup& operator=(const PointGroup& copy);
 
-    PointGroup(const PointGroup &copy, QObject *parent = 0);
-    PointGroup &operator=(const PointGroup &copy);
+  ~PointGroup();
 
-    ~PointGroup();
+  // #########################
+  // PointCollection interface
+  // #########################
 
-    //#########################
-    //PointCollection interface
-    //#########################
+  QList<Position> collectionPoints() const override;
+  int collectionPointCount() const override;
 
-    QList<Position> collectionPoints() const override;
-    int collectionPointCount() const override;
+  // ####################
+  // point-specific access
+  // ####################
 
-    //####################
-    //point-specific access
-    //####################
+  //! members as Points, skipping any deleted out from under the group.
+  //! Use this rather than collectionPoints() when per-point pedigree
+  //! (observations, sigma, solved state) matters - that information is
+  //! exactly what a PointGroup has and a PointCloud does not.
+  QList<QPointer<Point> > getPoints() const;
 
-    //! members as Points, skipping any deleted out from under the group.
-    //! Use this rather than collectionPoints() when per-point pedigree
-    //! (observations, sigma, solved state) matters - that information is
-    //! exactly what a PointGroup has and a PointCloud does not.
-    QList<QPointer<Point> > getPoints() const;
+  // #################
+  // save and load XML
+  // #################
 
-    //#################
-    //save and load XML
-    //#################
+  //! delegates to Group::toOpenIndyXML for everything except the "type"
+  //! attribute, which ProjectExchanger reads to decide whether to
+  //! reconstruct a Group or a PointGroup on load
+  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const;
 
-    //! delegates to Group::toOpenIndyXML for everything except the "type"
-    //! attribute, which ProjectExchanger reads to decide whether to
-    //! reconstruct a Group or a PointGroup on load
-    QDomElement toOpenIndyXML(QDomDocument &xmlDoc) const;
+  // ###############
+  // display methods
+  // ###############
 
-    //###############
-    //display methods
-    //###############
-
-    QString getDisplayType() const;
-
+  QString getDisplayType() const;
 };
 
-}
+}  // namespace oi
 
-#endif // POINTGROUP_H
+#endif  // POINTGROUP_H

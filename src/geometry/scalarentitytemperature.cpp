@@ -8,13 +8,12 @@ using namespace oi;
  * \brief ScalarEntityTemperature::ScalarEntityTemperature
  * \param parent
  */
-ScalarEntityTemperature::ScalarEntityTemperature(QObject *parent) : Geometry(parent){
-
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setScalarEntityTemperature(this);
-    }
-
+ScalarEntityTemperature::ScalarEntityTemperature(QObject* parent)
+    : Geometry(parent) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setScalarEntityTemperature(this);
+  }
 }
 
 /*!
@@ -22,15 +21,15 @@ ScalarEntityTemperature::ScalarEntityTemperature(QObject *parent) : Geometry(par
  * \param temperature
  * \param parent
  */
-ScalarEntityTemperature::ScalarEntityTemperature(const double &temperature, QObject *parent) : Geometry(parent){
+ScalarEntityTemperature::ScalarEntityTemperature(const double& temperature,
+                                                 QObject* parent)
+    : Geometry(parent) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setScalarEntityTemperature(this);
+  }
 
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setScalarEntityTemperature(this);
-    }
-
-    this->setTemperature(temperature);
-
+  this->setTemperature(temperature);
 }
 
 /*!
@@ -38,15 +37,15 @@ ScalarEntityTemperature::ScalarEntityTemperature(const double &temperature, QObj
  * \param copy
  * \param parent
  */
-ScalarEntityTemperature::ScalarEntityTemperature(const ScalarEntityTemperature &copy, QObject *parent) : Geometry(copy, parent){
+ScalarEntityTemperature::ScalarEntityTemperature(
+    const ScalarEntityTemperature& copy, QObject* parent)
+    : Geometry(copy, parent) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setScalarEntityTemperature(this);
+  }
 
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setScalarEntityTemperature(this);
-    }
-
-    this->temperature = copy.temperature;
-
+  this->temperature = copy.temperature;
 }
 
 /*!
@@ -54,44 +53,39 @@ ScalarEntityTemperature::ScalarEntityTemperature(const ScalarEntityTemperature &
  * \param copy
  * \return
  */
-ScalarEntityTemperature &ScalarEntityTemperature::operator=(const ScalarEntityTemperature &copy){
+ScalarEntityTemperature& ScalarEntityTemperature::operator=(
+    const ScalarEntityTemperature& copy) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setScalarEntityTemperature(this);
+  }
 
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setScalarEntityTemperature(this);
-    }
+  this->temperature = copy.temperature;
 
-    this->temperature = copy.temperature;
-
-    return *this;
-
+  return *this;
 }
 
 /*!
  * \brief ScalarEntityTemperature::~ScalarEntityTemperature
  */
-ScalarEntityTemperature::~ScalarEntityTemperature(){
-
-}
+ScalarEntityTemperature::~ScalarEntityTemperature() {}
 
 /*!
  * \brief ScalarEntityTemperature::getTemperature
  * \return
  */
-const double &ScalarEntityTemperature::getTemperature() const{
-    return this->temperature;
+const double& ScalarEntityTemperature::getTemperature() const {
+  return this->temperature;
 }
 
 /*!
  * \brief ScalarEntityTemperature::setTemperature
  * \param temperature
  */
-void ScalarEntityTemperature::setTemperature(const double &temperature){
+void ScalarEntityTemperature::setTemperature(const double& temperature) {
+  this->temperature = temperature;
 
-    this->temperature = temperature;
-
-    emit this->geomParametersChanged(this->id);
-
+  emit this->geomParametersChanged(this->id);
 }
 
 /*!
@@ -100,54 +94,54 @@ void ScalarEntityTemperature::setTemperature(const double &temperature){
  * \param displayDigits
  * \return
  */
-QMap<GeometryParameters, QString> ScalarEntityTemperature::getUnknownParameters(const QMap<DimensionType, UnitType> &displayUnits, const QMap<DimensionType, int> &displayDigits) const{
+QMap<GeometryParameters, QString> ScalarEntityTemperature::getUnknownParameters(
+    const QMap<DimensionType, UnitType>& displayUnits,
+    const QMap<DimensionType, int>& displayDigits) const {
+  QMap<GeometryParameters, QString> parameters;
 
-    QMap<GeometryParameters, QString> parameters;
+  parameters.insert(
+      eUnknownTemperature,
+      this->getDisplayTemperature(displayUnits.value(eTemperature, eUnitGrad),
+                                  displayDigits.value(eTemperature, 0)));
 
-    parameters.insert(eUnknownTemperature, this->getDisplayTemperature(displayUnits.value(eTemperature, eUnitGrad), displayDigits.value(eTemperature, 0)));
-
-    return parameters;
-
+  return parameters;
 }
 
 /*!
  * \brief ScalarEntityTemperature::applyUnknownParameters
  * \param parameters
  */
-void ScalarEntityTemperature::applyUnknownParameters(const QMap<GeometryParameters, double> &parameters){
+void ScalarEntityTemperature::applyUnknownParameters(
+    const QMap<GeometryParameters, double>& parameters) {
+  // get current parameters
+  double temperature = this->temperature;
 
-    //get current parameters
-    double temperature = this->temperature;
-
-    //update parameters
-    QList<GeometryParameters> keys = parameters.keys();
-    foreach(const GeometryParameters &key, keys){
-        switch(key){
-        case eUnknownTemperature:
-            temperature = parameters.value(eUnknownTemperature);
-            break;
-        default:
-            break;
-        }
+  // update parameters
+  QList<GeometryParameters> keys = parameters.keys();
+  foreach (const GeometryParameters& key, keys) {
+    switch (key) {
+      case eUnknownTemperature:
+        temperature = parameters.value(eUnknownTemperature);
+        break;
+      default:
+        break;
     }
+  }
 
-    //update temperature definition
-    this->setTemperature(temperature);
-
+  // update temperature definition
+  this->setTemperature(temperature);
 }
 
 /*!
  * \brief ScalarEntityTemperature::recalc
  */
-void ScalarEntityTemperature::recalc(){
+void ScalarEntityTemperature::recalc() {
+  Geometry::recalc();
 
-    Geometry::recalc();
-
-    //reset temperature definition if not solved and no nominal
-    if(!this->isSolved && this->getOwnerDescription().has_value()){
-        this->temperature = 0.0;
-    }
-
+  // reset temperature definition if not solved and no nominal
+  if (!this->isSolved && this->getOwnerDescription().has_value()) {
+    this->temperature = 0.0;
+  }
 }
 
 /*!
@@ -155,27 +149,26 @@ void ScalarEntityTemperature::recalc(){
  * \param xmlDoc
  * \return
  */
-QDomElement ScalarEntityTemperature::toOpenIndyXML(QDomDocument &xmlDoc) const{
+QDomElement ScalarEntityTemperature::toOpenIndyXML(QDomDocument& xmlDoc) const {
+  QDomElement entityTemperature = Geometry::toOpenIndyXML(xmlDoc);
 
-    QDomElement entityTemperature = Geometry::toOpenIndyXML(xmlDoc);
-
-    if(entityTemperature.isNull()){
-        return entityTemperature;
-    }
-
-    entityTemperature.setAttribute("type", getGeometryTypeName(eScalarEntityTemperatureGeometry));
-
-    //add temperature
-    QDomElement temperature = xmlDoc.createElement("temperature");
-    if(this->isSolved || !this->getOwnerDescription().has_value()){
-        temperature.setAttribute("value", this->temperature);
-    }else{
-        temperature.setAttribute("value", 0.0);
-    }
-    entityTemperature.appendChild(temperature);
-
+  if (entityTemperature.isNull()) {
     return entityTemperature;
+  }
 
+  entityTemperature.setAttribute(
+      "type", getGeometryTypeName(eScalarEntityTemperatureGeometry));
+
+  // add temperature
+  QDomElement temperature = xmlDoc.createElement("temperature");
+  if (this->isSolved || !this->getOwnerDescription().has_value()) {
+    temperature.setAttribute("value", this->temperature);
+  } else {
+    temperature.setAttribute("value", 0.0);
+  }
+  entityTemperature.appendChild(temperature);
+
+  return entityTemperature;
 }
 
 /*!
@@ -183,25 +176,21 @@ QDomElement ScalarEntityTemperature::toOpenIndyXML(QDomDocument &xmlDoc) const{
  * \param xmlElem
  * \return
  */
-bool ScalarEntityTemperature::fromOpenIndyXML(QDomElement &xmlElem){
+bool ScalarEntityTemperature::fromOpenIndyXML(QDomElement& xmlElem) {
+  bool result = Geometry::fromOpenIndyXML(xmlElem);
 
-    bool result = Geometry::fromOpenIndyXML(xmlElem);
+  if (result) {
+    // set temperature attributes
+    QDomElement temperature = xmlElem.firstChildElement("temperature");
 
-    if(result){
-
-        //set temperature attributes
-        QDomElement temperature = xmlElem.firstChildElement("temperature");
-
-        if(temperature.isNull() || !temperature.hasAttribute("value")){
-            return false;
-        }
-
-        this->temperature = temperature.attribute("value").toDouble();
-
+    if (temperature.isNull() || !temperature.hasAttribute("value")) {
+      return false;
     }
 
-    return result;
+    this->temperature = temperature.attribute("value").toDouble();
+  }
 
+  return result;
 }
 
 /*!
@@ -211,9 +200,11 @@ bool ScalarEntityTemperature::fromOpenIndyXML(QDomElement &xmlElem){
  * \param showDiff
  * \return
  */
-QString ScalarEntityTemperature::getDisplayTemperature(const UnitType &type, const int &digits, const bool &/*showDiff*/) const{
-    if(this->isSolved){
-        return QString::number(convertFromDefault(this->temperature, type), 'f', digits);
-    }
-    return QString("");
+QString ScalarEntityTemperature::getDisplayTemperature(
+    const UnitType& type, const int& digits, const bool& /*showDiff*/) const {
+  if (this->isSolved) {
+    return QString::number(convertFromDefault(this->temperature, type), 'f',
+                           digits);
+  }
+  return QString("");
 }

@@ -6,78 +6,76 @@
 
 #include "geometry.h"
 
-namespace oi{
+namespace oi {
 
 /*!
  * \brief The ScalarEntityAngle class
  */
-class OI_CORE_EXPORT ScalarEntityAngle : public Geometry
-{
-    Q_OBJECT
+class OI_CORE_EXPORT ScalarEntityAngle : public Geometry {
+  Q_OBJECT
 
-public:
-    ScalarEntityAngle(QObject *parent = 0);
-    ScalarEntityAngle(const double &angle, QObject *parent = 0);
+ public:
+  ScalarEntityAngle(QObject* parent = 0);
+  ScalarEntityAngle(const double& angle, QObject* parent = 0);
 
-    ScalarEntityAngle(const ScalarEntityAngle &copy, QObject *parent = 0);
+  ScalarEntityAngle(const ScalarEntityAngle& copy, QObject* parent = 0);
 
-    ScalarEntityAngle &operator=(const ScalarEntityAngle &copy);
+  ScalarEntityAngle& operator=(const ScalarEntityAngle& copy);
 
-    ~ScalarEntityAngle();
+  ~ScalarEntityAngle();
 
-    //########################################
-    //order of unknown parameters (Qxx-matrix)
-    //########################################
+  // ########################################
+  // order of unknown parameters (Qxx-matrix)
+  // ########################################
 
-    enum AngleUnknowns{
-        unknownAngle = 0
-    };
+  enum AngleUnknowns { unknownAngle = 0 };
 
-    //###########################
-    //get or set angle parameters
-    //###########################
+  // ###########################
+  // get or set angle parameters
+  // ###########################
 
-    const double &getAngle() const;
+  const double& getAngle() const;
 
-    void setAngle(const double &angle);
+  void setAngle(const double& angle);
 
-    //#############################
-    //get or set unknown parameters
-    //#############################
+  // #############################
+  // get or set unknown parameters
+  // #############################
 
-    virtual QMap<GeometryParameters, QString> getUnknownParameters(const QMap<DimensionType, UnitType> &displayUnits,
-                                                          const QMap<DimensionType, int> &displayDigits) const;
-    virtual void applyUnknownParameters(const QMap<GeometryParameters, double> &parameters);
+  virtual QMap<GeometryParameters, QString> getUnknownParameters(
+      const QMap<DimensionType, UnitType>& displayUnits,
+      const QMap<DimensionType, int>& displayDigits) const;
+  virtual void applyUnknownParameters(
+      const QMap<GeometryParameters, double>& parameters);
 
-    //###########################
-    //reexecute the function list
-    //###########################
+  // ###########################
+  // reexecute the function list
+  // ###########################
 
-    void recalc();
+  void recalc();
 
-    //#################
-    //save and load XML
-    //#################
+  // #################
+  // save and load XML
+  // #################
 
-    QDomElement toOpenIndyXML(QDomDocument &xmlDoc) const;
-    bool fromOpenIndyXML(QDomElement &xmlElem);
+  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const;
+  bool fromOpenIndyXML(QDomElement& xmlElem);
 
-    //###############
-    //display methods
-    //###############
+  // ###############
+  // display methods
+  // ###############
 
-    QString getDisplayAngle(const UnitType &type, const int &digits, const bool &showDiff = false) const;
+  QString getDisplayAngle(const UnitType& type, const int& digits,
+                          const bool& showDiff = false) const;
 
-private:
+ private:
+  // ################
+  // angle attributes
+  // ################
 
-    //################
-    //angle attributes
-    //################
-
-    double angle;
-
+  double angle;
 };
 
-}
+}  // namespace oi
 
-#endif // SCALARENTITYANGLE_H
+#endif  // SCALARENTITYANGLE_H

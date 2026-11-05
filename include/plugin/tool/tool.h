@@ -1,104 +1,102 @@
 #ifndef TOOL_H
 #define TOOL_H
 
+#include <QCloseEvent>
 #include <QObject>
 #include <QWidget>
-#include <QCloseEvent>
 
-#include "types.h"
+#include "oijob.h"
 #include "oirequestresponse.h"
 #include "pluginmetadata.h"
-#include "oijob.h"
+#include "types.h"
 
-namespace oi{
+namespace oi {
 
-class OI_CORE_EXPORT Tool : public QWidget
-{
-    Q_OBJECT
+class OI_CORE_EXPORT Tool : public QWidget {
+  Q_OBJECT
 
-public:
-    explicit Tool(QWidget *parent = 0);
+ public:
+  explicit Tool(QWidget* parent = 0);
 
-    virtual ~Tool();
+  virtual ~Tool();
 
-    //##########################
-    //tool initialization method
-    //##########################
+  // ##########################
+  // tool initialization method
+  // ##########################
 
-    virtual void init();
+  virtual void init();
 
-    virtual bool saveProjectEnabled();
+  virtual bool saveProjectEnabled();
 
-    //#########################################
-    //methods to get or set further information
-    //#########################################
+  // #########################################
+  // methods to get or set further information
+  // #########################################
 
-    const PluginMetaData &getMetaData() const;
+  const PluginMetaData& getMetaData() const;
 
-    const ToolTypes &getToolType() const;
+  const ToolTypes& getToolType() const;
 
-    const QPointer<OiJob> &getJob() const;
-    void setJob(const QPointer<OiJob> &job);
+  const QPointer<OiJob>& getJob() const;
+  void setJob(const QPointer<OiJob>& job);
 
-    //#########################
-    //override QWidget methods
-    //#########################
+  // #########################
+  // override QWidget methods
+  // #########################
 
-    void closeEvent(QCloseEvent *event);
+  void closeEvent(QCloseEvent* event);
 
-public slots:
+ public slots:
 
-    //#####################################
-    //special events a tool could listen on
-    //#####################################
+  // #####################################
+  // special events a tool could listen on
+  // #####################################
 
-    virtual void customXmlRequest(OiRequestResponse *request);
-    virtual void watchWindowKeyPressed(const Qt::Key &key);
+  virtual void customXmlRequest(OiRequestResponse* request);
+  virtual void watchWindowKeyPressed(const Qt::Key& key);
 
-    // receive emitted job
-    virtual void setCurrentJob(const QPointer<OiJob> &job);
+  // receive emitted job
+  virtual void setCurrentJob(const QPointer<OiJob>& job);
 
-signals:
+ signals:
 
-    //############################################
-    //signals to inform OpenIndy about tool issues
-    //############################################
+  // ############################################
+  // signals to inform OpenIndy about tool issues
+  // ############################################
 
-    void sendMessage(const QString &msg, const MessageTypes &msgType, const MessageDestinations &msgDest = eConsoleMessage);
-    void customXmlResponse(OiRequestResponse *response);
+  void sendMessage(const QString& msg, const MessageTypes& msgType,
+                   const MessageDestinations& msgDest = eConsoleMessage);
+  void customXmlResponse(OiRequestResponse* response);
 
-    //###############################
-    //signals to start sensor actions
-    //###############################
+  // ###############################
+  // signals to start sensor actions
+  // ###############################
 
-    void startConnect();
-    void startDisconnect();
-    void startMeasurement();
-    void startMove(const Reading &reading);
-    void startAim();
-    void startAimAndMeasure();
-    void startToggleSight();
-    void startInitialize();
-    void startHome();
-    void startCompensation();
-    void startChangeMotorState();
-    void startCustomAction(const QString &task);
+  void startConnect();
+  void startDisconnect();
+  void startMeasurement();
+  void startMove(const Reading& reading);
+  void startAim();
+  void startAimAndMeasure();
+  void startToggleSight();
+  void startInitialize();
+  void startHome();
+  void startCompensation();
+  void startChangeMotorState();
+  void startCustomAction(const QString& task);
 
-protected:
+ protected:
+  // ###########################
+  // input and output parameters
+  // ###########################
 
-    //###########################
-    //input and output parameters
-    //###########################
+  PluginMetaData metaData;
 
-    PluginMetaData metaData;
+  ToolTypes toolType;
 
-    ToolTypes toolType;
-
-    QPointer<OiJob> job; //the OpenIndy job that this tool works on
-
+  QPointer<OiJob> job;  // the OpenIndy job that this tool works on
 };
 
-}
+}  // namespace oi
 
 #ifndef STR
 #define STR(x) #x
@@ -108,7 +106,7 @@ protected:
 #endif
 
 #ifndef CONCAT
-#define CONCAT(a, b) a ## b
+#define CONCAT(a, b) a##b
 #endif
 #ifndef CONCAT2
 #define CONCAT2(a, b) CONCAT(a, b)
@@ -119,4 +117,4 @@ protected:
 #define TOOL_PREFIX de.openIndy.plugin.tool.v
 #define Tool_iidd STR2(CONCAT2(TOOL_PREFIX, OI_PLUGIN_ABI_VERSION))
 
-#endif // TOOL_H
+#endif  // TOOL_H

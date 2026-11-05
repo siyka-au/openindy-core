@@ -6,35 +6,31 @@ using namespace oi::math;
 /*!
  * \brief Statistic::Statistic
  */
-Statistic::Statistic(){
+Statistic::Statistic() {
+  this->isValid = false;
 
-    this->isValid = false;
-
-    this->s0_apriori = 0.0;
-    this->s0_aposteriori = 0.0;
-    this->stdev = 0.0;
-    this->formError = 0.0;
-
+  this->s0_apriori = 0.0;
+  this->s0_aposteriori = 0.0;
+  this->stdev = 0.0;
+  this->formError = 0.0;
 }
 
 /*!
  * \brief Statistic::Statistic
  * \param copy
  */
-Statistic::Statistic(const Statistic &copy){
+Statistic::Statistic(const Statistic& copy) {
+  this->s0_apriori = copy.s0_apriori;
+  this->s0_aposteriori = copy.s0_aposteriori;
+  this->stdev = copy.stdev;
+  this->formError = copy.formError;
 
-    this->s0_apriori = copy.s0_apriori;
-    this->s0_aposteriori = copy.s0_aposteriori;
-    this->stdev = copy.stdev;
-    this->formError = copy.formError;
+  // this->displayResiduals = copy.displayResiduals;
+  this->isValid = copy.isValid;
 
-    //this->displayResiduals = copy.displayResiduals;
-    this->isValid = copy.isValid;
-
-    this->p.replace(copy.p);
-    this->qxx.replace(copy.qxx);
-    this->v.replace(copy.v);
-
+  this->p.replace(copy.p);
+  this->qxx.replace(copy.qxx);
+  this->v.replace(copy.v);
 }
 
 /*!
@@ -42,173 +38,153 @@ Statistic::Statistic(const Statistic &copy){
  * \param other
  * \return
  */
-Statistic& Statistic::operator =(const Statistic &other){
+Statistic& Statistic::operator=(const Statistic& other) {
+  this->s0_apriori = other.s0_apriori;
+  this->s0_aposteriori = other.s0_aposteriori;
+  this->stdev = other.stdev;
+  this->formError = other.formError;
 
-    this->s0_apriori = other.s0_apriori;
-    this->s0_aposteriori = other.s0_aposteriori;
-    this->stdev = other.stdev;
-    this->formError = other.formError;
+  // this->displayResiduals = other.displayResiduals;
+  this->isValid = other.isValid;
 
-    //this->displayResiduals = other.displayResiduals;
-    this->isValid = other.isValid;
+  this->p.replace(other.p);
+  this->qxx.replace(other.qxx);
+  this->v.replace(other.v);
 
-    this->p.replace(other.p);
-    this->qxx.replace(other.qxx);
-    this->v.replace(other.v);
-
-    return *this;
-
+  return *this;
 }
 
 /*!
  * \brief Statistic::getIsValid
  * \return
  */
-const bool &Statistic::getIsValid() const{
-    return this->isValid;
-}
+const bool& Statistic::getIsValid() const { return this->isValid; }
 
 /*!
  * \brief Statistic::setIsValid
  * \param isValid
  */
-void Statistic::setIsValid(const bool &isValid){
-    this->isValid = isValid;
-}
+void Statistic::setIsValid(const bool& isValid) { this->isValid = isValid; }
 
 /*!
  * \brief Statistic::reset
  * Clear all statistical parameters and set isValid to false
  */
-void Statistic::reset(){
+void Statistic::reset() {
+  this->isValid = false;
 
-    this->isValid = false;
+  this->s0_apriori = 0.0;
+  this->s0_aposteriori = 0.0;
+  this->stdev = 0.0;
+  this->formError = 0.0;
 
-    this->s0_apriori = 0.0;
-    this->s0_aposteriori = 0.0;
-    this->stdev = 0.0;
-    this->formError = 0.0;
+  OiMat resetMat;
+  this->p.replace(resetMat);
+  this->qxx.replace(resetMat);
+  OiVec resetVec;
+  this->v.replace(resetVec);
 
-    OiMat resetMat;
-    this->p.replace(resetMat);
-    this->qxx.replace(resetMat);
-    OiVec resetVec;
-    this->v.replace(resetVec);
-
-    this->displayResidualsMap.clear();
-
+  this->displayResidualsMap.clear();
 }
 
 /*!
  * \brief Statistic::getS0APriori
  * \return
  */
-const double &Statistic::getS0APriori() const{
-    return this->s0_apriori;
-}
+const double& Statistic::getS0APriori() const { return this->s0_apriori; }
 
 /*!
  * \brief Statistic::setS0APriori
  * \param s0
  */
-void Statistic::setS0APriori(const double &s0){
-    this->s0_apriori = s0;
-}
+void Statistic::setS0APriori(const double& s0) { this->s0_apriori = s0; }
 
 /*!
  * \brief Statistic::getS0APosteriori
  * \return
  */
-const double &Statistic::getS0APosteriori() const{
-    return this->s0_aposteriori;
+const double& Statistic::getS0APosteriori() const {
+  return this->s0_aposteriori;
 }
 
 /*!
  * \brief Statistic::setS0APosteriori
  * \param s0
  */
-void Statistic::setS0APosteriori(const double &s0){
-    this->s0_aposteriori = s0;
+void Statistic::setS0APosteriori(const double& s0) {
+  this->s0_aposteriori = s0;
 }
 
 /*!
  * \brief Statistic::getStdev
  * \return
  */
-const double &Statistic::getStdev() const{
-    return this->stdev;
-}
+const double& Statistic::getStdev() const { return this->stdev; }
 
 /*!
  * \brief Statistic::setStdev
  * \param stdev
  */
-void Statistic::setStdev(const double &stdev){
-    this->stdev = stdev;
-}
+void Statistic::setStdev(const double& stdev) { this->stdev = stdev; }
 
 /*!
  * \brief Statistic::getP
  * \return
  */
-const OiMat &Statistic::getP() const{
-    return this->p;
-}
+const OiMat& Statistic::getP() const { return this->p; }
 
 /*!
  * \brief Statistic::setP
  * \param p
  */
-void Statistic::setP(const OiMat &p){
-    if( (this->p.getRowCount() == p.getRowCount() &&this->p.getColCount() == p.getColCount())
-            || (this->p.getRowCount() == 0 && this->p.getColCount() == 0) ){
-        this->p = p;
-    }
+void Statistic::setP(const OiMat& p) {
+  if ((this->p.getRowCount() == p.getRowCount() &&
+       this->p.getColCount() == p.getColCount()) ||
+      (this->p.getRowCount() == 0 && this->p.getColCount() == 0)) {
+    this->p = p;
+  }
 }
 
 /*!
  * \brief Statistic::getQxx
  * \return
  */
-const OiMat &Statistic::getQxx() const{
-    return this->qxx;
-}
+const OiMat& Statistic::getQxx() const { return this->qxx; }
 
 /*!
  * \brief Statistic::setQxx
  * \param qxx
  */
-void Statistic::setQxx(const OiMat &qxx){
-    if( (this->qxx.getRowCount() == qxx.getRowCount() &&this->qxx.getColCount() == qxx.getColCount())
-            || (this->qxx.getRowCount() == 0 && this->qxx.getColCount() == 0) ){
-        this->qxx = qxx;
-    }
+void Statistic::setQxx(const OiMat& qxx) {
+  if ((this->qxx.getRowCount() == qxx.getRowCount() &&
+       this->qxx.getColCount() == qxx.getColCount()) ||
+      (this->qxx.getRowCount() == 0 && this->qxx.getColCount() == 0)) {
+    this->qxx = qxx;
+  }
 }
 
 /*!
  * \brief Statistic::getV
  * \return
  */
-const OiVec &Statistic::getV() const{
-    return this->v;
-}
+const OiVec& Statistic::getV() const { return this->v; }
 
 /*!
  * \brief Statistic::setV
  * \param v
  */
-void Statistic::setV(const OiVec &v){
-    if(this->v.getSize() == v.getSize() || this->v.getSize() == 0){
-        this->v = v;
-    }
+void Statistic::setV(const OiVec& v) {
+  if (this->v.getSize() == v.getSize() || this->v.getSize() == 0) {
+    this->v = v;
+  }
 }
 
 /*!
  * \brief Statistic::getDisplayResiduals
  * \return
  */
-const QList<Residual> Statistic::getDisplayResiduals() const{
-    return this->displayResidualsMap.values();
+const QList<Residual> Statistic::getDisplayResiduals() const {
+  return this->displayResidualsMap.values();
 }
 
 /*!
@@ -216,26 +192,24 @@ const QList<Residual> Statistic::getDisplayResiduals() const{
  * \param elementId
  * \return
  */
-Residual Statistic::getDisplayResidual(const int &elementId) const{
-    return this->displayResidualsMap.value(elementId, Residual());
+Residual Statistic::getDisplayResidual(const int& elementId) const {
+  return this->displayResidualsMap.value(elementId, Residual());
 }
 
 /*!
  * \brief Statistic::addDisplayResidual
  * \param residual
  */
-void Statistic::addDisplayResidual(const Residual &residual){
-    this->displayResidualsMap.insert(residual.elementId, residual);
+void Statistic::addDisplayResidual(const Residual& residual) {
+  this->displayResidualsMap.insert(residual.elementId, residual);
 }
 
-void Statistic::setFormError(const double &formError) {
-    this->formError = formError;
+void Statistic::setFormError(const double& formError) {
+  this->formError = formError;
 }
 
 /**
  * \brief Statistic::getFormError
  * \return form error depends on function / feature
  */
-const double &Statistic::getFormError() const {
-    return this->formError;
-}
+const double& Statistic::getFormError() const { return this->formError; }

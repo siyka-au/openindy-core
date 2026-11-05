@@ -6,41 +6,41 @@
 #include "element.h"
 #include "oivec.h"
 
-namespace oi{
+namespace oi {
 
 using namespace math;
 
-class OI_CORE_EXPORT Direction : public Element
-{
-    Q_OBJECT
+class OI_CORE_EXPORT Direction : public Element {
+  Q_OBJECT
 
-public:
-    explicit Direction(QObject *parent = 0);
-    explicit Direction(const OiVec &v, QObject *parent = 0);
-    explicit Direction(const double &x, const double &y, const double &z, const double &h = 1.0, QObject *parent = 0);
+ public:
+  explicit Direction(QObject* parent = 0);
+  explicit Direction(const OiVec& v, QObject* parent = 0);
+  explicit Direction(const double& x, const double& y, const double& z,
+                     const double& h = 1.0, QObject* parent = 0);
 
-    Direction(const Direction &copy, QObject *parent = 0);
+  Direction(const Direction& copy, QObject* parent = 0);
 
-    Direction &operator=(const Direction &copy);
+  Direction& operator=(const Direction& copy);
 
-    ~Direction();
+  ~Direction();
 
-    //###########################
-    //get or set direction vector
-    //###########################
+  // ###########################
+  // get or set direction vector
+  // ###########################
 
-    void setVector(const double &x, const double &y, const double &z, const double &h = 1.0);
-    void setVector(const OiVec &v);
+  void setVector(const double& x, const double& y, const double& z,
+                 const double& h = 1.0);
+  void setVector(const OiVec& v);
 
-    const OiVec &getVector() const;
-    const OiVec &getVectorH() const;
+  const OiVec& getVector() const;
+  const OiVec& getVectorH() const;
 
-private:
-    OiVec ijk; //vector of size 3 (i, j, k)
-    OiVec ijkH; //vector of size 4 (i, j, k, h)
-
+ private:
+  OiVec ijk;   // vector of size 3 (i, j, k)
+  OiVec ijkH;  // vector of size 4 (i, j, k, h)
 };
 
-}
+}  // namespace oi
 
-#endif // DIRECTION_H
+#endif  // DIRECTION_H

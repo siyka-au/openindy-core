@@ -1,230 +1,223 @@
 #ifndef MEASUREMENTCONFIG_H
 #define MEASUREMENTCONFIG_H
 
+#include <QHash>
 #include <QString>
 #include <QtXml>
-#include <QHash>
 
+#include "sensortype.h"
 #include "types.h"
 #include "util.h"
-#include "sensortype.h"
 
-namespace oi{
+namespace oi {
 
-enum MeasurementTypes{
-    eUnknown_MeasurementType = -1,
-    eSinglePoint_MeasurementType = 0,
-    eScanTimeDependent_MeasurementType,
-    eScanDistanceDependent_MeasurementType,
-    eLevel_MeasurementType,
-    eDirection_MeasurementType,
-    eDistance_MeasurementType,
-    eTemperature_MeasurementType
+enum MeasurementTypes {
+  eUnknown_MeasurementType = -1,
+  eSinglePoint_MeasurementType = 0,
+  eScanTimeDependent_MeasurementType,
+  eScanDistanceDependent_MeasurementType,
+  eLevel_MeasurementType,
+  eDirection_MeasurementType,
+  eDistance_MeasurementType,
+  eTemperature_MeasurementType
 };
 
 enum MeasurementModes {
-    eFast_MeasurementMode = 0,
-    eStandard_MeasurementMode,
-    ePrecise_MeasurementMode
+  eFast_MeasurementMode = 0,
+  eStandard_MeasurementMode,
+  ePrecise_MeasurementMode
 };
 
 enum ConfigTypes {
-    eUndefinded = -1,
-    eUserConfig = 0,
-    eProjectConfig,
-    eStandardConfig
+  eUndefinded = -1,
+  eUserConfig = 0,
+  eProjectConfig,
+  eStandardConfig
 };
 
 class OI_CORE_EXPORT MeasurementConfigKey {
-public:
-    MeasurementConfigKey(): configType(eUndefinded) {}
-    MeasurementConfigKey(QString name, ConfigTypes configType, SensorType sensorType = SensorType())
-        : name(name), configType(configType), sensorType(sensorType) {}
-    MeasurementConfigKey(const MeasurementConfigKey &copy) {
-        this->name = copy.name;
-        this->configType = copy.configType;
-        this->sensorType = copy.sensorType;
-    }
-    MeasurementConfigKey &operator=(const MeasurementConfigKey &copy) {
-        this->name = copy.name;
-        this->configType = copy.configType;
-        this->sensorType = copy.sensorType;
-        return *this;
-    }
+ public:
+  MeasurementConfigKey() : configType(eUndefinded) {}
+  MeasurementConfigKey(QString name, ConfigTypes configType,
+                       SensorType sensorType = SensorType())
+      : name(name), configType(configType), sensorType(sensorType) {}
+  MeasurementConfigKey(const MeasurementConfigKey& copy) {
+    this->name = copy.name;
+    this->configType = copy.configType;
+    this->sensorType = copy.sensorType;
+  }
+  MeasurementConfigKey& operator=(const MeasurementConfigKey& copy) {
+    this->name = copy.name;
+    this->configType = copy.configType;
+    this->sensorType = copy.sensorType;
+    return *this;
+  }
 
-    //name+configType alone collided across driver-published configs the
-    //moment two different sensor types published the same standard-config
-    //name (every driver's "FastPoint") - one silently overwrote the other
-    //in a QMap keyed on this. sensorType is part of the identity for the
-    //same reason SensorConfiguration's type isn't optional.
-    friend bool operator==(const MeasurementConfigKey &left, const MeasurementConfigKey &right){
+  // name+configType alone collided across driver-published configs the
+  // moment two different sensor types published the same standard-config
+  // name (every driver's "FastPoint") - one silently overwrote the other
+  // in a QMap keyed on this. sensorType is part of the identity for the
+  // same reason SensorConfiguration's type isn't optional.
+  friend bool operator==(const MeasurementConfigKey& left,
+                         const MeasurementConfigKey& right) {
+    return left.getName() == right.getName() &&
+           left.configType == right.configType &&
+           left.sensorType == right.sensorType;
+  }
 
-        return left.getName() == right.getName()
-                && left.configType == right.configType
-                && left.sensorType == right.sensorType;
-    }
+  friend uint qHash(const MeasurementConfigKey key, uint seed) {
+    QtPrivate::QHashCombine hash(seed);
+    seed = hash(seed, key.name);
+    seed = hash(seed, key.configType);
+    seed = hash(seed, key.sensorType.id());
+    return seed;
+  }
 
-    friend uint qHash(const MeasurementConfigKey key, uint seed) {
-        QtPrivate::QHashCombine hash(seed);
-        seed = hash(seed, key.name);
-        seed = hash(seed, key.configType);
-        seed = hash(seed, key.sensorType.id());
-        return seed;
+  friend bool operator<(const MeasurementConfigKey& left,
+                        const MeasurementConfigKey& right) {
+    if (left.name != right.name) {
+      return left.name < right.name;
+    } else if (left.configType != right.configType) {
+      return left.configType < right.configType;
+    } else {
+      return left.sensorType.id() < right.sensorType.id();
     }
+  }
 
-    friend bool operator<(const MeasurementConfigKey &left, const MeasurementConfigKey &right) {
-        if(left.name != right.name) {
-            return left.name < right.name;
-        } else if(left.configType != right.configType) {
-            return left.configType < right.configType;
-        } else {
-            return left.sensorType.id() < right.sensorType.id();
-        }
-    }
+  const QString getName() const { return this->name; }
 
-    const QString getName() const {
-        return this->name;
-    }
+  ConfigTypes getConfigType() const { return this->configType; }
 
-    ConfigTypes getConfigType() const {
-        return this->configType;
-    }
+  const SensorType& getSensorType() const { return this->sensorType; }
 
-    const SensorType &getSensorType() const {
-        return this->sensorType;
-    }
+  bool isUserConfig() const { return eUserConfig == this->configType; }
+  bool isProjectConfig() const {
+    return eProjectConfig == this->configType ||
+           eStandardConfig == this->configType;
+  }
+  bool isStandardConfig() const { return eStandardConfig == this->configType; }
+  bool isValid() const {
+    return !this->name.isEmpty() && this->configType != eUndefinded;
+  }
 
-    bool isUserConfig() const{
-        return eUserConfig == this->configType;
-    }
-    bool isProjectConfig() const{
-        return eProjectConfig == this->configType || eStandardConfig == this->configType;
-    }
-    bool isStandardConfig() const {
-        return eStandardConfig == this->configType;
-    }
-    bool isValid() const{
-        return !this->name.isEmpty() && this->configType != eUndefinded;
-    }
-
-private:
-    QString name;
-    ConfigTypes configType;
-    SensorType sensorType;
+ private:
+  QString name;
+  ConfigTypes configType;
+  SensorType sensorType;
 };
 
 /*!
  * \brief The MeasurementConfig class
  * Contains all the configuration parameters needed to start a measurement.
  */
-class OI_CORE_EXPORT MeasurementConfig
-{
+class OI_CORE_EXPORT MeasurementConfig {
+ public:
+  MeasurementConfig();
 
-public:
-    MeasurementConfig();
+  MeasurementConfig(const MeasurementConfig& copy);
 
-    MeasurementConfig(const MeasurementConfig &copy);
+  MeasurementConfig& operator=(const MeasurementConfig& copy);
 
-    MeasurementConfig &operator=(const MeasurementConfig &copy);
+  friend bool operator==(const MeasurementConfig& left,
+                         const MeasurementConfig& right) {
+    return left.getName() == right.getName()       // combined key
+           && left.configType == right.configType  // combined key
+           && left.editable == right.editable &&
+           left.getMeasurementType() == right.getMeasurementType() &&
+           left.getMeasurementMode() == right.getMeasurementMode() &&
+           left.getMeasureTwoSides() == right.getMeasureTwoSides() &&
+           left.getMaxObservations() == right.getMaxObservations() &&
+           left.getTimeInterval() == right.getTimeInterval() &&
+           almostEqual(left.getDistanceInterval(), right.getDistanceInterval(),
+                       8) &&
+           left.getSensorType() == right.getSensorType();
+  }
 
-    friend bool operator==(const MeasurementConfig &left, const MeasurementConfig &right){
+  // ########################################
+  // get or set measurement config attributes
+  // ########################################
 
-        return left.getName() == right.getName()        // combined key
-                && left.configType == right.configType  // combined key
-                && left.editable == right.editable
-                && left.getMeasurementType() == right.getMeasurementType()
-                && left.getMeasurementMode() == right.getMeasurementMode()
-                && left.getMeasureTwoSides() == right.getMeasureTwoSides()
-                && left.getMaxObservations() == right.getMaxObservations()
-                && left.getTimeInterval() == right.getTimeInterval()
-                && almostEqual(left.getDistanceInterval(), right.getDistanceInterval(), 8)
-                && left.getSensorType() == right.getSensorType();
-    }
+  const QString& getName() const;
+  void setName(const QString& name);
+  MeasurementConfigKey getKey() const;
 
-    //########################################
-    //get or set measurement config attributes
-    //########################################
+  bool isUserConfig() const;
+  bool isProjectConfig() const;
+  bool isEditable() const;
+  bool isStandardConfig() const;
+  bool isValid() const;
 
-    const QString &getName() const;
-    void setName(const QString &name);
-    MeasurementConfigKey getKey() const;
+  const bool& getMeasureTwoSides() const;
+  void setMeasureTwoSides(const bool& measureTwoSides);
 
-    bool isUserConfig() const;
-    bool isProjectConfig() const;
-    bool isEditable() const;
-    bool isStandardConfig() const;
-    bool isValid() const;
+  const double& getTimeInterval() const;
+  void setTimeInterval(const double& interval);
 
-    const bool &getMeasureTwoSides() const;
-    void setMeasureTwoSides(const bool &measureTwoSides);
+  const double& getDistanceInterval() const;
+  void setDistanceInterval(const double& interval);
 
-    const double &getTimeInterval() const;
-    void setTimeInterval(const double &interval);
+  const QVariant getTransientData(const QString key) const;
+  void setTransientData(const QString key, const QVariant value);
 
-    const double &getDistanceInterval() const;
-    void setDistanceInterval(const double &interval);
+  void setMeasurementMode(const MeasurementModes mode);
+  MeasurementModes getMeasurementMode() const;
 
-    const QVariant getTransientData(const QString key) const;
-    void setTransientData(const QString key, const QVariant value);
+  void setMeasurementType(const MeasurementTypes type);
+  MeasurementTypes getMeasurementType() const;
 
-    void setMeasurementMode(const MeasurementModes mode);
-    MeasurementModes getMeasurementMode() const;
+  const int& getMaxObservations() const;
+  void setMaxObservations(const int& maxObservations);
 
-    void setMeasurementType(const MeasurementTypes type);
-    MeasurementTypes getMeasurementType() const;
+  //! which sensor type published this config (set once, at creation, by
+  //! whichever driver's init() built it) - the compatibility check between
+  //! a selected config and the connected sensor is keyed off this, not
+  //! anything the user can edit after the fact. An invalid SensorType
+  //! (isValid() == false) means this config predates the tag or was
+  //! authored generically and isn't gated to any one type.
+  const SensorType& getSensorType() const;
+  void setSensorType(const SensorType& type);
 
-    const int &getMaxObservations() const;
-    void setMaxObservations(const int &maxObservations);
+  void makeUserConfig();
+  void makeStandardConfig();
+  void makeProjectConfig();
 
-    //! which sensor type published this config (set once, at creation, by
-    //! whichever driver's init() built it) - the compatibility check between
-    //! a selected config and the connected sensor is keyed off this, not
-    //! anything the user can edit after the fact. An invalid SensorType
-    //! (isValid() == false) means this config predates the tag or was
-    //! authored generically and isn't gated to any one type.
-    const SensorType &getSensorType() const;
-    void setSensorType(const SensorType &type);
+  // #################
+  // save and load XML
+  // #################
 
-    void makeUserConfig();
-    void makeStandardConfig();
-    void makeProjectConfig();
+  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const;
+  bool fromOpenIndyXML(QDomElement& xmlElem);
 
+  bool applicableFor(const ElementTypes elementType,
+                     QList<FeatureTypes> functionIsApplicableFor);
 
-    //#################
-    //save and load XML
-    //#################
+ private:
+  // #############################
+  // measurement config attributes
+  // #############################
+  QString name;
+  ConfigTypes configType;
 
-    QDomElement toOpenIndyXML(QDomDocument &xmlDoc) const;
-    bool fromOpenIndyXML(QDomElement &xmlElem);
+  bool measureTwoSides;  // true if the sensor shall measure in both faces
+                         // (false if not)
+  double timeInterval;      // time interval in which the sensor shall measure
+  double distanceInterval;  // distance interval in which the sensor shall
+                            // measure [mm]
 
-    bool applicableFor(const ElementTypes elementType, QList<FeatureTypes> functionIsApplicableFor);
+  QMap<QString, QVariant> transientData;
 
-private:
+  MeasurementTypes measurementType;
+  MeasurementModes measurementMode;
+  int maxObservations;
 
-    //#############################
-    //measurement config attributes
-    //#############################
-    QString name;
-    ConfigTypes configType;
+  SensorType sensorType;
 
-    bool measureTwoSides; //true if the sensor shall measure in both faces (false if not)
-    double timeInterval; //time interval in which the sensor shall measure
-    double distanceInterval; //distance interval in which the sensor shall measure [mm]
-
-    QMap<QString, QVariant> transientData;
-
-    MeasurementTypes measurementType;
-    MeasurementModes measurementMode;
-    int maxObservations;
-
-    SensorType sensorType;
-
-    bool editable;
+  bool editable;
 };
 
-}
+}  // namespace oi
 
-Q_DECLARE_METATYPE( oi::MeasurementConfig )
-Q_DECLARE_METATYPE( oi::MeasurementConfig* )
+Q_DECLARE_METATYPE(oi::MeasurementConfig)
+Q_DECLARE_METATYPE(oi::MeasurementConfig*)
 
-#endif // MEASUREMENTCONFIG_H
+#endif  // MEASUREMENTCONFIG_H

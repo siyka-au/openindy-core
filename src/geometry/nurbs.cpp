@@ -8,13 +8,11 @@ using namespace oi;
  * \brief Nurbs::Nurbs
  * \param parent
  */
-Nurbs::Nurbs(QObject *parent) : Geometry(parent){
-
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setNurbs(this);
-    }
-
+Nurbs::Nurbs(QObject* parent) : Geometry(parent) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setNurbs(this);
+  }
 }
 
 /*!
@@ -22,13 +20,11 @@ Nurbs::Nurbs(QObject *parent) : Geometry(parent){
  * \param copy
  * \param parent
  */
-Nurbs::Nurbs(const Nurbs &copy, QObject *parent) : Geometry(copy, parent){
-
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setNurbs(this);
-    }
-
+Nurbs::Nurbs(const Nurbs& copy, QObject* parent) : Geometry(copy, parent) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setNurbs(this);
+  }
 }
 
 /*!
@@ -36,50 +32,40 @@ Nurbs::Nurbs(const Nurbs &copy, QObject *parent) : Geometry(copy, parent){
  * \param copy
  * \return
  */
-Nurbs &Nurbs::operator=(const Nurbs &/*copy*/){
+Nurbs& Nurbs::operator=(const Nurbs& /*copy*/) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setNurbs(this);
+  }
 
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setNurbs(this);
-    }
-
-    return *this;
-
+  return *this;
 }
 
 /*!
  * \brief Nurbs::~Nurbs
  */
-Nurbs::~Nurbs(){
-
-}
+Nurbs::~Nurbs() {}
 
 /*!
  * \brief Nurbs::recalc
  */
-void Nurbs::recalc(){
-
-    Geometry::recalc();
-
-}
+void Nurbs::recalc() { Geometry::recalc(); }
 
 /*!
  * \brief Nurbs::toOpenIndyXML
  * \param xmlDoc
  * \return
  */
-QDomElement Nurbs::toOpenIndyXML(QDomDocument &xmlDoc) const{
+QDomElement Nurbs::toOpenIndyXML(QDomDocument& xmlDoc) const {
+  QDomElement nurbs = Geometry::toOpenIndyXML(xmlDoc);
 
-    QDomElement nurbs = Geometry::toOpenIndyXML(xmlDoc);
-
-    if(nurbs.isNull()){
-        return nurbs;
-    }
-
-    nurbs.setAttribute("type", getGeometryTypeName(eNurbsGeometry));
-
+  if (nurbs.isNull()) {
     return nurbs;
+  }
 
+  nurbs.setAttribute("type", getGeometryTypeName(eNurbsGeometry));
+
+  return nurbs;
 }
 
 /*!
@@ -87,16 +73,11 @@ QDomElement Nurbs::toOpenIndyXML(QDomDocument &xmlDoc) const{
  * \param xmlElem
  * \return
  */
-bool Nurbs::fromOpenIndyXML(QDomElement &xmlElem){
+bool Nurbs::fromOpenIndyXML(QDomElement& xmlElem) {
+  bool result = Geometry::fromOpenIndyXML(xmlElem);
 
-    bool result = Geometry::fromOpenIndyXML(xmlElem);
+  if (result) {
+  }
 
-    if(result){
-
-
-
-    }
-
-    return result;
-
+  return result;
 }

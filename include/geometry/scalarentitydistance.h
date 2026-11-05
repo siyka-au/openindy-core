@@ -6,78 +6,76 @@
 
 #include "geometry.h"
 
-namespace oi{
+namespace oi {
 
 /*!
  * \brief The ScalarEntityDistance class
  */
-class OI_CORE_EXPORT ScalarEntityDistance : public Geometry
-{
-    Q_OBJECT
+class OI_CORE_EXPORT ScalarEntityDistance : public Geometry {
+  Q_OBJECT
 
-public:
-    ScalarEntityDistance(QObject *parent = 0);
-    ScalarEntityDistance(const double &distance, QObject *parent = 0);
+ public:
+  ScalarEntityDistance(QObject* parent = 0);
+  ScalarEntityDistance(const double& distance, QObject* parent = 0);
 
-    ScalarEntityDistance(const ScalarEntityDistance &copy, QObject *parent = 0);
+  ScalarEntityDistance(const ScalarEntityDistance& copy, QObject* parent = 0);
 
-    ScalarEntityDistance &operator=(const ScalarEntityDistance &copy);
+  ScalarEntityDistance& operator=(const ScalarEntityDistance& copy);
 
-    ~ScalarEntityDistance();
+  ~ScalarEntityDistance();
 
-    //########################################
-    //order of unknown parameters (Qxx-matrix)
-    //########################################
+  // ########################################
+  // order of unknown parameters (Qxx-matrix)
+  // ########################################
 
-    enum DistanceUnknowns{
-        unknownDistance = 0
-    };
+  enum DistanceUnknowns { unknownDistance = 0 };
 
-    //##############################
-    //get or set distance parameters
-    //##############################
+  // ##############################
+  // get or set distance parameters
+  // ##############################
 
-    const double &getDistance() const;
+  const double& getDistance() const;
 
-    void setDistance(const double &distance);
+  void setDistance(const double& distance);
 
-    //#############################
-    //get or set unknown parameters
-    //#############################
+  // #############################
+  // get or set unknown parameters
+  // #############################
 
-    virtual QMap<GeometryParameters, QString> getUnknownParameters(const QMap<DimensionType, UnitType> &displayUnits,
-                                                          const QMap<DimensionType, int> &displayDigits) const;
-    virtual void applyUnknownParameters(const QMap<GeometryParameters, double> &parameters);
+  virtual QMap<GeometryParameters, QString> getUnknownParameters(
+      const QMap<DimensionType, UnitType>& displayUnits,
+      const QMap<DimensionType, int>& displayDigits) const;
+  virtual void applyUnknownParameters(
+      const QMap<GeometryParameters, double>& parameters);
 
-    //###########################
-    //reexecute the function list
-    //###########################
+  // ###########################
+  // reexecute the function list
+  // ###########################
 
-    void recalc();
+  void recalc();
 
-    //#################
-    //save and load XML
-    //#################
+  // #################
+  // save and load XML
+  // #################
 
-    QDomElement toOpenIndyXML(QDomDocument &xmlDoc) const;
-    bool fromOpenIndyXML(QDomElement &xmlElem);
+  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const;
+  bool fromOpenIndyXML(QDomElement& xmlElem);
 
-    //###############
-    //display methods
-    //###############
+  // ###############
+  // display methods
+  // ###############
 
-    QString getDisplayDistance(const UnitType &type, const int &digits, const bool &showDiff = false) const;
+  QString getDisplayDistance(const UnitType& type, const int& digits,
+                             const bool& showDiff = false) const;
 
-private:
+ private:
+  // ###################
+  // distance attributes
+  // ###################
 
-    //###################
-    //distance attributes
-    //###################
-
-    double distance;
-
+  double distance;
 };
 
-}
+}  // namespace oi
 
-#endif // SCALARENTITYDISTANCE_H
+#endif  // SCALARENTITYDISTANCE_H

@@ -5,7 +5,7 @@
 
 #include "position.h"
 
-namespace oi{
+namespace oi {
 
 /*!
  * \brief The PointCollection class
@@ -32,24 +32,20 @@ namespace oi{
  * (which observation, which instrument, what sigma) is asking a question
  * only PointGroup can answer, and should take a PointGroup.
  */
-class PointCollection
-{
+class PointCollection {
+ public:
+  virtual ~PointCollection() = default;
 
-public:
+  //! positions of every point in the collection, in the collection's own
+  //! current coordinate system
+  virtual QList<Position> collectionPoints() const = 0;
 
-    virtual ~PointCollection() = default;
-
-    //! positions of every point in the collection, in the collection's own
-    //! current coordinate system
-    virtual QList<Position> collectionPoints() const = 0;
-
-    //! how many points the collection currently holds. Separate from
-    //! collectionPoints().size() so a large point cloud can answer without
-    //! materialising a copy of every position.
-    virtual int collectionPointCount() const = 0;
-
+  //! how many points the collection currently holds. Separate from
+  //! collectionPoints().size() so a large point cloud can answer without
+  //! materialising a copy of every position.
+  virtual int collectionPointCount() const = 0;
 };
 
-}
+}  // namespace oi
 
-#endif // POINTCOLLECTION_H
+#endif  // POINTCOLLECTION_H

@@ -3,28 +3,26 @@
 
 #include "function.h"
 
-namespace oi{
+namespace oi {
 
 /*!
  * \brief The GenerateFeatureFunction class
  * Function that uses its input elements to generate one or more new feature
  */
-class OI_CORE_EXPORT GenerateFeatureFunction : public Function
-{
-    Q_OBJECT
+class OI_CORE_EXPORT GenerateFeatureFunction : public Function {
+  Q_OBJECT
 
-public:
-    GenerateFeatureFunction(QObject *parent = 0) : Function(parent){}
+ public:
+  GenerateFeatureFunction(QObject* parent = 0) : Function(parent) {}
 
-    virtual ~GenerateFeatureFunction(){}
+  virtual ~GenerateFeatureFunction() {}
 
-signals:
-    void addFeature(const QPointer<FeatureWrapper> &feature);
-    void addFeatures(const QList<QPointer<FeatureWrapper> > &features);
-
+ signals:
+  void addFeature(const QPointer<FeatureWrapper>& feature);
+  void addFeatures(const QList<QPointer<FeatureWrapper> >& features);
 };
 
-}
+}  // namespace oi
 
 #ifndef STR
 #define STR(x) #x
@@ -34,7 +32,7 @@ signals:
 #endif
 
 #ifndef CONCAT
-#define CONCAT(a, b) a ## b
+#define CONCAT(a, b) a##b
 #endif
 #ifndef CONCAT2
 #define CONCAT2(a, b) CONCAT(a, b)
@@ -42,7 +40,9 @@ signals:
 
 #include "pluginabi.h"
 
-#define GENERATEFEATUREFUNCTION_PREFIX de.openIndy.plugin.function.generateFeatureFunction.v
-#define GenerateFeatureFunction_iidd STR2(CONCAT2(GENERATEFEATUREFUNCTION_PREFIX, OI_PLUGIN_ABI_VERSION))
+#define GENERATEFEATUREFUNCTION_PREFIX \
+  de.openIndy.plugin.function.generateFeatureFunction.v
+#define GenerateFeatureFunction_iidd \
+  STR2(CONCAT2(GENERATEFEATUREFUNCTION_PREFIX, OI_PLUGIN_ABI_VERSION))
 
-#endif // GENERATEFEATUREFUNCTION_H
+#endif  // GENERATEFEATUREFUNCTION_H

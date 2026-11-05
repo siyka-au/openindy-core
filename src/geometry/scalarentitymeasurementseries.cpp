@@ -8,13 +8,12 @@ using namespace oi;
  * \brief ScalarEntityMeasurementSeries::ScalarEntityMeasurementSeries
  * \param parent
  */
-ScalarEntityMeasurementSeries::ScalarEntityMeasurementSeries(QObject *parent) : Geometry(parent){
-
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setScalarEntityMeasurementSeries(this);
-    }
-
+ScalarEntityMeasurementSeries::ScalarEntityMeasurementSeries(QObject* parent)
+    : Geometry(parent) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setScalarEntityMeasurementSeries(this);
+  }
 }
 
 /*!
@@ -22,15 +21,15 @@ ScalarEntityMeasurementSeries::ScalarEntityMeasurementSeries(QObject *parent) : 
  * \param seriesValue
  * \param parent
  */
-ScalarEntityMeasurementSeries::ScalarEntityMeasurementSeries(const double &seriesValue, QObject *parent) : Geometry(parent){
+ScalarEntityMeasurementSeries::ScalarEntityMeasurementSeries(
+    const double& seriesValue, QObject* parent)
+    : Geometry(parent) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setScalarEntityMeasurementSeries(this);
+  }
 
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setScalarEntityMeasurementSeries(this);
-    }
-
-    this->setSeriesValue(seriesValue);
-
+  this->setSeriesValue(seriesValue);
 }
 
 /*!
@@ -38,15 +37,15 @@ ScalarEntityMeasurementSeries::ScalarEntityMeasurementSeries(const double &serie
  * \param copy
  * \param parent
  */
-ScalarEntityMeasurementSeries::ScalarEntityMeasurementSeries(const ScalarEntityMeasurementSeries &copy, QObject *parent) : Geometry(copy, parent){
+ScalarEntityMeasurementSeries::ScalarEntityMeasurementSeries(
+    const ScalarEntityMeasurementSeries& copy, QObject* parent)
+    : Geometry(copy, parent) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setScalarEntityMeasurementSeries(this);
+  }
 
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setScalarEntityMeasurementSeries(this);
-    }
-
-    this->seriesValue = copy.seriesValue;
-
+  this->seriesValue = copy.seriesValue;
 }
 
 /*!
@@ -54,44 +53,39 @@ ScalarEntityMeasurementSeries::ScalarEntityMeasurementSeries(const ScalarEntityM
  * \param copy
  * \return
  */
-ScalarEntityMeasurementSeries &ScalarEntityMeasurementSeries::operator=(const ScalarEntityMeasurementSeries &copy){
+ScalarEntityMeasurementSeries& ScalarEntityMeasurementSeries::operator=(
+    const ScalarEntityMeasurementSeries& copy) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setScalarEntityMeasurementSeries(this);
+  }
 
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setScalarEntityMeasurementSeries(this);
-    }
+  this->seriesValue = copy.seriesValue;
 
-    this->seriesValue = copy.seriesValue;
-
-    return *this;
-
+  return *this;
 }
 
 /*!
  * \brief ScalarEntityMeasurementSeries::~ScalarEntityMeasurementSeries
  */
-ScalarEntityMeasurementSeries::~ScalarEntityMeasurementSeries(){
-
-}
+ScalarEntityMeasurementSeries::~ScalarEntityMeasurementSeries() {}
 
 /*!
  * \brief ScalarEntityMeasurementSeries::getSeriesValue
  * \return
  */
-const double &ScalarEntityMeasurementSeries::getSeriesValue() const{
-    return this->seriesValue;
+const double& ScalarEntityMeasurementSeries::getSeriesValue() const {
+  return this->seriesValue;
 }
 
 /*!
  * \brief ScalarEntityMeasurementSeries::setSeriesValue
  * \param seriesValue
  */
-void ScalarEntityMeasurementSeries::setSeriesValue(const double &seriesValue){
+void ScalarEntityMeasurementSeries::setSeriesValue(const double& seriesValue) {
+  this->seriesValue = seriesValue;
 
-    this->seriesValue = seriesValue;
-
-    emit this->geomParametersChanged(this->id);
-
+  emit this->geomParametersChanged(this->id);
 }
 
 /*!
@@ -100,54 +94,55 @@ void ScalarEntityMeasurementSeries::setSeriesValue(const double &seriesValue){
  * \param displayDigits
  * \return
  */
-QMap<GeometryParameters, QString> ScalarEntityMeasurementSeries::getUnknownParameters(const QMap<DimensionType, UnitType> &displayUnits, const QMap<DimensionType, int> &displayDigits) const{
+QMap<GeometryParameters, QString>
+ScalarEntityMeasurementSeries::getUnknownParameters(
+    const QMap<DimensionType, UnitType>& displayUnits,
+    const QMap<DimensionType, int>& displayDigits) const {
+  QMap<GeometryParameters, QString> parameters;
 
-    QMap<GeometryParameters, QString> parameters;
+  parameters.insert(
+      eUnknownMeasurementSeries,
+      this->getDisplayMeasurementSeries(displayUnits.value(eMetric, eUnitMeter),
+                                        displayDigits.value(eMetric, 0)));
 
-    parameters.insert(eUnknownMeasurementSeries, this->getDisplayMeasurementSeries(displayUnits.value(eMetric, eUnitMeter), displayDigits.value(eMetric, 0)));
-
-    return parameters;
-
+  return parameters;
 }
 
 /*!
  * \brief ScalarEntityMeasurementSeries::applyUnknownParameters
  * \param parameters
  */
-void ScalarEntityMeasurementSeries::applyUnknownParameters(const QMap<GeometryParameters, double> &parameters){
+void ScalarEntityMeasurementSeries::applyUnknownParameters(
+    const QMap<GeometryParameters, double>& parameters) {
+  // get current parameters
+  double series = this->seriesValue;
 
-    //get current parameters
-    double series = this->seriesValue;
-
-    //update parameters
-    QList<GeometryParameters> keys = parameters.keys();
-    foreach(const GeometryParameters &key, keys){
-        switch(key){
-        case eUnknownMeasurementSeries:
-            series = parameters.value(eUnknownMeasurementSeries);
-            break;
-        default:
-            break;
-        }
+  // update parameters
+  QList<GeometryParameters> keys = parameters.keys();
+  foreach (const GeometryParameters& key, keys) {
+    switch (key) {
+      case eUnknownMeasurementSeries:
+        series = parameters.value(eUnknownMeasurementSeries);
+        break;
+      default:
+        break;
     }
+  }
 
-    //update measurement series definition
-    this->setSeriesValue(series);
-
+  // update measurement series definition
+  this->setSeriesValue(series);
 }
 
 /*!
  * \brief ScalarEntityMeasurementSeries::recalc
  */
-void ScalarEntityMeasurementSeries::recalc(){
+void ScalarEntityMeasurementSeries::recalc() {
+  Geometry::recalc();
 
-    Geometry::recalc();
-
-    //reset measurement series definition if not solved and no nominal
-    if(!this->isSolved && this->getOwnerDescription().has_value()){
-        this->seriesValue = 0.0;
-    }
-
+  // reset measurement series definition if not solved and no nominal
+  if (!this->isSolved && this->getOwnerDescription().has_value()) {
+    this->seriesValue = 0.0;
+  }
 }
 
 /*!
@@ -155,27 +150,27 @@ void ScalarEntityMeasurementSeries::recalc(){
  * \param xmlDoc
  * \return
  */
-QDomElement ScalarEntityMeasurementSeries::toOpenIndyXML(QDomDocument &xmlDoc) const{
+QDomElement ScalarEntityMeasurementSeries::toOpenIndyXML(
+    QDomDocument& xmlDoc) const {
+  QDomElement entityMeasurementSeries = Geometry::toOpenIndyXML(xmlDoc);
 
-    QDomElement entityMeasurementSeries = Geometry::toOpenIndyXML(xmlDoc);
-
-    if(entityMeasurementSeries.isNull()){
-        return entityMeasurementSeries;
-    }
-
-    entityMeasurementSeries.setAttribute("type", getGeometryTypeName(eScalarEntityMeasurementSeriesGeometry));
-
-    //add series value
-    QDomElement seriesValue = xmlDoc.createElement("seriesValue");
-    if(this->isSolved || !this->getOwnerDescription().has_value()){
-        seriesValue.setAttribute("value", this->seriesValue);
-    }else{
-        seriesValue.setAttribute("value", 0.0);
-    }
-    entityMeasurementSeries.appendChild(seriesValue);
-
+  if (entityMeasurementSeries.isNull()) {
     return entityMeasurementSeries;
+  }
 
+  entityMeasurementSeries.setAttribute(
+      "type", getGeometryTypeName(eScalarEntityMeasurementSeriesGeometry));
+
+  // add series value
+  QDomElement seriesValue = xmlDoc.createElement("seriesValue");
+  if (this->isSolved || !this->getOwnerDescription().has_value()) {
+    seriesValue.setAttribute("value", this->seriesValue);
+  } else {
+    seriesValue.setAttribute("value", 0.0);
+  }
+  entityMeasurementSeries.appendChild(seriesValue);
+
+  return entityMeasurementSeries;
 }
 
 /*!
@@ -183,25 +178,21 @@ QDomElement ScalarEntityMeasurementSeries::toOpenIndyXML(QDomDocument &xmlDoc) c
  * \param xmlElem
  * \return
  */
-bool ScalarEntityMeasurementSeries::fromOpenIndyXML(QDomElement &xmlElem){
+bool ScalarEntityMeasurementSeries::fromOpenIndyXML(QDomElement& xmlElem) {
+  bool result = Geometry::fromOpenIndyXML(xmlElem);
 
-    bool result = Geometry::fromOpenIndyXML(xmlElem);
+  if (result) {
+    // set measurement series attributes
+    QDomElement seriesValue = xmlElem.firstChildElement("seriesValue");
 
-    if(result){
-
-        //set measurement series attributes
-        QDomElement seriesValue = xmlElem.firstChildElement("seriesValue");
-
-        if(seriesValue.isNull() || !seriesValue.hasAttribute("value")){
-            return false;
-        }
-
-        this->seriesValue = seriesValue.attribute("value").toDouble();
-
+    if (seriesValue.isNull() || !seriesValue.hasAttribute("value")) {
+      return false;
     }
 
-    return result;
+    this->seriesValue = seriesValue.attribute("value").toDouble();
+  }
 
+  return result;
 }
 
 /*!
@@ -211,9 +202,11 @@ bool ScalarEntityMeasurementSeries::fromOpenIndyXML(QDomElement &xmlElem){
  * \param showDiff
  * \return
  */
-QString ScalarEntityMeasurementSeries::getDisplayMeasurementSeries(const UnitType &type, const int &digits, const bool &/*showDiff*/) const{
-    if(this->isSolved){
-        return QString::number(convertFromDefault(this->seriesValue, type), 'f', digits);
-    }
-    return QString("");
+QString ScalarEntityMeasurementSeries::getDisplayMeasurementSeries(
+    const UnitType& type, const int& digits, const bool& /*showDiff*/) const {
+  if (this->isSolved) {
+    return QString::number(convertFromDefault(this->seriesValue, type), 'f',
+                           digits);
+  }
+  return QString("");
 }

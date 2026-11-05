@@ -2,133 +2,150 @@
 #define SLOTTEDHOLE_H
 
 #include <QObject>
-#include <QtXml>
 #include <QtMath>
+#include <QtXml>
 
+#include "direction.h"
 #include "geometry.h"
 #include "position.h"
 #include "radius.h"
-#include "direction.h"
 
-namespace oi{
+namespace oi {
 
 /*!
  * \brief The SlottedHole class
  * Defines an elongated bore with one radius
  */
-class OI_CORE_EXPORT SlottedHole : public Geometry
-{
-    Q_OBJECT
+class OI_CORE_EXPORT SlottedHole : public Geometry {
+  Q_OBJECT
 
-public:
-    SlottedHole(QObject *parent = 0);
-    SlottedHole(const Position &center, const Direction &normal,
-                const Radius &radius, const double &length, const Direction &holeAxis, QObject *parent = 0);
-    SlottedHole(const Position &circleCenterA, const Position &circleCenterB,
-                const Direction &normal, const Radius &radius, QObject *parent = 0);
+ public:
+  SlottedHole(QObject* parent = 0);
+  SlottedHole(const Position& center, const Direction& normal,
+              const Radius& radius, const double& length,
+              const Direction& holeAxis, QObject* parent = 0);
+  SlottedHole(const Position& circleCenterA, const Position& circleCenterB,
+              const Direction& normal, const Radius& radius,
+              QObject* parent = 0);
 
-    SlottedHole(const SlottedHole &copy, QObject *parent = 0);
+  SlottedHole(const SlottedHole& copy, QObject* parent = 0);
 
-    SlottedHole &operator=(const SlottedHole &copy);
+  SlottedHole& operator=(const SlottedHole& copy);
 
-    ~SlottedHole();
+  ~SlottedHole();
 
-    //########################################
-    //order of unknown parameters (Qxx-matrix)
-    //########################################
+  // ########################################
+  // order of unknown parameters (Qxx-matrix)
+  // ########################################
 
-    enum SlottedHoleUnknowns{
-        unknownCenterX = 0,
-        unknownCenterY,
-        unknownCenterZ,
-        unknownNormalI,
-        unknownNormalJ,
-        unknownNormalK,
-        unknownRadius,
-        unknownLength,
-        unknownHoleAxisI,
-        unknownHoleAxisJ,
-        unknownHoleAxisK
-    };
+  enum SlottedHoleUnknowns {
+    unknownCenterX = 0,
+    unknownCenterY,
+    unknownCenterZ,
+    unknownNormalI,
+    unknownNormalJ,
+    unknownNormalK,
+    unknownRadius,
+    unknownLength,
+    unknownHoleAxisI,
+    unknownHoleAxisJ,
+    unknownHoleAxisK
+  };
 
-    //###################################################################
-    //check wether this geometry has a direction, a position and a radius
-    //###################################################################
+  // ###################################################################
+  // check wether this geometry has a direction, a position and a radius
+  // ###################################################################
 
-    bool hasDirection() const;
-    bool hasPosition() const;
-    bool hasRadius() const;
+  bool hasDirection() const;
+  bool hasPosition() const;
+  bool hasRadius() const;
 
-    //##################################
-    //get or set slotted hole parameters
-    //##################################
+  // ##################################
+  // get or set slotted hole parameters
+  // ##################################
 
-    const Radius &getRadius() const;
-    const Direction &getDirection() const;
-    const Position &getPosition() const;
+  const Radius& getRadius() const;
+  const Direction& getDirection() const;
+  const Position& getPosition() const;
 
-    const Position &getCircleCenterA() const;
-    const Position &getCircleCenterB() const;
-    const Direction &getHoleAxis() const;
-    const double &getLength() const;
+  const Position& getCircleCenterA() const;
+  const Position& getCircleCenterB() const;
+  const Direction& getHoleAxis() const;
+  const double& getLength() const;
 
-    void setSlottedHole(const Position &center, const Direction &normal, const Radius &radius, const double &length, const Direction &holeAxis);
-    void setSlottedHole(const Position &circleCenterA, const Position &circleCenterB, const Direction &normal, const Radius &radius);
+  void setSlottedHole(const Position& center, const Direction& normal,
+                      const Radius& radius, const double& length,
+                      const Direction& holeAxis);
+  void setSlottedHole(const Position& circleCenterA,
+                      const Position& circleCenterB, const Direction& normal,
+                      const Radius& radius);
 
-    //#############################
-    //get or set unknown parameters
-    //#############################
+  // #############################
+  // get or set unknown parameters
+  // #############################
 
-    virtual QMap<GeometryParameters, QString> getUnknownParameters(const QMap<DimensionType, UnitType> &displayUnits,
-                                                          const QMap<DimensionType, int> &displayDigits) const;
-    virtual void applyUnknownParameters(const QMap<GeometryParameters, double> &parameters);
+  virtual QMap<GeometryParameters, QString> getUnknownParameters(
+      const QMap<DimensionType, UnitType>& displayUnits,
+      const QMap<DimensionType, int>& displayDigits) const;
+  virtual void applyUnknownParameters(
+      const QMap<GeometryParameters, double>& parameters);
 
-    //###########################
-    //reexecute the function list
-    //###########################
+  // ###########################
+  // reexecute the function list
+  // ###########################
 
-    void recalc();
+  void recalc();
 
-    //#################
-    //save and load XML
-    //#################
+  // #################
+  // save and load XML
+  // #################
 
-    QDomElement toOpenIndyXML(QDomDocument &xmlDoc) const;
-    bool fromOpenIndyXML(QDomElement &xmlElem);
+  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const;
+  bool fromOpenIndyXML(QDomElement& xmlElem);
 
-    //###############
-    //display methods
-    //###############
+  // ###############
+  // display methods
+  // ###############
 
-    QString getDisplayX(const UnitType &type, const int &digits, const bool &showDiff = false) const;
-    QString getDisplayY(const UnitType &type, const int &digits, const bool &showDiff = false) const;
-    QString getDisplayZ(const UnitType &type, const int &digits, const bool &showDiff = false) const;
-    QString getDisplayPrimaryI(const int &digits, const bool &showDiff = false) const;
-    QString getDisplayPrimaryJ(const int &digits, const bool &showDiff = false) const;
-    QString getDisplayPrimaryK(const int &digits, const bool &showDiff = false) const;
-    QString getDisplayRadiusA(const UnitType &type, const int &digits, const bool &showDiff = false) const;
-    QString getDisplaySecondaryI(const int &digits, const bool &showDiff = false) const;
-    QString getDisplaySecondaryJ(const int &digits, const bool &showDiff = false) const;
-    QString getDisplaySecondaryK(const int &digits, const bool &showDiff = false) const;
-    QString getDisplayLength(const UnitType &type, const int &digits, const bool &showDiff = false) const;
+  QString getDisplayX(const UnitType& type, const int& digits,
+                      const bool& showDiff = false) const;
+  QString getDisplayY(const UnitType& type, const int& digits,
+                      const bool& showDiff = false) const;
+  QString getDisplayZ(const UnitType& type, const int& digits,
+                      const bool& showDiff = false) const;
+  QString getDisplayPrimaryI(const int& digits,
+                             const bool& showDiff = false) const;
+  QString getDisplayPrimaryJ(const int& digits,
+                             const bool& showDiff = false) const;
+  QString getDisplayPrimaryK(const int& digits,
+                             const bool& showDiff = false) const;
+  QString getDisplayRadiusA(const UnitType& type, const int& digits,
+                            const bool& showDiff = false) const;
+  QString getDisplaySecondaryI(const int& digits,
+                               const bool& showDiff = false) const;
+  QString getDisplaySecondaryJ(const int& digits,
+                               const bool& showDiff = false) const;
+  QString getDisplaySecondaryK(const int& digits,
+                               const bool& showDiff = false) const;
+  QString getDisplayLength(const UnitType& type, const int& digits,
+                           const bool& showDiff = false) const;
 
-private:
+ private:
+  // #######################
+  // slotted hole attributes
+  // #######################
 
-    //#######################
-    //slotted hole attributes
-    //#######################
+  Position center;   // center of the slotted hole
+  Direction normal;  // normal vector
+  Radius radius;     // radius of the outer circles
+  double length;     // length of the slotted hole (= distance of the circle
+                  // centers + 2 * radius)
+  Direction holeAxis;  // vector pointing from one circle center to the other)
 
-    Position center; //center of the slotted hole
-    Direction normal; //normal vector
-    Radius radius; //radius of the outer circles
-    double length; //length of the slotted hole (= distance of the circle centers + 2 * radius)
-    Direction holeAxis; //vector pointing from one circle center to the other)
-
-    Position circleCenterA; //center of one circle
-    Position circleCenterB; //center of the other circle
-
+  Position circleCenterA;  // center of one circle
+  Position circleCenterB;  // center of the other circle
 };
 
-}
+}  // namespace oi
 
-#endif // SLOTTEDHOLE_H
+#endif  // SLOTTEDHOLE_H

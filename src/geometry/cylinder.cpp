@@ -9,13 +9,11 @@ using namespace oi::math;
  * \brief Cylinder::Cylinder
  * \param parent
  */
-Cylinder::Cylinder(QObject *parent) : Geometry(parent){
-
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setCylinder(this);
-    }
-
+Cylinder::Cylinder(QObject* parent) : Geometry(parent) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setCylinder(this);
+  }
 }
 
 /*!
@@ -25,15 +23,15 @@ Cylinder::Cylinder(QObject *parent) : Geometry(parent){
  * \param radius
  * \param parent
  */
-Cylinder::Cylinder(const Position &axisPoint, const Direction &axis, const Radius &radius, QObject *parent) : Geometry(parent){
+Cylinder::Cylinder(const Position& axisPoint, const Direction& axis,
+                   const Radius& radius, QObject* parent)
+    : Geometry(parent) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setCylinder(this);
+  }
 
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setCylinder(this);
-    }
-
-    this->setCylinder(axisPoint, axis, radius);
-
+  this->setCylinder(axisPoint, axis, radius);
 }
 
 /*!
@@ -41,17 +39,16 @@ Cylinder::Cylinder(const Position &axisPoint, const Direction &axis, const Radiu
  * \param copy
  * \param parent
  */
-Cylinder::Cylinder(const Cylinder &copy, QObject *parent) : Geometry(copy, parent){
+Cylinder::Cylinder(const Cylinder& copy, QObject* parent)
+    : Geometry(copy, parent) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setCylinder(this);
+  }
 
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setCylinder(this);
-    }
-
-    this->xyz = copy.xyz;
-    this->ijk = copy.ijk;
-    this->radius = copy.radius;
-
+  this->xyz = copy.xyz;
+  this->ijk = copy.ijk;
+  this->radius = copy.radius;
 }
 
 /*!
@@ -59,51 +56,41 @@ Cylinder::Cylinder(const Cylinder &copy, QObject *parent) : Geometry(copy, paren
  * \param copy
  * \return
  */
-Cylinder &Cylinder::operator=(const Cylinder &copy){
+Cylinder& Cylinder::operator=(const Cylinder& copy) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setCylinder(this);
+  }
 
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setCylinder(this);
-    }
+  this->xyz = copy.xyz;
+  this->ijk = copy.ijk;
+  this->radius = copy.radius;
 
-    this->xyz = copy.xyz;
-    this->ijk = copy.ijk;
-    this->radius = copy.radius;
-
-    return *this;
-
+  return *this;
 }
 
 /*!
  * \brief Cylinder::~Cylinder
  */
-Cylinder::~Cylinder(){
-
-}
+Cylinder::~Cylinder() {}
 
 /*!
  * \brief Cylinder::hasDirection
  * \return
  */
-bool Cylinder::hasDirection() const{
-    return true;
-}
+bool Cylinder::hasDirection() const { return true; }
 
 /*!
  * \brief Cylinder::hasPosition
  * \return
  */
-bool Cylinder::hasPosition() const{
-    return true;
-}
+bool Cylinder::hasPosition() const { return true; }
 
 /*!
  * \brief Cylinder::hasRadius
  * \return
  */
-bool Cylinder::hasRadius() const{
-    return true;
-}
+bool Cylinder::hasRadius() const { return true; }
 
 /*!
  * \brief Cylinder::setCylinder
@@ -111,15 +98,14 @@ bool Cylinder::hasRadius() const{
  * \param axis
  * \param radius
  */
-void Cylinder::setCylinder(const Position &axisPoint, const Direction &axis, const Radius &radius){
+void Cylinder::setCylinder(const Position& axisPoint, const Direction& axis,
+                           const Radius& radius) {
+  // set the given parameters
+  this->xyz = axisPoint;
+  this->ijk = axis;
+  this->radius = radius;
 
-    //set the given parameters
-    this->xyz = axisPoint;
-    this->ijk = axis;
-    this->radius = radius;
-
-    emit this->geomParametersChanged(this->id);
-
+  emit this->geomParametersChanged(this->id);
 }
 
 /*!
@@ -128,86 +114,98 @@ void Cylinder::setCylinder(const Position &axisPoint, const Direction &axis, con
  * \param displayDigits
  * \return
  */
-QMap<GeometryParameters, QString> Cylinder::getUnknownParameters(const QMap<DimensionType, UnitType> &displayUnits, const QMap<DimensionType, int> &displayDigits) const{
+QMap<GeometryParameters, QString> Cylinder::getUnknownParameters(
+    const QMap<DimensionType, UnitType>& displayUnits,
+    const QMap<DimensionType, int>& displayDigits) const {
+  QMap<GeometryParameters, QString> parameters;
 
-    QMap<GeometryParameters, QString> parameters;
+  parameters.insert(eUnknownX,
+                    this->getDisplayX(displayUnits.value(eMetric, eUnitMeter),
+                                      displayDigits.value(eMetric, 0)));
+  parameters.insert(eUnknownY,
+                    this->getDisplayY(displayUnits.value(eMetric, eUnitMeter),
+                                      displayDigits.value(eMetric, 0)));
+  parameters.insert(eUnknownZ,
+                    this->getDisplayZ(displayUnits.value(eMetric, eUnitMeter),
+                                      displayDigits.value(eMetric, 0)));
+  parameters.insert(
+      eUnknownPrimaryI,
+      this->getDisplayPrimaryI(displayDigits.value(eDimensionless, 0)));
+  parameters.insert(
+      eUnknownPrimaryJ,
+      this->getDisplayPrimaryJ(displayDigits.value(eDimensionless, 0)));
+  parameters.insert(
+      eUnknownPrimaryK,
+      this->getDisplayPrimaryK(displayDigits.value(eDimensionless, 0)));
+  parameters.insert(
+      eUnknownRadiusA,
+      this->getDisplayRadiusA(displayUnits.value(eMetric, eUnitMeter),
+                              displayDigits.value(eMetric, 0)));
 
-    parameters.insert(eUnknownX, this->getDisplayX(displayUnits.value(eMetric, eUnitMeter), displayDigits.value(eMetric, 0)));
-    parameters.insert(eUnknownY, this->getDisplayY(displayUnits.value(eMetric, eUnitMeter), displayDigits.value(eMetric, 0)));
-    parameters.insert(eUnknownZ, this->getDisplayZ(displayUnits.value(eMetric, eUnitMeter), displayDigits.value(eMetric, 0)));
-    parameters.insert(eUnknownPrimaryI, this->getDisplayPrimaryI(displayDigits.value(eDimensionless, 0)));
-    parameters.insert(eUnknownPrimaryJ, this->getDisplayPrimaryJ(displayDigits.value(eDimensionless, 0)));
-    parameters.insert(eUnknownPrimaryK, this->getDisplayPrimaryK(displayDigits.value(eDimensionless, 0)));
-    parameters.insert(eUnknownRadiusA, this->getDisplayRadiusA(displayUnits.value(eMetric, eUnitMeter), displayDigits.value(eMetric, 0)));
-
-    return parameters;
-
+  return parameters;
 }
 
 /*!
  * \brief Cylinder::applyUnknownParameters
  * \param parameters
  */
-void Cylinder::applyUnknownParameters(const QMap<GeometryParameters, double> &parameters){
+void Cylinder::applyUnknownParameters(
+    const QMap<GeometryParameters, double>& parameters) {
+  // get current parameters
+  OiVec position = this->xyz.getVector();
+  OiVec direction = this->ijk.getVector();
+  double radius = this->radius.getRadius();
 
-    //get current parameters
-    OiVec position = this->xyz.getVector();
-    OiVec direction = this->ijk.getVector();
-    double radius = this->radius.getRadius();
-
-    //update parameters
-    QList<GeometryParameters> keys = parameters.keys();
-    foreach(const GeometryParameters &key, keys){
-        switch(key){
-        case eUnknownX:
-            position.setAt(0, parameters.value(eUnknownX));
-            break;
-        case eUnknownY:
-            position.setAt(1, parameters.value(eUnknownY));
-            break;
-        case eUnknownZ:
-            position.setAt(2, parameters.value(eUnknownZ));
-            break;
-        case eUnknownPrimaryI:
-            direction.setAt(0, parameters.value(eUnknownPrimaryI));
-            break;
-        case eUnknownPrimaryJ:
-            direction.setAt(1, parameters.value(eUnknownPrimaryJ));
-            break;
-        case eUnknownPrimaryK:
-            direction.setAt(2, parameters.value(eUnknownPrimaryK));
-            break;
-        case eUnknownRadiusA:
-            radius = parameters.value(eUnknownRadiusA);
-            break;
-        default:
-            break;
-        }
+  // update parameters
+  QList<GeometryParameters> keys = parameters.keys();
+  foreach (const GeometryParameters& key, keys) {
+    switch (key) {
+      case eUnknownX:
+        position.setAt(0, parameters.value(eUnknownX));
+        break;
+      case eUnknownY:
+        position.setAt(1, parameters.value(eUnknownY));
+        break;
+      case eUnknownZ:
+        position.setAt(2, parameters.value(eUnknownZ));
+        break;
+      case eUnknownPrimaryI:
+        direction.setAt(0, parameters.value(eUnknownPrimaryI));
+        break;
+      case eUnknownPrimaryJ:
+        direction.setAt(1, parameters.value(eUnknownPrimaryJ));
+        break;
+      case eUnknownPrimaryK:
+        direction.setAt(2, parameters.value(eUnknownPrimaryK));
+        break;
+      case eUnknownRadiusA:
+        radius = parameters.value(eUnknownRadiusA);
+        break;
+      default:
+        break;
     }
+  }
 
-    //update cylinder definition
-    direction.normalize();
-    Position cylinderPosition(position);
-    Direction cylinderDirection(direction);
-    Radius cylinderRadius(radius);
-    this->setCylinder(cylinderPosition, cylinderDirection, cylinderRadius);
-
+  // update cylinder definition
+  direction.normalize();
+  Position cylinderPosition(position);
+  Direction cylinderDirection(direction);
+  Radius cylinderRadius(radius);
+  this->setCylinder(cylinderPosition, cylinderDirection, cylinderRadius);
 }
 
 /*!
  * \brief Cylinder::recalc
  */
-void Cylinder::recalc(){
+void Cylinder::recalc() {
+  Geometry::recalc();
 
-    Geometry::recalc();
-
-    //reset cylinder definition if not solved and no nominal
-    if(!this->isSolved && this->getOwnerDescription().has_value()){
-        this->xyz.setVector(0.0, 0.0, 0.0);
-        this->ijk.setVector(0.0, 0.0, 0.0);
-        this->radius.setRadius(0.0);
-    }
-
+  // reset cylinder definition if not solved and no nominal
+  if (!this->isSolved && this->getOwnerDescription().has_value()) {
+    this->xyz.setVector(0.0, 0.0, 0.0);
+    this->ijk.setVector(0.0, 0.0, 0.0);
+    this->radius.setRadius(0.0);
+  }
 }
 
 /*!
@@ -215,18 +213,16 @@ void Cylinder::recalc(){
  * \param xmlDoc
  * \return
  */
-QDomElement Cylinder::toOpenIndyXML(QDomDocument &xmlDoc) const{
+QDomElement Cylinder::toOpenIndyXML(QDomDocument& xmlDoc) const {
+  QDomElement cylinder = Geometry::toOpenIndyXML(xmlDoc);
 
-    QDomElement cylinder = Geometry::toOpenIndyXML(xmlDoc);
-
-    if(cylinder.isNull()){
-        return cylinder;
-    }
-
-    cylinder.setAttribute("type", getGeometryTypeName(eCylinderGeometry));
-
+  if (cylinder.isNull()) {
     return cylinder;
+  }
 
+  cylinder.setAttribute("type", getGeometryTypeName(eCylinderGeometry));
+
+  return cylinder;
 }
 
 /*!
@@ -234,34 +230,31 @@ QDomElement Cylinder::toOpenIndyXML(QDomDocument &xmlDoc) const{
  * \param xmlElem
  * \return
  */
-bool Cylinder::fromOpenIndyXML(QDomElement &xmlElem){
+bool Cylinder::fromOpenIndyXML(QDomElement& xmlElem) {
+  bool result = Geometry::fromOpenIndyXML(xmlElem);
 
-    bool result = Geometry::fromOpenIndyXML(xmlElem);
+  if (result) {
+    // set cylinder attributes
+    QDomElement radius = xmlElem.firstChildElement("radius");
+    QDomElement axis = xmlElem.firstChildElement("spatialDirection");
+    QDomElement axisPoint = xmlElem.firstChildElement("coordinates");
 
-    if(result){
-
-        //set cylinder attributes
-        QDomElement radius = xmlElem.firstChildElement("radius");
-        QDomElement axis = xmlElem.firstChildElement("spatialDirection");
-        QDomElement axisPoint = xmlElem.firstChildElement("coordinates");
-
-        if(radius.isNull() || axis.isNull() || axisPoint.isNull() || !radius.hasAttribute("value")
-                || !axis.hasAttribute("i") || !axis.hasAttribute("j") || !axis.hasAttribute("k")
-                || !axisPoint.hasAttribute("x") || !axisPoint.hasAttribute("y") || !axisPoint.hasAttribute("z")){
-            return false;
-        }
-
-        this->radius.setRadius(radius.attribute("value").toDouble());
-        this->ijk.setVector(axis.attribute("i").toDouble(),
-                             axis.attribute("j").toDouble(),
-                             axis.attribute("k").toDouble());
-        this->xyz.setVector(axisPoint.attribute("x").toDouble(),
-                                  axisPoint.attribute("y").toDouble(),
-                                  axisPoint.attribute("z").toDouble());
-
+    if (radius.isNull() || axis.isNull() || axisPoint.isNull() ||
+        !radius.hasAttribute("value") || !axis.hasAttribute("i") ||
+        !axis.hasAttribute("j") || !axis.hasAttribute("k") ||
+        !axisPoint.hasAttribute("x") || !axisPoint.hasAttribute("y") ||
+        !axisPoint.hasAttribute("z")) {
+      return false;
     }
 
-    return result;
+    this->radius.setRadius(radius.attribute("value").toDouble());
+    this->ijk.setVector(axis.attribute("i").toDouble(),
+                        axis.attribute("j").toDouble(),
+                        axis.attribute("k").toDouble());
+    this->xyz.setVector(axisPoint.attribute("x").toDouble(),
+                        axisPoint.attribute("y").toDouble(),
+                        axisPoint.attribute("z").toDouble());
+  }
 
+  return result;
 }
-

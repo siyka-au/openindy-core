@@ -3,24 +3,22 @@
 
 #include "function.h"
 
-namespace oi{
+namespace oi {
 
 /*!
  * \brief The ObjectTransformation class
  * Function that changes a previously solved feature by using other elements
  */
-class OI_CORE_EXPORT ObjectTransformation : public Function
-{
-    Q_OBJECT
+class OI_CORE_EXPORT ObjectTransformation : public Function {
+  Q_OBJECT
 
-public:
-    ObjectTransformation(QObject *parent = 0) : Function(parent){}
+ public:
+  ObjectTransformation(QObject* parent = 0) : Function(parent) {}
 
-    virtual ~ObjectTransformation(){}
-
+  virtual ~ObjectTransformation() {}
 };
 
-}
+}  // namespace oi
 
 #ifndef STR
 #define STR(x) #x
@@ -30,7 +28,7 @@ public:
 #endif
 
 #ifndef CONCAT
-#define CONCAT(a, b) a ## b
+#define CONCAT(a, b) a##b
 #endif
 #ifndef CONCAT2
 #define CONCAT2(a, b) CONCAT(a, b)
@@ -38,7 +36,9 @@ public:
 
 #include "pluginabi.h"
 
-#define OBJECTTRANSFORMATIONFUNCTION_PREFIX de.openIndy.plugin.function.objectTransformation.v
-#define ObjectTransformation_iidd STR2(CONCAT2(OBJECTTRANSFORMATIONFUNCTION_PREFIX, OI_PLUGIN_ABI_VERSION))
+#define OBJECTTRANSFORMATIONFUNCTION_PREFIX \
+  de.openIndy.plugin.function.objectTransformation.v
+#define ObjectTransformation_iidd \
+  STR2(CONCAT2(OBJECTTRANSFORMATIONFUNCTION_PREFIX, OI_PLUGIN_ABI_VERSION))
 
-#endif // OBJECTTRANSFORMATION_H
+#endif  // OBJECTTRANSFORMATION_H

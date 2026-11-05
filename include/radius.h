@@ -5,38 +5,36 @@
 
 #include "element.h"
 
-namespace oi{
+namespace oi {
 
 /*!
  * \brief The Radius class
  */
-class OI_CORE_EXPORT Radius : public Element
-{
-    Q_OBJECT
+class OI_CORE_EXPORT Radius : public Element {
+  Q_OBJECT
 
-public:
-    explicit Radius(QObject *parent = 0);
-    explicit Radius(const double &r, QObject *parent = 0);
+ public:
+  explicit Radius(QObject* parent = 0);
+  explicit Radius(const double& r, QObject* parent = 0);
 
-    Radius(const Radius &copy, QObject *parent = 0);
+  Radius(const Radius& copy, QObject* parent = 0);
 
-    Radius &operator=(const Radius &copy);
+  Radius& operator=(const Radius& copy);
 
-    ~Radius();
+  ~Radius();
 
-    //#################
-    //get or set radius
-    //#################
+  // #################
+  // get or set radius
+  // #################
 
-    void setRadius(const double &r);
+  void setRadius(const double& r);
 
-    const double &getRadius() const;
+  const double& getRadius() const;
 
-protected:
-    double radius;
-
+ protected:
+  double radius;
 };
 
-}
+}  // namespace oi
 
-#endif // RADIUS_H
+#endif  // RADIUS_H

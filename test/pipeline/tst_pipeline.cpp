@@ -3,15 +3,15 @@
 #include <cmath>
 
 #include "chooselalib.h"
-#include "oijob.h"
 #include "featurewrapper.h"
-#include "geometry/point.h"
 #include "fitfunction.h"
+#include "geometry/point.h"
+#include "oijob.h"
 
 using namespace oi;
 using namespace oi::math;
 
-namespace{
+namespace {
 
 /*!
  * \brief A minimal, real FitFunction - averages the x coordinate of its
@@ -25,68 +25,68 @@ namespace{
  * any fit function's own body, so a fake average is a faithful proxy.
  */
 class FakeAverageFit : public FitFunction, public Producer<Point> {
-    Q_OBJECT
-public:
-    FakeAverageFit(QObject *parent = 0) : FitFunction(parent){
-        this->metaData.name = "FakeAverageFit";
-        this->neededElements.clear();
-        NeededElement param;
-        param.typeOfElement = ePointElement;
-        param.infinite = true;
-        param.roleName = "default";
-        this->neededElements.append(param);
-        this->applicableFor.append(ePointFeature);
+  Q_OBJECT
+ public:
+  FakeAverageFit(QObject* parent = 0) : FitFunction(parent) {
+    this->metaData.name = "FakeAverageFit";
+    this->neededElements.clear();
+    NeededElement param;
+    param.typeOfElement = ePointElement;
+    param.infinite = true;
+    param.roleName = "default";
+    this->neededElements.append(param);
+    this->applicableFor.append(ePointFeature);
+  }
+
+  std::expected<Point, QString> exec() override {
+    this->statistic.reset();
+
+    if (!this->inputElements.contains(0) || this->inputElements[0].isEmpty()) {
+      return std::unexpected(QString("FakeAverageFit: no input elements"));
     }
 
-    std::expected<Point, QString> exec() override {
-
-        this->statistic.reset();
-
-        if(!this->inputElements.contains(0) || this->inputElements[0].isEmpty()){
-            return std::unexpected(QString("FakeAverageFit: no input elements"));
-        }
-
-        QList<InputElement> usable;
-        foreach(const InputElement &element, this->inputElements[0]){
-            if(element.point.isNull()){
-                this->setIsUsed(0, element.id, false);
-                continue;
-            }
-            this->setIsUsed(0, element.id, element.shouldBeUsed);
-            if(element.shouldBeUsed){
-                usable.append(element);
-            }
-        }
-
-        if(usable.isEmpty()){
-            return std::unexpected(QString("FakeAverageFit: no usable input elements"));
-        }
-
-        double sum = 0.0;
-        foreach(const InputElement &element, usable){
-            sum += element.point->getPosition().getVector().getAt(0);
-        }
-        const double avg = sum / usable.size();
-
-        double sqSum = 0.0;
-        foreach(const InputElement &element, usable){
-            const double v = element.point->getPosition().getVector().getAt(0) - avg;
-            //exercise the same "v" key real fits use (BestFitPlane/Line/Point)
-            this->addDisplayResidual(element.id, v, 0.0, 0.0, std::abs(v));
-            sqSum += v * v;
-        }
-        this->statistic.setStdev(usable.size() > 1 ? std::sqrt(sqSum / (usable.size() - 1.0)) : 0.0);
-        this->statistic.setIsValid(true);
-
-        Point point;
-        point.setPoint(Position(avg, 0.0, 0.0));
-
-        return point;
-
+    QList<InputElement> usable;
+    foreach (const InputElement& element, this->inputElements[0]) {
+      if (element.point.isNull()) {
+        this->setIsUsed(0, element.id, false);
+        continue;
+      }
+      this->setIsUsed(0, element.id, element.shouldBeUsed);
+      if (element.shouldBeUsed) {
+        usable.append(element);
+      }
     }
+
+    if (usable.isEmpty()) {
+      return std::unexpected(
+          QString("FakeAverageFit: no usable input elements"));
+    }
+
+    double sum = 0.0;
+    foreach (const InputElement& element, usable) {
+      sum += element.point->getPosition().getVector().getAt(0);
+    }
+    const double avg = sum / usable.size();
+
+    double sqSum = 0.0;
+    foreach (const InputElement& element, usable) {
+      const double v = element.point->getPosition().getVector().getAt(0) - avg;
+      // exercise the same "v" key real fits use (BestFitPlane/Line/Point)
+      this->addDisplayResidual(element.id, v, 0.0, 0.0, std::abs(v));
+      sqSum += v * v;
+    }
+    this->statistic.setStdev(
+        usable.size() > 1 ? std::sqrt(sqSum / (usable.size() - 1.0)) : 0.0);
+    this->statistic.setIsValid(true);
+
+    Point point;
+    point.setPoint(Position(avg, 0.0, 0.0));
+
+    return point;
+  }
 };
 
-}
+}  // namespace
 
 /*!
  * \brief Stage 7b - filter pipelines on needed elements (D16,
@@ -100,45 +100,44 @@ public:
  * "no fit function needed changes" design claim; this suite is the fast,
  * cross-cutting regression guard for the mechanism itself.
  */
-class PipelineTest : public QObject
-{
-    Q_OBJECT
+class PipelineTest : public QObject {
+  Q_OBJECT
 
-private Q_SLOTS:
-    void initTestCase();
+ private Q_SLOTS:
+  void initTestCase();
 
-    void undeclaredPipelineLeavesShouldBeUsedUntouched();
-    void explicitListStageKeepsOnlyListedIdsAndRecordsReasons();
-    void excludeStageDropsSpecificIdWithReason();
-    void residualOutlierRejectionExcludesTheOutlierAndConverges();
-    void omittingTheFilterLeavesTheResultSkewedByTheOutlier();
-    void addingANewOutlierLaterReTriggersTheFilterOnRecalc();
-    void pipelineStagesRoundTripThroughXml();
+  void undeclaredPipelineLeavesShouldBeUsedUntouched();
+  void explicitListStageKeepsOnlyListedIdsAndRecordsReasons();
+  void excludeStageDropsSpecificIdWithReason();
+  void residualOutlierRejectionExcludesTheOutlierAndConverges();
+  void omittingTheFilterLeavesTheResultSkewedByTheOutlier();
+  void addingANewOutlierLaterReTriggersTheFilterOnRecalc();
+  void pipelineStagesRoundTripThroughXml();
 
-private:
-    QPointer<FeatureWrapper> makeTargetPoint(const QString &name);
-    QPointer<Point> makeCandidate(double x, QPointer<OiJob> job);
+ private:
+  QPointer<FeatureWrapper> makeTargetPoint(const QString& name);
+  QPointer<Point> makeCandidate(double x, QPointer<OiJob> job);
 };
 
-void PipelineTest::initTestCase(){
-    ChooseLALib::setLinearAlgebra(ChooseLALib::Armadillo);
+void PipelineTest::initTestCase() {
+  ChooseLALib::setLinearAlgebra(ChooseLALib::Armadillo);
 }
 
-QPointer<FeatureWrapper> PipelineTest::makeTargetPoint(const QString &name){
-    QPointer<Point> point = new Point();
-    point->setFeatureName(name);
-    QPointer<FeatureWrapper> wrapper = new FeatureWrapper();
-    wrapper->setPoint(point);
-    return wrapper;
+QPointer<FeatureWrapper> PipelineTest::makeTargetPoint(const QString& name) {
+  QPointer<Point> point = new Point();
+  point->setFeatureName(name);
+  QPointer<FeatureWrapper> wrapper = new FeatureWrapper();
+  wrapper->setPoint(point);
+  return wrapper;
 }
 
-QPointer<Point> PipelineTest::makeCandidate(double x, QPointer<OiJob> job){
-    QPointer<Point> point = new Point();
-    QPointer<FeatureWrapper> wrapper = new FeatureWrapper();
-    wrapper->setPoint(point);
-    job->addFeature(wrapper);
-    point->setPoint(Position(x, 0.0, 0.0));
-    return point;
+QPointer<Point> PipelineTest::makeCandidate(double x, QPointer<OiJob> job) {
+  QPointer<Point> point = new Point();
+  QPointer<FeatureWrapper> wrapper = new FeatureWrapper();
+  wrapper->setPoint(point);
+  job->addFeature(wrapper);
+  point->setPoint(Position(x, 0.0, 0.0));
+  return point;
 }
 
 /*!
@@ -148,106 +147,111 @@ QPointer<Point> PipelineTest::makeCandidate(double x, QPointer<OiJob> job){
  * pre-existing, if UI-less, mechanism) with pipeline-derived state nobody
  * asked for.
  */
-void PipelineTest::undeclaredPipelineLeavesShouldBeUsedUntouched(){
+void PipelineTest::undeclaredPipelineLeavesShouldBeUsedUntouched() {
+  QPointer<OiJob> job = new OiJob();
+  QPointer<FeatureWrapper> target = this->makeTargetPoint("Target1");
+  QVERIFY(job->addFeature(target));
 
-    QPointer<OiJob> job = new OiJob();
-    QPointer<FeatureWrapper> target = this->makeTargetPoint("Target1");
-    QVERIFY(job->addFeature(target));
+  QPointer<FakeAverageFit> function = new FakeAverageFit();
+  target->getPoint()->addFunction(function);
 
-    QPointer<FakeAverageFit> function = new FakeAverageFit();
-    target->getPoint()->addFunction(function);
+  QPointer<Point> p1 = this->makeCandidate(0.0, job);
+  QPointer<Point> p2 = this->makeCandidate(10.0, job);
+  InputElement e1(p1->getId());
+  e1.typeOfElement = ePointElement;
+  e1.point = p1;
+  function->addInputElement(e1, 0);
+  InputElement e2(p2->getId());
+  e2.typeOfElement = ePointElement;
+  e2.point = p2;
+  function->addInputElement(e2, 0);
 
-    QPointer<Point> p1 = this->makeCandidate(0.0, job);
-    QPointer<Point> p2 = this->makeCandidate(10.0, job);
-    InputElement e1(p1->getId());
-    e1.typeOfElement = ePointElement;
-    e1.point = p1;
-    function->addInputElement(e1, 0);
-    InputElement e2(p2->getId());
-    e2.typeOfElement = ePointElement;
-    e2.point = p2;
-    function->addInputElement(e2, 0);
+  // manually mark p1 unused, the pre-existing (UI-less) mechanism
+  function->setShouldBeUsed(0, p1->getId(), false);
 
-    //manually mark p1 unused, the pre-existing (UI-less) mechanism
-    function->setShouldBeUsed(0, p1->getId(), false);
+  QVERIFY(function->getPipeline(0).isEmpty());
 
-    QVERIFY(function->getPipeline(0).isEmpty());
+  target->getPoint()->recalc();
 
-    target->getPoint()->recalc();
-
-    QVERIFY2(!function->getShouldBeUsed(0, p1->getId()), "an undeclared pipeline must not touch a manually-set shouldBeUsed");
-    QVERIFY(function->getShouldBeUsed(0, p2->getId()));
-    QVERIFY(function->getPipelineExclusions(0).isEmpty());
-
+  QVERIFY2(!function->getShouldBeUsed(0, p1->getId()),
+           "an undeclared pipeline must not touch a manually-set shouldBeUsed");
+  QVERIFY(function->getShouldBeUsed(0, p2->getId()));
+  QVERIFY(function->getPipelineExclusions(0).isEmpty());
 }
 
-void PipelineTest::explicitListStageKeepsOnlyListedIdsAndRecordsReasons(){
+void PipelineTest::explicitListStageKeepsOnlyListedIdsAndRecordsReasons() {
+  QPointer<OiJob> job = new OiJob();
+  QPointer<FeatureWrapper> target = this->makeTargetPoint("Target2");
+  QVERIFY(job->addFeature(target));
 
-    QPointer<OiJob> job = new OiJob();
-    QPointer<FeatureWrapper> target = this->makeTargetPoint("Target2");
-    QVERIFY(job->addFeature(target));
+  QPointer<FakeAverageFit> function = new FakeAverageFit();
+  target->getPoint()->addFunction(function);
 
-    QPointer<FakeAverageFit> function = new FakeAverageFit();
-    target->getPoint()->addFunction(function);
+  QPointer<Point> p1 = this->makeCandidate(0.0, job);
+  QPointer<Point> p2 = this->makeCandidate(10.0, job);
+  QPointer<Point> p3 = this->makeCandidate(100.0, job);
+  foreach (const QPointer<Point>& p,
+           (QList<QPointer<Point> >() << p1 << p2 << p3)) {
+    InputElement e(p->getId());
+    e.typeOfElement = ePointElement;
+    e.point = p;
+    function->addInputElement(e, 0);
+  }
 
-    QPointer<Point> p1 = this->makeCandidate(0.0, job);
-    QPointer<Point> p2 = this->makeCandidate(10.0, job);
-    QPointer<Point> p3 = this->makeCandidate(100.0, job);
-    foreach(const QPointer<Point> &p, (QList<QPointer<Point> >() << p1 << p2 << p3)){
-        InputElement e(p->getId());
-        e.typeOfElement = ePointElement;
-        e.point = p;
-        function->addInputElement(e, 0);
-    }
+  function->setPipeline(0,
+                        QList<PipelineStage>() << PipelineStage::explicitList(
+                            QList<int>() << p1->getId() << p2->getId()));
 
-    function->setPipeline(0, QList<PipelineStage>() << PipelineStage::explicitList(QList<int>() << p1->getId() << p2->getId()));
+  target->getPoint()->recalc();
 
-    target->getPoint()->recalc();
+  QCOMPARE(target->getPoint()->getPosition().getVector().getAt(0),
+           5.0);  // avg(0,10), p3 excluded
+  QVERIFY(function->getShouldBeUsed(0, p1->getId()));
+  QVERIFY(function->getShouldBeUsed(0, p2->getId()));
+  QVERIFY(!function->getShouldBeUsed(0, p3->getId()));
 
-    QCOMPARE(target->getPoint()->getPosition().getVector().getAt(0), 5.0); //avg(0,10), p3 excluded
-    QVERIFY(function->getShouldBeUsed(0, p1->getId()));
-    QVERIFY(function->getShouldBeUsed(0, p2->getId()));
-    QVERIFY(!function->getShouldBeUsed(0, p3->getId()));
-
-    const QList<PipelineExclusion> exclusions = function->getPipelineExclusions(0);
-    QCOMPARE(exclusions.size(), 1);
-    QCOMPARE(exclusions.first().elementId, p3->getId());
-    QVERIFY(!exclusions.first().reason.isEmpty());
-
+  const QList<PipelineExclusion> exclusions =
+      function->getPipelineExclusions(0);
+  QCOMPARE(exclusions.size(), 1);
+  QCOMPARE(exclusions.first().elementId, p3->getId());
+  QVERIFY(!exclusions.first().reason.isEmpty());
 }
 
-void PipelineTest::excludeStageDropsSpecificIdWithReason(){
+void PipelineTest::excludeStageDropsSpecificIdWithReason() {
+  QPointer<OiJob> job = new OiJob();
+  QPointer<FeatureWrapper> target = this->makeTargetPoint("Target3");
+  QVERIFY(job->addFeature(target));
 
-    QPointer<OiJob> job = new OiJob();
-    QPointer<FeatureWrapper> target = this->makeTargetPoint("Target3");
-    QVERIFY(job->addFeature(target));
+  QPointer<FakeAverageFit> function = new FakeAverageFit();
+  target->getPoint()->addFunction(function);
 
-    QPointer<FakeAverageFit> function = new FakeAverageFit();
-    target->getPoint()->addFunction(function);
+  QPointer<Point> p1 = this->makeCandidate(0.0, job);
+  QPointer<Point> p2 = this->makeCandidate(10.0, job);
+  foreach (const QPointer<Point>& p, (QList<QPointer<Point> >() << p1 << p2)) {
+    InputElement e(p->getId());
+    e.typeOfElement = ePointElement;
+    e.point = p;
+    function->addInputElement(e, 0);
+  }
 
-    QPointer<Point> p1 = this->makeCandidate(0.0, job);
-    QPointer<Point> p2 = this->makeCandidate(10.0, job);
-    foreach(const QPointer<Point> &p, (QList<QPointer<Point> >() << p1 << p2)){
-        InputElement e(p->getId());
-        e.typeOfElement = ePointElement;
-        e.point = p;
-        function->addInputElement(e, 0);
-    }
+  // D16: hand-picking is an Exclude stage carrying a reason, the same
+  // mechanism as an automated rejection - not an untag, not a boolean.
+  function->addPipelineStage(
+      0, PipelineStage::exclude(p2->getId(),
+                                "known bad target - operator flagged on site"));
 
-    //D16: hand-picking is an Exclude stage carrying a reason, the same
-    //mechanism as an automated rejection - not an untag, not a boolean.
-    function->addPipelineStage(0, PipelineStage::exclude(p2->getId(), "known bad target - operator flagged on site"));
+  target->getPoint()->recalc();
 
-    target->getPoint()->recalc();
+  QCOMPARE(target->getPoint()->getPosition().getVector().getAt(0),
+           0.0);  // only p1 survives
+  QVERIFY(!function->getShouldBeUsed(0, p2->getId()));
 
-    QCOMPARE(target->getPoint()->getPosition().getVector().getAt(0), 0.0); //only p1 survives
-    QVERIFY(!function->getShouldBeUsed(0, p2->getId()));
-
-    const QList<PipelineExclusion> exclusions = function->getPipelineExclusions(0);
-    QCOMPARE(exclusions.size(), 1);
-    QCOMPARE(exclusions.first().elementId, p2->getId());
-    QCOMPARE(exclusions.first().reason, QString("known bad target - operator flagged on site"));
-
+  const QList<PipelineExclusion> exclusions =
+      function->getPipelineExclusions(0);
+  QCOMPARE(exclusions.size(), 1);
+  QCOMPARE(exclusions.first().elementId, p2->getId());
+  QCOMPARE(exclusions.first().reason,
+           QString("known bad target - operator flagged on site"));
 }
 
 /*!
@@ -256,59 +260,67 @@ void PipelineTest::excludeStageDropsSpecificIdWithReason(){
  * residual/sigma filter is declared, and the outlier is individually
  * reportable with a reason (traceability requirement).
  */
-void PipelineTest::residualOutlierRejectionExcludesTheOutlierAndConverges(){
+void PipelineTest::residualOutlierRejectionExcludesTheOutlierAndConverges() {
+  QPointer<OiJob> job = new OiJob();
+  QPointer<FeatureWrapper> target = this->makeTargetPoint("Target4");
+  QVERIFY(job->addFeature(target));
 
-    QPointer<OiJob> job = new OiJob();
-    QPointer<FeatureWrapper> target = this->makeTargetPoint("Target4");
-    QVERIFY(job->addFeature(target));
+  QPointer<FakeAverageFit> function = new FakeAverageFit();
+  target->getPoint()->addFunction(function);
 
-    QPointer<FakeAverageFit> function = new FakeAverageFit();
-    target->getPoint()->addFunction(function);
+  // 20 good points plus one deliberate gross outlier. A small sample
+  //(e.g. 5-6 points) suffers the classic sigma-clipping masking effect:
+  // a single huge outlier inflates the *contaminated* stdev enough to
+  // hide itself under a 3-sigma threshold. With N=21 the arithmetic
+  // flips (a single outlier's contribution to the pass-1 stdev scales
+  // as ~outlierResidual/sqrt(N-1), so 3-sigma catches it once
+  // sqrt(N-1) > 3, i.e. N > 10) - a large-enough sample is a real
+  // precondition for naive population-stdev outlier rejection to work,
+  // not a test artefact, and worth recording for whoever tunes this
+  // stage's default sigmaMultiplier later.
+  QList<double> xs;
+  for (int i = 0; i < 20; i++) {
+    xs.append(0.0);
+  }
+  xs.append(1000.0);  // the deliberate outlier
+  QList<QPointer<Point> > candidates;
+  foreach (double x, xs) {
+    candidates.append(this->makeCandidate(x, job));
+  }
+  foreach (const QPointer<Point>& p, candidates) {
+    InputElement e(p->getId());
+    e.typeOfElement = ePointElement;
+    e.point = p;
+    function->addInputElement(e, 0);
+  }
 
-    //20 good points plus one deliberate gross outlier. A small sample
-    //(e.g. 5-6 points) suffers the classic sigma-clipping masking effect:
-    //a single huge outlier inflates the *contaminated* stdev enough to
-    //hide itself under a 3-sigma threshold. With N=21 the arithmetic
-    //flips (a single outlier's contribution to the pass-1 stdev scales
-    //as ~outlierResidual/sqrt(N-1), so 3-sigma catches it once
-    //sqrt(N-1) > 3, i.e. N > 10) - a large-enough sample is a real
-    //precondition for naive population-stdev outlier rejection to work,
-    //not a test artefact, and worth recording for whoever tunes this
-    //stage's default sigmaMultiplier later.
-    QList<double> xs;
-    for(int i = 0; i < 20; i++){ xs.append(0.0); }
-    xs.append(1000.0); //the deliberate outlier
-    QList<QPointer<Point> > candidates;
-    foreach(double x, xs){
-        candidates.append(this->makeCandidate(x, job));
+  function->setPipeline(0, QList<PipelineStage>()
+                               << PipelineStage::residualOutlierRejection(3.0));
+
+  target->getPoint()->recalc();
+
+  const double converged =
+      target->getPoint()->getPosition().getVector().getAt(0);
+  QVERIFY2(std::abs(converged) < 1.0,
+           qPrintable(
+               QString("expected convergence near 0, got %1").arg(converged)));
+
+  const int outlierId = candidates.last()->getId();
+  QVERIFY2(!function->getShouldBeUsed(0, outlierId),
+           "the outlier must be excluded");
+
+  const QList<PipelineExclusion> exclusions =
+      function->getPipelineExclusions(0);
+  bool found = false;
+  foreach (const PipelineExclusion& excl, exclusions) {
+    if (excl.elementId == outlierId) {
+      found = true;
+      QVERIFY2(excl.reason.contains("residual"), qPrintable(excl.reason));
     }
-    foreach(const QPointer<Point> &p, candidates){
-        InputElement e(p->getId());
-        e.typeOfElement = ePointElement;
-        e.point = p;
-        function->addInputElement(e, 0);
-    }
-
-    function->setPipeline(0, QList<PipelineStage>() << PipelineStage::residualOutlierRejection(3.0));
-
-    target->getPoint()->recalc();
-
-    const double converged = target->getPoint()->getPosition().getVector().getAt(0);
-    QVERIFY2(std::abs(converged) < 1.0, qPrintable(QString("expected convergence near 0, got %1").arg(converged)));
-
-    const int outlierId = candidates.last()->getId();
-    QVERIFY2(!function->getShouldBeUsed(0, outlierId), "the outlier must be excluded");
-
-    const QList<PipelineExclusion> exclusions = function->getPipelineExclusions(0);
-    bool found = false;
-    foreach(const PipelineExclusion &excl, exclusions){
-        if(excl.elementId == outlierId){
-            found = true;
-            QVERIFY2(excl.reason.contains("residual"), qPrintable(excl.reason));
-        }
-    }
-    QVERIFY2(found, "the outlier's exclusion must be individually reportable with a reason");
-
+  }
+  QVERIFY2(
+      found,
+      "the outlier's exclusion must be individually reportable with a reason");
 }
 
 /*!
@@ -316,33 +328,36 @@ void PipelineTest::residualOutlierRejectionExcludesTheOutlierAndConverges(){
  * the filter declared, must NOT converge correctly - the mechanism has
  * to actually change the result, not just be inert scaffolding.
  */
-void PipelineTest::omittingTheFilterLeavesTheResultSkewedByTheOutlier(){
+void PipelineTest::omittingTheFilterLeavesTheResultSkewedByTheOutlier() {
+  QPointer<OiJob> job = new OiJob();
+  QPointer<FeatureWrapper> target = this->makeTargetPoint("Target5");
+  QVERIFY(job->addFeature(target));
 
-    QPointer<OiJob> job = new OiJob();
-    QPointer<FeatureWrapper> target = this->makeTargetPoint("Target5");
-    QVERIFY(job->addFeature(target));
+  QPointer<FakeAverageFit> function = new FakeAverageFit();
+  target->getPoint()->addFunction(function);
 
-    QPointer<FakeAverageFit> function = new FakeAverageFit();
-    target->getPoint()->addFunction(function);
+  QList<double> xs;
+  for (int i = 0; i < 20; i++) {
+    xs.append(0.0);
+  }
+  xs.append(1000.0);  // the deliberate outlier
+  foreach (double x, xs) {
+    QPointer<Point> p = this->makeCandidate(x, job);
+    InputElement e(p->getId());
+    e.typeOfElement = ePointElement;
+    e.point = p;
+    function->addInputElement(e, 0);
+  }
 
-    QList<double> xs;
-    for(int i = 0; i < 20; i++){ xs.append(0.0); }
-    xs.append(1000.0); //the deliberate outlier
-    foreach(double x, xs){
-        QPointer<Point> p = this->makeCandidate(x, job);
-        InputElement e(p->getId());
-        e.typeOfElement = ePointElement;
-        e.point = p;
-        function->addInputElement(e, 0);
-    }
+  // no pipeline declared
 
-    //no pipeline declared
+  target->getPoint()->recalc();
 
-    target->getPoint()->recalc();
-
-    const double skewed = target->getPoint()->getPosition().getVector().getAt(0);
-    QVERIFY2(skewed > 10.0, qPrintable(QString("expected the outlier to skew the average, got %1").arg(skewed)));
-
+  const double skewed = target->getPoint()->getPosition().getVector().getAt(0);
+  QVERIFY2(
+      skewed > 10.0,
+      qPrintable(QString("expected the outlier to skew the average, got %1")
+                     .arg(skewed)));
 }
 
 /*!
@@ -350,75 +365,79 @@ void PipelineTest::omittingTheFilterLeavesTheResultSkewedByTheOutlier(){
  * criteria): the pipeline is declared once and re-evaluates on every
  * ordinary recalc, not just the recalc immediately after it was declared.
  */
-void PipelineTest::addingANewOutlierLaterReTriggersTheFilterOnRecalc(){
+void PipelineTest::addingANewOutlierLaterReTriggersTheFilterOnRecalc() {
+  QPointer<OiJob> job = new OiJob();
+  QPointer<FeatureWrapper> target = this->makeTargetPoint("Target6");
+  QVERIFY(job->addFeature(target));
 
-    QPointer<OiJob> job = new OiJob();
-    QPointer<FeatureWrapper> target = this->makeTargetPoint("Target6");
-    QVERIFY(job->addFeature(target));
+  QPointer<FakeAverageFit> function = new FakeAverageFit();
+  target->getPoint()->addFunction(function);
 
-    QPointer<FakeAverageFit> function = new FakeAverageFit();
-    target->getPoint()->addFunction(function);
-
-    //20 good points, same reasoning as
-    //residualOutlierRejectionExcludesTheOutlierAndConverges() re: sample
-    //size and the sigma-clipping masking effect
-    QList<QPointer<Point> > candidates;
-    for(int i = 0; i < 20; i++){
-        QPointer<Point> p = this->makeCandidate(0.0, job);
-        candidates.append(p);
-        InputElement e(p->getId());
-        e.typeOfElement = ePointElement;
-        e.point = p;
-        function->addInputElement(e, 0);
-    }
-
-    function->setPipeline(0, QList<PipelineStage>() << PipelineStage::residualOutlierRejection(3.0));
-
-    target->getPoint()->recalc();
-    QVERIFY(function->getPipelineExclusions(0).isEmpty());
-    QCOMPARE(target->getPoint()->getPosition().getVector().getAt(0), 0.0);
-
-    //a new outlier arrives later - no pipeline redeclaration, just new data
-    QPointer<Point> outlier = this->makeCandidate(1000.0, job);
-    InputElement e(outlier->getId());
+  // 20 good points, same reasoning as
+  // residualOutlierRejectionExcludesTheOutlierAndConverges() re: sample
+  // size and the sigma-clipping masking effect
+  QList<QPointer<Point> > candidates;
+  for (int i = 0; i < 20; i++) {
+    QPointer<Point> p = this->makeCandidate(0.0, job);
+    candidates.append(p);
+    InputElement e(p->getId());
     e.typeOfElement = ePointElement;
-    e.point = outlier;
+    e.point = p;
     function->addInputElement(e, 0);
+  }
 
-    target->getPoint()->recalc();
+  function->setPipeline(0, QList<PipelineStage>()
+                               << PipelineStage::residualOutlierRejection(3.0));
 
-    QVERIFY2(!function->getShouldBeUsed(0, outlier->getId()), "a newly-added outlier must be caught on the next recalc without redeclaring anything");
-    QVERIFY2(std::abs(target->getPoint()->getPosition().getVector().getAt(0)) < 1.0, "the fit must still converge correctly after the new outlier is filtered");
+  target->getPoint()->recalc();
+  QVERIFY(function->getPipelineExclusions(0).isEmpty());
+  QCOMPARE(target->getPoint()->getPosition().getVector().getAt(0), 0.0);
 
+  // a new outlier arrives later - no pipeline redeclaration, just new data
+  QPointer<Point> outlier = this->makeCandidate(1000.0, job);
+  InputElement e(outlier->getId());
+  e.typeOfElement = ePointElement;
+  e.point = outlier;
+  function->addInputElement(e, 0);
+
+  target->getPoint()->recalc();
+
+  QVERIFY2(!function->getShouldBeUsed(0, outlier->getId()),
+           "a newly-added outlier must be caught on the next recalc without "
+           "redeclaring anything");
+  QVERIFY2(
+      std::abs(target->getPoint()->getPosition().getVector().getAt(0)) < 1.0,
+      "the fit must still converge correctly after the new outlier is "
+      "filtered");
 }
 
-void PipelineTest::pipelineStagesRoundTripThroughXml(){
+void PipelineTest::pipelineStagesRoundTripThroughXml() {
+  QPointer<FakeAverageFit> function = new FakeAverageFit();
+  function->setPipeline(0, QList<PipelineStage>()
+                               << PipelineStage::exclude(7, "operator-flagged")
+                               << PipelineStage::residualOutlierRejection(2.5));
 
-    QPointer<FakeAverageFit> function = new FakeAverageFit();
-    function->setPipeline(0, QList<PipelineStage>()
-                           << PipelineStage::exclude(7, "operator-flagged")
-                           << PipelineStage::residualOutlierRejection(2.5));
+  QDomDocument doc("test");
+  QDomElement xml = function->toOpenIndyXML(doc);
+  QVERIFY(!xml.isNull());
+  xml.setAttribute("executionIndex",
+                   0);  // fromOpenIndyXML requires this attribute to exist
 
-    QDomDocument doc("test");
-    QDomElement xml = function->toOpenIndyXML(doc);
-    QVERIFY(!xml.isNull());
-    xml.setAttribute("executionIndex", 0); //fromOpenIndyXML requires this attribute to exist
+  QPointer<FakeAverageFit> restored = new FakeAverageFit();
+  QVERIFY(restored->getPipeline(0).isEmpty());
+  QVERIFY(restored->fromOpenIndyXML(xml));
 
-    QPointer<FakeAverageFit> restored = new FakeAverageFit();
-    QVERIFY(restored->getPipeline(0).isEmpty());
-    QVERIFY(restored->fromOpenIndyXML(xml));
+  const QList<PipelineStage> stages = restored->getPipeline(0);
+  QCOMPARE(stages.size(), 2);
 
-    const QList<PipelineStage> stages = restored->getPipeline(0);
-    QCOMPARE(stages.size(), 2);
+  QCOMPARE(stages.at(0).type, eExcludeStage);
+  QCOMPARE(stages.at(0).explicitExclusions.size(), 1);
+  QCOMPARE(stages.at(0).explicitExclusions.first().elementId, 7);
+  QCOMPARE(stages.at(0).explicitExclusions.first().reason,
+           QString("operator-flagged"));
 
-    QCOMPARE(stages.at(0).type, eExcludeStage);
-    QCOMPARE(stages.at(0).explicitExclusions.size(), 1);
-    QCOMPARE(stages.at(0).explicitExclusions.first().elementId, 7);
-    QCOMPARE(stages.at(0).explicitExclusions.first().reason, QString("operator-flagged"));
-
-    QCOMPARE(stages.at(1).type, eResidualOutlierRejectionStage);
-    QCOMPARE(stages.at(1).sigmaMultiplier, 2.5);
-
+  QCOMPARE(stages.at(1).type, eResidualOutlierRejectionStage);
+  QCOMPARE(stages.at(1).sigmaMultiplier, 2.5);
 }
 
 QTEST_APPLESS_MAIN(PipelineTest)

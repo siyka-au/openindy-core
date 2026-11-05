@@ -9,13 +9,11 @@ using namespace oi::math;
  * \brief Hyperboloid::Hyperboloid
  * \param parent
  */
-Hyperboloid::Hyperboloid(QObject *parent) : Geometry(parent){
-
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setHyperboloid(this);
-    }
-
+Hyperboloid::Hyperboloid(QObject* parent) : Geometry(parent) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setHyperboloid(this);
+  }
 }
 
 /*!
@@ -26,15 +24,15 @@ Hyperboloid::Hyperboloid(QObject *parent) : Geometry(parent){
  * \param c
  * \param parent
  */
-Hyperboloid::Hyperboloid(const Position &center, const Direction &axis, const double &a, const double &c, QObject *parent) : Geometry(parent){
+Hyperboloid::Hyperboloid(const Position& center, const Direction& axis,
+                         const double& a, const double& c, QObject* parent)
+    : Geometry(parent) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setHyperboloid(this);
+  }
 
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setHyperboloid(this);
-    }
-
-    this->setHyperboloid(center, axis, a, c);
-
+  this->setHyperboloid(center, axis, a, c);
 }
 
 /*!
@@ -42,18 +40,17 @@ Hyperboloid::Hyperboloid(const Position &center, const Direction &axis, const do
  * \param copy
  * \param parent
  */
-Hyperboloid::Hyperboloid(const Hyperboloid &copy, QObject *parent) : Geometry(copy, parent){
+Hyperboloid::Hyperboloid(const Hyperboloid& copy, QObject* parent)
+    : Geometry(copy, parent) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setHyperboloid(this);
+  }
 
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setHyperboloid(this);
-    }
-
-    this->xyz = copy.xyz;
-    this->ijk = copy.ijk;
-    this->a = copy.a;
-    this->c = copy.c;
-
+  this->xyz = copy.xyz;
+  this->ijk = copy.ijk;
+  this->a = copy.a;
+  this->c = copy.c;
 }
 
 /*!
@@ -61,60 +58,48 @@ Hyperboloid::Hyperboloid(const Hyperboloid &copy, QObject *parent) : Geometry(co
  * \param copy
  * \return
  */
-Hyperboloid &Hyperboloid::operator=(const Hyperboloid &copy){
+Hyperboloid& Hyperboloid::operator=(const Hyperboloid& copy) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setHyperboloid(this);
+  }
 
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setHyperboloid(this);
-    }
+  this->xyz = copy.xyz;
+  this->ijk = copy.ijk;
+  this->a = copy.a;
+  this->c = copy.c;
 
-    this->xyz = copy.xyz;
-    this->ijk = copy.ijk;
-    this->a = copy.a;
-    this->c = copy.c;
-
-    return *this;
-
+  return *this;
 }
 
 /*!
  * \brief Hyperboloid::~Hyperboloid
  */
-Hyperboloid::~Hyperboloid(){
-
-}
+Hyperboloid::~Hyperboloid() {}
 
 /*!
  * \brief Hyperboloid::hasDirection
  * \return
  */
-bool Hyperboloid::hasDirection() const{
-    return true;
-}
+bool Hyperboloid::hasDirection() const { return true; }
 
 /*!
  * \brief Hyperboloid::hasPosition
  * \return
  */
-bool Hyperboloid::hasPosition() const{
-    return true;
-}
+bool Hyperboloid::hasPosition() const { return true; }
 
 /*!
  * \brief Hyperboloid::getA
  * \return
  */
-const double &Hyperboloid::getA() const{
-    return this->a;
-}
+const double& Hyperboloid::getA() const { return this->a; }
 
 /*!
  * \brief Hyperboloid::getC
  * \return
  */
-const double &Hyperboloid::getC() const{
-    return this->c;
-}
+const double& Hyperboloid::getC() const { return this->c; }
 
 /*!
  * \brief Hyperboloid::setHyperboloid
@@ -123,16 +108,15 @@ const double &Hyperboloid::getC() const{
  * \param a
  * \param c
  */
-void Hyperboloid::setHyperboloid(const Position &center, const Direction &axis, const double &a, const double &c){
+void Hyperboloid::setHyperboloid(const Position& center, const Direction& axis,
+                                 const double& a, const double& c) {
+  // set the given parameters
+  this->xyz = center;
+  this->ijk = axis;
+  this->a = a;
+  this->c = c;
 
-    //set the given parameters
-    this->xyz = center;
-    this->ijk = axis;
-    this->a = a;
-    this->c = c;
-
-    emit this->geomParametersChanged(this->id);
-
+  emit this->geomParametersChanged(this->id);
 }
 
 /*!
@@ -141,91 +125,104 @@ void Hyperboloid::setHyperboloid(const Position &center, const Direction &axis, 
  * \param displayDigits
  * \return
  */
-QMap<GeometryParameters, QString> Hyperboloid::getUnknownParameters(const QMap<DimensionType, UnitType> &displayUnits, const QMap<DimensionType, int> &displayDigits) const{
+QMap<GeometryParameters, QString> Hyperboloid::getUnknownParameters(
+    const QMap<DimensionType, UnitType>& displayUnits,
+    const QMap<DimensionType, int>& displayDigits) const {
+  QMap<GeometryParameters, QString> parameters;
 
-    QMap<GeometryParameters, QString> parameters;
+  parameters.insert(eUnknownX,
+                    this->getDisplayX(displayUnits.value(eMetric, eUnitMeter),
+                                      displayDigits.value(eMetric, 0)));
+  parameters.insert(eUnknownY,
+                    this->getDisplayY(displayUnits.value(eMetric, eUnitMeter),
+                                      displayDigits.value(eMetric, 0)));
+  parameters.insert(eUnknownZ,
+                    this->getDisplayZ(displayUnits.value(eMetric, eUnitMeter),
+                                      displayDigits.value(eMetric, 0)));
+  parameters.insert(
+      eUnknownPrimaryI,
+      this->getDisplayPrimaryI(displayDigits.value(eDimensionless, 0)));
+  parameters.insert(
+      eUnknownPrimaryJ,
+      this->getDisplayPrimaryJ(displayDigits.value(eDimensionless, 0)));
+  parameters.insert(
+      eUnknownPrimaryK,
+      this->getDisplayPrimaryK(displayDigits.value(eDimensionless, 0)));
+  parameters.insert(eUnknownA,
+                    this->getDisplayA(displayUnits.value(eMetric, eUnitMeter),
+                                      displayDigits.value(eMetric, 0)));
+  parameters.insert(eUnknownC,
+                    this->getDisplayC(displayUnits.value(eMetric, eUnitMeter),
+                                      displayDigits.value(eMetric, 0)));
 
-    parameters.insert(eUnknownX, this->getDisplayX(displayUnits.value(eMetric, eUnitMeter), displayDigits.value(eMetric, 0)));
-    parameters.insert(eUnknownY, this->getDisplayY(displayUnits.value(eMetric, eUnitMeter), displayDigits.value(eMetric, 0)));
-    parameters.insert(eUnknownZ, this->getDisplayZ(displayUnits.value(eMetric, eUnitMeter), displayDigits.value(eMetric, 0)));
-    parameters.insert(eUnknownPrimaryI, this->getDisplayPrimaryI(displayDigits.value(eDimensionless, 0)));
-    parameters.insert(eUnknownPrimaryJ, this->getDisplayPrimaryJ(displayDigits.value(eDimensionless, 0)));
-    parameters.insert(eUnknownPrimaryK, this->getDisplayPrimaryK(displayDigits.value(eDimensionless, 0)));
-    parameters.insert(eUnknownA, this->getDisplayA(displayUnits.value(eMetric, eUnitMeter), displayDigits.value(eMetric, 0)));
-    parameters.insert(eUnknownC, this->getDisplayC(displayUnits.value(eMetric, eUnitMeter), displayDigits.value(eMetric, 0)));
-
-    return parameters;
-
+  return parameters;
 }
 
 /*!
  * \brief Hyperboloid::applyUnknownParameters
  * \param parameters
  */
-void Hyperboloid::applyUnknownParameters(const QMap<GeometryParameters, double> &parameters){
+void Hyperboloid::applyUnknownParameters(
+    const QMap<GeometryParameters, double>& parameters) {
+  // get current parameters
+  OiVec position = this->xyz.getVector();
+  OiVec direction = this->ijk.getVector();
+  double a = this->a;
+  double c = this->c;
 
-    //get current parameters
-    OiVec position = this->xyz.getVector();
-    OiVec direction = this->ijk.getVector();
-    double a = this->a;
-    double c = this->c;
-
-    //update parameters
-    QList<GeometryParameters> keys = parameters.keys();
-    foreach(const GeometryParameters &key, keys){
-        switch(key){
-        case eUnknownX:
-            position.setAt(0, parameters.value(eUnknownX));
-            break;
-        case eUnknownY:
-            position.setAt(1, parameters.value(eUnknownY));
-            break;
-        case eUnknownZ:
-            position.setAt(2, parameters.value(eUnknownZ));
-            break;
-        case eUnknownPrimaryI:
-            direction.setAt(0, parameters.value(eUnknownPrimaryI));
-            break;
-        case eUnknownPrimaryJ:
-            direction.setAt(1, parameters.value(eUnknownPrimaryJ));
-            break;
-        case eUnknownPrimaryK:
-            direction.setAt(2, parameters.value(eUnknownPrimaryK));
-            break;
-        case eUnknownA:
-            a = parameters.value(eUnknownA);
-            break;
-        case eUnknownC:
-            c = parameters.value(eUnknownC);
-            break;
-        default:
-            break;
-        }
+  // update parameters
+  QList<GeometryParameters> keys = parameters.keys();
+  foreach (const GeometryParameters& key, keys) {
+    switch (key) {
+      case eUnknownX:
+        position.setAt(0, parameters.value(eUnknownX));
+        break;
+      case eUnknownY:
+        position.setAt(1, parameters.value(eUnknownY));
+        break;
+      case eUnknownZ:
+        position.setAt(2, parameters.value(eUnknownZ));
+        break;
+      case eUnknownPrimaryI:
+        direction.setAt(0, parameters.value(eUnknownPrimaryI));
+        break;
+      case eUnknownPrimaryJ:
+        direction.setAt(1, parameters.value(eUnknownPrimaryJ));
+        break;
+      case eUnknownPrimaryK:
+        direction.setAt(2, parameters.value(eUnknownPrimaryK));
+        break;
+      case eUnknownA:
+        a = parameters.value(eUnknownA);
+        break;
+      case eUnknownC:
+        c = parameters.value(eUnknownC);
+        break;
+      default:
+        break;
     }
+  }
 
-    //update hyperboloid definition
-    direction.normalize();
-    Position hyperboloidPosition(position);
-    Direction hyperboloidDirection(direction);
-    this->setHyperboloid(hyperboloidPosition, hyperboloidDirection, a, c);
-
+  // update hyperboloid definition
+  direction.normalize();
+  Position hyperboloidPosition(position);
+  Direction hyperboloidDirection(direction);
+  this->setHyperboloid(hyperboloidPosition, hyperboloidDirection, a, c);
 }
 
 /*!
  * \brief Hyperboloid::recalc
  */
-void Hyperboloid::recalc(){
+void Hyperboloid::recalc() {
+  Geometry::recalc();
 
-    Geometry::recalc();
-
-    //reset hyperboloid definition if not solved and no nominal
-    if(!this->isSolved && this->getOwnerDescription().has_value()){
-        this->xyz.setVector(0.0, 0.0, 0.0);
-        this->ijk.setVector(0.0, 0.0, 0.0);
-        this->a = 0.0;
-        this->c = 0.0;
-    }
-
+  // reset hyperboloid definition if not solved and no nominal
+  if (!this->isSolved && this->getOwnerDescription().has_value()) {
+    this->xyz.setVector(0.0, 0.0, 0.0);
+    this->ijk.setVector(0.0, 0.0, 0.0);
+    this->a = 0.0;
+    this->c = 0.0;
+  }
 }
 
 /*!
@@ -233,36 +230,34 @@ void Hyperboloid::recalc(){
  * \param xmlDoc
  * \return
  */
-QDomElement Hyperboloid::toOpenIndyXML(QDomDocument &xmlDoc) const{
+QDomElement Hyperboloid::toOpenIndyXML(QDomDocument& xmlDoc) const {
+  QDomElement hyperboloid = Geometry::toOpenIndyXML(xmlDoc);
 
-    QDomElement hyperboloid = Geometry::toOpenIndyXML(xmlDoc);
-
-    if(hyperboloid.isNull()){
-        return hyperboloid;
-    }
-
-    hyperboloid.setAttribute("type", getGeometryTypeName(eHyperboloidGeometry));
-
-    //set a
-    QDomElement a = xmlDoc.createElement("a");
-    if(this->isSolved || !this->getOwnerDescription().has_value()){
-        a.setAttribute("value", this->a);
-    }else{
-        a.setAttribute("value", 0.0);
-    }
-    hyperboloid.appendChild(a);
-
-    //set c
-    QDomElement c = xmlDoc.createElement("c");
-    if(this->isSolved || !this->getOwnerDescription().has_value()){
-        c.setAttribute("value", this->c);
-    }else{
-        c.setAttribute("value", 0.0);
-    }
-    hyperboloid.appendChild(c);
-
+  if (hyperboloid.isNull()) {
     return hyperboloid;
+  }
 
+  hyperboloid.setAttribute("type", getGeometryTypeName(eHyperboloidGeometry));
+
+  // set a
+  QDomElement a = xmlDoc.createElement("a");
+  if (this->isSolved || !this->getOwnerDescription().has_value()) {
+    a.setAttribute("value", this->a);
+  } else {
+    a.setAttribute("value", 0.0);
+  }
+  hyperboloid.appendChild(a);
+
+  // set c
+  QDomElement c = xmlDoc.createElement("c");
+  if (this->isSolved || !this->getOwnerDescription().has_value()) {
+    c.setAttribute("value", this->c);
+  } else {
+    c.setAttribute("value", 0.0);
+  }
+  hyperboloid.appendChild(c);
+
+  return hyperboloid;
 }
 
 /*!
@@ -270,38 +265,35 @@ QDomElement Hyperboloid::toOpenIndyXML(QDomDocument &xmlDoc) const{
  * \param xmlElem
  * \return
  */
-bool Hyperboloid::fromOpenIndyXML(QDomElement &xmlElem){
+bool Hyperboloid::fromOpenIndyXML(QDomElement& xmlElem) {
+  bool result = Geometry::fromOpenIndyXML(xmlElem);
 
-    bool result = Geometry::fromOpenIndyXML(xmlElem);
+  if (result) {
+    // set hyperboloid attributes
+    QDomElement a = xmlElem.firstChildElement("a");
+    QDomElement c = xmlElem.firstChildElement("c");
+    QDomElement axis = xmlElem.firstChildElement("spatialDirection");
+    QDomElement center = xmlElem.firstChildElement("coordinates");
 
-    if(result){
-
-        //set hyperboloid attributes
-        QDomElement a = xmlElem.firstChildElement("a");
-        QDomElement c = xmlElem.firstChildElement("c");
-        QDomElement axis = xmlElem.firstChildElement("spatialDirection");
-        QDomElement center = xmlElem.firstChildElement("coordinates");
-
-        if(a.isNull() || c.isNull() || axis.isNull() || center.isNull()
-                || !a.hasAttribute("value") || !c.hasAttribute("value") || axis.hasAttribute("i")
-                || !axis.hasAttribute("j") || !axis.hasAttribute("k")
-                || !center.hasAttribute("x") || !center.hasAttribute("y") || !center.hasAttribute("z")){
-            return false;
-        }
-
-        this->a = a.attribute("value").toDouble();
-        this->c = c.attribute("value").toDouble();
-        this->ijk.setVector(axis.attribute("i").toDouble(),
-                             axis.attribute("j").toDouble(),
-                             axis.attribute("k").toDouble());
-        this->xyz.setVector(center.attribute("x").toDouble(),
-                               center.attribute("y").toDouble(),
-                               center.attribute("z").toDouble());
-
+    if (a.isNull() || c.isNull() || axis.isNull() || center.isNull() ||
+        !a.hasAttribute("value") || !c.hasAttribute("value") ||
+        axis.hasAttribute("i") || !axis.hasAttribute("j") ||
+        !axis.hasAttribute("k") || !center.hasAttribute("x") ||
+        !center.hasAttribute("y") || !center.hasAttribute("z")) {
+      return false;
     }
 
-    return result;
+    this->a = a.attribute("value").toDouble();
+    this->c = c.attribute("value").toDouble();
+    this->ijk.setVector(axis.attribute("i").toDouble(),
+                        axis.attribute("j").toDouble(),
+                        axis.attribute("k").toDouble());
+    this->xyz.setVector(center.attribute("x").toDouble(),
+                        center.attribute("y").toDouble(),
+                        center.attribute("z").toDouble());
+  }
 
+  return result;
 }
 
 /*!
@@ -311,11 +303,12 @@ bool Hyperboloid::fromOpenIndyXML(QDomElement &xmlElem){
  * \param showDiff
  * \return
  */
-QString Hyperboloid::getDisplayA(const UnitType &type, const int &digits, const bool &/*showDiff*/) const{
-    if(this->isSolved){
-        return QString::number(convertFromDefault(this->a, type), 'f', digits);
-    }
-    return QString("");
+QString Hyperboloid::getDisplayA(const UnitType& type, const int& digits,
+                                 const bool& /*showDiff*/) const {
+  if (this->isSolved) {
+    return QString::number(convertFromDefault(this->a, type), 'f', digits);
+  }
+  return QString("");
 }
 
 /*!
@@ -325,9 +318,10 @@ QString Hyperboloid::getDisplayA(const UnitType &type, const int &digits, const 
  * \param showDiff
  * \return
  */
-QString Hyperboloid::getDisplayC(const UnitType &type, const int &digits, const bool &/*showDiff*/) const{
-    if(this->isSolved){
-        return QString::number(convertFromDefault(this->c, type), 'f', digits);
-    }
-    return QString("");
+QString Hyperboloid::getDisplayC(const UnitType& type, const int& digits,
+                                 const bool& /*showDiff*/) const {
+  if (this->isSolved) {
+    return QString::number(convertFromDefault(this->c, type), 'f', digits);
+  }
+  return QString("");
 }

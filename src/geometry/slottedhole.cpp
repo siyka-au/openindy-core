@@ -9,13 +9,11 @@ using namespace oi::math;
  * \brief SlottedHole::SlottedHole
  * \param parent
  */
-SlottedHole::SlottedHole(QObject *parent) : Geometry(parent){
-
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setSlottedHole(this);
-    }
-
+SlottedHole::SlottedHole(QObject* parent) : Geometry(parent) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setSlottedHole(this);
+  }
 }
 
 /*!
@@ -27,15 +25,16 @@ SlottedHole::SlottedHole(QObject *parent) : Geometry(parent){
  * \param holeAxis
  * \param parent
  */
-SlottedHole::SlottedHole(const Position &center, const Direction &normal, const Radius &radius, const double &length, const Direction &holeAxis, QObject *parent) : Geometry(parent){
+SlottedHole::SlottedHole(const Position& center, const Direction& normal,
+                         const Radius& radius, const double& length,
+                         const Direction& holeAxis, QObject* parent)
+    : Geometry(parent) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setSlottedHole(this);
+  }
 
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setSlottedHole(this);
-    }
-
-    this->setSlottedHole(center, normal, radius, length, holeAxis);
-
+  this->setSlottedHole(center, normal, radius, length, holeAxis);
 }
 
 /*!
@@ -46,15 +45,16 @@ SlottedHole::SlottedHole(const Position &center, const Direction &normal, const 
  * \param radius
  * \param parent
  */
-SlottedHole::SlottedHole(const Position &circleCenterA, const Position &circleCenterB, const Direction &normal, const Radius &radius, QObject *parent) : Geometry(parent){
+SlottedHole::SlottedHole(const Position& circleCenterA,
+                         const Position& circleCenterB, const Direction& normal,
+                         const Radius& radius, QObject* parent)
+    : Geometry(parent) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setSlottedHole(this);
+  }
 
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setSlottedHole(this);
-    }
-
-    this->setSlottedHole(circleCenterA, circleCenterB, normal, radius);
-
+  this->setSlottedHole(circleCenterA, circleCenterB, normal, radius);
 }
 
 /*!
@@ -62,21 +62,20 @@ SlottedHole::SlottedHole(const Position &circleCenterA, const Position &circleCe
  * \param copy
  * \param parent
  */
-SlottedHole::SlottedHole(const SlottedHole &copy, QObject *parent) : Geometry(copy, parent){
+SlottedHole::SlottedHole(const SlottedHole& copy, QObject* parent)
+    : Geometry(copy, parent) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setSlottedHole(this);
+  }
 
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setSlottedHole(this);
-    }
-
-    this->center = copy.center;
-    this->normal = copy.normal;
-    this->radius = copy.radius;
-    this->length = copy.length;
-    this->holeAxis = copy.holeAxis;
-    this->circleCenterA = copy.circleCenterA;
-    this->circleCenterB = copy.circleCenterB;
-
+  this->center = copy.center;
+  this->normal = copy.normal;
+  this->radius = copy.radius;
+  this->length = copy.length;
+  this->holeAxis = copy.holeAxis;
+  this->circleCenterA = copy.circleCenterA;
+  this->circleCenterB = copy.circleCenterB;
 }
 
 /*!
@@ -84,90 +83,74 @@ SlottedHole::SlottedHole(const SlottedHole &copy, QObject *parent) : Geometry(co
  * \param copy
  * \return
  */
-SlottedHole &SlottedHole::operator=(const SlottedHole &copy){
+SlottedHole& SlottedHole::operator=(const SlottedHole& copy) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setSlottedHole(this);
+  }
 
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setSlottedHole(this);
-    }
+  this->center = copy.center;
+  this->normal = copy.normal;
+  this->radius = copy.radius;
+  this->length = copy.length;
+  this->holeAxis = copy.holeAxis;
+  this->circleCenterA = copy.circleCenterA;
+  this->circleCenterB = copy.circleCenterB;
 
-    this->center = copy.center;
-    this->normal = copy.normal;
-    this->radius = copy.radius;
-    this->length = copy.length;
-    this->holeAxis = copy.holeAxis;
-    this->circleCenterA = copy.circleCenterA;
-    this->circleCenterB = copy.circleCenterB;
-
-    return *this;
-
+  return *this;
 }
 
 /*!
  * \brief SlottedHole::~SlottedHole
  */
-SlottedHole::~SlottedHole(){
-
-}
+SlottedHole::~SlottedHole() {}
 
 /*!
  * \brief SlottedHole::hasDirection
  * \return
  */
-bool SlottedHole::hasDirection() const{
-    return true;
-}
+bool SlottedHole::hasDirection() const { return true; }
 
 /*!
  * \brief SlottedHole::hasPosition
  * \return
  */
-bool SlottedHole::hasPosition() const{
-    return true;
-}
+bool SlottedHole::hasPosition() const { return true; }
 
 /*!
  * \brief SlottedHole::hasRadius
  * \return
  */
-bool SlottedHole::hasRadius() const{
-    return true;
-}
+bool SlottedHole::hasRadius() const { return true; }
 
 /*!
  * \brief SlottedHole::getRadius
  * Returns the radius of the outer circles
  * \return
  */
-const Radius &SlottedHole::getRadius() const{
-    return this->radius;
-}
+const Radius& SlottedHole::getRadius() const { return this->radius; }
 
 /*!
  * \brief SlottedHole::getDirection
  * Returns the normal vector of the slotted hole
  * \return
  */
-const Direction &SlottedHole::getDirection() const{
-    return this->normal;
-}
+const Direction& SlottedHole::getDirection() const { return this->normal; }
 
 /*!
  * \brief SlottedHole::getPosition
  * Returns the center of the slotted hole
  * \return
  */
-const Position &SlottedHole::getPosition() const{
-    return this->center;
-}
+const Position& SlottedHole::getPosition() const { return this->center; }
 
 /*!
  * \brief SlottedHole::getCircleCenterA
  * Returns the center of one circle
  * \return
  */
-const Position &SlottedHole::getCircleCenterA() const{
-    return this->circleCenterA;
+const Position& SlottedHole::getCircleCenterA() const {
+  return this->circleCenterA;
 }
 
 /*!
@@ -175,8 +158,8 @@ const Position &SlottedHole::getCircleCenterA() const{
  * Returns the center of the other circle
  * \return
  */
-const Position &SlottedHole::getCircleCenterB() const{
-    return this->circleCenterB;
+const Position& SlottedHole::getCircleCenterB() const {
+  return this->circleCenterB;
 }
 
 /*!
@@ -184,17 +167,13 @@ const Position &SlottedHole::getCircleCenterB() const{
  * Returns a vector pointing from circle center A to B
  * \return
  */
-const Direction &SlottedHole::getHoleAxis() const{
-    return this->holeAxis;
-}
+const Direction& SlottedHole::getHoleAxis() const { return this->holeAxis; }
 
 /*!
  * \brief SlottedHole::getLength
  * \return
  */
-const double &SlottedHole::getLength() const{
-    return this->length;
-}
+const double& SlottedHole::getLength() const { return this->length; }
 
 /*!
  * \brief SlottedHole::setSlottedHole
@@ -204,23 +183,28 @@ const double &SlottedHole::getLength() const{
  * \param length
  * \param holeAxis
  */
-void SlottedHole::setSlottedHole(const Position &center, const Direction &normal, const Radius &radius, const double &length, const Direction &holeAxis){
+void SlottedHole::setSlottedHole(const Position& center,
+                                 const Direction& normal, const Radius& radius,
+                                 const double& length,
+                                 const Direction& holeAxis) {
+  // set the given parameters
+  this->center = center;
+  this->normal = normal;
+  this->radius = radius;
+  this->length = length;
+  this->holeAxis = holeAxis;
 
-    //set the given parameters
-    this->center = center;
-    this->normal = normal;
-    this->radius = radius;
-    this->length = length;
-    this->holeAxis = holeAxis;
+  // calculate the other parameters
+  OiVec axis = this->holeAxis.getVector();
+  axis.normalize();
+  this->circleCenterA.setVector(this->center.getVector() +
+                                (this->length / 2 - this->radius.getRadius()) *
+                                    axis);
+  this->circleCenterB.setVector(this->center.getVector() -
+                                (this->length / 2 - this->radius.getRadius()) *
+                                    axis);
 
-    //calculate the other parameters
-    OiVec axis = this->holeAxis.getVector();
-    axis.normalize();
-    this->circleCenterA.setVector(this->center.getVector() + (this->length / 2 - this->radius.getRadius()) * axis);
-    this->circleCenterB.setVector(this->center.getVector() - (this->length / 2 - this->radius.getRadius()) * axis);
-
-    emit this->geomParametersChanged(this->id);
-
+  emit this->geomParametersChanged(this->id);
 }
 
 /*!
@@ -230,23 +214,27 @@ void SlottedHole::setSlottedHole(const Position &center, const Direction &normal
  * \param normal
  * \param radius
  */
-void SlottedHole::setSlottedHole(const Position &circleCenterA, const Position &circleCenterB, const Direction &normal, const Radius &radius){
+void SlottedHole::setSlottedHole(const Position& circleCenterA,
+                                 const Position& circleCenterB,
+                                 const Direction& normal,
+                                 const Radius& radius) {
+  // set the given parameters
+  this->circleCenterA = circleCenterA;
+  this->circleCenterB = circleCenterB;
+  this->normal = normal;
+  this->radius = radius;
 
-    //set the given parameters
-    this->circleCenterA = circleCenterA;
-    this->circleCenterB = circleCenterB;
-    this->normal = normal;
-    this->radius = radius;
+  // calculate the other parameters
+  this->center.setVector(this->circleCenterA.getVector() +
+                         0.5 * (this->circleCenterB.getVector() -
+                                this->circleCenterA.getVector()));
+  OiVec axis =
+      this->circleCenterB.getVector() - this->circleCenterA.getVector();
+  OiVec::dot(this->length, axis, axis);
+  axis.normalize();
+  this->holeAxis.setVector(axis);
 
-    //calculate the other parameters
-    this->center.setVector(this->circleCenterA.getVector() + 0.5*(this->circleCenterB.getVector() - this->circleCenterA.getVector()));
-    OiVec axis = this->circleCenterB.getVector() - this->circleCenterA.getVector();
-    OiVec::dot(this->length, axis, axis);
-    axis.normalize();
-    this->holeAxis.setVector(axis);
-
-    emit this->geomParametersChanged(this->id);
-
+  emit this->geomParametersChanged(this->id);
 }
 
 /*!
@@ -255,110 +243,128 @@ void SlottedHole::setSlottedHole(const Position &circleCenterA, const Position &
  * \param displayDigits
  * \return
  */
-QMap<GeometryParameters, QString> SlottedHole::getUnknownParameters(const QMap<DimensionType, UnitType> &displayUnits, const QMap<DimensionType, int> &displayDigits) const{
+QMap<GeometryParameters, QString> SlottedHole::getUnknownParameters(
+    const QMap<DimensionType, UnitType>& displayUnits,
+    const QMap<DimensionType, int>& displayDigits) const {
+  QMap<GeometryParameters, QString> parameters;
 
-    QMap<GeometryParameters, QString> parameters;
+  parameters.insert(eUnknownX,
+                    this->getDisplayX(displayUnits.value(eMetric, eUnitMeter),
+                                      displayDigits.value(eMetric, 0)));
+  parameters.insert(eUnknownY,
+                    this->getDisplayY(displayUnits.value(eMetric, eUnitMeter),
+                                      displayDigits.value(eMetric, 0)));
+  parameters.insert(eUnknownZ,
+                    this->getDisplayZ(displayUnits.value(eMetric, eUnitMeter),
+                                      displayDigits.value(eMetric, 0)));
+  parameters.insert(eUnknownPrimaryI, this->getDisplayPrimaryI(
+                                          displayDigits.value(eDimensionless)));
+  parameters.insert(eUnknownPrimaryJ, this->getDisplayPrimaryJ(
+                                          displayDigits.value(eDimensionless)));
+  parameters.insert(eUnknownPrimaryK, this->getDisplayPrimaryK(
+                                          displayDigits.value(eDimensionless)));
+  parameters.insert(
+      eUnknownRadiusA,
+      this->getDisplayRadiusA(displayUnits.value(eMetric, eUnitMeter),
+                              displayDigits.value(eMetric, 0)));
+  parameters.insert(eUnknownLength, this->getDisplayLength(
+                                        displayUnits.value(eMetric, eUnitMeter),
+                                        displayDigits.value(eMetric, 0)));
+  parameters.insert(
+      eUnknownSecondaryI,
+      this->getDisplaySecondaryI(displayDigits.value(eDimensionless)));
+  parameters.insert(
+      eUnknownSecondaryJ,
+      this->getDisplaySecondaryJ(displayDigits.value(eDimensionless)));
+  parameters.insert(
+      eUnknownSecondaryK,
+      this->getDisplaySecondaryK(displayDigits.value(eDimensionless)));
 
-    parameters.insert(eUnknownX, this->getDisplayX(displayUnits.value(eMetric, eUnitMeter), displayDigits.value(eMetric, 0)));
-    parameters.insert(eUnknownY, this->getDisplayY(displayUnits.value(eMetric, eUnitMeter), displayDigits.value(eMetric, 0)));
-    parameters.insert(eUnknownZ, this->getDisplayZ(displayUnits.value(eMetric, eUnitMeter), displayDigits.value(eMetric, 0)));
-    parameters.insert(eUnknownPrimaryI, this->getDisplayPrimaryI(displayDigits.value(eDimensionless)));
-    parameters.insert(eUnknownPrimaryJ, this->getDisplayPrimaryJ(displayDigits.value(eDimensionless)));
-    parameters.insert(eUnknownPrimaryK, this->getDisplayPrimaryK(displayDigits.value(eDimensionless)));
-    parameters.insert(eUnknownRadiusA, this->getDisplayRadiusA(displayUnits.value(eMetric, eUnitMeter), displayDigits.value(eMetric, 0)));
-    parameters.insert(eUnknownLength, this->getDisplayLength(displayUnits.value(eMetric, eUnitMeter), displayDigits.value(eMetric, 0)));
-    parameters.insert(eUnknownSecondaryI, this->getDisplaySecondaryI(displayDigits.value(eDimensionless)));
-    parameters.insert(eUnknownSecondaryJ, this->getDisplaySecondaryJ(displayDigits.value(eDimensionless)));
-    parameters.insert(eUnknownSecondaryK, this->getDisplaySecondaryK(displayDigits.value(eDimensionless)));
-
-    return parameters;
-
+  return parameters;
 }
 
 /*!
  * \brief SlottedHole::applyUnknownParameters
  * \param parameters
  */
-void SlottedHole::applyUnknownParameters(const QMap<GeometryParameters, double> &parameters){
+void SlottedHole::applyUnknownParameters(
+    const QMap<GeometryParameters, double>& parameters) {
+  // get current parameters
+  OiVec position = this->center.getVector();
+  OiVec directionA = this->normal.getVector();
+  OiVec directionB = this->holeAxis.getVector();
+  double radius = this->radius.getRadius();
+  double length = this->length;
 
-    //get current parameters
-    OiVec position = this->center.getVector();
-    OiVec directionA = this->normal.getVector();
-    OiVec directionB = this->holeAxis.getVector();
-    double radius = this->radius.getRadius();
-    double length = this->length;
-
-    //update parameters
-    QList<GeometryParameters> keys = parameters.keys();
-    foreach(const GeometryParameters &key, keys){
-        switch(key){
-        case eUnknownX:
-            position.setAt(0, parameters.value(eUnknownX));
-            break;
-        case eUnknownY:
-            position.setAt(1, parameters.value(eUnknownY));
-            break;
-        case eUnknownZ:
-            position.setAt(2, parameters.value(eUnknownZ));
-            break;
-        case eUnknownPrimaryI:
-            directionA.setAt(0, parameters.value(eUnknownPrimaryI));
-            break;
-        case eUnknownPrimaryJ:
-            directionA.setAt(1, parameters.value(eUnknownPrimaryJ));
-            break;
-        case eUnknownPrimaryK:
-            directionA.setAt(2, parameters.value(eUnknownPrimaryK));
-            break;
-        case eUnknownRadiusA:
-            radius = parameters.value(eUnknownRadiusA);
-            break;
-        case eUnknownLength:
-            length = parameters.value(eUnknownLength);
-            break;
-        case eUnknownSecondaryI:
-            directionB.setAt(0, parameters.value(eUnknownSecondaryI));
-            break;
-        case eUnknownSecondaryJ:
-            directionB.setAt(1, parameters.value(eUnknownSecondaryJ));
-            break;
-        case eUnknownSecondaryK:
-            directionB.setAt(2, parameters.value(eUnknownSecondaryK));
-            break;
-        default:
-            break;
-        }
+  // update parameters
+  QList<GeometryParameters> keys = parameters.keys();
+  foreach (const GeometryParameters& key, keys) {
+    switch (key) {
+      case eUnknownX:
+        position.setAt(0, parameters.value(eUnknownX));
+        break;
+      case eUnknownY:
+        position.setAt(1, parameters.value(eUnknownY));
+        break;
+      case eUnknownZ:
+        position.setAt(2, parameters.value(eUnknownZ));
+        break;
+      case eUnknownPrimaryI:
+        directionA.setAt(0, parameters.value(eUnknownPrimaryI));
+        break;
+      case eUnknownPrimaryJ:
+        directionA.setAt(1, parameters.value(eUnknownPrimaryJ));
+        break;
+      case eUnknownPrimaryK:
+        directionA.setAt(2, parameters.value(eUnknownPrimaryK));
+        break;
+      case eUnknownRadiusA:
+        radius = parameters.value(eUnknownRadiusA);
+        break;
+      case eUnknownLength:
+        length = parameters.value(eUnknownLength);
+        break;
+      case eUnknownSecondaryI:
+        directionB.setAt(0, parameters.value(eUnknownSecondaryI));
+        break;
+      case eUnknownSecondaryJ:
+        directionB.setAt(1, parameters.value(eUnknownSecondaryJ));
+        break;
+      case eUnknownSecondaryK:
+        directionB.setAt(2, parameters.value(eUnknownSecondaryK));
+        break;
+      default:
+        break;
     }
+  }
 
-    //update slotted hole definition
-    directionA.normalize();
-    directionB.normalize();
-    Position holePosition(position);
-    Direction holeDirectionA(directionA);
-    Direction holeDirectionB(directionB);
-    Radius holeRadius(radius);
-    this->setSlottedHole(holePosition, holeDirectionA, holeRadius, length, holeDirectionB);
-
+  // update slotted hole definition
+  directionA.normalize();
+  directionB.normalize();
+  Position holePosition(position);
+  Direction holeDirectionA(directionA);
+  Direction holeDirectionB(directionB);
+  Radius holeRadius(radius);
+  this->setSlottedHole(holePosition, holeDirectionA, holeRadius, length,
+                       holeDirectionB);
 }
 
 /*!
  * \brief SlottedHole::recalc
  */
-void SlottedHole::recalc(){
+void SlottedHole::recalc() {
+  Geometry::recalc();
 
-    Geometry::recalc();
-
-    //reset slotted hole definition if not solved and no nominal
-    if(!this->isSolved && this->getOwnerDescription().has_value()){
-        this->center.setVector(0.0, 0.0, 0.0);
-        this->normal.setVector(0.0, 0.0, 0.0);
-        this->radius.setRadius(0.0);
-        this->length = 0.0;
-        this->holeAxis.setVector(0.0, 0.0, 0.0);
-        this->circleCenterA.setVector(0.0, 0.0, 0.0);
-        this->circleCenterB.setVector(0.0, 0.0, 0.0);
-    }
-
+  // reset slotted hole definition if not solved and no nominal
+  if (!this->isSolved && this->getOwnerDescription().has_value()) {
+    this->center.setVector(0.0, 0.0, 0.0);
+    this->normal.setVector(0.0, 0.0, 0.0);
+    this->radius.setRadius(0.0);
+    this->length = 0.0;
+    this->holeAxis.setVector(0.0, 0.0, 0.0);
+    this->circleCenterA.setVector(0.0, 0.0, 0.0);
+    this->circleCenterB.setVector(0.0, 0.0, 0.0);
+  }
 }
 
 /*!
@@ -366,40 +372,38 @@ void SlottedHole::recalc(){
  * \param xmlDoc
  * \return
  */
-QDomElement SlottedHole::toOpenIndyXML(QDomDocument &xmlDoc) const{
+QDomElement SlottedHole::toOpenIndyXML(QDomDocument& xmlDoc) const {
+  QDomElement slottedHole = Geometry::toOpenIndyXML(xmlDoc);
 
-    QDomElement slottedHole = Geometry::toOpenIndyXML(xmlDoc);
-
-    if(slottedHole.isNull()){
-        return slottedHole;
-    }
-
-    slottedHole.setAttribute("type", getGeometryTypeName(eNurbsGeometry));
-
-    //set length
-    QDomElement length = xmlDoc.createElement("length");
-    if(this->isSolved || !this->getOwnerDescription().has_value()){
-        length.setAttribute("value", this->length);
-    }else{
-        length.setAttribute("value", 0.0);
-    }
-    slottedHole.appendChild(length);
-
-    //set hole axis
-    QDomElement holeAxis = xmlDoc.createElement("holeAxis");
-    if(this->isSolved || !this->getOwnerDescription().has_value()){
-        holeAxis.setAttribute("i", this->holeAxis.getVector().getAt(0));
-        holeAxis.setAttribute("j", this->holeAxis.getVector().getAt(1));
-        holeAxis.setAttribute("k", this->holeAxis.getVector().getAt(2));
-    }else{
-        holeAxis.setAttribute("i", 0.0);
-        holeAxis.setAttribute("j", 0.0);
-        holeAxis.setAttribute("k", 0.0);
-    }
-    slottedHole.appendChild(holeAxis);
-
+  if (slottedHole.isNull()) {
     return slottedHole;
+  }
 
+  slottedHole.setAttribute("type", getGeometryTypeName(eNurbsGeometry));
+
+  // set length
+  QDomElement length = xmlDoc.createElement("length");
+  if (this->isSolved || !this->getOwnerDescription().has_value()) {
+    length.setAttribute("value", this->length);
+  } else {
+    length.setAttribute("value", 0.0);
+  }
+  slottedHole.appendChild(length);
+
+  // set hole axis
+  QDomElement holeAxis = xmlDoc.createElement("holeAxis");
+  if (this->isSolved || !this->getOwnerDescription().has_value()) {
+    holeAxis.setAttribute("i", this->holeAxis.getVector().getAt(0));
+    holeAxis.setAttribute("j", this->holeAxis.getVector().getAt(1));
+    holeAxis.setAttribute("k", this->holeAxis.getVector().getAt(2));
+  } else {
+    holeAxis.setAttribute("i", 0.0);
+    holeAxis.setAttribute("j", 0.0);
+    holeAxis.setAttribute("k", 0.0);
+  }
+  slottedHole.appendChild(holeAxis);
+
+  return slottedHole;
 }
 
 /*!
@@ -407,43 +411,41 @@ QDomElement SlottedHole::toOpenIndyXML(QDomDocument &xmlDoc) const{
  * \param xmlElem
  * \return
  */
-bool SlottedHole::fromOpenIndyXML(QDomElement &xmlElem){
+bool SlottedHole::fromOpenIndyXML(QDomElement& xmlElem) {
+  bool result = Geometry::fromOpenIndyXML(xmlElem);
 
-    bool result = Geometry::fromOpenIndyXML(xmlElem);
+  if (result) {
+    // set slotted hole attributes
+    QDomElement radius = xmlElem.firstChildElement("radius");
+    QDomElement length = xmlElem.firstChildElement("length");
+    QDomElement holeAxis = xmlElem.firstChildElement("holeAxis");
+    QDomElement normal = xmlElem.firstChildElement("spatialDirection");
+    QDomElement center = xmlElem.firstChildElement("coordinates");
 
-    if(result){
-
-        //set slotted hole attributes
-        QDomElement radius = xmlElem.firstChildElement("radius");
-        QDomElement length = xmlElem.firstChildElement("length");
-        QDomElement holeAxis = xmlElem.firstChildElement("holeAxis");
-        QDomElement normal = xmlElem.firstChildElement("spatialDirection");
-        QDomElement center = xmlElem.firstChildElement("coordinates");
-
-        if(radius.isNull() || length.isNull() || holeAxis.isNull() || normal.isNull() || center.isNull()
-                || !radius.hasAttribute("value") || !length.hasAttribute("value") || holeAxis.hasAttribute("i")
-                || !holeAxis.hasAttribute("j") || !holeAxis.hasAttribute("k")
-                || !normal.hasAttribute("i") || normal.hasAttribute("j") || normal.hasAttribute("k")
-                || !center.hasAttribute("x") || !center.hasAttribute("y") || !center.hasAttribute("z")){
-            return false;
-        }
-
-        this->radius.setRadius(radius.attribute("value").toDouble());
-        this->length = length.attribute("value").toDouble();
-        this->holeAxis.setVector(holeAxis.attribute("i").toDouble(),
-                                 holeAxis.attribute("j").toDouble(),
-                                 holeAxis.attribute("k").toDouble());
-        this->normal.setVector(normal.attribute("i").toDouble(),
-                               normal.attribute("j").toDouble(),
-                               normal.attribute("k").toDouble());
-        this->center.setVector(center.attribute("x").toDouble(),
-                               center.attribute("y").toDouble(),
-                               center.attribute("z").toDouble());
-
+    if (radius.isNull() || length.isNull() || holeAxis.isNull() ||
+        normal.isNull() || center.isNull() || !radius.hasAttribute("value") ||
+        !length.hasAttribute("value") || holeAxis.hasAttribute("i") ||
+        !holeAxis.hasAttribute("j") || !holeAxis.hasAttribute("k") ||
+        !normal.hasAttribute("i") || normal.hasAttribute("j") ||
+        normal.hasAttribute("k") || !center.hasAttribute("x") ||
+        !center.hasAttribute("y") || !center.hasAttribute("z")) {
+      return false;
     }
 
-    return result;
+    this->radius.setRadius(radius.attribute("value").toDouble());
+    this->length = length.attribute("value").toDouble();
+    this->holeAxis.setVector(holeAxis.attribute("i").toDouble(),
+                             holeAxis.attribute("j").toDouble(),
+                             holeAxis.attribute("k").toDouble());
+    this->normal.setVector(normal.attribute("i").toDouble(),
+                           normal.attribute("j").toDouble(),
+                           normal.attribute("k").toDouble());
+    this->center.setVector(center.attribute("x").toDouble(),
+                           center.attribute("y").toDouble(),
+                           center.attribute("z").toDouble());
+  }
 
+  return result;
 }
 
 /*!
@@ -453,11 +455,14 @@ bool SlottedHole::fromOpenIndyXML(QDomElement &xmlElem){
  * \param showDiff
  * \return
  */
-QString SlottedHole::getDisplayX(const UnitType &type, const int &digits, const bool &/*showDiff*/) const{
-    if(this->isSolved){
-        return QString::number(convertFromDefault(this->center.getVector().getAt(0), type), 'f', digits);
-    }
-    return QString("");
+QString SlottedHole::getDisplayX(const UnitType& type, const int& digits,
+                                 const bool& /*showDiff*/) const {
+  if (this->isSolved) {
+    return QString::number(
+        convertFromDefault(this->center.getVector().getAt(0), type), 'f',
+        digits);
+  }
+  return QString("");
 }
 
 /*!
@@ -467,11 +472,14 @@ QString SlottedHole::getDisplayX(const UnitType &type, const int &digits, const 
  * \param showDiff
  * \return
  */
-QString SlottedHole::getDisplayY(const UnitType &type, const int &digits, const bool &/*showDiff*/) const{
-    if(this->isSolved){
-        return QString::number(convertFromDefault(this->center.getVector().getAt(1), type), 'f', digits);
-    }
-    return QString("");
+QString SlottedHole::getDisplayY(const UnitType& type, const int& digits,
+                                 const bool& /*showDiff*/) const {
+  if (this->isSolved) {
+    return QString::number(
+        convertFromDefault(this->center.getVector().getAt(1), type), 'f',
+        digits);
+  }
+  return QString("");
 }
 
 /*!
@@ -481,11 +489,14 @@ QString SlottedHole::getDisplayY(const UnitType &type, const int &digits, const 
  * \param showDiff
  * \return
  */
-QString SlottedHole::getDisplayZ(const UnitType &type, const int &digits, const bool &/*showDiff*/) const{
-    if(this->isSolved){
-        return QString::number(convertFromDefault(this->center.getVector().getAt(2), type), 'f', digits);
-    }
-    return QString("");
+QString SlottedHole::getDisplayZ(const UnitType& type, const int& digits,
+                                 const bool& /*showDiff*/) const {
+  if (this->isSolved) {
+    return QString::number(
+        convertFromDefault(this->center.getVector().getAt(2), type), 'f',
+        digits);
+  }
+  return QString("");
 }
 
 /*!
@@ -494,11 +505,12 @@ QString SlottedHole::getDisplayZ(const UnitType &type, const int &digits, const 
  * \param showDiff
  * \return
  */
-QString SlottedHole::getDisplayPrimaryI(const int &digits, const bool &/*showDiff*/) const{
-    if(this->isSolved){
-        return QString::number(this->normal.getVector().getAt(0), 'f', digits);
-    }
-    return QString("");
+QString SlottedHole::getDisplayPrimaryI(const int& digits,
+                                        const bool& /*showDiff*/) const {
+  if (this->isSolved) {
+    return QString::number(this->normal.getVector().getAt(0), 'f', digits);
+  }
+  return QString("");
 }
 
 /*!
@@ -507,11 +519,12 @@ QString SlottedHole::getDisplayPrimaryI(const int &digits, const bool &/*showDif
  * \param showDiff
  * \return
  */
-QString SlottedHole::getDisplayPrimaryJ(const int &digits, const bool &/*showDiff*/) const{
-    if(this->isSolved){
-        return QString::number(this->normal.getVector().getAt(1), 'f', digits);
-    }
-    return QString("");
+QString SlottedHole::getDisplayPrimaryJ(const int& digits,
+                                        const bool& /*showDiff*/) const {
+  if (this->isSolved) {
+    return QString::number(this->normal.getVector().getAt(1), 'f', digits);
+  }
+  return QString("");
 }
 
 /*!
@@ -520,11 +533,12 @@ QString SlottedHole::getDisplayPrimaryJ(const int &digits, const bool &/*showDif
  * \param showDiff
  * \return
  */
-QString SlottedHole::getDisplayPrimaryK(const int &digits, const bool &/*showDiff*/) const{
-    if(this->isSolved){
-        return QString::number(this->normal.getVector().getAt(2), 'f', digits);
-    }
-    return QString("");
+QString SlottedHole::getDisplayPrimaryK(const int& digits,
+                                        const bool& /*showDiff*/) const {
+  if (this->isSolved) {
+    return QString::number(this->normal.getVector().getAt(2), 'f', digits);
+  }
+  return QString("");
 }
 
 /*!
@@ -534,11 +548,13 @@ QString SlottedHole::getDisplayPrimaryK(const int &digits, const bool &/*showDif
  * \param showDiff
  * \return
  */
-QString SlottedHole::getDisplayRadiusA(const UnitType &type, const int &digits, const bool &/*showDiff*/) const{
-    if(this->isSolved){
-        return QString::number(convertFromDefault(this->radius.getRadius(), type), 'f', digits);
-    }
-    return QString("");
+QString SlottedHole::getDisplayRadiusA(const UnitType& type, const int& digits,
+                                       const bool& /*showDiff*/) const {
+  if (this->isSolved) {
+    return QString::number(convertFromDefault(this->radius.getRadius(), type),
+                           'f', digits);
+  }
+  return QString("");
 }
 
 /*!
@@ -547,11 +563,12 @@ QString SlottedHole::getDisplayRadiusA(const UnitType &type, const int &digits, 
  * \param showDiff
  * \return
  */
-QString SlottedHole::getDisplaySecondaryI(const int &digits, const bool &/*showDiff*/) const{
-    if(this->isSolved){
-        return QString::number(this->holeAxis.getVector().getAt(0), 'f', digits);
-    }
-    return QString("");
+QString SlottedHole::getDisplaySecondaryI(const int& digits,
+                                          const bool& /*showDiff*/) const {
+  if (this->isSolved) {
+    return QString::number(this->holeAxis.getVector().getAt(0), 'f', digits);
+  }
+  return QString("");
 }
 
 /*!
@@ -560,11 +577,12 @@ QString SlottedHole::getDisplaySecondaryI(const int &digits, const bool &/*showD
  * \param showDiff
  * \return
  */
-QString SlottedHole::getDisplaySecondaryJ(const int &digits, const bool &/*showDiff*/) const{
-    if(this->isSolved){
-        return QString::number(this->holeAxis.getVector().getAt(1), 'f', digits);
-    }
-    return QString("");
+QString SlottedHole::getDisplaySecondaryJ(const int& digits,
+                                          const bool& /*showDiff*/) const {
+  if (this->isSolved) {
+    return QString::number(this->holeAxis.getVector().getAt(1), 'f', digits);
+  }
+  return QString("");
 }
 
 /*!
@@ -573,11 +591,12 @@ QString SlottedHole::getDisplaySecondaryJ(const int &digits, const bool &/*showD
  * \param showDiff
  * \return
  */
-QString SlottedHole::getDisplaySecondaryK(const int &digits, const bool &/*showDiff*/) const{
-    if(this->isSolved){
-        return QString::number(this->holeAxis.getVector().getAt(2), 'f', digits);
-    }
-    return QString("");
+QString SlottedHole::getDisplaySecondaryK(const int& digits,
+                                          const bool& /*showDiff*/) const {
+  if (this->isSolved) {
+    return QString::number(this->holeAxis.getVector().getAt(2), 'f', digits);
+  }
+  return QString("");
 }
 
 /*!
@@ -587,9 +606,10 @@ QString SlottedHole::getDisplaySecondaryK(const int &digits, const bool &/*showD
  * \param showDiff
  * \return
  */
-QString SlottedHole::getDisplayLength(const UnitType &type, const int &digits, const bool &/*showDiff*/) const{
-    if(this->isSolved){
-        return QString::number(convertFromDefault(this->length, type), 'f', digits);
-    }
-    return QString("");
+QString SlottedHole::getDisplayLength(const UnitType& type, const int& digits,
+                                      const bool& /*showDiff*/) const {
+  if (this->isSolved) {
+    return QString::number(convertFromDefault(this->length, type), 'f', digits);
+  }
+  return QString("");
 }

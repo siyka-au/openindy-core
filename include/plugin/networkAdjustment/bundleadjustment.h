@@ -1,259 +1,255 @@
 #ifndef BUNDLEADJUSTMENT_H
 #define BUNDLEADJUSTMENT_H
 
-#include <QObject>
 #include <QDomDocument>
 #include <QDomElement>
-#include <QString>
 #include <QMap>
 #include <QMultiMap>
+#include <QObject>
+#include <QString>
 
-#include "pluginmetadata.h"
 #include "oijob.h"
+#include "pluginmetadata.h"
 #include "types.h"
 
-namespace oi{
+namespace oi {
 
-class BundleException : public std::exception
-{
-public:
-    BundleException(const char * const & message, int featureId = -1) : message(message), featureId(featureId) {
-    }
+class BundleException : public std::exception {
+ public:
+  BundleException(const char* const& message, int featureId = -1)
+      : message(message), featureId(featureId) {}
 
-    int getFeatureId() {
-        return featureId;
-    }
+  int getFeatureId() { return featureId; }
 
-    const char * what() const noexcept override {
-        return message;
-    }
+  const char* what() const noexcept override { return message; }
 
-private:
-    const char * message;
-    int featureId;
+ private:
+  const char* message;
+  int featureId;
 };
 
 /*!
  * \brief The BundleTransformation class
  * Defines a transformation for bundle adjustment
  */
-class BundleTransformation{
-public:
-    BundleTransformation() : id(-1){}
+class BundleTransformation {
+ public:
+  BundleTransformation() : id(-1) {}
 
-    bool operator == (const BundleTransformation &other) const {
-        if(this->id == other.id){
-            return true;
-        }
-        return false;
+  bool operator==(const BundleTransformation& other) const {
+    if (this->id == other.id) {
+      return true;
     }
+    return false;
+  }
 
-    //station feature id
-    int id;
+  // station feature id
+  int id;
 
-    //transformation parameters
-    QMap<TrafoParamParameters, double> parameters;
-
+  // transformation parameters
+  QMap<TrafoParamParameters, double> parameters;
 };
 
 /*!
  * \brief The BundleGeometry class
  * Defines a geometry for bundle adjustment
  */
-class BundleGeometry{
-public:
-    BundleGeometry() : id(-1){}
+class BundleGeometry {
+ public:
+  BundleGeometry() : id(-1) {}
 
-    bool operator == (const BundleGeometry &other) const {
-        if(this->id == other.id){
-            return true;
-        }
-        return false;
+  bool operator==(const BundleGeometry& other) const {
+    if (this->id == other.id) {
+      return true;
     }
+    return false;
+  }
 
-    //geometry feature id
-    int id;
+  // geometry feature id
+  int id;
 
-    //geometry parameters
-    QMap<GeometryParameters, double> parameters;
-
+  // geometry parameters
+  QMap<GeometryParameters, double> parameters;
 };
 
 /*!
  * \brief The BundleStation class
  * Defines a station used for bundle adjustment
  */
-class BundleStation{
-public:
-    BundleStation() : id(-1), tx(true), ty(true), tz(true),
-    rx(true), ry(true), rz(true), m(true){}
+class BundleStation {
+ public:
+  BundleStation()
+      : id(-1),
+        tx(true),
+        ty(true),
+        tz(true),
+        rx(true),
+        ry(true),
+        rz(true),
+        m(true) {}
 
-    bool operator == (const BundleStation &other) const {
-        if(this->id == other.id){
-            return true;
-        }
-        return false;
+  bool operator==(const BundleStation& other) const {
+    if (this->id == other.id) {
+      return true;
     }
+    return false;
+  }
 
-    //station feature id
-    int id;
+  // station feature id
+  int id;
 
-    //defines which parameters to calculate
-    bool tx, ty, tz;
-    bool rx, ry, rz;
-    bool m;
+  // defines which parameters to calculate
+  bool tx, ty, tz;
+  bool rx, ry, rz;
+  bool m;
 
-    //geometries solved in station system
-    QList<BundleGeometry> geometries;
-
+  // geometries solved in station system
+  QList<BundleGeometry> geometries;
 };
 
 /*!
  * \brief The BundleAdjustment class
  * Interface for implementing bundle adjustment plugins.
  */
-class OI_CORE_EXPORT BundleAdjustment : public QObject
-{
-    Q_OBJECT
+class OI_CORE_EXPORT BundleAdjustment : public QObject {
+  Q_OBJECT
 
-public:
-    BundleAdjustment(QObject *parent = 0);
-    virtual ~BundleAdjustment();
+ public:
+  BundleAdjustment(QObject* parent = 0);
+  virtual ~BundleAdjustment();
 
-    //############################
-    //bundle initialization method
-    //############################
+  // ############################
+  // bundle initialization method
+  // ############################
 
-    virtual void init();
+  virtual void init();
 
-    //################################
-    //calculates the bundle adjustment
-    //################################
+  // ################################
+  // calculates the bundle adjustment
+  // ################################
 
-    virtual bool runBundle();
+  virtual bool runBundle();
 
-    //###########################################################
-    //methods to get or set further information to solve a bundle
-    //###########################################################
+  // ###########################################################
+  // methods to get or set further information to solve a bundle
+  // ###########################################################
 
-    //meta data
-    const PluginMetaData &getMetaData() const;
+  // meta data
+  const PluginMetaData& getMetaData() const;
 
-    //available scalar parameters
-    const QMap<QString, int> &getIntegerParameter() const;
-    const QMap<QString, double> &getDoubleParameter() const;
-    const QMultiMap<QString, QString> &getStringParameter() const;
+  // available scalar parameters
+  const QMap<QString, int>& getIntegerParameter() const;
+  const QMap<QString, double>& getDoubleParameter() const;
+  const QMultiMap<QString, QString>& getStringParameter() const;
 
-    //scalar input parameters
-    const ScalarInputParams &getScalarInputParams();
-    void setScalarInputParams(const ScalarInputParams &params);
+  // scalar input parameters
+  const ScalarInputParams& getScalarInputParams();
+  void setScalarInputParams(const ScalarInputParams& params);
 
-    //input stations
-    const QList<BundleStation> &getInputStations() const;
-    void setInputStations(const QList<BundleStation> &stations);
-    const BundleStation &getBaseStation() const;
-    void setBaseStation(const BundleStation &station);
+  // input stations
+  const QList<BundleStation>& getInputStations() const;
+  void setInputStations(const QList<BundleStation>& stations);
+  const BundleStation& getBaseStation() const;
+  void setBaseStation(const BundleStation& station);
 
-    //bundle coordinate system
-    const QPointer<CoordinateSystem> &getBundleSystem() const;
-    void setBundleSystem(const QPointer<CoordinateSystem> &system);
+  // bundle coordinate system
+  const QPointer<CoordinateSystem>& getBundleSystem() const;
+  void setBundleSystem(const QPointer<CoordinateSystem>& system);
 
-    //OpenIndy job
-    const QPointer<OiJob> &getCurrentJob() const;
-    void setCurrentJob(const QPointer<OiJob> &job);
+  // OpenIndy job
+  const QPointer<OiJob>& getCurrentJob() const;
+  void setCurrentJob(const QPointer<OiJob>& job);
 
-    //###############
-    //general getters
-    //###############
+  // ###############
+  // general getters
+  // ###############
 
-    //id
-    const int &getId() const;
+  // id
+  const int& getId() const;
 
-    //bundle results
-    const QList<BundleGeometry> &getOutputGeometries() const;
-    const QList<BundleTransformation> &getOutputTransformations() const;
+  // bundle results
+  const QList<BundleGeometry>& getOutputGeometries() const;
+  const QList<BundleTransformation>& getOutputTransformations() const;
 
-    //#############
-    //clear results
-    //#############
+  // #############
+  // clear results
+  // #############
 
-    virtual void clear();
-    virtual void clearResults();
+  virtual void clear();
+  virtual void clearResults();
 
-    //#################
-    //save and load XML
-    //#################
+  // #################
+  // save and load XML
+  // #################
 
-    QDomElement toOpenIndyXML(QDomDocument &xmlDoc) const;
-    bool fromOpenIndyXML(QDomElement &xmlElem);
+  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const;
+  bool fromOpenIndyXML(QDomElement& xmlElem);
 
-signals:
+ signals:
 
-    //################################################
-    //signals to inform OpenIndy about function issues
-    //################################################
+  // ################################################
+  // signals to inform OpenIndy about function issues
+  // ################################################
 
-    //messaging
-    void sendMessage(const QString &msg, const MessageTypes &msgType, const MessageDestinations &msgDest = eConsoleMessage);
+  // messaging
+  void sendMessage(const QString& msg, const MessageTypes& msgType,
+                   const MessageDestinations& msgDest = eConsoleMessage);
 
-    //input parameters changed
-    void scalarInputParametersChanged();
-    void inputStationsChanged();
-    void baseStationChanged();
-    void bundleSystemChanged();
-    void jobChanged();
+  // input parameters changed
+  void scalarInputParametersChanged();
+  void inputStationsChanged();
+  void baseStationChanged();
+  void bundleSystemChanged();
+  void jobChanged();
 
-private:
+ private:
+  // ###########
+  // connect job
+  // ###########
 
-    //###########
-    //connect job
-    //###########
+  void connectJob();
+  void disconnectJob();
 
-    void connectJob();
-    void disconnectJob();
+ protected:
+  // ###########################
+  // input and output parameters
+  // ###########################
 
-protected:
+  // meta information about the bundle
+  PluginMetaData metaData;
 
-    //###########################
-    //input and output parameters
-    //###########################
+  // the needed scalar input parameters including default values
+  QMap<QString, int> integerParameters;
+  QMap<QString, double> doubleParameters;
+  QMultiMap<QString, QString> stringParameters;
 
-    //meta information about the bundle
-    PluginMetaData metaData;
+  // user defined scalar input parameters
+  ScalarInputParams scalarInputParams;
 
-    //the needed scalar input parameters including default values
-    QMap<QString, int> integerParameters;
-    QMap<QString, double> doubleParameters;
-    QMultiMap<QString, QString> stringParameters;
+  // input stations
+  QList<BundleStation> stations;
+  BundleStation baseSystem;
 
-    //user defined scalar input parameters
-    ScalarInputParams scalarInputParams;
+  // output geometries and transformation parameters
+  QList<BundleGeometry> geometries;
+  QList<BundleTransformation> transformations;
 
-    //input stations
-    QList<BundleStation> stations;
-    BundleStation baseSystem;
+  // bundle coordinate system
+  QPointer<CoordinateSystem> bundleSystem;
 
-    //output geometries and transformation parameters
-    QList<BundleGeometry> geometries;
-    QList<BundleTransformation> transformations;
+  // OpenIndy job
+  QPointer<OiJob> currentJob;
 
-    //bundle coordinate system
-    QPointer<CoordinateSystem> bundleSystem;
+  // ##################
+  // general attributes
+  // ##################
 
-    //OpenIndy job
-    QPointer<OiJob> currentJob;
-
-    //##################
-    //general attributes
-    //##################
-
-    int id;
-
+  int id;
 };
 
-}
+}  // namespace oi
 
-Q_DECLARE_METATYPE( oi::BundleAdjustment* )
+Q_DECLARE_METATYPE(oi::BundleAdjustment*)
 
 #ifndef STR
 #define STR(x) #x
@@ -263,7 +259,7 @@ Q_DECLARE_METATYPE( oi::BundleAdjustment* )
 #endif
 
 #ifndef CONCAT
-#define CONCAT(a, b) a ## b
+#define CONCAT(a, b) a##b
 #endif
 #ifndef CONCAT2
 #define CONCAT2(a, b) CONCAT(a, b)
@@ -272,6 +268,7 @@ Q_DECLARE_METATYPE( oi::BundleAdjustment* )
 #include "pluginabi.h"
 
 #define BUNDLEADJUSTMENT_PREFIX de.openIndy.plugin.bundleAdjustment.v
-#define BundleAdjustment_iidd STR2(CONCAT2(BUNDLEADJUSTMENT_PREFIX, OI_PLUGIN_ABI_VERSION))
+#define BundleAdjustment_iidd \
+  STR2(CONCAT2(BUNDLEADJUSTMENT_PREFIX, OI_PLUGIN_ABI_VERSION))
 
-#endif // BUNDLEADJUSTMENT_H
+#endif  // BUNDLEADJUSTMENT_H

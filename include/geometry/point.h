@@ -5,110 +5,106 @@
 #include <QtXml>
 
 #include "geometry.h"
-#include "position.h"
 #include "measurementintent.h"
+#include "position.h"
 
-namespace oi{
+namespace oi {
 
 /*!
  * \brief The Point class
  */
-class OI_CORE_EXPORT Point : public Geometry
-{
-    friend class Station;
-    Q_OBJECT
+class OI_CORE_EXPORT Point : public Geometry {
+  friend class Station;
+  Q_OBJECT
 
-public:
-    Point(QObject *parent = 0);
-    Point(const Position &xyz, QObject *parent = 0);
-    Point(int id, const Position &xyz, QObject *parent = 0);
+ public:
+  Point(QObject* parent = 0);
+  Point(const Position& xyz, QObject* parent = 0);
+  Point(int id, const Position& xyz, QObject* parent = 0);
 
-    Point(const Point &copy, QObject *parent = 0);
+  Point(const Point& copy, QObject* parent = 0);
 
-    Point &operator=(const Point &copy);
+  Point& operator=(const Point& copy);
 
-    ~Point();
+  ~Point();
 
-    //########################################
-    //order of unknown parameters (Qxx-matrix)
-    //########################################
+  // ########################################
+  // order of unknown parameters (Qxx-matrix)
+  // ########################################
 
-    enum PointUnknowns{
-        unknownCenterX = 0,
-        unknownCenterY,
-        unknownCenterZ
-    };
+  enum PointUnknowns { unknownCenterX = 0, unknownCenterY, unknownCenterZ };
 
-    //###################################################################
-    //check wether this geometry has a direction, a position and a radius
-    //###################################################################
+  // ###################################################################
+  // check wether this geometry has a direction, a position and a radius
+  // ###################################################################
 
-    bool hasPosition() const;
+  bool hasPosition() const;
 
-    //###########################
-    //get or set point parameters
-    //###########################
+  // ###########################
+  // get or set point parameters
+  // ###########################
 
-    const Position &getPosition() const;
+  const Position& getPosition() const;
 
-    void setPoint(const Position &xyz);
+  void setPoint(const Position& xyz);
 
-    const double &getDistance() const;
-    void setDistance(const double distance);
+  const double& getDistance() const;
+  void setDistance(const double distance);
 
-    //#############################
-    //get or set unknown parameters
-    //#############################
+  // #############################
+  // get or set unknown parameters
+  // #############################
 
-    virtual QMap<GeometryParameters, QString> getUnknownParameters(const QMap<DimensionType, UnitType> &displayUnits,
-                                                          const QMap<DimensionType, int> &displayDigits) const;
-    virtual void applyUnknownParameters(const QMap<GeometryParameters, double> &parameters);
+  virtual QMap<GeometryParameters, QString> getUnknownParameters(
+      const QMap<DimensionType, UnitType>& displayUnits,
+      const QMap<DimensionType, int>& displayDigits) const;
+  virtual void applyUnknownParameters(
+      const QMap<GeometryParameters, double>& parameters);
 
-    //###########################
-    //reexecute the function list
-    //###########################
+  // ###########################
+  // reexecute the function list
+  // ###########################
 
-    void recalc();
+  void recalc();
 
-    //###############################################################
-    //D19: a Point produced directly by an acquisition (has readings
-    //attached via its observations, see Geometry::getObservations) is
-    //owned by the station that produced it, not by a fit function - it
-    //has no producer function at all, which the inherited
-    //Geometry::getOwnerDescription would misread as user-owned. See
-    //point.cpp for the rule.
-    //###############################################################
+  // ###############################################################
+  // D19: a Point produced directly by an acquisition (has readings
+  // attached via its observations, see Geometry::getObservations) is
+  // owned by the station that produced it, not by a fit function - it
+  // has no producer function at all, which the inherited
+  // Geometry::getOwnerDescription would misread as user-owned. See
+  // point.cpp for the rule.
+  // ###############################################################
 
-    std::optional<QString> getOwnerDescription() const override;
+  std::optional<QString> getOwnerDescription() const override;
 
-    //###############################################################
-    //D12: what this point was shot for, stamped at acquisition (or by
-    //hand later - domain-model.md S3 makes these the same operation). A
-    //fit's point input resolves by querying this, not by a stored
-    //membership list on the consuming feature.
-    //###############################################################
+  // ###############################################################
+  // D12: what this point was shot for, stamped at acquisition (or by
+  // hand later - domain-model.md S3 makes these the same operation). A
+  // fit's point input resolves by querying this, not by a stored
+  // membership list on the consuming feature.
+  // ###############################################################
 
-    const QList<MeasurementIntent> &getIntents() const;
-    void addIntent(const MeasurementIntent &intent);
-    bool removeIntent(const MeasurementIntent &intent);
-    bool hasIntent(int featureId, const QString &roleName) const;
+  const QList<MeasurementIntent>& getIntents() const;
+  void addIntent(const MeasurementIntent& intent);
+  bool removeIntent(const MeasurementIntent& intent);
+  bool hasIntent(int featureId, const QString& roleName) const;
 
-    //#################
-    //save and load XML
-    //#################
+  // #################
+  // save and load XML
+  // #################
 
-    QDomElement toOpenIndyXML(QDomDocument &xmlDoc) const;
-    bool fromOpenIndyXML(QDomElement &xmlElem);
+  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const;
+  bool fromOpenIndyXML(QDomElement& xmlElem);
 
-    QString getDisplayDistance(const UnitType &type, const int &digits, const bool &showDiff) const;
-    double distance; // depends on function
+  QString getDisplayDistance(const UnitType& type, const int& digits,
+                             const bool& showDiff) const;
+  double distance;  // depends on function
 
-protected:
-
-    QList<MeasurementIntent> intents;
-
+ protected:
+  QList<MeasurementIntent> intents;
 };
 
-}
+}  // namespace oi
 
-#endif // POINT_H
+#endif  // POINT_H

@@ -8,13 +8,11 @@ using namespace oi;
  * \brief ScalarEntityAngle::ScalarEntityAngle
  * \param parent
  */
-ScalarEntityAngle::ScalarEntityAngle(QObject *parent) : Geometry(parent){
-
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setScalarEntityAngle(this);
-    }
-
+ScalarEntityAngle::ScalarEntityAngle(QObject* parent) : Geometry(parent) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setScalarEntityAngle(this);
+  }
 }
 
 /*!
@@ -22,15 +20,14 @@ ScalarEntityAngle::ScalarEntityAngle(QObject *parent) : Geometry(parent){
  * \param angle
  * \param parent
  */
-ScalarEntityAngle::ScalarEntityAngle(const double &angle, QObject *parent) : Geometry(parent){
+ScalarEntityAngle::ScalarEntityAngle(const double& angle, QObject* parent)
+    : Geometry(parent) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setScalarEntityAngle(this);
+  }
 
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setScalarEntityAngle(this);
-    }
-
-    this->setAngle(angle);
-
+  this->setAngle(angle);
 }
 
 /*!
@@ -38,15 +35,15 @@ ScalarEntityAngle::ScalarEntityAngle(const double &angle, QObject *parent) : Geo
  * \param copy
  * \param parent
  */
-ScalarEntityAngle::ScalarEntityAngle(const ScalarEntityAngle &copy, QObject *parent) : Geometry(copy, parent){
+ScalarEntityAngle::ScalarEntityAngle(const ScalarEntityAngle& copy,
+                                     QObject* parent)
+    : Geometry(copy, parent) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setScalarEntityAngle(this);
+  }
 
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setScalarEntityAngle(this);
-    }
-
-    this->angle = copy.angle;
-
+  this->angle = copy.angle;
 }
 
 /*!
@@ -54,44 +51,36 @@ ScalarEntityAngle::ScalarEntityAngle(const ScalarEntityAngle &copy, QObject *par
  * \param copy
  * \return
  */
-ScalarEntityAngle &ScalarEntityAngle::operator=(const ScalarEntityAngle &copy){
+ScalarEntityAngle& ScalarEntityAngle::operator=(const ScalarEntityAngle& copy) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setScalarEntityAngle(this);
+  }
 
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setScalarEntityAngle(this);
-    }
+  this->angle = copy.angle;
 
-    this->angle = copy.angle;
-
-    return *this;
-
+  return *this;
 }
 
 /*!
  * \brief ScalarEntityAngle::~ScalarEntityAngle
  */
-ScalarEntityAngle::~ScalarEntityAngle(){
-
-}
+ScalarEntityAngle::~ScalarEntityAngle() {}
 
 /*!
  * \brief ScalarEntityAngle::getAngle
  * \return
  */
-const double &ScalarEntityAngle::getAngle() const{
-    return this->angle;
-}
+const double& ScalarEntityAngle::getAngle() const { return this->angle; }
 
 /*!
  * \brief ScalarEntityAngle::setAngle
  * \param angle
  */
-void ScalarEntityAngle::setAngle(const double &angle){
+void ScalarEntityAngle::setAngle(const double& angle) {
+  this->angle = angle;
 
-    this->angle = angle;
-
-    emit this->geomParametersChanged(this->id);
-
+  emit this->geomParametersChanged(this->id);
 }
 
 /*!
@@ -100,54 +89,54 @@ void ScalarEntityAngle::setAngle(const double &angle){
  * \param displayDigits
  * \return
  */
-QMap<GeometryParameters, QString> ScalarEntityAngle::getUnknownParameters(const QMap<DimensionType, UnitType> &displayUnits, const QMap<DimensionType, int> &displayDigits) const{
+QMap<GeometryParameters, QString> ScalarEntityAngle::getUnknownParameters(
+    const QMap<DimensionType, UnitType>& displayUnits,
+    const QMap<DimensionType, int>& displayDigits) const {
+  QMap<GeometryParameters, QString> parameters;
 
-    QMap<GeometryParameters, QString> parameters;
+  parameters.insert(
+      eUnknownAngle,
+      this->getDisplayAngle(displayUnits.value(eAngular, eUnitRadiant),
+                            displayDigits.value(eAngular, 0)));
 
-    parameters.insert(eUnknownAngle, this->getDisplayAngle(displayUnits.value(eAngular, eUnitRadiant), displayDigits.value(eAngular, 0)));
-
-    return parameters;
-
+  return parameters;
 }
 
 /*!
  * \brief ScalarEntityAngle::applyUnknownParameters
  * \param parameters
  */
-void ScalarEntityAngle::applyUnknownParameters(const QMap<GeometryParameters, double> &parameters){
+void ScalarEntityAngle::applyUnknownParameters(
+    const QMap<GeometryParameters, double>& parameters) {
+  // get current parameters
+  double angle = this->angle;
 
-    //get current parameters
-    double angle = this->angle;
-
-    //update parameters
-    QList<GeometryParameters> keys = parameters.keys();
-    foreach(const GeometryParameters &key, keys){
-        switch(key){
-        case eUnknownAngle:
-            angle = parameters.value(eUnknownAngle);
-            break;
-        default:
-            break;
-        }
+  // update parameters
+  QList<GeometryParameters> keys = parameters.keys();
+  foreach (const GeometryParameters& key, keys) {
+    switch (key) {
+      case eUnknownAngle:
+        angle = parameters.value(eUnknownAngle);
+        break;
+      default:
+        break;
     }
+  }
 
-    //update angle definition
-    this->setAngle(angle);
-
+  // update angle definition
+  this->setAngle(angle);
 }
 
 /*!
  * \brief ScalarEntityAngle::recalc
  */
-void ScalarEntityAngle::recalc(){
+void ScalarEntityAngle::recalc() {
+  Geometry::recalc();
 
-    Geometry::recalc();
-
-    //reset angle definition if not solved and no nominal
-    if(!this->isSolved && this->getOwnerDescription().has_value()){
-        this->angle = 0.0;
-    }
-
+  // reset angle definition if not solved and no nominal
+  if (!this->isSolved && this->getOwnerDescription().has_value()) {
+    this->angle = 0.0;
+  }
 }
 
 /*!
@@ -155,27 +144,26 @@ void ScalarEntityAngle::recalc(){
  * \param xmlDoc
  * \return
  */
-QDomElement ScalarEntityAngle::toOpenIndyXML(QDomDocument &xmlDoc) const{
+QDomElement ScalarEntityAngle::toOpenIndyXML(QDomDocument& xmlDoc) const {
+  QDomElement entityAngle = Geometry::toOpenIndyXML(xmlDoc);
 
-    QDomElement entityAngle = Geometry::toOpenIndyXML(xmlDoc);
-
-    if(entityAngle.isNull()){
-        return entityAngle;
-    }
-
-    entityAngle.setAttribute("type", getGeometryTypeName(eScalarEntityAngleGeometry));
-
-    //add angle
-    QDomElement angle = xmlDoc.createElement("angle");
-    if(this->isSolved || !this->getOwnerDescription().has_value()){
-        angle.setAttribute("value", this->angle);
-    }else{
-        angle.setAttribute("value", 0.0);
-    }
-    entityAngle.appendChild(angle);
-
+  if (entityAngle.isNull()) {
     return entityAngle;
+  }
 
+  entityAngle.setAttribute("type",
+                           getGeometryTypeName(eScalarEntityAngleGeometry));
+
+  // add angle
+  QDomElement angle = xmlDoc.createElement("angle");
+  if (this->isSolved || !this->getOwnerDescription().has_value()) {
+    angle.setAttribute("value", this->angle);
+  } else {
+    angle.setAttribute("value", 0.0);
+  }
+  entityAngle.appendChild(angle);
+
+  return entityAngle;
 }
 
 /*!
@@ -183,25 +171,21 @@ QDomElement ScalarEntityAngle::toOpenIndyXML(QDomDocument &xmlDoc) const{
  * \param xmlElem
  * \return
  */
-bool ScalarEntityAngle::fromOpenIndyXML(QDomElement &xmlElem){
+bool ScalarEntityAngle::fromOpenIndyXML(QDomElement& xmlElem) {
+  bool result = Geometry::fromOpenIndyXML(xmlElem);
 
-    bool result = Geometry::fromOpenIndyXML(xmlElem);
+  if (result) {
+    // set angle attributes
+    QDomElement angle = xmlElem.firstChildElement("angle");
 
-    if(result){
-
-        //set angle attributes
-        QDomElement angle = xmlElem.firstChildElement("angle");
-
-        if(angle.isNull() || !angle.hasAttribute("value")){
-            return false;
-        }
-
-        this->angle = angle.attribute("value").toDouble();
-
+    if (angle.isNull() || !angle.hasAttribute("value")) {
+      return false;
     }
 
-    return result;
+    this->angle = angle.attribute("value").toDouble();
+  }
 
+  return result;
 }
 
 /*!
@@ -211,9 +195,11 @@ bool ScalarEntityAngle::fromOpenIndyXML(QDomElement &xmlElem){
  * \param showDiff
  * \return
  */
-QString ScalarEntityAngle::getDisplayAngle(const UnitType &type, const int &digits, const bool &/*showDiff*/) const{
-    if(this->isSolved){
-        return QString::number(convertFromDefault(this->angle, type), 'f', digits);
-    }
-    return QString("");
+QString ScalarEntityAngle::getDisplayAngle(const UnitType& type,
+                                           const int& digits,
+                                           const bool& /*showDiff*/) const {
+  if (this->isSolved) {
+    return QString::number(convertFromDefault(this->angle, type), 'f', digits);
+  }
+  return QString("");
 }

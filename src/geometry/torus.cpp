@@ -9,13 +9,11 @@ using namespace oi::math;
  * \brief Torus::Torus
  * \param parent
  */
-Torus::Torus(QObject *parent) : Geometry(parent){
-
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setTorus(this);
-    }
-
+Torus::Torus(QObject* parent) : Geometry(parent) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setTorus(this);
+  }
 }
 
 /*!
@@ -26,15 +24,15 @@ Torus::Torus(QObject *parent) : Geometry(parent){
  * \param radiusB
  * \param parent
  */
-Torus::Torus(const Position &center, const Direction &normal, const Radius &radiusA, const Radius &radiusB, QObject *parent) : Geometry(parent){
+Torus::Torus(const Position& center, const Direction& normal,
+             const Radius& radiusA, const Radius& radiusB, QObject* parent)
+    : Geometry(parent) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setTorus(this);
+  }
 
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setTorus(this);
-    }
-
-    this->setTorus(center, normal, radiusA, radiusB);
-
+  this->setTorus(center, normal, radiusA, radiusB);
 }
 
 /*!
@@ -42,18 +40,16 @@ Torus::Torus(const Position &center, const Direction &normal, const Radius &radi
  * \param copy
  * \param parent
  */
-Torus::Torus(const Torus &copy, QObject *parent) : Geometry(copy, parent){
+Torus::Torus(const Torus& copy, QObject* parent) : Geometry(copy, parent) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setTorus(this);
+  }
 
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setTorus(this);
-    }
-
-    this->xyz = copy.xyz;
-    this->ijk = copy.ijk;
-    this->radius = copy.radius;
-    this->radiusB = copy.radiusB;
-
+  this->xyz = copy.xyz;
+  this->ijk = copy.ijk;
+  this->radius = copy.radius;
+  this->radiusB = copy.radiusB;
 }
 
 /*!
@@ -61,61 +57,50 @@ Torus::Torus(const Torus &copy, QObject *parent) : Geometry(copy, parent){
  * \param copy
  * \return
  */
-Torus &Torus::operator=(const Torus &copy){
+Torus& Torus::operator=(const Torus& copy) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setTorus(this);
+  }
 
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setTorus(this);
-    }
+  this->xyz = copy.xyz;
+  this->ijk = copy.ijk;
+  this->radius = copy.radius;
+  this->radiusB = copy.radiusB;
 
-    this->xyz = copy.xyz;
-    this->ijk = copy.ijk;
-    this->radius = copy.radius;
-    this->radiusB = copy.radiusB;
-
-    return *this;
-
+  return *this;
 }
 
 /*!
  * \brief Torus::~Torus
  */
-Torus::~Torus(){
-
-}
+Torus::~Torus() {}
 
 /*!
  * \brief Torus::hasDirection
  * \return
  */
-bool Torus::hasDirection() const{
-    return true;
-}
+bool Torus::hasDirection() const { return true; }
 
 /*!
  * \brief Torus::hasPosition
  * \return
  */
-bool Torus::hasPosition() const{
-    return true;
-}
+bool Torus::hasPosition() const { return true; }
 
 /*!
  * \brief Torus::hasRadius
  * \return
  */
-bool Torus::hasRadius() const{
-    return true;
-}
+bool Torus::hasRadius() const { return true; }
 
 /*!
  * \brief Torus::getSmallRadius
- * Returns the distance of the center curve to the torus surface (radiusA > radiusB)
+ * Returns the distance of the center curve to the torus surface (radiusA >
+ * radiusB)
  * \return
  */
-const Radius &Torus::getSmallRadius() const{
-    return this->radiusB;
-}
+const Radius& Torus::getSmallRadius() const { return this->radiusB; }
 
 /*!
  * \brief Torus::setTorus
@@ -124,16 +109,15 @@ const Radius &Torus::getSmallRadius() const{
  * \param radiusA
  * \param radiusB
  */
-void Torus::setTorus(const Position &center, const Direction &normal, const Radius &radiusA, const Radius &radiusB){
+void Torus::setTorus(const Position& center, const Direction& normal,
+                     const Radius& radiusA, const Radius& radiusB) {
+  // set the given parameters
+  this->xyz = center;
+  this->ijk = normal;
+  this->radius = radiusA;
+  this->radiusB = radiusB;
 
-    //set the given parameters
-    this->xyz = center;
-    this->ijk = normal;
-    this->radius = radiusA;
-    this->radiusB = radiusB;
-
-    emit this->geomParametersChanged(this->id);
-
+  emit this->geomParametersChanged(this->id);
 }
 
 /*!
@@ -142,93 +126,108 @@ void Torus::setTorus(const Position &center, const Direction &normal, const Radi
  * \param displayDigits
  * \return
  */
-QMap<GeometryParameters, QString> Torus::getUnknownParameters(const QMap<DimensionType, UnitType> &displayUnits, const QMap<DimensionType, int> &displayDigits) const{
+QMap<GeometryParameters, QString> Torus::getUnknownParameters(
+    const QMap<DimensionType, UnitType>& displayUnits,
+    const QMap<DimensionType, int>& displayDigits) const {
+  QMap<GeometryParameters, QString> parameters;
 
-    QMap<GeometryParameters, QString> parameters;
+  parameters.insert(eUnknownX,
+                    this->getDisplayX(displayUnits.value(eMetric, eUnitMeter),
+                                      displayDigits.value(eMetric, 0)));
+  parameters.insert(eUnknownY,
+                    this->getDisplayY(displayUnits.value(eMetric, eUnitMeter),
+                                      displayDigits.value(eMetric, 0)));
+  parameters.insert(eUnknownZ,
+                    this->getDisplayZ(displayUnits.value(eMetric, eUnitMeter),
+                                      displayDigits.value(eMetric, 0)));
+  parameters.insert(
+      eUnknownPrimaryI,
+      this->getDisplayPrimaryI(displayDigits.value(eDimensionless, 0)));
+  parameters.insert(
+      eUnknownPrimaryJ,
+      this->getDisplayPrimaryJ(displayDigits.value(eDimensionless, 0)));
+  parameters.insert(
+      eUnknownPrimaryK,
+      this->getDisplayPrimaryK(displayDigits.value(eDimensionless, 0)));
+  parameters.insert(
+      eUnknownRadiusA,
+      this->getDisplayRadiusA(displayUnits.value(eMetric, eUnitMeter),
+                              displayDigits.value(eMetric, 0)));
+  parameters.insert(
+      eUnknownRadiusA,
+      this->getDisplayRadiusA(displayUnits.value(eMetric, eUnitMeter),
+                              displayDigits.value(eMetric, 0)));
 
-    parameters.insert(eUnknownX, this->getDisplayX(displayUnits.value(eMetric, eUnitMeter), displayDigits.value(eMetric, 0)));
-    parameters.insert(eUnknownY, this->getDisplayY(displayUnits.value(eMetric, eUnitMeter), displayDigits.value(eMetric, 0)));
-    parameters.insert(eUnknownZ, this->getDisplayZ(displayUnits.value(eMetric, eUnitMeter), displayDigits.value(eMetric, 0)));
-    parameters.insert(eUnknownPrimaryI, this->getDisplayPrimaryI(displayDigits.value(eDimensionless, 0)));
-    parameters.insert(eUnknownPrimaryJ, this->getDisplayPrimaryJ(displayDigits.value(eDimensionless, 0)));
-    parameters.insert(eUnknownPrimaryK, this->getDisplayPrimaryK(displayDigits.value(eDimensionless, 0)));
-    parameters.insert(eUnknownRadiusA, this->getDisplayRadiusA(displayUnits.value(eMetric, eUnitMeter), displayDigits.value(eMetric, 0)));
-    parameters.insert(eUnknownRadiusA, this->getDisplayRadiusA(displayUnits.value(eMetric, eUnitMeter), displayDigits.value(eMetric, 0)));
-
-    return parameters;
-
+  return parameters;
 }
 
 /*!
  * \brief Torus::applyUnknownParameters
  * \param parameters
  */
-void Torus::applyUnknownParameters(const QMap<GeometryParameters, double> &parameters){
+void Torus::applyUnknownParameters(
+    const QMap<GeometryParameters, double>& parameters) {
+  // get current parameters
+  OiVec position = this->xyz.getVector();
+  OiVec direction = this->ijk.getVector();
+  double radiusA = this->radius.getRadius();
+  double radiusB = this->radiusB.getRadius();
 
-    //get current parameters
-    OiVec position = this->xyz.getVector();
-    OiVec direction = this->ijk.getVector();
-    double radiusA = this->radius.getRadius();
-    double radiusB = this->radiusB.getRadius();
-
-    //update parameters
-    QList<GeometryParameters> keys = parameters.keys();
-    foreach(const GeometryParameters &key, keys){
-        switch(key){
-        case eUnknownX:
-            position.setAt(0, parameters.value(eUnknownX));
-            break;
-        case eUnknownY:
-            position.setAt(1, parameters.value(eUnknownY));
-            break;
-        case eUnknownZ:
-            position.setAt(2, parameters.value(eUnknownZ));
-            break;
-        case eUnknownPrimaryI:
-            direction.setAt(0, parameters.value(eUnknownPrimaryI));
-            break;
-        case eUnknownPrimaryJ:
-            direction.setAt(1, parameters.value(eUnknownPrimaryJ));
-            break;
-        case eUnknownPrimaryK:
-            direction.setAt(2, parameters.value(eUnknownPrimaryK));
-            break;
-        case eUnknownRadiusA:
-            radiusA = parameters.value(eUnknownRadiusA);
-            break;
-        case eUnknownRadiusB:
-            radiusB = parameters.value(eUnknownRadiusA);
-            break;
-        default:
-            break;
-        }
+  // update parameters
+  QList<GeometryParameters> keys = parameters.keys();
+  foreach (const GeometryParameters& key, keys) {
+    switch (key) {
+      case eUnknownX:
+        position.setAt(0, parameters.value(eUnknownX));
+        break;
+      case eUnknownY:
+        position.setAt(1, parameters.value(eUnknownY));
+        break;
+      case eUnknownZ:
+        position.setAt(2, parameters.value(eUnknownZ));
+        break;
+      case eUnknownPrimaryI:
+        direction.setAt(0, parameters.value(eUnknownPrimaryI));
+        break;
+      case eUnknownPrimaryJ:
+        direction.setAt(1, parameters.value(eUnknownPrimaryJ));
+        break;
+      case eUnknownPrimaryK:
+        direction.setAt(2, parameters.value(eUnknownPrimaryK));
+        break;
+      case eUnknownRadiusA:
+        radiusA = parameters.value(eUnknownRadiusA);
+        break;
+      case eUnknownRadiusB:
+        radiusB = parameters.value(eUnknownRadiusA);
+        break;
+      default:
+        break;
     }
+  }
 
-    //update torus definition
-    direction.normalize();
-    Position torusPosition(position);
-    Direction torusDirection(direction);
-    Radius torusRadiusA(radiusA);
-    Radius torusRadiusB(radiusB);
-    this->setTorus(torusPosition, torusDirection, torusRadiusA, torusRadiusB);
-
+  // update torus definition
+  direction.normalize();
+  Position torusPosition(position);
+  Direction torusDirection(direction);
+  Radius torusRadiusA(radiusA);
+  Radius torusRadiusB(radiusB);
+  this->setTorus(torusPosition, torusDirection, torusRadiusA, torusRadiusB);
 }
 
 /*!
  * \brief Torus::recalc
  */
-void Torus::recalc(){
+void Torus::recalc() {
+  Geometry::recalc();
 
-    Geometry::recalc();
-
-    //reset torus definition if not solved and no nominal
-    if(!this->isSolved && this->getOwnerDescription().has_value()){
-        this->xyz.setVector(0.0, 0.0, 0.0);
-        this->ijk.setVector(0.0, 0.0, 0.0);
-        this->radius.setRadius(0.0);
-        this->radiusB.setRadius(0.0);
-    }
-
+  // reset torus definition if not solved and no nominal
+  if (!this->isSolved && this->getOwnerDescription().has_value()) {
+    this->xyz.setVector(0.0, 0.0, 0.0);
+    this->ijk.setVector(0.0, 0.0, 0.0);
+    this->radius.setRadius(0.0);
+    this->radiusB.setRadius(0.0);
+  }
 }
 
 /*!
@@ -236,27 +235,25 @@ void Torus::recalc(){
  * \param xmlDoc
  * \return
  */
-QDomElement Torus::toOpenIndyXML(QDomDocument &xmlDoc) const{
+QDomElement Torus::toOpenIndyXML(QDomDocument& xmlDoc) const {
+  QDomElement torus = Geometry::toOpenIndyXML(xmlDoc);
 
-    QDomElement torus = Geometry::toOpenIndyXML(xmlDoc);
-
-    if(torus.isNull()){
-        return torus;
-    }
-
-    torus.setAttribute("type", getGeometryTypeName(eCircleGeometry));
-
-    //set radius b
-    QDomElement radiusB = xmlDoc.createElement("radiusB");
-    if(this->isSolved || !this->getOwnerDescription().has_value()){
-        radiusB.setAttribute("value", this->radiusB.getRadius());
-    }else{
-        radiusB.setAttribute("value", 0.0);
-    }
-    torus.appendChild(radiusB);
-
+  if (torus.isNull()) {
     return torus;
+  }
 
+  torus.setAttribute("type", getGeometryTypeName(eCircleGeometry));
+
+  // set radius b
+  QDomElement radiusB = xmlDoc.createElement("radiusB");
+  if (this->isSolved || !this->getOwnerDescription().has_value()) {
+    radiusB.setAttribute("value", this->radiusB.getRadius());
+  } else {
+    radiusB.setAttribute("value", 0.0);
+  }
+  torus.appendChild(radiusB);
+
+  return torus;
 }
 
 /*!
@@ -264,38 +261,36 @@ QDomElement Torus::toOpenIndyXML(QDomDocument &xmlDoc) const{
  * \param xmlElem
  * \return
  */
-bool Torus::fromOpenIndyXML(QDomElement &xmlElem){
+bool Torus::fromOpenIndyXML(QDomElement& xmlElem) {
+  bool result = Geometry::fromOpenIndyXML(xmlElem);
 
-    bool result = Geometry::fromOpenIndyXML(xmlElem);
+  if (result) {
+    // set torus attributes
+    QDomElement radiusA = xmlElem.firstChildElement("radius");
+    QDomElement radiusB = xmlElem.firstChildElement("radiusB");
+    QDomElement normal = xmlElem.firstChildElement("spatialDirection");
+    QDomElement center = xmlElem.firstChildElement("coordinates");
 
-    if(result){
-
-        //set torus attributes
-        QDomElement radiusA = xmlElem.firstChildElement("radius");
-        QDomElement radiusB = xmlElem.firstChildElement("radiusB");
-        QDomElement normal = xmlElem.firstChildElement("spatialDirection");
-        QDomElement center = xmlElem.firstChildElement("coordinates");
-
-        if(radiusA.isNull() || radiusB.isNull() || normal.isNull() || center.isNull()
-                || !radiusA.hasAttribute("value") || !radiusB.hasAttribute("value")
-                || !normal.hasAttribute("i") || normal.hasAttribute("j") || normal.hasAttribute("k")
-                || !center.hasAttribute("x") || !center.hasAttribute("y") || !center.hasAttribute("z")){
-            return false;
-        }
-
-        this->radius.setRadius(radiusA.attribute("value").toDouble());
-        this->radiusB.setRadius(radiusB.attribute("value").toDouble());
-        this->ijk.setVector(normal.attribute("i").toDouble(),
-                               normal.attribute("j").toDouble(),
-                               normal.attribute("k").toDouble());
-        this->xyz.setVector(center.attribute("x").toDouble(),
-                               center.attribute("y").toDouble(),
-                               center.attribute("z").toDouble());
-
+    if (radiusA.isNull() || radiusB.isNull() || normal.isNull() ||
+        center.isNull() || !radiusA.hasAttribute("value") ||
+        !radiusB.hasAttribute("value") || !normal.hasAttribute("i") ||
+        normal.hasAttribute("j") || normal.hasAttribute("k") ||
+        !center.hasAttribute("x") || !center.hasAttribute("y") ||
+        !center.hasAttribute("z")) {
+      return false;
     }
 
-    return result;
+    this->radius.setRadius(radiusA.attribute("value").toDouble());
+    this->radiusB.setRadius(radiusB.attribute("value").toDouble());
+    this->ijk.setVector(normal.attribute("i").toDouble(),
+                        normal.attribute("j").toDouble(),
+                        normal.attribute("k").toDouble());
+    this->xyz.setVector(center.attribute("x").toDouble(),
+                        center.attribute("y").toDouble(),
+                        center.attribute("z").toDouble());
+  }
 
+  return result;
 }
 
 /*!
@@ -305,9 +300,11 @@ bool Torus::fromOpenIndyXML(QDomElement &xmlElem){
  * \param showDiff
  * \return
  */
-QString Torus::getDisplayRadiusB(const UnitType &type, const int &digits, const bool &/*showDiff*/) const{
-    if(this->isSolved){
-        return QString::number(convertFromDefault(this->radiusB.getRadius(), type), 'f', digits);
-    }
-    return QString("");
+QString Torus::getDisplayRadiusB(const UnitType& type, const int& digits,
+                                 const bool& /*showDiff*/) const {
+  if (this->isSolved) {
+    return QString::number(convertFromDefault(this->radiusB.getRadius(), type),
+                           'f', digits);
+  }
+  return QString("");
 }

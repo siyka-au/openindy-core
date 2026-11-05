@@ -6,12 +6,12 @@
 #include <QString>
 
 #if defined(OI_CORE_LIB)
-#  define OI_CORE_EXPORT Q_DECL_EXPORT
+#define OI_CORE_EXPORT Q_DECL_EXPORT
 #else
-#  define OI_CORE_EXPORT Q_DECL_IMPORT
+#define OI_CORE_EXPORT Q_DECL_IMPORT
 #endif
 
-namespace oi{
+namespace oi {
 
 /*!
  * \brief The ConnectionKind class
@@ -28,37 +28,33 @@ namespace oi{
  * both at once was conflating "drivers own connections" with "one specific
  * driver's specific bridge", which are separate decisions.
  */
-class OI_CORE_EXPORT ConnectionKind
-{
+class OI_CORE_EXPORT ConnectionKind {
+ public:
+  ConnectionKind() = default;
+  ConnectionKind(const QString& id, const QString& displayName);
 
-public:
+  static const ConnectionKind& network();
+  static const ConnectionKind& serial();
 
-    ConnectionKind() = default;
-    ConnectionKind(const QString &id, const QString &displayName);
+  static QList<ConnectionKind> knownKinds();
+  static ConnectionKind byId(
+      const QString& id);  // returns an invalid kind if unknown
 
-    static const ConnectionKind &network();
-    static const ConnectionKind &serial();
+  const QString& id() const;
+  const QString& displayName() const;
 
-    static QList<ConnectionKind> knownKinds();
-    static ConnectionKind byId(const QString &id);   //returns an invalid kind if unknown
+  bool isValid() const;
 
-    const QString &id() const;
-    const QString &displayName() const;
+  bool operator==(const ConnectionKind& other) const;
+  bool operator!=(const ConnectionKind& other) const;
 
-    bool isValid() const;
-
-    bool operator==(const ConnectionKind &other) const;
-    bool operator!=(const ConnectionKind &other) const;
-
-private:
-
-    QString m_id;
-    QString m_displayName;
-
+ private:
+  QString m_id;
+  QString m_displayName;
 };
 
-}
+}  // namespace oi
 
-Q_DECLARE_METATYPE( oi::ConnectionKind )
+Q_DECLARE_METATYPE(oi::ConnectionKind)
 
-#endif // CONNECTIONKIND_H
+#endif  // CONNECTIONKIND_H

@@ -3,24 +3,22 @@
 
 #include "function.h"
 
-namespace oi{
+namespace oi {
 
 /*!
  * \brief The ConstructFunction class
  * Function that solves geometries by constructing them from other elements
  */
-class OI_CORE_EXPORT ConstructFunction : public Function
-{
-    Q_OBJECT
+class OI_CORE_EXPORT ConstructFunction : public Function {
+  Q_OBJECT
 
-public:
-    ConstructFunction(QObject *parent = 0) : Function(parent){}
+ public:
+  ConstructFunction(QObject* parent = 0) : Function(parent) {}
 
-    virtual ~ConstructFunction(){}
-
+  virtual ~ConstructFunction() {}
 };
 
-}
+}  // namespace oi
 
 #ifndef STR
 #define STR(x) #x
@@ -30,7 +28,7 @@ public:
 #endif
 
 #ifndef CONCAT
-#define CONCAT(a, b) a ## b
+#define CONCAT(a, b) a##b
 #endif
 #ifndef CONCAT2
 #define CONCAT2(a, b) CONCAT(a, b)
@@ -39,6 +37,7 @@ public:
 #include "pluginabi.h"
 
 #define CONSTRUCTFUNCTION_PREFIX de.openIndy.plugin.function.constructFunction.v
-#define ConstructFunction_iidd STR2(CONCAT2(CONSTRUCTFUNCTION_PREFIX, OI_PLUGIN_ABI_VERSION))
+#define ConstructFunction_iidd \
+  STR2(CONCAT2(CONSTRUCTFUNCTION_PREFIX, OI_PLUGIN_ABI_VERSION))
 
-#endif // CONSTRUCTFUNCTION_H
+#endif  // CONSTRUCTFUNCTION_H

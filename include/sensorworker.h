@@ -1,180 +1,186 @@
 #ifndef SENSORWORKER_H
 #define SENSORWORKER_H
 
+#include <QMap>
 #include <QObject>
 #include <QThread>
 #include <QTime>
-#include <QMap>
 #include <QVariantMap>
 
 #include "sensor.h"
 #include "sensorworkermessage.h"
 
-namespace oi{
+namespace oi {
 
 /*!
  * \brief The SensorListener class
- * The sensor listener handles all sensor streams and is controlled by SensorControl
+ * The sensor listener handles all sensor streams and is controlled by
+ * SensorControl
  */
-class OI_CORE_EXPORT SensorWorker : public QObject
-{
-    Q_OBJECT
+class OI_CORE_EXPORT SensorWorker : public QObject {
+  Q_OBJECT
 
-public:
-    SensorWorker(QObject *parent = 0);
+ public:
+  SensorWorker(QObject* parent = 0);
 
-    ~SensorWorker();
+  ~SensorWorker();
 
-signals:
+ signals:
 
-    //##############################
-    //inform about streaming results
-    //##############################
+  // ##############################
+  // inform about streaming results
+  // ##############################
 
-    //real time data
-    void realTimeReading(QVariantMap reading);
-    void realTimeStatus(QMap<QString, QString> status);
+  // real time data
+  void realTimeReading(QVariantMap reading);
+  void realTimeStatus(QMap<QString, QString> status);
 
-    //connection information
-    void connectionLost();
-    void connectionReceived();
+  // connection information
+  void connectionLost();
+  void connectionReceived();
 
-    //ready state
-    void isReadyForMeasurement(bool isReady);
+  // ready state
+  void isReadyForMeasurement(bool isReady);
 
-    //##############################################
-    //signals emitted after sensor actions were done
-    //##############################################
+  // ##############################################
+  // signals emitted after sensor actions were done
+  // ##############################################
 
-    //sensor action callbacks
-    void commandFinished(bool success, QString msg, SensorAction sensorAction = SensorAction::eSensorActionUndefind);
-    void measurementFinished(int geomId, QList<QPointer<Reading> > readings);
-    void measurementDone(bool success);
+  // sensor action callbacks
+  void commandFinished(
+      bool success, QString msg,
+      SensorAction sensorAction = SensorAction::eSensorActionUndefind);
+  void measurementFinished(int geomId, QList<QPointer<Reading> > readings);
+  void measurementDone(bool success);
 
-    //#######################
-    //special sensor messages
-    //#######################
+  // #######################
+  // special sensor messages
+  // #######################
 
-    void sensorMessage(QString msg, MessageTypes msgType, MessageDestinations msgDest = eConsoleMessage);
+  void sensorMessage(QString msg, MessageTypes msgType,
+                     MessageDestinations msgDest = eConsoleMessage);
 
-public slots:
+ public slots:
 
-    //##############
-    //(re)set sensor
-    //##############
+  // ##############
+  //(re)set sensor
+  // ##############
 
-    //get or set sensor
-    Sensor getSensor();
-    void setSensor(QPointer<Sensor> sensor);
-    QPointer<Sensor> takeSensor();
-    void resetSensor();
+  // get or set sensor
+  Sensor getSensor();
+  void setSensor(QPointer<Sensor> sensor);
+  QPointer<Sensor> takeSensor();
+  void resetSensor();
 
-    //####################################################
-    //get information about the currently connected sensor
-    //####################################################
+  // ####################################################
+  // get information about the currently connected sensor
+  // ####################################################
 
-    //status information
-    bool getIsSensorConnected();
-    bool getIsReadyForMeasurement();
-    bool getIsBusy();
-    QMap<QString, QString> getSensorStatus();
+  // status information
+  bool getIsSensorConnected();
+  bool getIsReadyForMeasurement();
+  bool getIsBusy();
+  QMap<QString, QString> getSensorStatus();
 
-    //sensor type
-    SensorType getActiveSensorType();
+  // sensor type
+  SensorType getActiveSensorType();
 
-    //reading and connection types
-    QList<ReadingTypes> getSupportedReadingTypes();
-    QList<ConnectionKind> getSupportedConnectionTypes();
+  // reading and connection types
+  QList<ReadingTypes> getSupportedReadingTypes();
+  QList<ConnectionKind> getSupportedConnectionTypes();
 
-    //sensor actions
-    QList<SensorFunctions> getSupportedSensorActions();
-    QStringList getSelfDefinedActions();
+  // sensor actions
+  QList<SensorFunctions> getSupportedSensorActions();
+  QStringList getSelfDefinedActions();
 
-    //sensor configuration
-    SensorConfiguration getSensorConfiguration();
-    void setSensorConfiguration(SensorConfiguration sConfig);
+  // sensor configuration
+  SensorConfiguration getSensorConfiguration();
+  void setSensorConfiguration(SensorConfiguration sConfig);
 
-    //####################
-    //start sensor actions
-    //####################
+  // ####################
+  // start sensor actions
+  // ####################
 
-    //connect or disconnect
-    void connectSensor();
-    void disconnectSensor();
+  // connect or disconnect
+  void connectSensor();
+  void disconnectSensor();
 
-    //measure
-    void measure(int geomId, MeasurementConfig mConfig);
+  // measure
+  void measure(int geomId, MeasurementConfig mConfig);
 
-    //general sensor actions
-    void move(double azimuth, double zenith, double distance, bool isRelative,
-              bool measure, int geomId = -1, MeasurementConfig mConfig = MeasurementConfig());
-    void move(double x, double y, double z,
-              bool measure, int geomId = -1, MeasurementConfig mConfig = MeasurementConfig());
-    void initialize();
-    void motorState();
-    void home();
-    void toggleSight();
-    void compensation();
-    void selfDefinedAction(QString action);
-    void search();
+  // general sensor actions
+  void move(double azimuth, double zenith, double distance, bool isRelative,
+            bool measure, int geomId = -1,
+            MeasurementConfig mConfig = MeasurementConfig());
+  void move(double x, double y, double z, bool measure, int geomId = -1,
+            MeasurementConfig mConfig = MeasurementConfig());
+  void initialize();
+  void motorState();
+  void home();
+  void toggleSight();
+  void compensation();
+  void selfDefinedAction(QString action);
+  void search();
 
-    //###################
-    //real time streaming
-    //###################
+  // ###################
+  // real time streaming
+  // ###################
 
-    //stream format
-    ReadingTypes getStreamFormat();
-    void setStreamFormat(ReadingTypes streamFormat);
+  // stream format
+  ReadingTypes getStreamFormat();
+  void setStreamFormat(ReadingTypes streamFormat);
 
-    //reading stream
-    void startReadingStream();
-    void stopReadingStream();
+  // reading stream
+  void startReadingStream();
+  void stopReadingStream();
 
-    //connection monitoring stream
-    void startConnectionMonitoringStream();
-    void stopConnectionMonitoringStream();
+  // connection monitoring stream
+  void startConnectionMonitoringStream();
+  void stopConnectionMonitoringStream();
 
-    //status monitoring stream
-    void startStatusMonitoringStream();
-    void stopStatusMonitoringStream();
+  // status monitoring stream
+  void startStatusMonitoringStream();
+  void stopStatusMonitoringStream();
 
-    void finishMeasurement();
+  void finishMeasurement();
 
-private slots:
+ private slots:
 
-    //##############
-    //helper methods
-    //##############
+  // ##############
+  // helper methods
+  // ##############
 
-    void streamReading();
-    void monitorConnectionStatus();
-    void streamStatus();
-    void asyncSensorResponseReceived(const QJsonObject &response, const SensorAction sensorAction = SensorAction::eSensorActionUndefind);
-    void asyncSensorMeasurementReceived(const int &geomId, const QList<QPointer<Reading> > &measurements, const SensorAction sensorAction = SensorAction::eSensorActionUndefind);
-    void asyncSensorStreamDataReceived(const QVariantMap &reading);
+  void streamReading();
+  void monitorConnectionStatus();
+  void streamStatus();
+  void asyncSensorResponseReceived(
+      const QJsonObject& response,
+      const SensorAction sensorAction = SensorAction::eSensorActionUndefind);
+  void asyncSensorMeasurementReceived(
+      const int& geomId, const QList<QPointer<Reading> >& measurements,
+      const SensorAction sensorAction = SensorAction::eSensorActionUndefind);
+  void asyncSensorStreamDataReceived(const QVariantMap& reading);
 
-private:
+ private:
+  // #################
+  // helper attributes
+  // #################
 
-    //#################
-    //helper attributes
-    //#################
+  // current sensor
+  QPointer<Sensor> sensor;
 
-    //current sensor
-    QPointer<Sensor> sensor;
+  // reading stream format
+  ReadingTypes streamFormat;
 
-    //reading stream format
-    ReadingTypes streamFormat;
+  // stream states
+  bool isReadingStreamStarted;
+  bool isConnectionStreamStarted;
+  bool isStatusStreamStarted;
 
-    //stream states
-    bool isReadingStreamStarted;
-    bool isConnectionStreamStarted;
-    bool isStatusStreamStarted;
-
-    //connection status
-    bool isSensorConnected;
-
+  // connection status
+  bool isSensorConnected;
 };
 
-}
+}  // namespace oi
 
-#endif // SENSORWORKER_H
+#endif  // SENSORWORKER_H

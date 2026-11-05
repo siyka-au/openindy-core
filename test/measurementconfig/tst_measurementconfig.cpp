@@ -1,77 +1,76 @@
+#include <QMap>
 #include <QString>
 #include <QtTest>
-#include <QMap>
 
 #include "measurementconfig.h"
 #include "sensortype.h"
 
 using namespace oi;
 
-class MeasurementConfigTest : public QObject
-{
-    Q_OBJECT
+class MeasurementConfigTest : public QObject {
+  Q_OBJECT
 
-private slots:
-    //MeasurementConfigKey used to be (name, configType) alone. Two drivers
-    //publishing the same standard-config name - which every driver does,
-    //e.g. "FastPoint" - collided in exactly this map shape
-    //(MeasurementConfigManager::configs) and silently dropped one of them.
-    //sensorType is now part of the key's identity for exactly the reason
-    //file path is part of a plugin's identity: same display name, genuinely
-    //different things.
-    void sameNameDifferentSensorTypeDoNotCollide();
+ private slots:
+  // MeasurementConfigKey used to be (name, configType) alone. Two drivers
+  // publishing the same standard-config name - which every driver does,
+  // e.g. "FastPoint" - collided in exactly this map shape
+  //(MeasurementConfigManager::configs) and silently dropped one of them.
+  // sensorType is now part of the key's identity for exactly the reason
+  // file path is part of a plugin's identity: same display name, genuinely
+  // different things.
+  void sameNameDifferentSensorTypeDoNotCollide();
 
-    //the reverse must also hold: two identically-typed, identically-named
-    //standard configs really are the same key (so re-publishing/re-scanning
-    //the same driver doesn't duplicate its own entries)
-    void sameNameSameSensorTypeAreEqual();
+  // the reverse must also hold: two identically-typed, identically-named
+  // standard configs really are the same key (so re-publishing/re-scanning
+  // the same driver doesn't duplicate its own entries)
+  void sameNameSameSensorTypeAreEqual();
 };
 
-void MeasurementConfigTest::sameNameDifferentSensorTypeDoNotCollide(){
+void MeasurementConfigTest::sameNameDifferentSensorTypeDoNotCollide() {
+  MeasurementConfig trackerFastPoint;
+  trackerFastPoint.setName("FastPoint");
+  trackerFastPoint.makeStandardConfig();
+  trackerFastPoint.setSensorType(SensorType("laserTracker", "Laser Tracker"));
 
-    MeasurementConfig trackerFastPoint;
-    trackerFastPoint.setName("FastPoint");
-    trackerFastPoint.makeStandardConfig();
-    trackerFastPoint.setSensorType(SensorType("laserTracker", "Laser Tracker"));
+  MeasurementConfig totalStationFastPoint;
+  totalStationFastPoint.setName("FastPoint");
+  totalStationFastPoint.makeStandardConfig();
+  totalStationFastPoint.setSensorType(
+      SensorType("totalStation", "Total Station"));
 
-    MeasurementConfig totalStationFastPoint;
-    totalStationFastPoint.setName("FastPoint");
-    totalStationFastPoint.makeStandardConfig();
-    totalStationFastPoint.setSensorType(SensorType("totalStation", "Total Station"));
+  QVERIFY2(
+      !(trackerFastPoint.getKey() == totalStationFastPoint.getKey()),
+      "same-named configs from different sensor types must not share a key");
 
-    QVERIFY2(!(trackerFastPoint.getKey() == totalStationFastPoint.getKey()),
-              "same-named configs from different sensor types must not share a key");
+  QMap<MeasurementConfigKey, MeasurementConfig> configs;
+  configs.insert(trackerFastPoint.getKey(), trackerFastPoint);
+  configs.insert(totalStationFastPoint.getKey(), totalStationFastPoint);
 
-    QMap<MeasurementConfigKey, MeasurementConfig> configs;
-    configs.insert(trackerFastPoint.getKey(), trackerFastPoint);
-    configs.insert(totalStationFastPoint.getKey(), totalStationFastPoint);
-
-    QCOMPARE(configs.size(), 2);
-    QCOMPARE(configs.value(trackerFastPoint.getKey()).getSensorType().id(), QString("laserTracker"));
-    QCOMPARE(configs.value(totalStationFastPoint.getKey()).getSensorType().id(), QString("totalStation"));
-
+  QCOMPARE(configs.size(), 2);
+  QCOMPARE(configs.value(trackerFastPoint.getKey()).getSensorType().id(),
+           QString("laserTracker"));
+  QCOMPARE(configs.value(totalStationFastPoint.getKey()).getSensorType().id(),
+           QString("totalStation"));
 }
 
-void MeasurementConfigTest::sameNameSameSensorTypeAreEqual(){
+void MeasurementConfigTest::sameNameSameSensorTypeAreEqual() {
+  MeasurementConfig first;
+  first.setName("StdPoint");
+  first.makeStandardConfig();
+  first.setSensorType(SensorType("laserTracker", "Laser Tracker"));
 
-    MeasurementConfig first;
-    first.setName("StdPoint");
-    first.makeStandardConfig();
-    first.setSensorType(SensorType("laserTracker", "Laser Tracker"));
+  MeasurementConfig second;
+  second.setName("StdPoint");
+  second.makeStandardConfig();
+  second.setSensorType(SensorType("laserTracker", "Laser Tracker"));
 
-    MeasurementConfig second;
-    second.setName("StdPoint");
-    second.makeStandardConfig();
-    second.setSensorType(SensorType("laserTracker", "Laser Tracker"));
+  QVERIFY(first.getKey() == second.getKey());
 
-    QVERIFY(first.getKey() == second.getKey());
+  QMap<MeasurementConfigKey, MeasurementConfig> configs;
+  configs.insert(first.getKey(), first);
+  configs.insert(second.getKey(), second);
 
-    QMap<MeasurementConfigKey, MeasurementConfig> configs;
-    configs.insert(first.getKey(), first);
-    configs.insert(second.getKey(), second);
-
-    QCOMPARE(configs.size(), 1);
-
+  QCOMPARE(configs.size(), 1);
 }
 
 QTEST_APPLESS_MAIN(MeasurementConfigTest)

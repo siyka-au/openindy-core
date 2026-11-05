@@ -4,108 +4,115 @@
 #include <QObject>
 #include <QtXml>
 
+#include "direction.h"
 #include "geometry.h"
 #include "position.h"
 #include "radius.h"
-#include "direction.h"
 
-namespace oi{
+namespace oi {
 
 /*!
  * \brief The Ellipse class
  */
-class OI_CORE_EXPORT Ellipse : public Geometry
-{
-    Q_OBJECT
+class OI_CORE_EXPORT Ellipse : public Geometry {
+  Q_OBJECT
 
-public:
-    Ellipse(QObject *parent = 0);
-    Ellipse(const Position &center, const Direction &normal, const double &a, const double &b, const Direction &semiMajorAxis, QObject *parent = 0);
+ public:
+  Ellipse(QObject* parent = 0);
+  Ellipse(const Position& center, const Direction& normal, const double& a,
+          const double& b, const Direction& semiMajorAxis, QObject* parent = 0);
 
-    Ellipse(const Ellipse &copy, QObject *parent = 0);
+  Ellipse(const Ellipse& copy, QObject* parent = 0);
 
-    Ellipse &operator=(const Ellipse &copy);
+  Ellipse& operator=(const Ellipse& copy);
 
-    ~Ellipse();
+  ~Ellipse();
 
-    //########################################
-    //order of unknown parameters (Qxx-matrix)
-    //########################################
+  // ########################################
+  // order of unknown parameters (Qxx-matrix)
+  // ########################################
 
-    enum EllipseUnknowns{
-        unknownCenterX = 0,
-        unknownCenterY,
-        unknownCenterZ,
-        unknownNormalI,
-        unknownNormalJ,
-        unknownNormalK,
-        unknownA,
-        unknownB,
-        unknownSemiMajorAxisI,
-        unknownSemiMajorAxisJ,
-        unknownSemiMajorAxisK
-    };
+  enum EllipseUnknowns {
+    unknownCenterX = 0,
+    unknownCenterY,
+    unknownCenterZ,
+    unknownNormalI,
+    unknownNormalJ,
+    unknownNormalK,
+    unknownA,
+    unknownB,
+    unknownSemiMajorAxisI,
+    unknownSemiMajorAxisJ,
+    unknownSemiMajorAxisK
+  };
 
-    //###################################################################
-    //check wether this geometry has a direction, a position and a radius
-    //###################################################################
+  // ###################################################################
+  // check wether this geometry has a direction, a position and a radius
+  // ###################################################################
 
-    bool hasDirection() const;
-    bool hasPosition() const;
+  bool hasDirection() const;
+  bool hasPosition() const;
 
-    //#############################
-    //get or set ellipse parameters
-    //#############################
+  // #############################
+  // get or set ellipse parameters
+  // #############################
 
-    const double &getA() const;
-    const double &getB() const;
-    const Direction &getSemiMajorAxisDirection() const;
+  const double& getA() const;
+  const double& getB() const;
+  const Direction& getSemiMajorAxisDirection() const;
 
-    void setEllipse(const Position &center, const Direction &normal, const double &a, const double &b, const Direction &semiMajorAxis);
+  void setEllipse(const Position& center, const Direction& normal,
+                  const double& a, const double& b,
+                  const Direction& semiMajorAxis);
 
-    //#############################
-    //get or set unknown parameters
-    //#############################
+  // #############################
+  // get or set unknown parameters
+  // #############################
 
-    virtual QMap<GeometryParameters, QString> getUnknownParameters(const QMap<DimensionType, UnitType> &displayUnits,
-                                                          const QMap<DimensionType, int> &displayDigits) const;
-    virtual void applyUnknownParameters(const QMap<GeometryParameters, double> &parameters);
+  virtual QMap<GeometryParameters, QString> getUnknownParameters(
+      const QMap<DimensionType, UnitType>& displayUnits,
+      const QMap<DimensionType, int>& displayDigits) const;
+  virtual void applyUnknownParameters(
+      const QMap<GeometryParameters, double>& parameters);
 
-    //###########################
-    //reexecute the function list
-    //###########################
+  // ###########################
+  // reexecute the function list
+  // ###########################
 
-    void recalc();
+  void recalc();
 
-    //#################
-    //save and load XML
-    //#################
+  // #################
+  // save and load XML
+  // #################
 
-    QDomElement toOpenIndyXML(QDomDocument &xmlDoc) const;
-    bool fromOpenIndyXML(QDomElement &xmlElem);
+  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const;
+  bool fromOpenIndyXML(QDomElement& xmlElem);
 
-    //###############
-    //display methods
-    //###############
+  // ###############
+  // display methods
+  // ###############
 
-    QString getDisplaySecondaryI(const int &digits, const bool &showDiff = false) const;
-    QString getDisplaySecondaryJ(const int &digits, const bool &showDiff = false) const;
-    QString getDisplaySecondaryK(const int &digits, const bool &showDiff = false) const;
-    QString getDisplayA(const UnitType &type, const int &digits, const bool &showDiff = false) const;
-    QString getDisplayB(const UnitType &type, const int &digits, const bool &showDiff = false) const;
+  QString getDisplaySecondaryI(const int& digits,
+                               const bool& showDiff = false) const;
+  QString getDisplaySecondaryJ(const int& digits,
+                               const bool& showDiff = false) const;
+  QString getDisplaySecondaryK(const int& digits,
+                               const bool& showDiff = false) const;
+  QString getDisplayA(const UnitType& type, const int& digits,
+                      const bool& showDiff = false) const;
+  QString getDisplayB(const UnitType& type, const int& digits,
+                      const bool& showDiff = false) const;
 
-private:
+ private:
+  // ##################
+  // ellipse attributes
+  // ##################
 
-    //##################
-    //ellipse attributes
-    //##################
-
-    double a; //semi-major axis length
-    double b; //semi-minor axis length
-    Direction semiMajorAxis; //semi-major axis direction
-
+  double a;                 // semi-major axis length
+  double b;                 // semi-minor axis length
+  Direction semiMajorAxis;  // semi-major axis direction
 };
 
-}
+}  // namespace oi
 
-#endif // ELLIPSE_H
+#endif  // ELLIPSE_H

@@ -6,78 +6,77 @@
 
 #include "geometry.h"
 
-namespace oi{
+namespace oi {
 
 /*!
  * \brief The ScalarEntityTemperature class
  */
-class OI_CORE_EXPORT ScalarEntityTemperature : public Geometry
-{
-    Q_OBJECT
+class OI_CORE_EXPORT ScalarEntityTemperature : public Geometry {
+  Q_OBJECT
 
-public:
-    ScalarEntityTemperature(QObject *parent = 0);
-    ScalarEntityTemperature(const double &temperature, QObject *parent = 0);
+ public:
+  ScalarEntityTemperature(QObject* parent = 0);
+  ScalarEntityTemperature(const double& temperature, QObject* parent = 0);
 
-    ScalarEntityTemperature(const ScalarEntityTemperature &copy, QObject *parent = 0);
+  ScalarEntityTemperature(const ScalarEntityTemperature& copy,
+                          QObject* parent = 0);
 
-    ScalarEntityTemperature &operator=(const ScalarEntityTemperature &copy);
+  ScalarEntityTemperature& operator=(const ScalarEntityTemperature& copy);
 
-    ~ScalarEntityTemperature();
+  ~ScalarEntityTemperature();
 
-    //########################################
-    //order of unknown parameters (Qxx-matrix)
-    //########################################
+  // ########################################
+  // order of unknown parameters (Qxx-matrix)
+  // ########################################
 
-    enum TemperatureUnknowns{
-        unknownTemperature = 0
-    };
+  enum TemperatureUnknowns { unknownTemperature = 0 };
 
-    //#################################
-    //get or set temperature parameters
-    //#################################
+  // #################################
+  // get or set temperature parameters
+  // #################################
 
-    const double &getTemperature() const;
+  const double& getTemperature() const;
 
-    void setTemperature(const double &temperature);
+  void setTemperature(const double& temperature);
 
-    //#############################
-    //get or set unknown parameters
-    //#############################
+  // #############################
+  // get or set unknown parameters
+  // #############################
 
-    virtual QMap<GeometryParameters, QString> getUnknownParameters(const QMap<DimensionType, UnitType> &displayUnits,
-                                                          const QMap<DimensionType, int> &displayDigits) const;
-    virtual void applyUnknownParameters(const QMap<GeometryParameters, double> &parameters);
+  virtual QMap<GeometryParameters, QString> getUnknownParameters(
+      const QMap<DimensionType, UnitType>& displayUnits,
+      const QMap<DimensionType, int>& displayDigits) const;
+  virtual void applyUnknownParameters(
+      const QMap<GeometryParameters, double>& parameters);
 
-    //###########################
-    //reexecute the function list
-    //###########################
+  // ###########################
+  // reexecute the function list
+  // ###########################
 
-    void recalc();
+  void recalc();
 
-    //#################
-    //save and load XML
-    //#################
+  // #################
+  // save and load XML
+  // #################
 
-    QDomElement toOpenIndyXML(QDomDocument &xmlDoc) const;
-    bool fromOpenIndyXML(QDomElement &xmlElem);
+  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const;
+  bool fromOpenIndyXML(QDomElement& xmlElem);
 
-    //###############
-    //display methods
-    //###############
+  // ###############
+  // display methods
+  // ###############
 
-    QString getDisplayTemperature(const UnitType &type, const int &digits, const bool &showDiff = false) const;
+  QString getDisplayTemperature(const UnitType& type, const int& digits,
+                                const bool& showDiff = false) const;
 
-private:
+ private:
+  // ######################
+  // temperature attributes
+  // ######################
 
-    //######################
-    //temperature attributes
-    //######################
-
-    double temperature;
-
+  double temperature;
 };
 
-}
+}  // namespace oi
 
-#endif // SCALARENTITYTEMPERATURE_H
+#endif  // SCALARENTITYTEMPERATURE_H

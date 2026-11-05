@@ -9,13 +9,11 @@ using namespace oi::math;
  * \brief Sphere::Sphere
  * \param parent
  */
-Sphere::Sphere(QObject *parent) : Geometry(parent){
-
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setSphere(this);
-    }
-
+Sphere::Sphere(QObject* parent) : Geometry(parent) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setSphere(this);
+  }
 }
 
 /*!
@@ -24,15 +22,14 @@ Sphere::Sphere(QObject *parent) : Geometry(parent){
  * \param radius
  * \param parent
  */
-Sphere::Sphere(const Position &center, const Radius &radius, QObject *parent) : Geometry(parent){
+Sphere::Sphere(const Position& center, const Radius& radius, QObject* parent)
+    : Geometry(parent) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setSphere(this);
+  }
 
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setSphere(this);
-    }
-
-    this->setSphere(center, radius);
-
+  this->setSphere(center, radius);
 }
 
 /*!
@@ -40,16 +37,14 @@ Sphere::Sphere(const Position &center, const Radius &radius, QObject *parent) : 
  * \param copy
  * \param parent
  */
-Sphere::Sphere(const Sphere &copy, QObject *parent) : Geometry(copy, parent){
+Sphere::Sphere(const Sphere& copy, QObject* parent) : Geometry(copy, parent) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setSphere(this);
+  }
 
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setSphere(this);
-    }
-
-    this->xyz = copy.xyz;
-    this->radius = copy.radius;
-
+  this->xyz = copy.xyz;
+  this->radius = copy.radius;
 }
 
 /*!
@@ -57,57 +52,46 @@ Sphere::Sphere(const Sphere &copy, QObject *parent) : Geometry(copy, parent){
  * \param copy
  * \return
  */
-Sphere &Sphere::operator=(const Sphere &copy){
+Sphere& Sphere::operator=(const Sphere& copy) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setSphere(this);
+  }
 
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setSphere(this);
-    }
+  this->xyz = copy.xyz;
+  this->radius = copy.radius;
 
-    this->xyz = copy.xyz;
-    this->radius = copy.radius;
-
-    return *this;
-
+  return *this;
 }
 
 /*!
  * \brief Sphere::~Sphere
  */
-Sphere::~Sphere(){
-
-}
+Sphere::~Sphere() {}
 
 /*!
  * \brief Sphere::hasPosition
  * \return
  */
-bool Sphere::hasPosition() const{
-    return true;
-}
+bool Sphere::hasPosition() const { return true; }
 
 /*!
  * \brief Sphere::hasRadius
  * \return
  */
-bool Sphere::hasRadius() const{
-    return true;
-}
-
+bool Sphere::hasRadius() const { return true; }
 
 /*!
  * \brief Sphere::setSphere
  * \param center
  * \param radius
  */
-void Sphere::setSphere(const Position &center, const Radius &radius){
+void Sphere::setSphere(const Position& center, const Radius& radius) {
+  // set the given parameters
+  this->xyz = center;
+  this->radius = radius;
 
-    //set the given parameters
-    this->xyz = center;
-    this->radius = radius;
-
-    emit this->geomParametersChanged(this->id);
-
+  emit this->geomParametersChanged(this->id);
 }
 
 /*!
@@ -116,70 +100,76 @@ void Sphere::setSphere(const Position &center, const Radius &radius){
  * \param displayDigits
  * \return
  */
-QMap<GeometryParameters, QString> Sphere::getUnknownParameters(const QMap<DimensionType, UnitType> &displayUnits, const QMap<DimensionType, int> &displayDigits) const{
+QMap<GeometryParameters, QString> Sphere::getUnknownParameters(
+    const QMap<DimensionType, UnitType>& displayUnits,
+    const QMap<DimensionType, int>& displayDigits) const {
+  QMap<GeometryParameters, QString> parameters;
 
-    QMap<GeometryParameters, QString> parameters;
+  parameters.insert(eUnknownX,
+                    this->getDisplayX(displayUnits.value(eMetric, eUnitMeter),
+                                      displayDigits.value(eMetric, 0)));
+  parameters.insert(eUnknownY,
+                    this->getDisplayY(displayUnits.value(eMetric, eUnitMeter),
+                                      displayDigits.value(eMetric, 0)));
+  parameters.insert(eUnknownZ,
+                    this->getDisplayZ(displayUnits.value(eMetric, eUnitMeter),
+                                      displayDigits.value(eMetric, 0)));
+  parameters.insert(
+      eUnknownRadiusA,
+      this->getDisplayRadiusA(displayUnits.value(eMetric, eUnitMeter),
+                              displayDigits.value(eMetric, 0)));
 
-    parameters.insert(eUnknownX, this->getDisplayX(displayUnits.value(eMetric, eUnitMeter), displayDigits.value(eMetric, 0)));
-    parameters.insert(eUnknownY, this->getDisplayY(displayUnits.value(eMetric, eUnitMeter), displayDigits.value(eMetric, 0)));
-    parameters.insert(eUnknownZ, this->getDisplayZ(displayUnits.value(eMetric, eUnitMeter), displayDigits.value(eMetric, 0)));
-    parameters.insert(eUnknownRadiusA, this->getDisplayRadiusA(displayUnits.value(eMetric, eUnitMeter), displayDigits.value(eMetric, 0)));
-
-    return parameters;
-
+  return parameters;
 }
 
 /*!
  * \brief Sphere::applyUnknownParameters
  * \param parameters
  */
-void Sphere::applyUnknownParameters(const QMap<GeometryParameters, double> &parameters){
+void Sphere::applyUnknownParameters(
+    const QMap<GeometryParameters, double>& parameters) {
+  // get current parameters
+  OiVec position = this->xyz.getVector();
+  double radius = this->radius.getRadius();
 
-    //get current parameters
-    OiVec position = this->xyz.getVector();
-    double radius = this->radius.getRadius();
-
-    //update parameters
-    QList<GeometryParameters> keys = parameters.keys();
-    foreach(const GeometryParameters &key, keys){
-        switch(key){
-        case eUnknownX:
-            position.setAt(0, parameters.value(eUnknownX));
-            break;
-        case eUnknownY:
-            position.setAt(1, parameters.value(eUnknownY));
-            break;
-        case eUnknownZ:
-            position.setAt(2, parameters.value(eUnknownZ));
-            break;
-        case eUnknownRadiusA:
-            radius = parameters.value(eUnknownRadiusA);
-            break;
-        default:
-            break;
-        }
+  // update parameters
+  QList<GeometryParameters> keys = parameters.keys();
+  foreach (const GeometryParameters& key, keys) {
+    switch (key) {
+      case eUnknownX:
+        position.setAt(0, parameters.value(eUnknownX));
+        break;
+      case eUnknownY:
+        position.setAt(1, parameters.value(eUnknownY));
+        break;
+      case eUnknownZ:
+        position.setAt(2, parameters.value(eUnknownZ));
+        break;
+      case eUnknownRadiusA:
+        radius = parameters.value(eUnknownRadiusA);
+        break;
+      default:
+        break;
     }
+  }
 
-    //update sphere definition
-    Position spherePosition(position);
-    Radius sphereRadius(radius);
-    this->setSphere(spherePosition, sphereRadius);
-
+  // update sphere definition
+  Position spherePosition(position);
+  Radius sphereRadius(radius);
+  this->setSphere(spherePosition, sphereRadius);
 }
 
 /*!
  * \brief Sphere::recalc
  */
-void Sphere::recalc(){
+void Sphere::recalc() {
+  Geometry::recalc();
 
-    Geometry::recalc();
-
-    //reset sphere definition if not solved and no nominal
-    if(!this->isSolved && this->getOwnerDescription().has_value()){
-        this->xyz.setVector(0.0, 0.0, 0.0);
-        this->radius.setRadius(0.0);
-    }
-
+  // reset sphere definition if not solved and no nominal
+  if (!this->isSolved && this->getOwnerDescription().has_value()) {
+    this->xyz.setVector(0.0, 0.0, 0.0);
+    this->radius.setRadius(0.0);
+  }
 }
 
 /*!
@@ -187,18 +177,16 @@ void Sphere::recalc(){
  * \param xmlDoc
  * \return
  */
-QDomElement Sphere::toOpenIndyXML(QDomDocument &xmlDoc) const{
+QDomElement Sphere::toOpenIndyXML(QDomDocument& xmlDoc) const {
+  QDomElement sphere = Geometry::toOpenIndyXML(xmlDoc);
 
-    QDomElement sphere = Geometry::toOpenIndyXML(xmlDoc);
-
-    if(sphere.isNull()){
-        return sphere;
-    }
-
-    sphere.setAttribute("type", getGeometryTypeName(eSphereGeometry));
-
+  if (sphere.isNull()) {
     return sphere;
+  }
 
+  sphere.setAttribute("type", getGeometryTypeName(eSphereGeometry));
+
+  return sphere;
 }
 
 /*!
@@ -206,28 +194,25 @@ QDomElement Sphere::toOpenIndyXML(QDomDocument &xmlDoc) const{
  * \param xmlElem
  * \return
  */
-bool Sphere::fromOpenIndyXML(QDomElement &xmlElem){
+bool Sphere::fromOpenIndyXML(QDomElement& xmlElem) {
+  bool result = Geometry::fromOpenIndyXML(xmlElem);
 
-    bool result = Geometry::fromOpenIndyXML(xmlElem);
+  if (result) {
+    // set sphere attributes
+    QDomElement radius = xmlElem.firstChildElement("radius");
+    QDomElement center = xmlElem.firstChildElement("coordinates");
 
-    if(result){
-
-        //set sphere attributes
-        QDomElement radius = xmlElem.firstChildElement("radius");
-        QDomElement center = xmlElem.firstChildElement("coordinates");
-
-        if(radius.isNull() || center.isNull() || !radius.hasAttribute("value")
-                || !center.hasAttribute("x") || !center.hasAttribute("y") || !center.hasAttribute("z")){
-            return false;
-        }
-
-        this->radius.setRadius(radius.attribute("value").toDouble());
-        this->xyz.setVector(center.attribute("x").toDouble(),
-                               center.attribute("y").toDouble(),
-                               center.attribute("z").toDouble());
-
+    if (radius.isNull() || center.isNull() || !radius.hasAttribute("value") ||
+        !center.hasAttribute("x") || !center.hasAttribute("y") ||
+        !center.hasAttribute("z")) {
+      return false;
     }
 
-    return result;
+    this->radius.setRadius(radius.attribute("value").toDouble());
+    this->xyz.setVector(center.attribute("x").toDouble(),
+                        center.attribute("y").toDouble(),
+                        center.attribute("z").toDouble());
+  }
 
+  return result;
 }

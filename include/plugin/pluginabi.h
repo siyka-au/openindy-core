@@ -53,4 +53,4 @@
  */
 #define OI_PLUGIN_ABI_VERSION 7
 
-#endif // PLUGINABI_H
+#endif  // PLUGINABI_H

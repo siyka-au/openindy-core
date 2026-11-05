@@ -8,124 +8,117 @@
 #include "pointcollection.h"
 #include "position.h"
 
-namespace oi{
+namespace oi {
 
 class FeatureWrapper;
 
 /*!
  * \brief The Point_PC class
  */
-class OI_CORE_EXPORT Point_PC{
+class OI_CORE_EXPORT Point_PC {
+ public:
+  Point_PC() : xyz{0.0f, 0.0f, 0.0f}, isUsed(false) {}
+  Point_PC(float x, float y, float z) : xyz{x, y, z}, isUsed(true) {}
 
-public:
-
-    Point_PC() : xyz{0.0f, 0.0f, 0.0f}, isUsed(false){}
-    Point_PC(float x, float y, float z) : xyz{x, y, z}, isUsed(true){}
-
-    //a bulk scan point: position only, no per-point pedigree. That absence
-    //is the defining difference from a Point feature in a PointGroup, not
-    //an omission - a scanner produces undifferentiated bulk data, and
-    //pretending otherwise would invent provenance that doesn't exist.
-    float xyz[3];
-    bool isUsed;
-
+  // a bulk scan point: position only, no per-point pedigree. That absence
+  // is the defining difference from a Point feature in a PointGroup, not
+  // an omission - a scanner produces undifferentiated bulk data, and
+  // pretending otherwise would invent provenance that doesn't exist.
+  float xyz[3];
+  bool isUsed;
 };
 
 /*!
  * \brief The BoundingBox_PC class
  */
-class OI_CORE_EXPORT BoundingBox_PC{
+class OI_CORE_EXPORT BoundingBox_PC {
+ public:
+  BoundingBox_PC() : min{0.0f, 0.0f, 0.0f}, max{0.0f, 0.0f, 0.0f} {}
 
-public:
-
-    BoundingBox_PC() : min{0.0f, 0.0f, 0.0f}, max{0.0f, 0.0f, 0.0f}{}
-
-    float min[3];
-    float max[3];
-
+  float min[3];
+  float max[3];
 };
 
 /*!
  * \brief The PointCloud class
  */
-class OI_CORE_EXPORT PointCloud : public Geometry, public PointCollection
-{
-    Q_OBJECT
+class OI_CORE_EXPORT PointCloud : public Geometry, public PointCollection {
+  Q_OBJECT
 
-public:
-    PointCloud(QObject *parent = 0);
+ public:
+  PointCloud(QObject* parent = 0);
 
-    PointCloud(const PointCloud &copy, QObject *parent = 0);
+  PointCloud(const PointCloud& copy, QObject* parent = 0);
 
-    PointCloud &operator=(const PointCloud &copy);
+  PointCloud& operator=(const PointCloud& copy);
 
-    ~PointCloud();
+  ~PointCloud();
 
-    //###########################
-    //general point cloud methods
-    //###########################
+  // ###########################
+  // general point cloud methods
+  // ###########################
 
-    unsigned long getPointCount() const;
+  unsigned long getPointCount() const;
 
-    bool addSegment(const QPointer<FeatureWrapper> &segment);
-    void clearSegmentation();
+  bool addSegment(const QPointer<FeatureWrapper>& segment);
+  void clearSegmentation();
 
-    //###################################################################
-    //check wether this geometry has a direction, a position and a radius
-    //###################################################################
+  // ###################################################################
+  // check wether this geometry has a direction, a position and a radius
+  // ###################################################################
 
-    bool hasPosition() const;
+  bool hasPosition() const;
 
-    //#################################
-    //get or set point cloud parameters
-    //#################################
+  // #################################
+  // get or set point cloud parameters
+  // #################################
 
-    const QList<Point_PC *> &getPointCloudPoints() const;
-    void addPointCloudPoint(Point_PC *point);
+  const QList<Point_PC*>& getPointCloudPoints() const;
+  void addPointCloudPoint(Point_PC* point);
 
-    //#########################
-    //PointCollection interface
-    //#########################
+  // #########################
+  // PointCollection interface
+  // #########################
 
-    QList<Position> collectionPoints() const override;
-    int collectionPointCount() const override;
+  QList<Position> collectionPoints() const override;
+  int collectionPointCount() const override;
 
-    const BoundingBox_PC &getBoundingBox() const;
-    void setBoundingBox(const BoundingBox_PC &bbox);
+  const BoundingBox_PC& getBoundingBox() const;
+  void setBoundingBox(const BoundingBox_PC& bbox);
 
-    //###########################
-    //reexecute the function list
-    //###########################
+  // ###########################
+  // reexecute the function list
+  // ###########################
 
-    void recalc();
+  void recalc();
 
-    //#################
-    //save and load XML
-    //#################
+  // #################
+  // save and load XML
+  // #################
 
-    QDomElement toOpenIndyXML(QDomDocument &xmlDoc) const;
-    bool fromOpenIndyXML(QDomElement &xmlElem);
+  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const;
+  bool fromOpenIndyXML(QDomElement& xmlElem);
 
-    //###############
-    //display methods
-    //###############
+  // ###############
+  // display methods
+  // ###############
 
-signals:
-    void pcSegmentAdded(const QPointer<FeatureWrapper> &segment);
+ signals:
+  void pcSegmentAdded(const QPointer<FeatureWrapper>& segment);
 
-private:
+ private:
+  // ######################
+  // point cloud attributes
+  // ######################
 
-    //######################
-    //point cloud attributes
-    //######################
+  QList<Point_PC*> points;  // all points of the pointcloud (owned)
+  BoundingBox_PC bbox;      // bounding box of the pointcloud
 
-    QList<Point_PC *> points; //all points of the pointcloud (owned)
-    BoundingBox_PC bbox; //bounding box of the pointcloud
-
-    QList<QPointer<FeatureWrapper> > detectedSegments; //geometry-segments that were detected in the pointcloud
-
+  QList<QPointer<FeatureWrapper> >
+      detectedSegments;  // geometry-segments that were detected in the
+                         // pointcloud
 };
 
-}
+}  // namespace oi
 
-#endif // POINTCLOUD_H
+#endif  // POINTCLOUD_H

@@ -8,13 +8,11 @@ using namespace oi;
  * \brief ScalarEntityDistance::ScalarEntityDistance
  * \param parent
  */
-ScalarEntityDistance::ScalarEntityDistance(QObject *parent) : Geometry(parent){
-
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setScalarEntityDistance(this);
-    }
-
+ScalarEntityDistance::ScalarEntityDistance(QObject* parent) : Geometry(parent) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setScalarEntityDistance(this);
+  }
 }
 
 /*!
@@ -22,15 +20,15 @@ ScalarEntityDistance::ScalarEntityDistance(QObject *parent) : Geometry(parent){
  * \param distance
  * \param parent
  */
-ScalarEntityDistance::ScalarEntityDistance(const double &distance, QObject *parent) : Geometry(parent){
+ScalarEntityDistance::ScalarEntityDistance(const double& distance,
+                                           QObject* parent)
+    : Geometry(parent) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setScalarEntityDistance(this);
+  }
 
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setScalarEntityDistance(this);
-    }
-
-    this->setDistance(distance);
-
+  this->setDistance(distance);
 }
 
 /*!
@@ -38,15 +36,15 @@ ScalarEntityDistance::ScalarEntityDistance(const double &distance, QObject *pare
  * \param copy
  * \param parent
  */
-ScalarEntityDistance::ScalarEntityDistance(const ScalarEntityDistance &copy, QObject *parent) : Geometry(copy, parent){
+ScalarEntityDistance::ScalarEntityDistance(const ScalarEntityDistance& copy,
+                                           QObject* parent)
+    : Geometry(copy, parent) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setScalarEntityDistance(this);
+  }
 
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setScalarEntityDistance(this);
-    }
-
-    this->distance = copy.distance;
-
+  this->distance = copy.distance;
 }
 
 /*!
@@ -54,44 +52,39 @@ ScalarEntityDistance::ScalarEntityDistance(const ScalarEntityDistance &copy, QOb
  * \param copy
  * \return
  */
-ScalarEntityDistance &ScalarEntityDistance::operator=(const ScalarEntityDistance &copy){
+ScalarEntityDistance& ScalarEntityDistance::operator=(
+    const ScalarEntityDistance& copy) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setScalarEntityDistance(this);
+  }
 
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setScalarEntityDistance(this);
-    }
+  this->distance = copy.distance;
 
-    this->distance = copy.distance;
-
-    return *this;
-
+  return *this;
 }
 
 /*!
  * \brief ScalarEntityDistance::~ScalarEntityDistance
  */
-ScalarEntityDistance::~ScalarEntityDistance(){
-
-}
+ScalarEntityDistance::~ScalarEntityDistance() {}
 
 /*!
  * \brief ScalarEntityDistance::getDistance
  * \return
  */
-const double &ScalarEntityDistance::getDistance() const{
-    return this->distance;
+const double& ScalarEntityDistance::getDistance() const {
+  return this->distance;
 }
 
 /*!
  * \brief ScalarEntityDistance::setDistance
  * \param distance
  */
-void ScalarEntityDistance::setDistance(const double &distance){
+void ScalarEntityDistance::setDistance(const double& distance) {
+  this->distance = distance;
 
-    this->distance = distance;
-
-    emit this->geomParametersChanged(this->id);
-
+  emit this->geomParametersChanged(this->id);
 }
 
 /*!
@@ -100,54 +93,54 @@ void ScalarEntityDistance::setDistance(const double &distance){
  * \param displayDigits
  * \return
  */
-QMap<GeometryParameters, QString> ScalarEntityDistance::getUnknownParameters(const QMap<DimensionType, UnitType> &displayUnits, const QMap<DimensionType, int> &displayDigits) const{
+QMap<GeometryParameters, QString> ScalarEntityDistance::getUnknownParameters(
+    const QMap<DimensionType, UnitType>& displayUnits,
+    const QMap<DimensionType, int>& displayDigits) const {
+  QMap<GeometryParameters, QString> parameters;
 
-    QMap<GeometryParameters, QString> parameters;
+  parameters.insert(
+      eUnknownDistance,
+      this->getDisplayDistance(displayUnits.value(eMetric, eUnitMeter),
+                               displayDigits.value(eMetric, 0)));
 
-    parameters.insert(eUnknownDistance, this->getDisplayDistance(displayUnits.value(eMetric, eUnitMeter), displayDigits.value(eMetric, 0)));
-
-    return parameters;
-
+  return parameters;
 }
 
 /*!
  * \brief ScalarEntityDistance::applyUnknownParameters
  * \param parameters
  */
-void ScalarEntityDistance::applyUnknownParameters(const QMap<GeometryParameters, double> &parameters){
+void ScalarEntityDistance::applyUnknownParameters(
+    const QMap<GeometryParameters, double>& parameters) {
+  // get current parameters
+  double distance = this->distance;
 
-    //get current parameters
-    double distance = this->distance;
-
-    //update parameters
-    QList<GeometryParameters> keys = parameters.keys();
-    foreach(const GeometryParameters &key, keys){
-        switch(key){
-        case eUnknownDistance:
-            distance = parameters.value(eUnknownDistance);
-            break;
-        default:
-            break;
-        }
+  // update parameters
+  QList<GeometryParameters> keys = parameters.keys();
+  foreach (const GeometryParameters& key, keys) {
+    switch (key) {
+      case eUnknownDistance:
+        distance = parameters.value(eUnknownDistance);
+        break;
+      default:
+        break;
     }
+  }
 
-    //update distance definition
-    this->setDistance(distance);
-
+  // update distance definition
+  this->setDistance(distance);
 }
 
 /*!
  * \brief ScalarEntityDistance::recalc
  */
-void ScalarEntityDistance::recalc(){
+void ScalarEntityDistance::recalc() {
+  Geometry::recalc();
 
-    Geometry::recalc();
-
-    //reset distance definition if not solved
-    if(!this->isSolved){
-        this->distance = 0.0;
-    }
-
+  // reset distance definition if not solved
+  if (!this->isSolved) {
+    this->distance = 0.0;
+  }
 }
 
 /*!
@@ -155,27 +148,26 @@ void ScalarEntityDistance::recalc(){
  * \param xmlDoc
  * \return
  */
-QDomElement ScalarEntityDistance::toOpenIndyXML(QDomDocument &xmlDoc) const{
+QDomElement ScalarEntityDistance::toOpenIndyXML(QDomDocument& xmlDoc) const {
+  QDomElement entityDistance = Geometry::toOpenIndyXML(xmlDoc);
 
-    QDomElement entityDistance = Geometry::toOpenIndyXML(xmlDoc);
-
-    if(entityDistance.isNull()){
-        return entityDistance;
-    }
-
-    entityDistance.setAttribute("type", getGeometryTypeName(eScalarEntityDistanceGeometry));
-
-    //add distance
-    QDomElement distance = xmlDoc.createElement("distance");
-    if(this->isSolved || !this->getOwnerDescription().has_value()){
-        distance.setAttribute("value", this->distance);
-    }else{
-        distance.setAttribute("value", 0.0);
-    }
-    entityDistance.appendChild(distance);
-
+  if (entityDistance.isNull()) {
     return entityDistance;
+  }
 
+  entityDistance.setAttribute(
+      "type", getGeometryTypeName(eScalarEntityDistanceGeometry));
+
+  // add distance
+  QDomElement distance = xmlDoc.createElement("distance");
+  if (this->isSolved || !this->getOwnerDescription().has_value()) {
+    distance.setAttribute("value", this->distance);
+  } else {
+    distance.setAttribute("value", 0.0);
+  }
+  entityDistance.appendChild(distance);
+
+  return entityDistance;
 }
 
 /*!
@@ -183,25 +175,21 @@ QDomElement ScalarEntityDistance::toOpenIndyXML(QDomDocument &xmlDoc) const{
  * \param xmlElem
  * \return
  */
-bool ScalarEntityDistance::fromOpenIndyXML(QDomElement &xmlElem){
+bool ScalarEntityDistance::fromOpenIndyXML(QDomElement& xmlElem) {
+  bool result = Geometry::fromOpenIndyXML(xmlElem);
 
-    bool result = Geometry::fromOpenIndyXML(xmlElem);
+  if (result) {
+    // set distance attributes
+    QDomElement distance = xmlElem.firstChildElement("distance");
 
-    if(result){
-
-        //set distance attributes
-        QDomElement distance = xmlElem.firstChildElement("distance");
-
-        if(distance.isNull() || !distance.hasAttribute("value")){
-            return false;
-        }
-
-        this->distance = distance.attribute("value").toDouble();
-
+    if (distance.isNull() || !distance.hasAttribute("value")) {
+      return false;
     }
 
-    return result;
+    this->distance = distance.attribute("value").toDouble();
+  }
 
+  return result;
 }
 
 /*!
@@ -211,9 +199,11 @@ bool ScalarEntityDistance::fromOpenIndyXML(QDomElement &xmlElem){
  * \param showDiff
  * \return
  */
-QString ScalarEntityDistance::getDisplayDistance(const UnitType &type, const int &digits, const bool &/*showDiff*/) const{
-    if(this->isSolved){
-        return QString::number(convertFromDefault(this->distance, type), 'f', digits);
-    }
-    return QString("");
+QString ScalarEntityDistance::getDisplayDistance(
+    const UnitType& type, const int& digits, const bool& /*showDiff*/) const {
+  if (this->isSolved) {
+    return QString::number(convertFromDefault(this->distance, type), 'f',
+                           digits);
+  }
+  return QString("");
 }

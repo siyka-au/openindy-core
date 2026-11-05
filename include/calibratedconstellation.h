@@ -1,22 +1,21 @@
 #ifndef CALIBRATEDCONSTELLATION_H
 #define CALIBRATEDCONSTELLATION_H
 
-#include <optional>
-
 #include <QDate>
 #include <QList>
 #include <QMetaType>
 #include <QString>
+#include <optional>
 
 #include "oivec.h"
 
 #if defined(OI_CORE_LIB)
-#  define OI_CORE_EXPORT Q_DECL_EXPORT
+#define OI_CORE_EXPORT Q_DECL_EXPORT
 #else
-#  define OI_CORE_EXPORT Q_DECL_IMPORT
+#define OI_CORE_EXPORT Q_DECL_IMPORT
 #endif
 
-namespace oi{
+namespace oi {
 
 using namespace math;
 
@@ -36,24 +35,20 @@ using namespace math;
  * is needed: whatever rule produced this coordinate was already applied
  * once, when the constellation was calibrated/authored.
  */
-class OI_CORE_EXPORT LocalPoint
-{
+class OI_CORE_EXPORT LocalPoint {
+ public:
+  LocalPoint() = default;
+  LocalPoint(const QString& label, const OiVec& position,
+             bool isMeasured = true);
 
-public:
+  const QString& label() const;
+  const OiVec& position() const;
+  bool isMeasured() const;
 
-    LocalPoint() = default;
-    LocalPoint(const QString &label, const OiVec &position, bool isMeasured = true);
-
-    const QString &label() const;
-    const OiVec &position() const;
-    bool isMeasured() const;
-
-private:
-
-    QString m_label;
-    OiVec m_position;
-    bool m_isMeasured = true;
-
+ private:
+  QString m_label;
+  OiVec m_position;
+  bool m_isMeasured = true;
 };
 
 /*!
@@ -72,40 +67,36 @@ private:
  * style) is 6-7 points plus a derived tip, pose-solved continuously instead
  * of once.
  */
-class OI_CORE_EXPORT CalibratedConstellation
-{
+class OI_CORE_EXPORT CalibratedConstellation {
+ public:
+  CalibratedConstellation() = default;
+  CalibratedConstellation(const QString& name, const QList<LocalPoint>& points,
+                          const QString& certificateId = QString(),
+                          const QDate& calibratedAt = QDate());
 
-public:
+  const QString& name() const;
+  const QList<LocalPoint>& points() const;
 
-    CalibratedConstellation() = default;
-    CalibratedConstellation(const QString &name, const QList<LocalPoint> &points,
-                             const QString &certificateId = QString(), const QDate &calibratedAt = QDate());
+  QList<LocalPoint> measuredPoints() const;
+  QList<LocalPoint> derivedPoints() const;
 
-    const QString &name() const;
-    const QList<LocalPoint> &points() const;
+  std::optional<LocalPoint> pointByLabel(const QString& label) const;
 
-    QList<LocalPoint> measuredPoints() const;
-    QList<LocalPoint> derivedPoints() const;
+  const QString& certificateId() const;
+  const QDate& calibratedAt() const;
 
-    std::optional<LocalPoint> pointByLabel(const QString &label) const;
+  bool isValid() const;
 
-    const QString &certificateId() const;
-    const QDate &calibratedAt() const;
-
-    bool isValid() const;
-
-private:
-
-    QString m_name;
-    QList<LocalPoint> m_points;
-    QString m_certificateId;
-    QDate m_calibratedAt;
-
+ private:
+  QString m_name;
+  QList<LocalPoint> m_points;
+  QString m_certificateId;
+  QDate m_calibratedAt;
 };
 
-}
+}  // namespace oi
 
-Q_DECLARE_METATYPE( oi::LocalPoint )
-Q_DECLARE_METATYPE( oi::CalibratedConstellation )
+Q_DECLARE_METATYPE(oi::LocalPoint)
+Q_DECLARE_METATYPE(oi::CalibratedConstellation)
 
-#endif // CALIBRATEDCONSTELLATION_H
+#endif  // CALIBRATEDCONSTELLATION_H

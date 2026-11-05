@@ -5,51 +5,54 @@
 
 class FeatureUpdater;
 
-namespace oi{
+namespace oi {
 
 /*!
  * \brief The SystemTransformation class
- * Functions that solves transformation parameters between two coordinate systems (station-station, part-part, alignments)
+ * Functions that solves transformation parameters between two coordinate
+ * systems (station-station, part-part, alignments)
  */
-class OI_CORE_EXPORT SystemTransformation : public Function
-{
-    friend class ::FeatureUpdater;
-    Q_OBJECT
+class OI_CORE_EXPORT SystemTransformation : public Function {
+  friend class ::FeatureUpdater;
+  Q_OBJECT
 
-public:
-    SystemTransformation(QObject *parent = 0) : Function(parent){
+ public:
+  SystemTransformation(QObject* parent = 0) : Function(parent) {
+    // only applicable for trafo params
+    this->applicableFor.clear();
+    this->applicableFor.append(eTrafoParamFeature);
+  }
 
-        //only applicable for trafo params
-        this->applicableFor.clear();
-        this->applicableFor.append(eTrafoParamFeature);
+  virtual ~SystemTransformation() {}
 
-    }
+  void setInputPoint(const QList<Point>& startSystem,
+                     const QList<Point>& destinationSystem) {
+    this->inputPointsStartSystem = startSystem;
+    this->inputPointsDestinationSystem = destinationSystem;
+  }
 
-    virtual ~SystemTransformation(){}
+  void setInputElements(
+      const QMap<int, QList<InputElement> >& startSystem,
+      const QMap<int, QList<InputElement> >& destinationSystem) {
+    this->inputElementsStartSystem = startSystem;
+    this->inputElementsDestinationSystem = destinationSystem;
+  }
 
-    void setInputPoint(const QList<Point> &startSystem, const QList<Point> &destinationSystem){
-        this->inputPointsStartSystem = startSystem;
-        this->inputPointsDestinationSystem = destinationSystem;
-    }
+ protected:
+  // special attributes for system transformations (normal transformations)
+  QList<Point> inputPointsStartSystem;  // input elements solved in start system
+  QList<Point> inputPointsDestinationSystem;  // input elements solved in
+                                              // destination system
 
-    void setInputElements(const QMap<int, QList<InputElement> > &startSystem, const QMap<int, QList<InputElement> > &destinationSystem){
-        this->inputElementsStartSystem = startSystem;
-        this->inputElementsDestinationSystem = destinationSystem;
-    }
-
-protected:
-
-    //special attributes for system transformations (normal transformations)
-    QList<Point> inputPointsStartSystem; //input elements solved in start system
-    QList<Point> inputPointsDestinationSystem; //input elements solved in destination system
-
-    //special attributes for system transformations (alignments)
-    QMap<int, QList<InputElement> > inputElementsStartSystem; //input elements solved in start system
-    QMap<int, QList<InputElement> > inputElementsDestinationSystem; //input elements solved in destination system
-
+  // special attributes for system transformations (alignments)
+  QMap<int, QList<InputElement> >
+      inputElementsStartSystem;  // input elements solved in start system
+  QMap<int, QList<InputElement> >
+      inputElementsDestinationSystem;  // input elements solved in destination
+                                       // system
 };
 
-}
+}  // namespace oi
 
 #ifndef STR
 #define STR(x) #x
@@ -59,7 +62,7 @@ protected:
 #endif
 
 #ifndef CONCAT
-#define CONCAT(a, b) a ## b
+#define CONCAT(a, b) a##b
 #endif
 #ifndef CONCAT2
 #define CONCAT2(a, b) CONCAT(a, b)
@@ -67,7 +70,9 @@ protected:
 
 #include "pluginabi.h"
 
-#define SYSTEMTRANSFORMATIONFUNCTION_PREFIX de.openIndy.plugin.function.systemTransformation.v
-#define SystemTransformation_iidd STR2(CONCAT2(SYSTEMTRANSFORMATIONFUNCTION_PREFIX, OI_PLUGIN_ABI_VERSION))
+#define SYSTEMTRANSFORMATIONFUNCTION_PREFIX \
+  de.openIndy.plugin.function.systemTransformation.v
+#define SystemTransformation_iidd \
+  STR2(CONCAT2(SYSTEMTRANSFORMATIONFUNCTION_PREFIX, OI_PLUGIN_ABI_VERSION))
 
-#endif // SYSTEMTRANSFORMATION_H
+#endif  // SYSTEMTRANSFORMATION_H

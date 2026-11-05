@@ -9,13 +9,11 @@ using namespace oi::math;
  * \brief Plane::Plane
  * \param parent
  */
-Plane::Plane(QObject *parent) : Geometry(parent){
-
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setPlane(this);
-    }
-
+Plane::Plane(QObject* parent) : Geometry(parent) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setPlane(this);
+  }
 }
 
 /*!
@@ -24,15 +22,14 @@ Plane::Plane(QObject *parent) : Geometry(parent){
  * \param normal
  * \param parent
  */
-Plane::Plane(const Position &xyz, const Direction &normal, QObject *parent) : Geometry(parent){
+Plane::Plane(const Position& xyz, const Direction& normal, QObject* parent)
+    : Geometry(parent) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setPlane(this);
+  }
 
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setPlane(this);
-    }
-
-    this->setPlane(xyz, normal);
-
+  this->setPlane(xyz, normal);
 }
 
 /*!
@@ -41,15 +38,14 @@ Plane::Plane(const Position &xyz, const Direction &normal, QObject *parent) : Ge
  * \param d
  * \param parent
  */
-Plane::Plane(const Direction &normal, const double &d, QObject *parent) : Geometry(parent){
+Plane::Plane(const Direction& normal, const double& d, QObject* parent)
+    : Geometry(parent) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setPlane(this);
+  }
 
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setPlane(this);
-    }
-
-    this->setPlane(normal, d);
-
+  this->setPlane(normal, d);
 }
 
 /*!
@@ -57,17 +53,15 @@ Plane::Plane(const Direction &normal, const double &d, QObject *parent) : Geomet
  * \param copy
  * \param parent
  */
-Plane::Plane(const Plane &copy, QObject *parent) : Geometry(copy, parent){
+Plane::Plane(const Plane& copy, QObject* parent) : Geometry(copy, parent) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setPlane(this);
+  }
 
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setPlane(this);
-    }
-
-    this->xyz = copy.xyz;
-    this->ijk = copy.ijk;
-    this->d = copy.d;
-
+  this->xyz = copy.xyz;
+  this->ijk = copy.ijk;
+  this->d = copy.d;
 }
 
 /*!
@@ -75,72 +69,59 @@ Plane::Plane(const Plane &copy, QObject *parent) : Geometry(copy, parent){
  * \param copy
  * \return
  */
-Plane &Plane::operator=(const Plane &copy){
+Plane& Plane::operator=(const Plane& copy) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setPlane(this);
+  }
 
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setPlane(this);
-    }
+  this->xyz = copy.xyz;
+  this->ijk = copy.ijk;
+  this->d = copy.d;
 
-    this->xyz = copy.xyz;
-    this->ijk = copy.ijk;
-    this->d = copy.d;
-
-    return *this;
-
+  return *this;
 }
 
 /*!
  * \brief Plane::~Plane
  */
-Plane::~Plane(){
-
-}
+Plane::~Plane() {}
 
 /*!
  * \brief Plane::hasDirection
  * \return
  */
-bool Plane::hasDirection() const{
-    return true;
-}
+bool Plane::hasDirection() const { return true; }
 
 /*!
  * \brief Plane::hasPosition
  * \return
  */
-bool Plane::hasPosition() const{
-    return true;
-}
-
+bool Plane::hasPosition() const { return true; }
 
 /*!
  * \brief Plane::getDistanceFromOrigin
  * Returns the smallest vertical distance of the plane from the origin
  * \return
  */
-const double &Plane::getDistanceFromOrigin() const{
-    return this->d;
-}
+const double& Plane::getDistanceFromOrigin() const { return this->d; }
 
 /*!
  * \brief Plane::setPlane
  * \param xyz
  * \param normal
  */
-void Plane::setPlane(const Position &xyz, const Direction &normal){
+void Plane::setPlane(const Position& xyz, const Direction& normal) {
+  // set the given parameters
+  this->xyz.setVector(xyz.getVector());
+  this->ijk = normal;
 
-    //set the given parameters
-    this->xyz.setVector(xyz.getVector());
-    this->ijk = normal;
+  // calculate the other parameters
+  OiVec n0 = normal.getVector();
+  n0.normalize();
+  OiVec::dot(this->d, this->xyz.getVector(), n0);
 
-    //calculate the other parameters
-    OiVec n0 = normal.getVector();
-    n0.normalize();
-    OiVec::dot(this->d, this->xyz.getVector(), n0);
-
-    emit this->geomParametersChanged(this->id);
-
+  emit this->geomParametersChanged(this->id);
 }
 
 /*!
@@ -148,17 +129,15 @@ void Plane::setPlane(const Position &xyz, const Direction &normal){
  * \param normal
  * \param d
  */
-void Plane::setPlane(const Direction &/*normal*/, const double &d){
+void Plane::setPlane(const Direction& /*normal*/, const double& d) {
+  // set the given parameters
+  this->ijk = ijk;
+  this->d = d;
 
-    //set the given parameters
-    this->ijk = ijk;
-    this->d = d;
+  // calculate the other parameters
+  this->xyz.setVector(this->d * this->ijk.getVector());
 
-    //calculate the other parameters
-    this->xyz.setVector(this->d * this->ijk.getVector());
-
-    emit this->geomParametersChanged(this->id);
-
+  emit this->geomParametersChanged(this->id);
 }
 
 /*!
@@ -167,80 +146,89 @@ void Plane::setPlane(const Direction &/*normal*/, const double &d){
  * \param displayDigits
  * \return
  */
-QMap<GeometryParameters, QString> Plane::getUnknownParameters(const QMap<DimensionType, UnitType> &displayUnits, const QMap<DimensionType, int> &displayDigits) const{
+QMap<GeometryParameters, QString> Plane::getUnknownParameters(
+    const QMap<DimensionType, UnitType>& displayUnits,
+    const QMap<DimensionType, int>& displayDigits) const {
+  QMap<GeometryParameters, QString> parameters;
 
-    QMap<GeometryParameters, QString> parameters;
+  parameters.insert(eUnknownX,
+                    this->getDisplayX(displayUnits.value(eMetric, eUnitMeter),
+                                      displayDigits.value(eMetric, 0)));
+  parameters.insert(eUnknownY,
+                    this->getDisplayY(displayUnits.value(eMetric, eUnitMeter),
+                                      displayDigits.value(eMetric, 0)));
+  parameters.insert(eUnknownZ,
+                    this->getDisplayZ(displayUnits.value(eMetric, eUnitMeter),
+                                      displayDigits.value(eMetric, 0)));
+  parameters.insert(
+      eUnknownPrimaryI,
+      this->getDisplayPrimaryI(displayDigits.value(eDimensionless, 0)));
+  parameters.insert(
+      eUnknownPrimaryJ,
+      this->getDisplayPrimaryJ(displayDigits.value(eDimensionless, 0)));
+  parameters.insert(
+      eUnknownPrimaryK,
+      this->getDisplayPrimaryK(displayDigits.value(eDimensionless, 0)));
 
-    parameters.insert(eUnknownX, this->getDisplayX(displayUnits.value(eMetric, eUnitMeter), displayDigits.value(eMetric, 0)));
-    parameters.insert(eUnknownY, this->getDisplayY(displayUnits.value(eMetric, eUnitMeter), displayDigits.value(eMetric, 0)));
-    parameters.insert(eUnknownZ, this->getDisplayZ(displayUnits.value(eMetric, eUnitMeter), displayDigits.value(eMetric, 0)));
-    parameters.insert(eUnknownPrimaryI, this->getDisplayPrimaryI(displayDigits.value(eDimensionless, 0)));
-    parameters.insert(eUnknownPrimaryJ, this->getDisplayPrimaryJ(displayDigits.value(eDimensionless, 0)));
-    parameters.insert(eUnknownPrimaryK, this->getDisplayPrimaryK(displayDigits.value(eDimensionless, 0)));
-
-    return parameters;
-
+  return parameters;
 }
 
 /*!
  * \brief Plane::applyUnknownParameters
  * \param parameters
  */
-void Plane::applyUnknownParameters(const QMap<GeometryParameters, double> &parameters){
+void Plane::applyUnknownParameters(
+    const QMap<GeometryParameters, double>& parameters) {
+  // get current parameters
+  OiVec position = this->xyz.getVector();
+  OiVec direction = this->ijk.getVector();
 
-    //get current parameters
-    OiVec position = this->xyz.getVector();
-    OiVec direction = this->ijk.getVector();
-
-    //update parameters
-    QList<GeometryParameters> keys = parameters.keys();
-    foreach(const GeometryParameters &key, keys){
-        switch(key){
-        case eUnknownX:
-            position.setAt(0, parameters.value(eUnknownX));
-            break;
-        case eUnknownY:
-            position.setAt(1, parameters.value(eUnknownY));
-            break;
-        case eUnknownZ:
-            position.setAt(2, parameters.value(eUnknownZ));
-            break;
-        case eUnknownPrimaryI:
-            direction.setAt(0, parameters.value(eUnknownPrimaryI));
-            break;
-        case eUnknownPrimaryJ:
-            direction.setAt(1, parameters.value(eUnknownPrimaryJ));
-            break;
-        case eUnknownPrimaryK:
-            direction.setAt(2, parameters.value(eUnknownPrimaryK));
-            break;
-        default:
-            break;
-        }
+  // update parameters
+  QList<GeometryParameters> keys = parameters.keys();
+  foreach (const GeometryParameters& key, keys) {
+    switch (key) {
+      case eUnknownX:
+        position.setAt(0, parameters.value(eUnknownX));
+        break;
+      case eUnknownY:
+        position.setAt(1, parameters.value(eUnknownY));
+        break;
+      case eUnknownZ:
+        position.setAt(2, parameters.value(eUnknownZ));
+        break;
+      case eUnknownPrimaryI:
+        direction.setAt(0, parameters.value(eUnknownPrimaryI));
+        break;
+      case eUnknownPrimaryJ:
+        direction.setAt(1, parameters.value(eUnknownPrimaryJ));
+        break;
+      case eUnknownPrimaryK:
+        direction.setAt(2, parameters.value(eUnknownPrimaryK));
+        break;
+      default:
+        break;
     }
+  }
 
-    //update plane definition
-    direction.normalize();
-    Position planePosition(position);
-    Direction planeDirection(direction);
-    this->setPlane(planePosition, planeDirection);
-
+  // update plane definition
+  direction.normalize();
+  Position planePosition(position);
+  Direction planeDirection(direction);
+  this->setPlane(planePosition, planeDirection);
 }
 
 /*!
  * \brief Plane::recalc
  */
-void Plane::recalc(){
+void Plane::recalc() {
+  Geometry::recalc();
 
-    Geometry::recalc();
-
-    //reset plane definition if not solved and no nominal
-    if(!this->isSolved && this->getOwnerDescription().has_value()){
-        this->xyz.setVector(0.0, 0.0, 0.0);
-        this->ijk.setVector(0.0, 0.0, 0.0);
-        this->d = 0.0;
-    }
-
+  // reset plane definition if not solved and no nominal
+  if (!this->isSolved && this->getOwnerDescription().has_value()) {
+    this->xyz.setVector(0.0, 0.0, 0.0);
+    this->ijk.setVector(0.0, 0.0, 0.0);
+    this->d = 0.0;
+  }
 }
 
 /*!
@@ -248,18 +236,16 @@ void Plane::recalc(){
  * \param xmlDoc
  * \return
  */
-QDomElement Plane::toOpenIndyXML(QDomDocument &xmlDoc) const{
+QDomElement Plane::toOpenIndyXML(QDomDocument& xmlDoc) const {
+  QDomElement plane = Geometry::toOpenIndyXML(xmlDoc);
 
-    QDomElement plane = Geometry::toOpenIndyXML(xmlDoc);
-
-    if(plane.isNull()){
-        return plane;
-    }
-
-    plane.setAttribute("type", getGeometryTypeName(ePlaneGeometry));
-
+  if (plane.isNull()) {
     return plane;
+  }
 
+  plane.setAttribute("type", getGeometryTypeName(ePlaneGeometry));
+
+  return plane;
 }
 
 /*!
@@ -267,31 +253,28 @@ QDomElement Plane::toOpenIndyXML(QDomDocument &xmlDoc) const{
  * \param xmlElem
  * \return
  */
-bool Plane::fromOpenIndyXML(QDomElement &xmlElem){
+bool Plane::fromOpenIndyXML(QDomElement& xmlElem) {
+  bool result = Geometry::fromOpenIndyXML(xmlElem);
 
-    bool result = Geometry::fromOpenIndyXML(xmlElem);
+  if (result) {
+    // set plane attributes
+    QDomElement normalVector = xmlElem.firstChildElement("spatialDirection");
+    QDomElement pointOnPlane = xmlElem.firstChildElement("coordinates");
 
-    if(result){
-
-        //set plane attributes
-        QDomElement normalVector = xmlElem.firstChildElement("spatialDirection");
-        QDomElement pointOnPlane = xmlElem.firstChildElement("coordinates");
-
-        if(normalVector.isNull() || pointOnPlane.isNull()
-                || !normalVector.hasAttribute("i") || !normalVector.hasAttribute("j") || !normalVector.hasAttribute("k")
-                || !pointOnPlane.hasAttribute("x") || !pointOnPlane.hasAttribute("y") || !pointOnPlane.hasAttribute("z")){
-            return false;
-        }
-
-        this->ijk.setVector(normalVector.attribute("i").toDouble(),
-                               normalVector.attribute("j").toDouble(),
-                               normalVector.attribute("k").toDouble());
-        this->xyz.setVector(pointOnPlane.attribute("x").toDouble(),
-                            pointOnPlane.attribute("y").toDouble(),
-                            pointOnPlane.attribute("z").toDouble());
-
+    if (normalVector.isNull() || pointOnPlane.isNull() ||
+        !normalVector.hasAttribute("i") || !normalVector.hasAttribute("j") ||
+        !normalVector.hasAttribute("k") || !pointOnPlane.hasAttribute("x") ||
+        !pointOnPlane.hasAttribute("y") || !pointOnPlane.hasAttribute("z")) {
+      return false;
     }
 
-    return result;
+    this->ijk.setVector(normalVector.attribute("i").toDouble(),
+                        normalVector.attribute("j").toDouble(),
+                        normalVector.attribute("k").toDouble());
+    this->xyz.setVector(pointOnPlane.attribute("x").toDouble(),
+                        pointOnPlane.attribute("y").toDouble(),
+                        pointOnPlane.attribute("z").toDouble());
+  }
 
+  return result;
 }

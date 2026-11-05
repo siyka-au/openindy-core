@@ -9,13 +9,11 @@ using namespace oi::math;
  * \brief Circle::Circle
  * \param parent
  */
-Circle::Circle(QObject *parent) : Geometry(parent){
-
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setCircle(this);
-    }
-
+Circle::Circle(QObject* parent) : Geometry(parent) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setCircle(this);
+  }
 }
 
 /*!
@@ -25,15 +23,15 @@ Circle::Circle(QObject *parent) : Geometry(parent){
  * \param radius
  * \param parent
  */
-Circle::Circle(const Position &center, const Direction &normal, const Radius &radius, QObject *parent) : Geometry(parent){
+Circle::Circle(const Position& center, const Direction& normal,
+               const Radius& radius, QObject* parent)
+    : Geometry(parent) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setCircle(this);
+  }
 
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setCircle(this);
-    }
-
-    this->setCircle(center, normal, radius);
-
+  this->setCircle(center, normal, radius);
 }
 
 /*!
@@ -41,17 +39,15 @@ Circle::Circle(const Position &center, const Direction &normal, const Radius &ra
  * \param copy
  * \param parent
  */
-Circle::Circle(const Circle &copy, QObject *parent) : Geometry(copy, parent){
+Circle::Circle(const Circle& copy, QObject* parent) : Geometry(copy, parent) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setCircle(this);
+  }
 
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setCircle(this);
-    }
-
-    this->xyz = copy.xyz;
-    this->radius = copy.radius;
-    this->ijk = copy.ijk;
-
+  this->xyz = copy.xyz;
+  this->radius = copy.radius;
+  this->ijk = copy.ijk;
 }
 
 /*!
@@ -59,49 +55,38 @@ Circle::Circle(const Circle &copy, QObject *parent) : Geometry(copy, parent){
  * \param copy
  * \return
  */
-Circle &Circle::operator=(const Circle &copy){
+Circle& Circle::operator=(const Circle& copy) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setCircle(this);
+  }
 
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setCircle(this);
-    }
+  this->xyz = copy.xyz;
+  this->radius = copy.radius;
+  this->ijk = copy.ijk;
 
-    this->xyz = copy.xyz;
-    this->radius = copy.radius;
-    this->ijk = copy.ijk;
-
-    return *this;
-
+  return *this;
 }
 
-Circle::~Circle()
-{
-
-}
+Circle::~Circle() {}
 
 /*!
  * \brief Circle::hasDirection
  * \return
  */
-bool Circle::hasDirection() const{
-    return true;
-}
+bool Circle::hasDirection() const { return true; }
 
 /*!
  * \brief Circle::hasPosition
  * \return
  */
-bool Circle::hasPosition() const{
-    return true;
-}
+bool Circle::hasPosition() const { return true; }
 
 /*!
  * \brief Circle::hasRadius
  * \return
  */
-bool Circle::hasRadius() const{
-    return true;
-}
+bool Circle::hasRadius() const { return true; }
 
 /*!
  * \brief Circle::setCircle
@@ -109,15 +94,14 @@ bool Circle::hasRadius() const{
  * \param normal
  * \param radius
  */
-void Circle::setCircle(const Position &center, const Direction &normal, const Radius &radius){
+void Circle::setCircle(const Position& center, const Direction& normal,
+                       const Radius& radius) {
+  // set the given parameters
+  this->xyz = center;
+  this->ijk = normal;
+  this->radius = radius;
 
-    //set the given parameters
-    this->xyz = center;
-    this->ijk = normal;
-    this->radius = radius;
-
-    emit this->geomParametersChanged(this->id);
-
+  emit this->geomParametersChanged(this->id);
 }
 
 /*!
@@ -126,86 +110,98 @@ void Circle::setCircle(const Position &center, const Direction &normal, const Ra
  * \param displayDigits
  * \return
  */
-QMap<GeometryParameters, QString> Circle::getUnknownParameters(const QMap<DimensionType, UnitType> &displayUnits, const QMap<DimensionType, int> &displayDigits) const{
+QMap<GeometryParameters, QString> Circle::getUnknownParameters(
+    const QMap<DimensionType, UnitType>& displayUnits,
+    const QMap<DimensionType, int>& displayDigits) const {
+  QMap<GeometryParameters, QString> parameters;
 
-    QMap<GeometryParameters, QString> parameters;
+  parameters.insert(eUnknownX,
+                    this->getDisplayX(displayUnits.value(eMetric, eUnitMeter),
+                                      displayDigits.value(eMetric, 0)));
+  parameters.insert(eUnknownY,
+                    this->getDisplayY(displayUnits.value(eMetric, eUnitMeter),
+                                      displayDigits.value(eMetric, 0)));
+  parameters.insert(eUnknownZ,
+                    this->getDisplayZ(displayUnits.value(eMetric, eUnitMeter),
+                                      displayDigits.value(eMetric, 0)));
+  parameters.insert(
+      eUnknownPrimaryI,
+      this->getDisplayPrimaryI(displayDigits.value(eDimensionless, 0)));
+  parameters.insert(
+      eUnknownPrimaryJ,
+      this->getDisplayPrimaryJ(displayDigits.value(eDimensionless, 0)));
+  parameters.insert(
+      eUnknownPrimaryK,
+      this->getDisplayPrimaryK(displayDigits.value(eDimensionless, 0)));
+  parameters.insert(
+      eUnknownRadiusA,
+      this->getDisplayRadiusA(displayUnits.value(eMetric, eUnitMeter),
+                              displayDigits.value(eMetric, 0)));
 
-    parameters.insert(eUnknownX, this->getDisplayX(displayUnits.value(eMetric, eUnitMeter), displayDigits.value(eMetric, 0)));
-    parameters.insert(eUnknownY, this->getDisplayY(displayUnits.value(eMetric, eUnitMeter), displayDigits.value(eMetric, 0)));
-    parameters.insert(eUnknownZ, this->getDisplayZ(displayUnits.value(eMetric, eUnitMeter), displayDigits.value(eMetric, 0)));
-    parameters.insert(eUnknownPrimaryI, this->getDisplayPrimaryI(displayDigits.value(eDimensionless, 0)));
-    parameters.insert(eUnknownPrimaryJ, this->getDisplayPrimaryJ(displayDigits.value(eDimensionless, 0)));
-    parameters.insert(eUnknownPrimaryK, this->getDisplayPrimaryK(displayDigits.value(eDimensionless, 0)));
-    parameters.insert(eUnknownRadiusA, this->getDisplayRadiusA(displayUnits.value(eMetric, eUnitMeter), displayDigits.value(eMetric, 0)));
-
-    return parameters;
-
+  return parameters;
 }
 
 /*!
  * \brief Circle::applyUnknownParameters
  * \param parameters
  */
-void Circle::applyUnknownParameters(const QMap<GeometryParameters, double> &parameters){
+void Circle::applyUnknownParameters(
+    const QMap<GeometryParameters, double>& parameters) {
+  // get current parameters
+  OiVec position = this->xyz.getVector();
+  OiVec direction = this->ijk.getVector();
+  double radius = this->radius.getRadius();
 
-    //get current parameters
-    OiVec position = this->xyz.getVector();
-    OiVec direction = this->ijk.getVector();
-    double radius = this->radius.getRadius();
-
-    //update parameters
-    QList<GeometryParameters> keys = parameters.keys();
-    foreach(const GeometryParameters &key, keys){
-        switch(key){
-        case eUnknownX:
-            position.setAt(0, parameters.value(eUnknownX));
-            break;
-        case eUnknownY:
-            position.setAt(1, parameters.value(eUnknownY));
-            break;
-        case eUnknownZ:
-            position.setAt(2, parameters.value(eUnknownZ));
-            break;
-        case eUnknownPrimaryI:
-            direction.setAt(0, parameters.value(eUnknownPrimaryI));
-            break;
-        case eUnknownPrimaryJ:
-            direction.setAt(1, parameters.value(eUnknownPrimaryJ));
-            break;
-        case eUnknownPrimaryK:
-            direction.setAt(2, parameters.value(eUnknownPrimaryK));
-            break;
-        case eUnknownRadiusA:
-            radius = parameters.value(eUnknownRadiusA);
-            break;
-        default:
-            break;
-        }
+  // update parameters
+  QList<GeometryParameters> keys = parameters.keys();
+  foreach (const GeometryParameters& key, keys) {
+    switch (key) {
+      case eUnknownX:
+        position.setAt(0, parameters.value(eUnknownX));
+        break;
+      case eUnknownY:
+        position.setAt(1, parameters.value(eUnknownY));
+        break;
+      case eUnknownZ:
+        position.setAt(2, parameters.value(eUnknownZ));
+        break;
+      case eUnknownPrimaryI:
+        direction.setAt(0, parameters.value(eUnknownPrimaryI));
+        break;
+      case eUnknownPrimaryJ:
+        direction.setAt(1, parameters.value(eUnknownPrimaryJ));
+        break;
+      case eUnknownPrimaryK:
+        direction.setAt(2, parameters.value(eUnknownPrimaryK));
+        break;
+      case eUnknownRadiusA:
+        radius = parameters.value(eUnknownRadiusA);
+        break;
+      default:
+        break;
     }
+  }
 
-    //update circle definition
-    direction.normalize();
-    Position circlePosition(position);
-    Direction circleDirection(direction);
-    Radius circleRadius(radius);
-    this->setCircle(circlePosition, circleDirection, circleRadius);
-
+  // update circle definition
+  direction.normalize();
+  Position circlePosition(position);
+  Direction circleDirection(direction);
+  Radius circleRadius(radius);
+  this->setCircle(circlePosition, circleDirection, circleRadius);
 }
 
 /*!
  * \brief Circle::recalc
  */
-void Circle::recalc(){
+void Circle::recalc() {
+  Geometry::recalc();
 
-    Geometry::recalc();
-
-    //reset circle definition if not solved and no nominal
-    if(!this->isSolved && this->getOwnerDescription().has_value()){
-        this->xyz.setVector(0.0, 0.0, 0.0);
-        this->ijk.setVector(0.0, 0.0, 0.0);
-        this->radius.setRadius(0.0);
-    }
-
+  // reset circle definition if not solved and no nominal
+  if (!this->isSolved && this->getOwnerDescription().has_value()) {
+    this->xyz.setVector(0.0, 0.0, 0.0);
+    this->ijk.setVector(0.0, 0.0, 0.0);
+    this->radius.setRadius(0.0);
+  }
 }
 
 /*!
@@ -213,18 +209,16 @@ void Circle::recalc(){
  * \param xmlDoc
  * \return
  */
-QDomElement Circle::toOpenIndyXML(QDomDocument &xmlDoc) const{
+QDomElement Circle::toOpenIndyXML(QDomDocument& xmlDoc) const {
+  QDomElement circle = Geometry::toOpenIndyXML(xmlDoc);
 
-    QDomElement circle = Geometry::toOpenIndyXML(xmlDoc);
-
-    if(circle.isNull()){
-        return circle;
-    }
-
-    circle.setAttribute("type", getGeometryTypeName(eCircleGeometry));
-
+  if (circle.isNull()) {
     return circle;
+  }
 
+  circle.setAttribute("type", getGeometryTypeName(eCircleGeometry));
+
+  return circle;
 }
 
 /*!
@@ -232,33 +226,31 @@ QDomElement Circle::toOpenIndyXML(QDomDocument &xmlDoc) const{
  * \param xmlElem
  * \return
  */
-bool Circle::fromOpenIndyXML(QDomElement &xmlElem){
+bool Circle::fromOpenIndyXML(QDomElement& xmlElem) {
+  bool result = Geometry::fromOpenIndyXML(xmlElem);
 
-    bool result = Geometry::fromOpenIndyXML(xmlElem);
+  if (result) {
+    // set circle attributes
+    QDomElement radius = xmlElem.firstChildElement("radius");
+    QDomElement normalVector = xmlElem.firstChildElement("spatialDirection");
+    QDomElement center = xmlElem.firstChildElement("coordinates");
 
-    if(result){
-
-        //set circle attributes
-        QDomElement radius = xmlElem.firstChildElement("radius");
-        QDomElement normalVector = xmlElem.firstChildElement("spatialDirection");
-        QDomElement center = xmlElem.firstChildElement("coordinates");
-
-        if(radius.isNull() || normalVector.isNull() || center.isNull() || !radius.hasAttribute("value")
-                || !normalVector.hasAttribute("i") || !normalVector.hasAttribute("j") || !normalVector.hasAttribute("k")
-                || !center.hasAttribute("x") || !center.hasAttribute("y") || !center.hasAttribute("z")){
-            return false;
-        }
-
-        this->radius.setRadius(radius.attribute("value").toDouble());
-        this->ijk.setVector(normalVector.attribute("i").toDouble(),
-                               normalVector.attribute("j").toDouble(),
-                               normalVector.attribute("k").toDouble());
-        this->xyz.setVector(center.attribute("x").toDouble(),
-                               center.attribute("y").toDouble(),
-                               center.attribute("z").toDouble());
-
+    if (radius.isNull() || normalVector.isNull() || center.isNull() ||
+        !radius.hasAttribute("value") || !normalVector.hasAttribute("i") ||
+        !normalVector.hasAttribute("j") || !normalVector.hasAttribute("k") ||
+        !center.hasAttribute("x") || !center.hasAttribute("y") ||
+        !center.hasAttribute("z")) {
+      return false;
     }
 
-    return result;
+    this->radius.setRadius(radius.attribute("value").toDouble());
+    this->ijk.setVector(normalVector.attribute("i").toDouble(),
+                        normalVector.attribute("j").toDouble(),
+                        normalVector.attribute("k").toDouble());
+    this->xyz.setVector(center.attribute("x").toDouble(),
+                        center.attribute("y").toDouble(),
+                        center.attribute("z").toDouble());
+  }
 
+  return result;
 }

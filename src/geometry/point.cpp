@@ -10,13 +10,11 @@ using namespace oi::math;
  * \brief Point::Point
  * \param parent
  */
-Point::Point(QObject *parent) : Geometry(parent), distance(-1.){
-
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setPoint(this);
-    }
-
+Point::Point(QObject* parent) : Geometry(parent), distance(-1.) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setPoint(this);
+  }
 }
 
 /*!
@@ -24,27 +22,26 @@ Point::Point(QObject *parent) : Geometry(parent), distance(-1.){
  * \param xyz
  * \param parent
  */
-Point::Point(const Position &xyz, QObject *parent) : Geometry(parent), distance(-1.){
+Point::Point(const Position& xyz, QObject* parent)
+    : Geometry(parent), distance(-1.) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setPoint(this);
+  }
 
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setPoint(this);
-    }
-
-    this->setPoint(xyz);
-
+  this->setPoint(xyz);
 }
 
-Point::Point(int id, const Position &xyz, QObject *parent) : Geometry(parent), distance(-1.){
-    this->id = id;
+Point::Point(int id, const Position& xyz, QObject* parent)
+    : Geometry(parent), distance(-1.) {
+  this->id = id;
 
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setPoint(this);
-    }
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setPoint(this);
+  }
 
-    this->setPoint(xyz);
-
+  this->setPoint(xyz);
 }
 
 /*!
@@ -52,16 +49,14 @@ Point::Point(int id, const Position &xyz, QObject *parent) : Geometry(parent), d
  * \param copy
  * \param parent
  */
-Point::Point(const Point &copy, QObject *parent) : Geometry(copy, parent){
+Point::Point(const Point& copy, QObject* parent) : Geometry(copy, parent) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setPoint(this);
+  }
 
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setPoint(this);
-    }
-
-    this->xyz = copy.xyz;
-    this->distance = copy.distance;
-
+  this->xyz = copy.xyz;
+  this->distance = copy.distance;
 }
 
 /*!
@@ -69,75 +64,62 @@ Point::Point(const Point &copy, QObject *parent) : Geometry(copy, parent){
  * \param copy
  * \return
  */
-Point &Point::operator=(const Point &copy){
+Point& Point::operator=(const Point& copy) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setPoint(this);
+  }
 
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setPoint(this);
-    }
+  this->xyz = copy.xyz;
+  this->distance = copy.distance;
 
-    this->xyz = copy.xyz;
-    this->distance = copy.distance;
-
-    return *this;
-
+  return *this;
 }
 
 /*!
  * \brief Point::~Point
  */
-Point::~Point(){
-
-}
+Point::~Point() {}
 
 /*!
  * \brief Point::hasPosition
  * \return
  */
-bool Point::hasPosition() const{
-    return true;
-}
+bool Point::hasPosition() const { return true; }
 
 /*!
  * \brief Point::getPosition
  * Returns the point's position
  * \return
  */
-const Position &Point::getPosition() const{
-    return this->xyz;
-}
+const Position& Point::getPosition() const { return this->xyz; }
 
 /*!
  * \brief Point::setPoint
  * \param xyz
  */
-void Point::setPoint(const Position &xyz){
+void Point::setPoint(const Position& xyz) {
+  // set the given parameters
+  this->xyz = xyz;
 
-    //set the given parameters
-    this->xyz = xyz;
-
-    emit this->geomParametersChanged(this->id);
-
+  emit this->geomParametersChanged(this->id);
 }
 
 /*!
  * \brief Point::setDistance
  * \param distance
  */
-void Point::setDistance(const double distance){
+void Point::setDistance(const double distance) {
+  this->distance = distance;
 
-    this->distance = distance;
-
-    emit this->geomParametersChanged(this->id);
+  emit this->geomParametersChanged(this->id);
 }
 
 /*!
  * \brief Point::getDistance depends on function
  * \return
  */
-const double &Point::getDistance() const{
-    return this->distance;
-}
+const double& Point::getDistance() const { return this->distance; }
 
 /*!
  * \brief Point::getUnknownParameters
@@ -145,49 +127,54 @@ const double &Point::getDistance() const{
  * \param displayDigits
  * \return
  */
-QMap<GeometryParameters, QString> Point::getUnknownParameters(const QMap<DimensionType, UnitType> &displayUnits, const QMap<DimensionType, int> &displayDigits) const{
+QMap<GeometryParameters, QString> Point::getUnknownParameters(
+    const QMap<DimensionType, UnitType>& displayUnits,
+    const QMap<DimensionType, int>& displayDigits) const {
+  QMap<GeometryParameters, QString> parameters;
 
-    QMap<GeometryParameters, QString> parameters;
+  parameters.insert(eUnknownX,
+                    this->getDisplayX(displayUnits.value(eMetric, eUnitMeter),
+                                      displayDigits.value(eMetric, 0)));
+  parameters.insert(eUnknownY,
+                    this->getDisplayY(displayUnits.value(eMetric, eUnitMeter),
+                                      displayDigits.value(eMetric, 0)));
+  parameters.insert(eUnknownZ,
+                    this->getDisplayZ(displayUnits.value(eMetric, eUnitMeter),
+                                      displayDigits.value(eMetric, 0)));
 
-    parameters.insert(eUnknownX, this->getDisplayX(displayUnits.value(eMetric, eUnitMeter), displayDigits.value(eMetric, 0)));
-    parameters.insert(eUnknownY, this->getDisplayY(displayUnits.value(eMetric, eUnitMeter), displayDigits.value(eMetric, 0)));
-    parameters.insert(eUnknownZ, this->getDisplayZ(displayUnits.value(eMetric, eUnitMeter), displayDigits.value(eMetric, 0)));
-
-    return parameters;
-
+  return parameters;
 }
 
 /*!
  * \brief Point::applyUnknownParameters
  * \param parameters
  */
-void Point::applyUnknownParameters(const QMap<GeometryParameters, double> &parameters){
+void Point::applyUnknownParameters(
+    const QMap<GeometryParameters, double>& parameters) {
+  // get current parameters
+  OiVec position = this->xyz.getVector();
 
-    //get current parameters
-    OiVec position = this->xyz.getVector();
-
-    //update parameters
-    QList<GeometryParameters> keys = parameters.keys();
-    foreach(const GeometryParameters &key, keys){
-        switch(key){
-        case eUnknownX:
-            position.setAt(0, parameters.value(eUnknownX));
-            break;
-        case eUnknownY:
-            position.setAt(1, parameters.value(eUnknownY));
-            break;
-        case eUnknownZ:
-            position.setAt(2, parameters.value(eUnknownZ));
-            break;
-        default:
-            break;
-        }
+  // update parameters
+  QList<GeometryParameters> keys = parameters.keys();
+  foreach (const GeometryParameters& key, keys) {
+    switch (key) {
+      case eUnknownX:
+        position.setAt(0, parameters.value(eUnknownX));
+        break;
+      case eUnknownY:
+        position.setAt(1, parameters.value(eUnknownY));
+        break;
+      case eUnknownZ:
+        position.setAt(2, parameters.value(eUnknownZ));
+        break;
+      default:
+        break;
     }
+  }
 
-    //update point definition
-    Position pointPosition(position);
-    this->setPoint(pointPosition);
-
+  // update point definition
+  Position pointPosition(position);
+  this->setPoint(pointPosition);
 }
 
 /*!
@@ -205,47 +192,43 @@ void Point::applyUnknownParameters(const QMap<GeometryParameters, double> &param
  * function-execution loop), so this fills the same role a FitFunction's
  * exec() would for an owned geometry, without being one.
  */
-void Point::recalc(){
+void Point::recalc() {
+  Geometry::recalc();
 
-    Geometry::recalc();
+  if (!this->producerFunction.has_value() && !this->observations.isEmpty()) {
+    OiVec centroid(3);
+    centroid.setAt(0, 0.0);
+    centroid.setAt(1, 0.0);
+    centroid.setAt(2, 0.0);
+    int usableCount = 0;
 
-    if(!this->producerFunction.has_value() && !this->observations.isEmpty()){
-
-        OiVec centroid(3);
-        centroid.setAt(0, 0.0);
-        centroid.setAt(1, 0.0);
-        centroid.setAt(2, 0.0);
-        int usableCount = 0;
-
-        foreach(const QPointer<Observation> &observation, this->observations){
-            if(observation.isNull() || !observation->getIsSolved()){
-                continue;
-            }
-            const OiVec &obsXyz = observation->getXYZ();
-            if(obsXyz.getSize() < 3){
-                continue;
-            }
-            centroid.setAt(0, centroid.getAt(0) + obsXyz.getAt(0));
-            centroid.setAt(1, centroid.getAt(1) + obsXyz.getAt(1));
-            centroid.setAt(2, centroid.getAt(2) + obsXyz.getAt(2));
-            ++usableCount;
-        }
-
-        if(usableCount > 0){
-            centroid.setAt(0, centroid.getAt(0) / usableCount);
-            centroid.setAt(1, centroid.getAt(1) / usableCount);
-            centroid.setAt(2, centroid.getAt(2) / usableCount);
-            this->setPoint(Position(centroid));
-            this->isSolved = true;
-        }
-
+    foreach (const QPointer<Observation>& observation, this->observations) {
+      if (observation.isNull() || !observation->getIsSolved()) {
+        continue;
+      }
+      const OiVec& obsXyz = observation->getXYZ();
+      if (obsXyz.getSize() < 3) {
+        continue;
+      }
+      centroid.setAt(0, centroid.getAt(0) + obsXyz.getAt(0));
+      centroid.setAt(1, centroid.getAt(1) + obsXyz.getAt(1));
+      centroid.setAt(2, centroid.getAt(2) + obsXyz.getAt(2));
+      ++usableCount;
     }
 
-    //reset point definition if not solved and no nominal
-    if(!this->isSolved && this->getOwnerDescription().has_value()){
-        this->xyz.setVector(0.0, 0.0, 0.0);
+    if (usableCount > 0) {
+      centroid.setAt(0, centroid.getAt(0) / usableCount);
+      centroid.setAt(1, centroid.getAt(1) / usableCount);
+      centroid.setAt(2, centroid.getAt(2) / usableCount);
+      this->setPoint(Position(centroid));
+      this->isSolved = true;
     }
+  }
 
+  // reset point definition if not solved and no nominal
+  if (!this->isSolved && this->getOwnerDescription().has_value()) {
+    this->xyz.setVector(0.0, 0.0, 0.0);
+  }
 }
 
 /*!
@@ -263,18 +246,17 @@ void Point::recalc(){
  * through to the base rule unchanged.
  * \return
  */
-std::optional<QString> Point::getOwnerDescription() const{
-
-    if(!this->producerFunction.has_value() && !this->observations.isEmpty()){
-        const QPointer<Observation> firstObs = this->observations.constFirst();
-        if(!firstObs.isNull() && !firstObs->getStation().isNull()){
-            return QString("its station \"%1\"").arg(firstObs->getStation()->getFeatureName());
-        }
-        return QString("its station");
+std::optional<QString> Point::getOwnerDescription() const {
+  if (!this->producerFunction.has_value() && !this->observations.isEmpty()) {
+    const QPointer<Observation> firstObs = this->observations.constFirst();
+    if (!firstObs.isNull() && !firstObs->getStation().isNull()) {
+      return QString("its station \"%1\"")
+          .arg(firstObs->getStation()->getFeatureName());
     }
+    return QString("its station");
+  }
 
-    return Geometry::getOwnerDescription();
-
+  return Geometry::getOwnerDescription();
 }
 
 /*!
@@ -282,18 +264,18 @@ std::optional<QString> Point::getOwnerDescription() const{
  * D12: what this point was shot for (domain-model.md S3). See point.h.
  * \return
  */
-const QList<MeasurementIntent> &Point::getIntents() const{
-    return this->intents;
+const QList<MeasurementIntent>& Point::getIntents() const {
+  return this->intents;
 }
 
 /*!
  * \brief Point::addIntent
  * \param intent
  */
-void Point::addIntent(const MeasurementIntent &intent){
-    if(!this->intents.contains(intent)){
-        this->intents.append(intent);
-    }
+void Point::addIntent(const MeasurementIntent& intent) {
+  if (!this->intents.contains(intent)) {
+    this->intents.append(intent);
+  }
 }
 
 /*!
@@ -301,8 +283,8 @@ void Point::addIntent(const MeasurementIntent &intent){
  * \param intent
  * \return
  */
-bool Point::removeIntent(const MeasurementIntent &intent){
-    return this->intents.removeOne(intent);
+bool Point::removeIntent(const MeasurementIntent& intent) {
+  return this->intents.removeOne(intent);
 }
 
 /*!
@@ -311,8 +293,8 @@ bool Point::removeIntent(const MeasurementIntent &intent){
  * \param roleName
  * \return
  */
-bool Point::hasIntent(int featureId, const QString &roleName) const{
-    return this->intents.contains(MeasurementIntent(featureId, roleName));
+bool Point::hasIntent(int featureId, const QString& roleName) const {
+  return this->intents.contains(MeasurementIntent(featureId, roleName));
 }
 
 /*!
@@ -320,31 +302,29 @@ bool Point::hasIntent(int featureId, const QString &roleName) const{
  * \param xmlDoc
  * \return
  */
-QDomElement Point::toOpenIndyXML(QDomDocument &xmlDoc) const{
+QDomElement Point::toOpenIndyXML(QDomDocument& xmlDoc) const {
+  QDomElement point = Geometry::toOpenIndyXML(xmlDoc);
 
-    QDomElement point = Geometry::toOpenIndyXML(xmlDoc);
-
-    if(point.isNull()){
-        return point;
-    }
-
-    point.setAttribute("type", getGeometryTypeName(ePointGeometry));
-
-    //D12: persisted tags, anchored to feature ids (never names/pointers -
-    //see measurementintent.h)
-    if(!this->intents.isEmpty()){
-        QDomElement intentsElem = xmlDoc.createElement("intents");
-        foreach(const MeasurementIntent &intent, this->intents){
-            QDomElement intentElem = xmlDoc.createElement("intent");
-            intentElem.setAttribute("featureId", intent.featureId);
-            intentElem.setAttribute("roleName", intent.roleName);
-            intentsElem.appendChild(intentElem);
-        }
-        point.appendChild(intentsElem);
-    }
-
+  if (point.isNull()) {
     return point;
+  }
 
+  point.setAttribute("type", getGeometryTypeName(ePointGeometry));
+
+  // D12: persisted tags, anchored to feature ids (never names/pointers -
+  // see measurementintent.h)
+  if (!this->intents.isEmpty()) {
+    QDomElement intentsElem = xmlDoc.createElement("intents");
+    foreach (const MeasurementIntent& intent, this->intents) {
+      QDomElement intentElem = xmlDoc.createElement("intent");
+      intentElem.setAttribute("featureId", intent.featureId);
+      intentElem.setAttribute("roleName", intent.roleName);
+      intentsElem.appendChild(intentElem);
+    }
+    point.appendChild(intentsElem);
+  }
+
+  return point;
 }
 
 /*!
@@ -352,42 +332,40 @@ QDomElement Point::toOpenIndyXML(QDomDocument &xmlDoc) const{
  * \param xmlElem
  * \return
  */
-bool Point::fromOpenIndyXML(QDomElement &xmlElem){
+bool Point::fromOpenIndyXML(QDomElement& xmlElem) {
+  bool result = Geometry::fromOpenIndyXML(xmlElem);
 
-    bool result = Geometry::fromOpenIndyXML(xmlElem);
+  if (result) {
+    // set point attributes
+    QDomElement coordinates = xmlElem.firstChildElement("coordinates");
 
-    if(result){
-
-        //set point attributes
-        QDomElement coordinates = xmlElem.firstChildElement("coordinates");
-
-        if(coordinates.isNull() || !coordinates.hasAttribute("x") || !coordinates.hasAttribute("y") || !coordinates.hasAttribute("z")){
-            return false;
-        }
-
-        this->xyz.setVector(coordinates.attribute("x").toDouble(),
-                            coordinates.attribute("y").toDouble(),
-                            coordinates.attribute("z").toDouble());
-
-        //D12: tags are self-contained (featureId + roleName, no ref
-        //resolution needed - unlike realises, this is not a live pointer)
-        this->intents.clear();
-        QDomElement intentsElem = xmlElem.firstChildElement("intents");
-        if(!intentsElem.isNull()){
-            QDomElement intentElem = intentsElem.firstChildElement("intent");
-            while(!intentElem.isNull()){
-                if(intentElem.hasAttribute("featureId")){
-                    this->intents.append(MeasurementIntent(intentElem.attribute("featureId").toInt(),
-                                                             intentElem.attribute("roleName")));
-                }
-                intentElem = intentElem.nextSiblingElement("intent");
-            }
-        }
-
+    if (coordinates.isNull() || !coordinates.hasAttribute("x") ||
+        !coordinates.hasAttribute("y") || !coordinates.hasAttribute("z")) {
+      return false;
     }
 
-    return result;
+    this->xyz.setVector(coordinates.attribute("x").toDouble(),
+                        coordinates.attribute("y").toDouble(),
+                        coordinates.attribute("z").toDouble());
 
+    // D12: tags are self-contained (featureId + roleName, no ref
+    // resolution needed - unlike realises, this is not a live pointer)
+    this->intents.clear();
+    QDomElement intentsElem = xmlElem.firstChildElement("intents");
+    if (!intentsElem.isNull()) {
+      QDomElement intentElem = intentsElem.firstChildElement("intent");
+      while (!intentElem.isNull()) {
+        if (intentElem.hasAttribute("featureId")) {
+          this->intents.append(
+              MeasurementIntent(intentElem.attribute("featureId").toInt(),
+                                intentElem.attribute("roleName")));
+        }
+        intentElem = intentElem.nextSiblingElement("intent");
+      }
+    }
+  }
+
+  return result;
 }
 
 /*!
@@ -397,9 +375,11 @@ bool Point::fromOpenIndyXML(QDomElement &xmlElem){
  * \param showDiff
  * \return
  */
-QString Point::getDisplayDistance(const UnitType &type, const int &digits, const bool &/*showDiff*/) const{
-    if(this->isSolved && this->distance > 0.){
-        return QString::number(convertFromDefault(this->distance, type), 'f', digits);
-    }
-    return QString("");
+QString Point::getDisplayDistance(const UnitType& type, const int& digits,
+                                  const bool& /*showDiff*/) const {
+  if (this->isSolved && this->distance > 0.) {
+    return QString::number(convertFromDefault(this->distance, type), 'f',
+                           digits);
+  }
+  return QString("");
 }

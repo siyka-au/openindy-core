@@ -4,91 +4,91 @@
 #include <QObject>
 #include <QtXml>
 
+#include "direction.h"
 #include "geometry.h"
 #include "position.h"
-#include "direction.h"
 
-namespace oi{
+namespace oi {
 
 /*!
  * \brief The Cone class
  * Defines a right circular cone
  */
-class OI_CORE_EXPORT Cone : public Geometry
-{
-    Q_OBJECT
+class OI_CORE_EXPORT Cone : public Geometry {
+  Q_OBJECT
 
-public:
-    Cone(QObject *parent = 0);
-    Cone(const Position &apex, const Direction &axis, const double &aperture, QObject *parent = 0);
+ public:
+  Cone(QObject* parent = 0);
+  Cone(const Position& apex, const Direction& axis, const double& aperture,
+       QObject* parent = 0);
 
-    Cone(const Cone &copy, QObject *parent = 0);
+  Cone(const Cone& copy, QObject* parent = 0);
 
-    Cone &operator=(const Cone &copy);
+  Cone& operator=(const Cone& copy);
 
-    ~Cone();
+  ~Cone();
 
-    //########################################
-    //order of unknown parameters (Qxx-matrix)
-    //########################################
+  // ########################################
+  // order of unknown parameters (Qxx-matrix)
+  // ########################################
 
-    enum ConeUnknowns{
-        unknownApexX = 0,
-        unknownApexY,
-        unknownApexZ,
-        unknownAxisI,
-        unknownAxisJ,
-        unknownAxisK,
-        unknownAperture
-    };
+  enum ConeUnknowns {
+    unknownApexX = 0,
+    unknownApexY,
+    unknownApexZ,
+    unknownAxisI,
+    unknownAxisJ,
+    unknownAxisK,
+    unknownAperture
+  };
 
-    //###################################################################
-    //check wether this geometry has a direction, a position and a radius
-    //###################################################################
+  // ###################################################################
+  // check wether this geometry has a direction, a position and a radius
+  // ###################################################################
 
-    bool hasDirection() const;
-    bool hasPosition() const;
+  bool hasDirection() const;
+  bool hasPosition() const;
 
-    //##########################
-    //get or set cone parameters
-    //##########################
+  // ##########################
+  // get or set cone parameters
+  // ##########################
 
-    const double &getAperture() const;
+  const double& getAperture() const;
 
-    void setCone(const Position &apex, const Direction &axis, const double &aperture);
+  void setCone(const Position& apex, const Direction& axis,
+               const double& aperture);
 
-    //#############################
-    //get or set unknown parameters
-    //#############################
+  // #############################
+  // get or set unknown parameters
+  // #############################
 
-    virtual QMap<GeometryParameters, QString> getUnknownParameters(const QMap<DimensionType, UnitType> &displayUnits,
-                                                          const QMap<DimensionType, int> &displayDigits) const;
-    virtual void applyUnknownParameters(const QMap<GeometryParameters, double> &parameters);
+  virtual QMap<GeometryParameters, QString> getUnknownParameters(
+      const QMap<DimensionType, UnitType>& displayUnits,
+      const QMap<DimensionType, int>& displayDigits) const;
+  virtual void applyUnknownParameters(
+      const QMap<GeometryParameters, double>& parameters);
 
-    //###########################
-    //reexecute the function list
-    //###########################
+  // ###########################
+  // reexecute the function list
+  // ###########################
 
-    void recalc();
+  void recalc();
 
-    //#################
-    //save and load XML
-    //#################
+  // #################
+  // save and load XML
+  // #################
 
-    QDomElement toOpenIndyXML(QDomDocument &xmlDoc) const;
-    bool fromOpenIndyXML(QDomElement &xmlElem);
+  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const;
+  bool fromOpenIndyXML(QDomElement& xmlElem);
 
+ private:
+  // ###############
+  // cone attributes
+  // ###############
 
-private:
-
-    //###############
-    //cone attributes
-    //###############
-
-    double aperture; //opening angle = 2 * angle between surface line and r
-
+  double aperture;  // opening angle = 2 * angle between surface line and r
 };
 
-}
+}  // namespace oi
 
-#endif // CONE_H
+#endif  // CONE_H

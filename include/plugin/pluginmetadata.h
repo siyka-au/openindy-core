@@ -5,27 +5,25 @@
 
 #include "types.h"
 
-namespace oi{
+namespace oi {
 
-class OI_CORE_EXPORT PluginMetaData
-{
-public:
-    QString iid;
-    QString name;
-    QString pluginName;
-    QString pluginVersion;
-    QString author;
-    QString compiler;
-    QString operatingSystem;
-    bool dependencies;
-    QJsonArray dependenciesPath;
-    QString description;
-    QString path;
-    bool isValid;
-    QString pluginType;
-
+class OI_CORE_EXPORT PluginMetaData {
+ public:
+  QString iid;
+  QString name;
+  QString pluginName;
+  QString pluginVersion;
+  QString author;
+  QString compiler;
+  QString operatingSystem;
+  bool dependencies;
+  QJsonArray dependenciesPath;
+  QString description;
+  QString path;
+  bool isValid;
+  QString pluginType;
 };
 
-}
+}  // namespace oi
 
-#endif // PLUGINMETADATA_H
+#endif  // PLUGINMETADATA_H

@@ -4,93 +4,92 @@
 #include <QObject>
 #include <QtXml>
 
+#include "direction.h"
 #include "geometry.h"
 #include "position.h"
-#include "direction.h"
 
-namespace oi{
+namespace oi {
 
 /*!
  * \brief The Plane class
  */
-class OI_CORE_EXPORT Plane : public Geometry
-{
-    Q_OBJECT
+class OI_CORE_EXPORT Plane : public Geometry {
+  Q_OBJECT
 
-public:
-    Plane(QObject *parent = 0);
-    Plane(const Position &xyz, const Direction &normal, QObject *parent = 0);
-    Plane(const Direction &normal, const double &d, QObject *parent = 0);
+ public:
+  Plane(QObject* parent = 0);
+  Plane(const Position& xyz, const Direction& normal, QObject* parent = 0);
+  Plane(const Direction& normal, const double& d, QObject* parent = 0);
 
-    Plane(const Plane &copy, QObject *parent = 0);
+  Plane(const Plane& copy, QObject* parent = 0);
 
-    Plane &operator=(const Plane &copy);
+  Plane& operator=(const Plane& copy);
 
-    ~Plane();
+  ~Plane();
 
-    //########################################
-    //order of unknown parameters (Qxx-matrix)
-    //########################################
+  // ########################################
+  // order of unknown parameters (Qxx-matrix)
+  // ########################################
 
-    enum PlaneUnknowns{
-        unknownPositionX = 0,
-        unknownPositionY,
-        unknownPositionZ,
-        unknownNormalI,
-        unknownNormalJ,
-        unknownNormalK
-    };
+  enum PlaneUnknowns {
+    unknownPositionX = 0,
+    unknownPositionY,
+    unknownPositionZ,
+    unknownNormalI,
+    unknownNormalJ,
+    unknownNormalK
+  };
 
-    //###################################################################
-    //check wether this geometry has a direction, a position and a radius
-    //###################################################################
+  // ###################################################################
+  // check wether this geometry has a direction, a position and a radius
+  // ###################################################################
 
-    bool hasDirection() const;
-    bool hasPosition() const;
+  bool hasDirection() const;
+  bool hasPosition() const;
 
-    //###########################
-    //get or set plane parameters
-    //###########################
+  // ###########################
+  // get or set plane parameters
+  // ###########################
 
-    //const Direction &getDirection() const;
-    //const Position &getPosition() const;
+  // const Direction &getDirection() const;
+  // const Position &getPosition() const;
 
-    const double &getDistanceFromOrigin() const;
+  const double& getDistanceFromOrigin() const;
 
-    void setPlane(const Position &xyz, const Direction &normal);
-    void setPlane(const Direction &normal, const double &d);
+  void setPlane(const Position& xyz, const Direction& normal);
+  void setPlane(const Direction& normal, const double& d);
 
-    //#############################
-    //get or set unknown parameters
-    //#############################
+  // #############################
+  // get or set unknown parameters
+  // #############################
 
-    virtual QMap<GeometryParameters, QString> getUnknownParameters(const QMap<DimensionType, UnitType> &displayUnits,
-                                                          const QMap<DimensionType, int> &displayDigits) const;
-    virtual void applyUnknownParameters(const QMap<GeometryParameters, double> &parameters);
+  virtual QMap<GeometryParameters, QString> getUnknownParameters(
+      const QMap<DimensionType, UnitType>& displayUnits,
+      const QMap<DimensionType, int>& displayDigits) const;
+  virtual void applyUnknownParameters(
+      const QMap<GeometryParameters, double>& parameters);
 
-    //###########################
-    //reexecute the function list
-    //###########################
+  // ###########################
+  // reexecute the function list
+  // ###########################
 
-    void recalc();
+  void recalc();
 
-    //#################
-    //save and load XML
-    //#################
+  // #################
+  // save and load XML
+  // #################
 
-    QDomElement toOpenIndyXML(QDomDocument &xmlDoc) const;
-    bool fromOpenIndyXML(QDomElement &xmlElem);
+  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const;
+  bool fromOpenIndyXML(QDomElement& xmlElem);
 
-private:
+ private:
+  // ################
+  // plane attributes
+  // ################
 
-    //################
-    //plane attributes
-    //################
-
-    double d; //smallest distance from origin
-
+  double d;  // smallest distance from origin
 };
 
-}
+}  // namespace oi
 
-#endif // PLANE_H
+#endif  // PLANE_H

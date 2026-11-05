@@ -1,11 +1,10 @@
 #ifndef PRODUCERTRANSFORM_H
 #define PRODUCERTRANSFORM_H
 
+#include <QString>
 #include <expected>
 
-#include <QString>
-
-namespace oi{
+namespace oi {
 
 /*!
  * Stage 7d / D21 / domain-model.md S7 - "Producer and transform are
@@ -46,11 +45,11 @@ namespace oi{
  * a loss of information relative to Transform<T>::exec(const T&); it is
  * accurate about where the information already is.
  */
-template<typename T>
+template <typename T>
 class Producer {
-public:
-    virtual ~Producer() = default;
-    virtual std::expected<T, QString> exec() = 0;
+ public:
+  virtual ~Producer() = default;
+  virtual std::expected<T, QString> exec() = 0;
 };
 
 /*!
@@ -59,13 +58,13 @@ public:
  * value to consume - whatever the producer already built (or, for a
  * station-owned Point, whatever measurement already wrote).
  */
-template<typename T>
+template <typename T>
 class Transform {
-public:
-    virtual ~Transform() = default;
-    virtual std::expected<T, QString> exec(const T &input) = 0;
+ public:
+  virtual ~Transform() = default;
+  virtual std::expected<T, QString> exec(const T& input) = 0;
 };
 
-}
+}  // namespace oi
 
-#endif // PRODUCERTRANSFORM_H
+#endif  // PRODUCERTRANSFORM_H

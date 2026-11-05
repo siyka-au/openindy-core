@@ -9,13 +9,11 @@ using namespace oi::math;
  * \brief Paraboloid::Paraboloid
  * \param parent
  */
-Paraboloid::Paraboloid(QObject *parent) : Geometry(parent){
-
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setParaboloid(this);
-    }
-
+Paraboloid::Paraboloid(QObject* parent) : Geometry(parent) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setParaboloid(this);
+  }
 }
 
 /*!
@@ -25,15 +23,15 @@ Paraboloid::Paraboloid(QObject *parent) : Geometry(parent){
  * \param a
  * \param parent
  */
-Paraboloid::Paraboloid(const Position &apex, const Direction &axis, const double &a, QObject *parent) : Geometry(parent){
+Paraboloid::Paraboloid(const Position& apex, const Direction& axis,
+                       const double& a, QObject* parent)
+    : Geometry(parent) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setParaboloid(this);
+  }
 
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setParaboloid(this);
-    }
-
-    this->setParaboloid(apex, axis, a);
-
+  this->setParaboloid(apex, axis, a);
 }
 
 /*!
@@ -41,16 +39,15 @@ Paraboloid::Paraboloid(const Position &apex, const Direction &axis, const double
  * \param copy
  * \param parent
  */
-Paraboloid::Paraboloid(const Paraboloid &copy, QObject *parent) : Geometry(copy, parent){
+Paraboloid::Paraboloid(const Paraboloid& copy, QObject* parent)
+    : Geometry(copy, parent) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setParaboloid(this);
+  }
 
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setParaboloid(this);
-    }
-
-    this->xyz = copy.xyz;
-    this->ijk = copy.ijk;
-
+  this->xyz = copy.xyz;
+  this->ijk = copy.ijk;
 }
 
 /*!
@@ -58,51 +55,41 @@ Paraboloid::Paraboloid(const Paraboloid &copy, QObject *parent) : Geometry(copy,
  * \param copy
  * \return
  */
-Paraboloid &Paraboloid::operator=(const Paraboloid &copy){
+Paraboloid& Paraboloid::operator=(const Paraboloid& copy) {
+  // set up feature wrapper
+  if (!this->selfFeature.isNull()) {
+    this->selfFeature->setParaboloid(this);
+  }
 
-    //set up feature wrapper
-    if(!this->selfFeature.isNull()){
-        this->selfFeature->setParaboloid(this);
-    }
+  this->xyz = copy.xyz;
+  this->ijk = copy.ijk;
 
-    this->xyz = copy.xyz;
-    this->ijk = copy.ijk;
-
-    return *this;
-
+  return *this;
 }
 
 /*!
  * \brief Paraboloid::~Paraboloid
  */
-Paraboloid::~Paraboloid(){
-
-}
+Paraboloid::~Paraboloid() {}
 
 /*!
  * \brief Paraboloid::hasDirection
  * \return
  */
-bool Paraboloid::hasDirection() const{
-    return true;
-}
+bool Paraboloid::hasDirection() const { return true; }
 
 /*!
  * \brief Paraboloid::hasPosition
  * \return
  */
-bool Paraboloid::hasPosition() const{
-    return true;
-}
+bool Paraboloid::hasPosition() const { return true; }
 
 /*!
  * \brief Paraboloid::getA
  * Returns the compression or streatch parameter
  * \return
  */
-const double &Paraboloid::getA() const{
-    return this->a;
-}
+const double& Paraboloid::getA() const { return this->a; }
 
 /*!
  * \brief Paraboloid::setParaboloid
@@ -110,15 +97,14 @@ const double &Paraboloid::getA() const{
  * \param axis
  * \param a
  */
-void Paraboloid::setParaboloid(const Position &apex, const Direction &axis, const double &a){
+void Paraboloid::setParaboloid(const Position& apex, const Direction& axis,
+                               const double& a) {
+  // set the given parameters
+  this->xyz = apex;
+  this->ijk = axis;
+  this->a = a;
 
-    //set the given parameters
-    this->xyz = apex;
-    this->ijk = axis;
-    this->a = a;
-
-    emit this->geomParametersChanged(this->id);
-
+  emit this->geomParametersChanged(this->id);
 }
 
 /*!
@@ -127,85 +113,96 @@ void Paraboloid::setParaboloid(const Position &apex, const Direction &axis, cons
  * \param displayDigits
  * \return
  */
-QMap<GeometryParameters, QString> Paraboloid::getUnknownParameters(const QMap<DimensionType, UnitType> &displayUnits, const QMap<DimensionType, int> &displayDigits) const{
+QMap<GeometryParameters, QString> Paraboloid::getUnknownParameters(
+    const QMap<DimensionType, UnitType>& displayUnits,
+    const QMap<DimensionType, int>& displayDigits) const {
+  QMap<GeometryParameters, QString> parameters;
 
-    QMap<GeometryParameters, QString> parameters;
+  parameters.insert(eUnknownX,
+                    this->getDisplayX(displayUnits.value(eMetric, eUnitMeter),
+                                      displayDigits.value(eMetric), 0));
+  parameters.insert(eUnknownY,
+                    this->getDisplayY(displayUnits.value(eMetric, eUnitMeter),
+                                      displayDigits.value(eMetric), 0));
+  parameters.insert(eUnknownZ,
+                    this->getDisplayZ(displayUnits.value(eMetric, eUnitMeter),
+                                      displayDigits.value(eMetric), 0));
+  parameters.insert(
+      eUnknownPrimaryI,
+      this->getDisplayPrimaryI(displayDigits.value(eDimensionless, 0)));
+  parameters.insert(
+      eUnknownPrimaryJ,
+      this->getDisplayPrimaryJ(displayDigits.value(eDimensionless, 0)));
+  parameters.insert(
+      eUnknownPrimaryK,
+      this->getDisplayPrimaryK(displayDigits.value(eDimensionless, 0)));
+  parameters.insert(eUnknownA, this->getDisplayRadiusA(
+                                   displayUnits.value(eMetric, eUnitMeter),
+                                   displayDigits.value(eMetric, 0)));
 
-    parameters.insert(eUnknownX, this->getDisplayX(displayUnits.value(eMetric, eUnitMeter), displayDigits.value(eMetric), 0));
-    parameters.insert(eUnknownY, this->getDisplayY(displayUnits.value(eMetric, eUnitMeter), displayDigits.value(eMetric), 0));
-    parameters.insert(eUnknownZ, this->getDisplayZ(displayUnits.value(eMetric, eUnitMeter), displayDigits.value(eMetric), 0));
-    parameters.insert(eUnknownPrimaryI, this->getDisplayPrimaryI(displayDigits.value(eDimensionless, 0)));
-    parameters.insert(eUnknownPrimaryJ, this->getDisplayPrimaryJ(displayDigits.value(eDimensionless, 0)));
-    parameters.insert(eUnknownPrimaryK, this->getDisplayPrimaryK(displayDigits.value(eDimensionless, 0)));
-    parameters.insert(eUnknownA, this->getDisplayRadiusA(displayUnits.value(eMetric, eUnitMeter), displayDigits.value(eMetric, 0)));
-
-    return parameters;
-
+  return parameters;
 }
 
 /*!
  * \brief Paraboloid::applyUnknownParameters
  * \param parameters
  */
-void Paraboloid::applyUnknownParameters(const QMap<GeometryParameters, double> &parameters){
+void Paraboloid::applyUnknownParameters(
+    const QMap<GeometryParameters, double>& parameters) {
+  // get current parameters
+  OiVec position = this->xyz.getVector();
+  OiVec direction = this->ijk.getVector();
+  double a = this->a;
 
-    //get current parameters
-    OiVec position = this->xyz.getVector();
-    OiVec direction = this->ijk.getVector();
-    double a = this->a;
-
-    //update parameters
-    QList<GeometryParameters> keys = parameters.keys();
-    foreach(const GeometryParameters &key, keys){
-        switch(key){
-        case eUnknownX:
-            position.setAt(0, parameters.value(eUnknownX));
-            break;
-        case eUnknownY:
-            position.setAt(1, parameters.value(eUnknownY));
-            break;
-        case eUnknownZ:
-            position.setAt(2, parameters.value(eUnknownZ));
-            break;
-        case eUnknownPrimaryI:
-            direction.setAt(0, parameters.value(eUnknownPrimaryI));
-            break;
-        case eUnknownPrimaryJ:
-            direction.setAt(1, parameters.value(eUnknownPrimaryJ));
-            break;
-        case eUnknownPrimaryK:
-            direction.setAt(2, parameters.value(eUnknownPrimaryK));
-            break;
-        case eUnknownA:
-            a = parameters.value(eUnknownA);
-            break;
-        default:
-            break;
-        }
+  // update parameters
+  QList<GeometryParameters> keys = parameters.keys();
+  foreach (const GeometryParameters& key, keys) {
+    switch (key) {
+      case eUnknownX:
+        position.setAt(0, parameters.value(eUnknownX));
+        break;
+      case eUnknownY:
+        position.setAt(1, parameters.value(eUnknownY));
+        break;
+      case eUnknownZ:
+        position.setAt(2, parameters.value(eUnknownZ));
+        break;
+      case eUnknownPrimaryI:
+        direction.setAt(0, parameters.value(eUnknownPrimaryI));
+        break;
+      case eUnknownPrimaryJ:
+        direction.setAt(1, parameters.value(eUnknownPrimaryJ));
+        break;
+      case eUnknownPrimaryK:
+        direction.setAt(2, parameters.value(eUnknownPrimaryK));
+        break;
+      case eUnknownA:
+        a = parameters.value(eUnknownA);
+        break;
+      default:
+        break;
     }
+  }
 
-    //update paraboloid definition
-    direction.normalize();
-    Position paraboloidPosition(position);
-    Direction paraboloidDirection(direction);
-    this->setParaboloid(paraboloidPosition, paraboloidDirection, a);
-
+  // update paraboloid definition
+  direction.normalize();
+  Position paraboloidPosition(position);
+  Direction paraboloidDirection(direction);
+  this->setParaboloid(paraboloidPosition, paraboloidDirection, a);
 }
 
 /*!
  * \brief Paraboloid::recalc
  */
-void Paraboloid::recalc(){
+void Paraboloid::recalc() {
+  Geometry::recalc();
 
-    Geometry::recalc();
-
-    //reset paraboloid definition if not solved and no nominal
-    if(!this->isSolved && this->getOwnerDescription().has_value()){
-        this->xyz.setVector(0.0, 0.0, 0.0);
-        this->ijk.setVector(0.0, 0.0, 0.0);
-        this->a = 0.0;
-    }
-
+  // reset paraboloid definition if not solved and no nominal
+  if (!this->isSolved && this->getOwnerDescription().has_value()) {
+    this->xyz.setVector(0.0, 0.0, 0.0);
+    this->ijk.setVector(0.0, 0.0, 0.0);
+    this->a = 0.0;
+  }
 }
 
 /*!
@@ -213,27 +210,25 @@ void Paraboloid::recalc(){
  * \param xmlDoc
  * \return
  */
-QDomElement Paraboloid::toOpenIndyXML(QDomDocument &xmlDoc) const{
+QDomElement Paraboloid::toOpenIndyXML(QDomDocument& xmlDoc) const {
+  QDomElement paraboloid = Geometry::toOpenIndyXML(xmlDoc);
 
-    QDomElement paraboloid = Geometry::toOpenIndyXML(xmlDoc);
-
-    if(paraboloid.isNull()){
-        return paraboloid;
-    }
-
-    paraboloid.setAttribute("type", getGeometryTypeName(eParaboloidGeometry));
-
-    //set a
-    QDomElement a = xmlDoc.createElement("a");
-    if(this->isSolved || !this->getOwnerDescription().has_value()){
-        a.setAttribute("value", this->a);
-    }else{
-        a.setAttribute("value", 0.0);
-    }
-    paraboloid.appendChild(a);
-
+  if (paraboloid.isNull()) {
     return paraboloid;
+  }
 
+  paraboloid.setAttribute("type", getGeometryTypeName(eParaboloidGeometry));
+
+  // set a
+  QDomElement a = xmlDoc.createElement("a");
+  if (this->isSolved || !this->getOwnerDescription().has_value()) {
+    a.setAttribute("value", this->a);
+  } else {
+    a.setAttribute("value", 0.0);
+  }
+  paraboloid.appendChild(a);
+
+  return paraboloid;
 }
 
 /*!
@@ -241,35 +236,33 @@ QDomElement Paraboloid::toOpenIndyXML(QDomDocument &xmlDoc) const{
  * \param xmlElem
  * \return
  */
-bool Paraboloid::fromOpenIndyXML(QDomElement &xmlElem){
+bool Paraboloid::fromOpenIndyXML(QDomElement& xmlElem) {
+  bool result = Geometry::fromOpenIndyXML(xmlElem);
 
-    bool result = Geometry::fromOpenIndyXML(xmlElem);
+  if (result) {
+    // set paraboloid attributes
+    QDomElement a = xmlElem.firstChildElement("a");
+    QDomElement axis = xmlElem.firstChildElement("spatialDirection");
+    QDomElement apex = xmlElem.firstChildElement("coordinates");
 
-    if(result){
-
-        //set paraboloid attributes
-        QDomElement a = xmlElem.firstChildElement("a");
-        QDomElement axis = xmlElem.firstChildElement("spatialDirection");
-        QDomElement apex = xmlElem.firstChildElement("coordinates");
-
-        if(a.isNull() || axis.isNull() || apex.isNull() || !a.hasAttribute("value")
-                || !axis.hasAttribute("i") || axis.hasAttribute("j") || axis.hasAttribute("k")
-                || !apex.hasAttribute("x") || !apex.hasAttribute("y") || !apex.hasAttribute("z")){
-            return false;
-        }
-
-        this->a = a.attribute("value").toDouble();
-        this->ijk.setVector(axis.attribute("i").toDouble(),
-                               axis.attribute("j").toDouble(),
-                               axis.attribute("k").toDouble());
-        this->xyz.setVector(apex.attribute("x").toDouble(),
-                             apex.attribute("y").toDouble(),
-                             apex.attribute("z").toDouble());
-
+    if (a.isNull() || axis.isNull() || apex.isNull() ||
+        !a.hasAttribute("value") || !axis.hasAttribute("i") ||
+        axis.hasAttribute("j") || axis.hasAttribute("k") ||
+        !apex.hasAttribute("x") || !apex.hasAttribute("y") ||
+        !apex.hasAttribute("z")) {
+      return false;
     }
 
-    return result;
+    this->a = a.attribute("value").toDouble();
+    this->ijk.setVector(axis.attribute("i").toDouble(),
+                        axis.attribute("j").toDouble(),
+                        axis.attribute("k").toDouble());
+    this->xyz.setVector(apex.attribute("x").toDouble(),
+                        apex.attribute("y").toDouble(),
+                        apex.attribute("z").toDouble());
+  }
 
+  return result;
 }
 
 /*!
@@ -279,9 +272,10 @@ bool Paraboloid::fromOpenIndyXML(QDomElement &xmlElem){
  * \param showDiff
  * \return
  */
-QString Paraboloid::getDisplayA(const UnitType &type, const int &digits, const bool &/*showDiff*/) const{
-    if(this->isSolved){
-        return QString::number(convertFromDefault(this->a, type), 'f', digits);
-    }
-    return QString("");
+QString Paraboloid::getDisplayA(const UnitType& type, const int& digits,
+                                const bool& /*showDiff*/) const {
+  if (this->isSolved) {
+    return QString::number(convertFromDefault(this->a, type), 'f', digits);
+  }
+  return QString("");
 }

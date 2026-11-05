@@ -1,75 +1,71 @@
 #include "calibratedconstellation.h"
 
-namespace oi{
+namespace oi {
 
-LocalPoint::LocalPoint(const QString &label, const OiVec &position, bool isMeasured)
-    : m_label(label), m_position(position), m_isMeasured(isMeasured){
+LocalPoint::LocalPoint(const QString& label, const OiVec& position,
+                       bool isMeasured)
+    : m_label(label), m_position(position), m_isMeasured(isMeasured) {}
+
+const QString& LocalPoint::label() const { return this->m_label; }
+
+const OiVec& LocalPoint::position() const { return this->m_position; }
+
+bool LocalPoint::isMeasured() const { return this->m_isMeasured; }
+
+CalibratedConstellation::CalibratedConstellation(
+    const QString& name, const QList<LocalPoint>& points,
+    const QString& certificateId, const QDate& calibratedAt)
+    : m_name(name),
+      m_points(points),
+      m_certificateId(certificateId),
+      m_calibratedAt(calibratedAt) {}
+
+const QString& CalibratedConstellation::name() const { return this->m_name; }
+
+const QList<LocalPoint>& CalibratedConstellation::points() const {
+  return this->m_points;
 }
 
-const QString &LocalPoint::label() const{
-    return this->m_label;
-}
-
-const OiVec &LocalPoint::position() const{
-    return this->m_position;
-}
-
-bool LocalPoint::isMeasured() const{
-    return this->m_isMeasured;
-}
-
-CalibratedConstellation::CalibratedConstellation(const QString &name, const QList<LocalPoint> &points,
-                                                   const QString &certificateId, const QDate &calibratedAt)
-    : m_name(name), m_points(points), m_certificateId(certificateId), m_calibratedAt(calibratedAt){
-}
-
-const QString &CalibratedConstellation::name() const{
-    return this->m_name;
-}
-
-const QList<LocalPoint> &CalibratedConstellation::points() const{
-    return this->m_points;
-}
-
-QList<LocalPoint> CalibratedConstellation::measuredPoints() const{
-    QList<LocalPoint> result;
-    for(const LocalPoint &p : this->m_points){
-        if(p.isMeasured()){
-            result.append(p);
-        }
+QList<LocalPoint> CalibratedConstellation::measuredPoints() const {
+  QList<LocalPoint> result;
+  for (const LocalPoint& p : this->m_points) {
+    if (p.isMeasured()) {
+      result.append(p);
     }
-    return result;
+  }
+  return result;
 }
 
-QList<LocalPoint> CalibratedConstellation::derivedPoints() const{
-    QList<LocalPoint> result;
-    for(const LocalPoint &p : this->m_points){
-        if(!p.isMeasured()){
-            result.append(p);
-        }
+QList<LocalPoint> CalibratedConstellation::derivedPoints() const {
+  QList<LocalPoint> result;
+  for (const LocalPoint& p : this->m_points) {
+    if (!p.isMeasured()) {
+      result.append(p);
     }
-    return result;
+  }
+  return result;
 }
 
-std::optional<LocalPoint> CalibratedConstellation::pointByLabel(const QString &label) const{
-    for(const LocalPoint &p : this->m_points){
-        if(p.label() == label){
-            return p;
-        }
+std::optional<LocalPoint> CalibratedConstellation::pointByLabel(
+    const QString& label) const {
+  for (const LocalPoint& p : this->m_points) {
+    if (p.label() == label) {
+      return p;
     }
-    return std::nullopt;
+  }
+  return std::nullopt;
 }
 
-const QString &CalibratedConstellation::certificateId() const{
-    return this->m_certificateId;
+const QString& CalibratedConstellation::certificateId() const {
+  return this->m_certificateId;
 }
 
-const QDate &CalibratedConstellation::calibratedAt() const{
-    return this->m_calibratedAt;
+const QDate& CalibratedConstellation::calibratedAt() const {
+  return this->m_calibratedAt;
 }
 
-bool CalibratedConstellation::isValid() const{
-    return !this->m_name.isEmpty() && this->m_points.size() >= 2;
+bool CalibratedConstellation::isValid() const {
+  return !this->m_name.isEmpty() && this->m_points.size() >= 2;
 }
 
-}
+}  // namespace oi

@@ -3,9 +3,9 @@
 #include <expected>
 #include <stdexcept>
 
-#include "oijob.h"
-#include "function.h"
 #include "featurewrapper.h"
+#include "function.h"
+#include "oijob.h"
 
 using namespace oi;
 
@@ -13,8 +13,12 @@ using namespace oi;
  * \brief Feature::Feature
  * \param parent
  */
-Feature::Feature(QObject *parent) : Element(parent), isSolved(false), isUpdated(false), isActiveFeature(false){
-    this->selfFeature = new FeatureWrapper();
+Feature::Feature(QObject* parent)
+    : Element(parent),
+      isSolved(false),
+      isUpdated(false),
+      isActiveFeature(false) {
+  this->selfFeature = new FeatureWrapper();
 }
 
 /*!
@@ -22,22 +26,20 @@ Feature::Feature(QObject *parent) : Element(parent), isSolved(false), isUpdated(
  * \param copy
  * \param parent
  */
-Feature::Feature(const Feature &copy, QObject *parent) : Element(copy, parent){
+Feature::Feature(const Feature& copy, QObject* parent) : Element(copy, parent) {
+  // copy attributes
+  this->name = copy.name;
+  this->comment = copy.comment;
+  this->group = copy.group;
+  this->isSolved = copy.isSolved;
+  this->isActiveFeature = copy.isActiveFeature;
+  this->isUpdated = copy.isUpdated;
 
-    //copy attributes
-    this->name = copy.name;
-    this->comment = copy.comment;
-    this->group = copy.group;
-    this->isSolved = copy.isSolved;
-    this->isActiveFeature = copy.isActiveFeature;
-    this->isUpdated = copy.isUpdated;
+  // copy functions (usedFor is not copied)
+  // this->functionList = copy.functionList;
+  // this->previouslyNeeded = copy.previouslyNeeded;
 
-    //copy functions (usedFor is not copied)
-    //this->functionList = copy.functionList;
-    //this->previouslyNeeded = copy.previouslyNeeded;
-
-    this->selfFeature = new FeatureWrapper();
-
+  this->selfFeature = new FeatureWrapper();
 }
 
 /*!
@@ -45,90 +47,86 @@ Feature::Feature(const Feature &copy, QObject *parent) : Element(copy, parent){
  * \param copy
  * \return
  */
-Feature &Feature::operator=(const Feature &copy){
+Feature& Feature::operator=(const Feature& copy) {
+  // copy attributes
+  this->name = copy.name;
+  this->comment = copy.comment;
+  this->group = copy.group;
+  this->isSolved = copy.isSolved;
+  this->isActiveFeature = copy.isActiveFeature;
+  this->isUpdated = copy.isUpdated;
 
-    //copy attributes
-    this->name = copy.name;
-    this->comment = copy.comment;
-    this->group = copy.group;
-    this->isSolved = copy.isSolved;
-    this->isActiveFeature = copy.isActiveFeature;
-    this->isUpdated = copy.isUpdated;
+  // copy functions (usedFor is not copied)
+  // this->functionList = copy.functionList;
+  // this->previouslyNeeded = copy.previouslyNeeded;
 
-    //copy functions (usedFor is not copied)
-    //this->functionList = copy.functionList;
-    //this->previouslyNeeded = copy.previouslyNeeded;
+  this->selfFeature = new FeatureWrapper();
 
-    this->selfFeature = new FeatureWrapper();
-
-    return *this;
-
+  return *this;
 }
 
 /*!
  * \brief Feature::~Feature
  */
-Feature::~Feature(){
+Feature::~Feature() {
+  // check and update features which need this feature to recalc
+  if (this->usedForList.size() > 0 && !this->selfFeature.isNull()) {
+    foreach (const QPointer<FeatureWrapper>& feature, this->usedForList) {
+      // check feature
+      if (feature.isNull() || feature->getFeature().isNull()) {
+        continue;
+      }
 
-    //check and update features which need this feature to recalc
-    if(this->usedForList.size() > 0 && !this->selfFeature.isNull()){
-        foreach(const QPointer<FeatureWrapper> &feature, this->usedForList){
-
-            //check feature
-            if(feature.isNull() || feature->getFeature().isNull()){
-                continue;
-            }
-
-            //delete the feature from all functions
-            foreach(const QPointer<Function> function, feature->getFeature()->getFunctions()){
-                if(!function.isNull()){
-                    function->removeInputElement(this->id);
-                }
-            }
-
-            //remove this feature from previously needed list
-            feature->getFeature()->previouslyNeededList.removeOne(this->selfFeature);
-
+      // delete the feature from all functions
+      foreach (const QPointer<Function> function,
+               feature->getFeature()->getFunctions()) {
+        if (!function.isNull()) {
+          function->removeInputElement(this->id);
         }
+      }
+
+      // remove this feature from previously needed list
+      feature->getFeature()->previouslyNeededList.removeOne(this->selfFeature);
     }
+  }
 
-    //check and update features which were needed to recalc this feature
-    if(this->previouslyNeededList.size() > 0){
-        foreach(const QPointer<FeatureWrapper> &feature, this->previouslyNeededList){
-
-            //remove this feature from usedFor list
-            if(this->selfFeature.isNull() && !feature.isNull() && !feature->getFeature().isNull()){
-                feature->getFeature()->usedForList.removeOne(this->selfFeature);
-            }
-
-        }
+  // check and update features which were needed to recalc this feature
+  if (this->previouslyNeededList.size() > 0) {
+    foreach (const QPointer<FeatureWrapper>& feature,
+             this->previouslyNeededList) {
+      // remove this feature from usedFor list
+      if (this->selfFeature.isNull() && !feature.isNull() &&
+          !feature->getFeature().isNull()) {
+        feature->getFeature()->usedForList.removeOne(this->selfFeature);
+      }
     }
+  }
 
-    //delete all functions when deleting the feature
-    if(this->producerFunction.has_value() && !this->producerFunction->isNull()){
-        delete this->producerFunction->data();
+  // delete all functions when deleting the feature
+  if (this->producerFunction.has_value() && !this->producerFunction->isNull()) {
+    delete this->producerFunction->data();
+  }
+  foreach (const QPointer<Function>& function, this->transformFunctions) {
+    if (!function.isNull()) {
+      delete function.data();
     }
-    foreach(const QPointer<Function> &function, this->transformFunctions){
-        if(!function.isNull()){
-            delete function.data();
-        }
-    }
+  }
 
-    emit this->elementAboutToBeDeleted(this->id, this->name, this->group, this->selfFeature->getFeatureTypeEnum());
+  emit this->elementAboutToBeDeleted(this->id, this->name, this->group,
+                                     this->selfFeature->getFeatureTypeEnum());
 
-    //delete self feature wrapper
-    if(!this->selfFeature.isNull()){
-        delete this->selfFeature.data();
-    }
-
+  // delete self feature wrapper
+  if (!this->selfFeature.isNull()) {
+    delete this->selfFeature.data();
+  }
 }
 
 /*!
  * \brief Feature::getFeatureWrapper
  * \return
  */
-const QPointer<FeatureWrapper> &Feature::getFeatureWrapper() const{
-    return this->selfFeature;
+const QPointer<FeatureWrapper>& Feature::getFeatureWrapper() const {
+  return this->selfFeature;
 }
 
 /*!
@@ -137,8 +135,8 @@ const QPointer<FeatureWrapper> &Feature::getFeatureWrapper() const{
  * user-owned; see Geometry::getOwnerDescription for the fit-owned case.
  * \return
  */
-std::optional<QString> Feature::getOwnerDescription() const{
-    return std::nullopt;
+std::optional<QString> Feature::getOwnerDescription() const {
+  return std::nullopt;
 }
 
 /*!
@@ -146,137 +144,123 @@ std::optional<QString> Feature::getOwnerDescription() const{
  * Enforces D19 at the API. Call at the top of a setter that represents
  * a direct user edit; internal writes performed by a function's own
  * exec() are not user edits and must not call this.
- * \param attemptedEdit human-readable name of what was being edited, for the message
+ * \param attemptedEdit human-readable name of what was being edited, for the
+ * message
  * \return true if the edit was rejected
  */
-bool Feature::rejectIfNotEditable(const QString &attemptedEdit) const{
+bool Feature::rejectIfNotEditable(const QString& attemptedEdit) const {
+  const std::optional<QString> owner = this->getOwnerDescription();
+  if (!owner.has_value()) {
+    return false;
+  }
 
-    const std::optional<QString> owner = this->getOwnerDescription();
-    if(!owner.has_value()){
-        return false;
-    }
+  if (!this->job.isNull()) {
+    emit this->job->sendMessage(
+        QString("Cannot edit %1 of \"%2\": it is owned by %3 and is read-only.")
+            .arg(attemptedEdit, this->name, *owner),
+        eErrorMessage, eMessageBoxMessage);
+  }
 
-    if(!this->job.isNull()){
-        emit this->job->sendMessage(
-            QString("Cannot edit %1 of \"%2\": it is owned by %3 and is read-only.")
-                .arg(attemptedEdit, this->name, *owner),
-            eErrorMessage, eMessageBoxMessage);
-    }
-
-    return true;
-
+  return true;
 }
 
 /*!
  * \brief Feature::getFeatureName
  * \return
  */
-const QString &Feature::getFeatureName() const{
-    return this->name;
-}
+const QString& Feature::getFeatureName() const { return this->name; }
 
 /*!
  * \brief Feature::setFeatureName
  * \param name
  */
-void Feature::setFeatureName(const QString &name){
+void Feature::setFeatureName(const QString& name) {
+  // check if old name = new name
+  if (this->name.compare(name) == 0) {
+    return;
+  }
 
-    //check if old name = new name
-    if(this->name.compare(name) == 0){
-        return;
+  // validate the new name before setting it
+  if (!this->job.isNull() && !this->selfFeature.isNull()) {
+    if (!this->job->validateFeatureName(
+            name, this->selfFeature->getFeatureTypeEnum())) {
+      return;
     }
+  }
 
-    //validate the new name before setting it
-    if(!this->job.isNull() && !this->selfFeature.isNull()){
-
-        if(!this->job->validateFeatureName(name, this->selfFeature->getFeatureTypeEnum())){
-            return;
-        }
-
-    }
-
-    //set the new name
-    QString oldName = this->name;
-    this->name = name;
-    emit this->featureNameChanged(this->id, oldName);
-
+  // set the new name
+  QString oldName = this->name;
+  this->name = name;
+  emit this->featureNameChanged(this->id, oldName);
 }
 
 /*!
  * \brief Feature::getGroupName
  * \return
  */
-const QString &Feature::getGroupName() const{
-    return this->group;
-}
+const QString& Feature::getGroupName() const { return this->group; }
 
 /*!
  * \brief Feature::setGroupName
  * \param group
  */
-void Feature::setGroupName(const QString &group){
-    if(group.compare(this->group) != 0){
-        QString oldGroup = this->group;
-        this->group = group;
-        emit this->featureGroupChanged(this->id, oldGroup);
-    }
+void Feature::setGroupName(const QString& group) {
+  if (group.compare(this->group) != 0) {
+    QString oldGroup = this->group;
+    this->group = group;
+    emit this->featureGroupChanged(this->id, oldGroup);
+  }
 }
 
 /*!
  * \brief Feature::getComment
  * \return
  */
-const QString &Feature::getComment() const{
-    return this->comment;
-}
+const QString& Feature::getComment() const { return this->comment; }
 
 /*!
  * \brief Feature::setComment
  * \param comment
  */
-void Feature::setComment(const QString &comment){
-    if(comment.compare(this->comment) != 0){
-        this->comment = comment;
-        emit this->featureCommentChanged(this->id);
-    }
+void Feature::setComment(const QString& comment) {
+  if (comment.compare(this->comment) != 0) {
+    this->comment = comment;
+    emit this->featureCommentChanged(this->id);
+  }
 }
 
 /*!
  * \brief Feature::getIsUpdated
  * \return
  */
-const bool &Feature::getIsUpdated() const{
-    return this->isUpdated;
-}
+const bool& Feature::getIsUpdated() const { return this->isUpdated; }
 
 /*!
  * \brief Feature::setIsUpdated
  * \param isUpdated
  */
-void Feature::setIsUpdated(const bool &isUpdated){
-    if(isUpdated != this->isUpdated){
-        this->isUpdated = isUpdated;
-        //emit this->featureIsUpdatedChanged(this->id);
-    }
+void Feature::setIsUpdated(const bool& isUpdated) {
+  if (isUpdated != this->isUpdated) {
+    this->isUpdated = isUpdated;
+    // emit this->featureIsUpdatedChanged(this->id);
+  }
 }
 
 /*!
  * \brief Feature::getIsSolved
  * \return
  */
-const bool &Feature::getIsSolved() const{
-    return this->isSolved;
-}
+const bool& Feature::getIsSolved() const { return this->isSolved; }
 
 /*!
  * \brief Feature::setIsSolved
  * \param isSolved
  */
-void Feature::setIsSolved(const bool &isSolved){
-    if(isSolved != this->isSolved){
-        this->isSolved = isSolved;
-        emit this->featureIsSolvedChanged(this->id);
-    }
+void Feature::setIsSolved(const bool& isSolved) {
+  if (isSolved != this->isSolved) {
+    this->isSolved = isSolved;
+    emit this->featureIsSolvedChanged(this->id);
+  }
 }
 
 /*!
@@ -287,29 +271,29 @@ void Feature::setIsSolved(const bool &isSolved){
  * the split directly to every caller.
  * \return
  */
-QList<QPointer<Function> > Feature::getFunctions() const{
-    QList<QPointer<Function> > functions;
-    if(this->producerFunction.has_value() && !this->producerFunction->isNull()){
-        functions.append(this->producerFunction.value());
-    }
-    functions.append(this->transformFunctions);
-    return functions;
+QList<QPointer<Function> > Feature::getFunctions() const {
+  QList<QPointer<Function> > functions;
+  if (this->producerFunction.has_value() && !this->producerFunction->isNull()) {
+    functions.append(this->producerFunction.value());
+  }
+  functions.append(this->transformFunctions);
+  return functions;
 }
 
 /*!
  * \brief Feature::getProducerFunction
  * \return
  */
-const std::optional<QPointer<Function> > &Feature::getProducerFunction() const{
-    return this->producerFunction;
+const std::optional<QPointer<Function> >& Feature::getProducerFunction() const {
+  return this->producerFunction;
 }
 
 /*!
  * \brief Feature::getTransformFunctions
  * \return
  */
-const QList<QPointer<Function> > &Feature::getTransformFunctions() const{
-    return this->transformFunctions;
+const QList<QPointer<Function> >& Feature::getTransformFunctions() const {
+  return this->transformFunctions;
 }
 
 /*!
@@ -334,46 +318,52 @@ const QList<QPointer<Function> > &Feature::getTransformFunctions() const{
  * See domain-model.md S7 "Dispatch boundary" and D21's left-open call.
  * \param function
  */
-void Feature::addFunction(const QPointer<Function> &function){
+void Feature::addFunction(const QPointer<Function>& function) {
+  if (function.isNull() || this->selfFeature.isNull()) {
+    return;
+  }
 
-    if(function.isNull() || this->selfFeature.isNull()){
-        return;
-    }
+  const FeatureTypes type = this->selfFeature->getFeatureTypeEnum();
+  const bool producerCapable =
+      Function::canActAsProducer(type, function.data());
+  const bool transformCapable =
+      Function::canActAsTransform(type, function.data());
 
-    const FeatureTypes type = this->selfFeature->getFeatureTypeEnum();
-    const bool producerCapable = Function::canActAsProducer(type, function.data());
-    const bool transformCapable = Function::canActAsTransform(type, function.data());
+  bool attachAsProducer = false;
 
-    bool attachAsProducer = false;
+  if (producerCapable && !this->producerFunction.has_value()) {
+    attachAsProducer = true;
+  } else if (transformCapable) {
+    attachAsProducer = false;
+  } else {
+    const QString reason =
+        (producerCapable && this->producerFunction.has_value())
+            ? QString(
+                  "Function \"%1\" cannot be attached to \"%2\": a producer is "
+                  "already set (%3)")
+                  .arg(function->getMetaData().name, this->getFeatureName(),
+                       this->producerFunction.value()->getMetaData().name)
+            : QString(
+                  "Function \"%1\" cannot be attached to \"%2\": it implements "
+                  "neither Producer<T> nor Transform<T> for this feature type")
+                  .arg(function->getMetaData().name, this->getFeatureName());
+    emit function->sendMessage(reason, eCriticalMessage, eMessageBoxMessage);
+    return;
+  }
 
-    if(producerCapable && !this->producerFunction.has_value()){
-        attachAsProducer = true;
-    }else if(transformCapable){
-        attachAsProducer = false;
-    }else{
-        const QString reason = (producerCapable && this->producerFunction.has_value())
-                ? QString("Function \"%1\" cannot be attached to \"%2\": a producer is already set (%3)")
-                    .arg(function->getMetaData().name, this->getFeatureName(), this->producerFunction.value()->getMetaData().name)
-                : QString("Function \"%1\" cannot be attached to \"%2\": it implements neither Producer<T> nor Transform<T> for this feature type")
-                    .arg(function->getMetaData().name, this->getFeatureName());
-        emit function->sendMessage(reason, eCriticalMessage, eMessageBoxMessage);
-        return;
-    }
+  // let the current job generate a unique id if it is valid
+  if (!this->job.isNull()) {
+    function->id = this->job->generateUniqueId();
+  }
 
-    //let the current job generate a unique id if it is valid
-    if(!this->job.isNull()){
-        function->id = this->job->generateUniqueId();
-    }
+  if (attachAsProducer) {
+    this->producerFunction = function;
+  } else {
+    this->transformFunctions.append(function);
+  }
 
-    if(attachAsProducer){
-        this->producerFunction = function;
-    }else{
-        this->transformFunctions.append(function);
-    }
-
-    this->isUpdated = false;
-    emit this->featureFunctionListChanged(this->id);
-
+  this->isUpdated = false;
+  emit this->featureFunctionListChanged(this->id);
 }
 
 /*!
@@ -382,61 +372,59 @@ void Feature::addFunction(const QPointer<Function> &function){
  * everything after is transformFunctions in order.
  * \param index
  */
-void Feature::removeFunction(const int &index){
+void Feature::removeFunction(const int& index) {
+  if (index < 0) {
+    return;
+  }
 
-    if(index < 0){
-        return;
+  if (this->producerFunction.has_value()) {
+    if (index == 0) {
+      this->producerFunction = std::nullopt;
+      this->isUpdated = false;
+      emit this->featureFunctionListChanged(this->id);
+      return;
     }
-
-    if(this->producerFunction.has_value()){
-        if(index == 0){
-            this->producerFunction = std::nullopt;
-            this->isUpdated = false;
-            emit this->featureFunctionListChanged(this->id);
-            return;
-        }
-        const int transformIndex = index - 1;
-        if(transformIndex < this->transformFunctions.size()){
-            this->transformFunctions.removeAt(transformIndex);
-            this->isUpdated = false;
-            emit this->featureFunctionListChanged(this->id);
-        }
-        return;
+    const int transformIndex = index - 1;
+    if (transformIndex < this->transformFunctions.size()) {
+      this->transformFunctions.removeAt(transformIndex);
+      this->isUpdated = false;
+      emit this->featureFunctionListChanged(this->id);
     }
+    return;
+  }
 
-    if(index < this->transformFunctions.size()){
-        this->transformFunctions.removeAt(index);
-        this->isUpdated = false;
-        emit this->featureFunctionListChanged(this->id);
-    }
-
+  if (index < this->transformFunctions.size()) {
+    this->transformFunctions.removeAt(index);
+    this->isUpdated = false;
+    emit this->featureFunctionListChanged(this->id);
+  }
 }
 
 /*!
  * \brief Feature::getIsActiveFeature
  * \return
  */
-const bool &Feature::getIsActiveFeature() const{
-    return this->isActiveFeature;
+const bool& Feature::getIsActiveFeature() const {
+  return this->isActiveFeature;
 }
 
 /*!
  * \brief Feature::setActiveFeatureState
  * \param isActiveFeature
  */
-void Feature::setActiveFeatureState(const bool &isActiveFeature){
-    if(isActiveFeature != this->isActiveFeature){
-        this->isActiveFeature = isActiveFeature;
-        emit this->featureIsActiveChanged(this->id);
-    }
+void Feature::setActiveFeatureState(const bool& isActiveFeature) {
+  if (isActiveFeature != this->isActiveFeature) {
+    this->isActiveFeature = isActiveFeature;
+    emit this->featureIsActiveChanged(this->id);
+  }
 }
 
 /*!
  * \brief Feature::getUsedFor
  * \return
  */
-const QList<QPointer<FeatureWrapper> > &Feature::getUsedFor() const{
-    return this->usedForList;
+const QList<QPointer<FeatureWrapper> >& Feature::getUsedFor() const {
+  return this->usedForList;
 }
 
 /*!
@@ -444,36 +432,36 @@ const QList<QPointer<FeatureWrapper> > &Feature::getUsedFor() const{
  * \param feature
  * \return
  */
-bool Feature::addUsedFor(const QPointer<FeatureWrapper> &feature){
+bool Feature::addUsedFor(const QPointer<FeatureWrapper>& feature) {
+  // check feature
+  if (feature.isNull() || feature->getFeature().isNull()) {
+    return false;
+  }
 
-    //check feature
-    if(feature.isNull() || feature->getFeature().isNull()){
-        return false;
+  // check if the feature is already included
+  if (this->usedForMap.contains(feature->getFeature()->getId())) {
+    return false;
+  }
+
+  // check if feature is in same job
+  if (!this->job.isNull()) {
+    QPointer<FeatureWrapper> jobFeature =
+        this->job->getFeatureById(feature->getFeature()->getId());
+    if (jobFeature.isNull() || jobFeature->getFeature().isNull() ||
+        feature->getFeature() != jobFeature->getFeature()) {
+      return false;
     }
+  }
 
-    //check if the feature is already included
-    if(this->usedForMap.contains(feature->getFeature()->getId())){
-        return false;
-    }
+  this->usedForList.append(feature);
+  this->usedForMap.insert(feature->getFeature()->getId(), feature);
 
-    //check if feature is in same job
-    if(!this->job.isNull()){
-        QPointer<FeatureWrapper> jobFeature = this->job->getFeatureById(feature->getFeature()->getId());
-        if(jobFeature.isNull() || jobFeature->getFeature().isNull() || feature->getFeature() != jobFeature->getFeature()){
-            return false;
-        }
-    }
+  // add this feature to the previously needed features of feature
+  if (!this->selfFeature.isNull()) {
+    feature->getFeature()->addPreviouslyNeeded(this->selfFeature);
+  }
 
-    this->usedForList.append(feature);
-    this->usedForMap.insert(feature->getFeature()->getId(), feature);
-
-    //add this feature to the previously needed features of feature
-    if(!this->selfFeature.isNull()){
-        feature->getFeature()->addPreviouslyNeeded(this->selfFeature);
-    }
-
-    return true;
-
+  return true;
 }
 
 /*!
@@ -481,44 +469,44 @@ bool Feature::addUsedFor(const QPointer<FeatureWrapper> &feature){
  * \param feature
  * \return
  */
-bool Feature::removeUsedFor(const QPointer<FeatureWrapper> &feature){
+bool Feature::removeUsedFor(const QPointer<FeatureWrapper>& feature) {
+  // check feature
+  if (feature.isNull() || feature->getFeature().isNull()) {
+    return false;
+  }
 
-    //check feature
-    if(feature.isNull() || feature->getFeature().isNull()){
-        return false;
+  // check if the feature is included
+  if (!this->usedForMap.contains(feature->getFeature()->getId())) {
+    return false;
+  }
+
+  // check if feature is in same job
+  if (!this->job.isNull()) {
+    QPointer<FeatureWrapper> jobFeature =
+        this->job->getFeatureById(feature->getFeature()->getId());
+    if (jobFeature.isNull() || jobFeature->getFeature().isNull() ||
+        feature->getFeature() != jobFeature->getFeature()) {
+      return false;
     }
+  }
 
-    //check if the feature is included
-    if(!this->usedForMap.contains(feature->getFeature()->getId())){
-        return false;
-    }
+  this->usedForList.removeOne(feature);
+  this->usedForMap.remove(feature->getFeature()->getId());
 
-    //check if feature is in same job
-    if(!this->job.isNull()){
-        QPointer<FeatureWrapper> jobFeature = this->job->getFeatureById(feature->getFeature()->getId());
-        if(jobFeature.isNull() || jobFeature->getFeature().isNull() || feature->getFeature() != jobFeature->getFeature()){
-            return false;
-        }
-    }
+  // remove this feature from the previously needed features of feature
+  if (!this->selfFeature.isNull()) {
+    feature->getFeature()->removePreviouslyNeeded(this->selfFeature);
+  }
 
-    this->usedForList.removeOne(feature);
-    this->usedForMap.remove(feature->getFeature()->getId());
-
-    //remove this feature from the previously needed features of feature
-    if(!this->selfFeature.isNull()){
-        feature->getFeature()->removePreviouslyNeeded(this->selfFeature);
-    }
-
-    return true;
-
+  return true;
 }
 
 /*!
  * \brief Feature::getPreviouslyNeeded
  * \return
  */
-const QList<QPointer<FeatureWrapper> > &Feature::getPreviouslyNeeded() const{
-    return this->previouslyNeededList;
+const QList<QPointer<FeatureWrapper> >& Feature::getPreviouslyNeeded() const {
+  return this->previouslyNeededList;
 }
 
 /*!
@@ -526,38 +514,38 @@ const QList<QPointer<FeatureWrapper> > &Feature::getPreviouslyNeeded() const{
  * \param feature
  * \return
  */
-bool Feature::addPreviouslyNeeded(const QPointer<FeatureWrapper> &feature){
+bool Feature::addPreviouslyNeeded(const QPointer<FeatureWrapper>& feature) {
+  // check feature
+  if (feature.isNull() || feature->getFeature().isNull()) {
+    return false;
+  }
 
-    //check feature
-    if(feature.isNull() || feature->getFeature().isNull()){
-        return false;
+  // check if the feature is already included
+  if (this->previouslyNeededMap.contains(feature->getFeature()->getId())) {
+    return false;
+  }
+
+  // check if feature is in same job
+  if (!this->job.isNull()) {
+    QPointer<FeatureWrapper> jobFeature =
+        this->job->getFeatureById(feature->getFeature()->getId());
+    if (jobFeature.isNull() || jobFeature->getFeature().isNull() ||
+        feature->getFeature() != jobFeature->getFeature()) {
+      return false;
     }
+  }
 
-    //check if the feature is already included
-    if(this->previouslyNeededMap.contains(feature->getFeature()->getId())){
-        return false;
-    }
+  this->previouslyNeededList.append(feature);
+  this->previouslyNeededMap.insert(feature->getFeature()->getId(), feature);
 
-    //check if feature is in same job
-    if(!this->job.isNull()){
-        QPointer<FeatureWrapper> jobFeature = this->job->getFeatureById(feature->getFeature()->getId());
-        if(jobFeature.isNull() || jobFeature->getFeature().isNull() || feature->getFeature() != jobFeature->getFeature()){
-            return false;
-        }
-    }
+  this->isUpdated = false;
 
-    this->previouslyNeededList.append(feature);
-    this->previouslyNeededMap.insert(feature->getFeature()->getId(), feature);
+  // add this feature to the used for features of feature
+  if (!this->selfFeature.isNull()) {
+    feature->getFeature()->addUsedFor(this->selfFeature);
+  }
 
-    this->isUpdated = false;
-
-    //add this feature to the used for features of feature
-    if(!this->selfFeature.isNull()){
-        feature->getFeature()->addUsedFor(this->selfFeature);
-    }
-
-    return true;
-
+  return true;
 }
 
 /*!
@@ -565,38 +553,38 @@ bool Feature::addPreviouslyNeeded(const QPointer<FeatureWrapper> &feature){
  * \param feature
  * \return
  */
-bool Feature::removePreviouslyNeeded(const QPointer<FeatureWrapper> &feature){
+bool Feature::removePreviouslyNeeded(const QPointer<FeatureWrapper>& feature) {
+  // check feature
+  if (feature.isNull() || feature->getFeature().isNull()) {
+    return false;
+  }
 
-    //check feature
-    if(feature.isNull() || feature->getFeature().isNull()){
-        return false;
+  // check if the feature is included
+  if (!this->previouslyNeededMap.contains(feature->getFeature()->getId())) {
+    return false;
+  }
+
+  // check if feature is in same job
+  if (!this->job.isNull()) {
+    QPointer<FeatureWrapper> jobFeature =
+        this->job->getFeatureById(feature->getFeature()->getId());
+    if (jobFeature.isNull() || jobFeature->getFeature().isNull() ||
+        feature->getFeature() != jobFeature->getFeature()) {
+      return false;
     }
+  }
 
-    //check if the feature is included
-    if(!this->previouslyNeededMap.contains(feature->getFeature()->getId())){
-        return false;
-    }
+  this->previouslyNeededList.removeOne(feature);
+  this->previouslyNeededMap.remove(feature->getFeature()->getId());
 
-    //check if feature is in same job
-    if(!this->job.isNull()){
-        QPointer<FeatureWrapper> jobFeature = this->job->getFeatureById(feature->getFeature()->getId());
-        if(jobFeature.isNull() || jobFeature->getFeature().isNull() || feature->getFeature() != jobFeature->getFeature()){
-            return false;
-        }
-    }
+  this->isUpdated = false;
 
-    this->previouslyNeededList.removeOne(feature);
-    this->previouslyNeededMap.remove(feature->getFeature()->getId());
+  // remove this feature from the used for features of feature
+  if (!this->selfFeature.isNull()) {
+    feature->getFeature()->removeUsedFor(this->selfFeature);
+  }
 
-    this->isUpdated = false;
-
-    //remove this feature from the used for features of feature
-    if(!this->selfFeature.isNull()){
-        feature->getFeature()->removeUsedFor(this->selfFeature);
-    }
-
-    return true;
-
+  return true;
 }
 
 /*!
@@ -613,43 +601,48 @@ bool Feature::removePreviouslyNeeded(const QPointer<FeatureWrapper> &feature){
  * unsolved, matching the old behaviour exactly: the loop below never ran,
  * so isSolved stayed false from the top of the method.
  */
-void Feature::recalc(){
+void Feature::recalc() {
+  this->isSolved = false;
 
-    this->isSolved = false;
-
-    try {
-
-        if(!this->producerFunction.has_value() || this->producerFunction->isNull()){
-            return;
-        }
-
-        std::expected<void, QString> result = this->producerFunction.value()->execChecked(this->selfFeature);
-
-        if(result.has_value()){
-            foreach(const QPointer<Function> &transform, this->transformFunctions){
-                if(transform.isNull()){
-                    result = std::unexpected(QString("a transform function on \"%1\" is no longer valid").arg(this->getFeatureName()));
-                    break;
-                }
-                result = transform->execChecked(this->selfFeature);
-                if(!result.has_value()){
-                    break;
-                }
-            }
-        }
-
-        this->isSolved = result.has_value();
-
-    } catch(const std::exception &e) {
-        throw std::runtime_error(QString("can not calculate feature: \"%1\", error: %2")
-                        .arg(this->getFeatureName())
-                        .arg(e.what()).toLocal8Bit().data());
-    } catch(...) {
-        throw std::runtime_error(QString("can not calculate feature: \"%1\"")
-                        .arg(this->getFeatureName())
-                        .toLocal8Bit().data());
+  try {
+    if (!this->producerFunction.has_value() ||
+        this->producerFunction->isNull()) {
+      return;
     }
 
+    std::expected<void, QString> result =
+        this->producerFunction.value()->execChecked(this->selfFeature);
+
+    if (result.has_value()) {
+      foreach (const QPointer<Function>& transform, this->transformFunctions) {
+        if (transform.isNull()) {
+          result = std::unexpected(
+              QString("a transform function on \"%1\" is no longer valid")
+                  .arg(this->getFeatureName()));
+          break;
+        }
+        result = transform->execChecked(this->selfFeature);
+        if (!result.has_value()) {
+          break;
+        }
+      }
+    }
+
+    this->isSolved = result.has_value();
+
+  } catch (const std::exception& e) {
+    throw std::runtime_error(
+        QString("can not calculate feature: \"%1\", error: %2")
+            .arg(this->getFeatureName())
+            .arg(e.what())
+            .toLocal8Bit()
+            .data());
+  } catch (...) {
+    throw std::runtime_error(QString("can not calculate feature: \"%1\"")
+                                 .arg(this->getFeatureName())
+                                 .toLocal8Bit()
+                                 .data());
+  }
 }
 
 /*!
@@ -657,67 +650,66 @@ void Feature::recalc(){
  * \param xmlDoc
  * \return
  */
-QDomElement Feature::toOpenIndyXML(QDomDocument &xmlDoc) const{
+QDomElement Feature::toOpenIndyXML(QDomDocument& xmlDoc) const {
+  QDomElement feature = Element::toOpenIndyXML(xmlDoc);
 
-    QDomElement feature = Element::toOpenIndyXML(xmlDoc);
-
-    if(feature.isNull()){
-        return feature;
-    }
-
-    feature.setTagName("feature");
-
-    //add feature attributes
-    feature.setAttribute("name", this->getFeatureName());
-    feature.setAttribute("group", this->getGroupName());
-    feature.setAttribute("solved", this->getIsSolved());
-    feature.setAttribute("comment", this->getComment());
-    feature.setAttribute("activeFeature", this->getIsActiveFeature());
-
-    //add functions
-    const QList<QPointer<Function> > allFunctions = this->getFunctions();
-    if(allFunctions.size() > 0){
-        QDomElement functions = xmlDoc.createElement("functions");
-        int index = 0;
-        foreach(Function *f, allFunctions){
-            QDomElement function = f->toOpenIndyXML(xmlDoc);
-            if(!function.isNull()){
-                function.setAttribute("executionIndex", index);
-                functions.appendChild(function);
-            }
-            index++;
-        }
-        feature.appendChild(functions);
-    }
-
-    //add usedFor features
-    if(this->usedForList.size() > 0){
-        QDomElement usedForFeatures = xmlDoc.createElement("usedFor");
-        foreach(FeatureWrapper *f, this->usedForList){
-            if(f != NULL && f->getFeature() != NULL){
-                QDomElement usedFor = xmlDoc.createElement("feature");
-                usedFor.setAttribute("ref", f->getFeature()->getId());
-                usedForFeatures.appendChild(usedFor);
-            }
-        }
-        feature.appendChild(usedForFeatures);
-    }
-
-    //add previouslyNeeded features
-    if(this->previouslyNeededList.size() > 0){
-        QDomElement previouslyNeededFeatures = xmlDoc.createElement("previouslyNeeded");
-        foreach(FeatureWrapper *f, this->previouslyNeededList){
-            if(f != NULL && f->getFeature() != NULL){
-                QDomElement previouslyNeeded = xmlDoc.createElement("feature");
-                previouslyNeeded.setAttribute("ref", f->getFeature()->getId());
-                previouslyNeededFeatures.appendChild(previouslyNeeded);
-            }
-        }
-        feature.appendChild(previouslyNeededFeatures);
-    }
-
+  if (feature.isNull()) {
     return feature;
+  }
 
+  feature.setTagName("feature");
+
+  // add feature attributes
+  feature.setAttribute("name", this->getFeatureName());
+  feature.setAttribute("group", this->getGroupName());
+  feature.setAttribute("solved", this->getIsSolved());
+  feature.setAttribute("comment", this->getComment());
+  feature.setAttribute("activeFeature", this->getIsActiveFeature());
+
+  // add functions
+  const QList<QPointer<Function> > allFunctions = this->getFunctions();
+  if (allFunctions.size() > 0) {
+    QDomElement functions = xmlDoc.createElement("functions");
+    int index = 0;
+    foreach (Function* f, allFunctions) {
+      QDomElement function = f->toOpenIndyXML(xmlDoc);
+      if (!function.isNull()) {
+        function.setAttribute("executionIndex", index);
+        functions.appendChild(function);
+      }
+      index++;
+    }
+    feature.appendChild(functions);
+  }
+
+  // add usedFor features
+  if (this->usedForList.size() > 0) {
+    QDomElement usedForFeatures = xmlDoc.createElement("usedFor");
+    foreach (FeatureWrapper* f, this->usedForList) {
+      if (f != NULL && f->getFeature() != NULL) {
+        QDomElement usedFor = xmlDoc.createElement("feature");
+        usedFor.setAttribute("ref", f->getFeature()->getId());
+        usedForFeatures.appendChild(usedFor);
+      }
+    }
+    feature.appendChild(usedForFeatures);
+  }
+
+  // add previouslyNeeded features
+  if (this->previouslyNeededList.size() > 0) {
+    QDomElement previouslyNeededFeatures =
+        xmlDoc.createElement("previouslyNeeded");
+    foreach (FeatureWrapper* f, this->previouslyNeededList) {
+      if (f != NULL && f->getFeature() != NULL) {
+        QDomElement previouslyNeeded = xmlDoc.createElement("feature");
+        previouslyNeeded.setAttribute("ref", f->getFeature()->getId());
+        previouslyNeededFeatures.appendChild(previouslyNeeded);
+      }
+    }
+    feature.appendChild(previouslyNeededFeatures);
+  }
+
+  return feature;
 }
 
 /*!
@@ -725,103 +717,99 @@ QDomElement Feature::toOpenIndyXML(QDomDocument &xmlDoc) const{
  * \param xmlElem
  * \return
  */
-bool Feature::fromOpenIndyXML(QDomElement &xmlElem){
+bool Feature::fromOpenIndyXML(QDomElement& xmlElem) {
+  bool result = Element::fromOpenIndyXML(xmlElem);
 
-    bool result = Element::fromOpenIndyXML(xmlElem);
-
-    if(result){
-
-        //set feature attributes
-        if(!xmlElem.hasAttribute("name") || !xmlElem.hasAttribute("group") || !xmlElem.hasAttribute("comment")
-                || !xmlElem.hasAttribute("solved")){
-            return false;
-        }
-        this->name = xmlElem.attribute("name");
-        this->group = xmlElem.attribute("group");
-        this->comment = xmlElem.attribute("comment");
-        this->isSolved = xmlElem.attribute("solved").toInt();
-        this->isActiveFeature = xmlElem.attribute("activeFeature").toInt();
-
+  if (result) {
+    // set feature attributes
+    if (!xmlElem.hasAttribute("name") || !xmlElem.hasAttribute("group") ||
+        !xmlElem.hasAttribute("comment") || !xmlElem.hasAttribute("solved")) {
+      return false;
     }
+    this->name = xmlElem.attribute("name");
+    this->group = xmlElem.attribute("group");
+    this->comment = xmlElem.attribute("comment");
+    this->isSolved = xmlElem.attribute("solved").toInt();
+    this->isActiveFeature = xmlElem.attribute("activeFeature").toInt();
+  }
 
-    return result;
-
+  return result;
 }
 
 /*!
  * \brief Feature::getDisplayType
  * \return
  */
-QString Feature::getDisplayType() const{
-    if(!this->selfFeature.isNull()){
-        return this->selfFeature->getFeatureTypeString();
-    }
-    return QString("-/-");
+QString Feature::getDisplayType() const {
+  if (!this->selfFeature.isNull()) {
+    return this->selfFeature->getFeatureTypeString();
+  }
+  return QString("-/-");
 }
 
 /*!
  * \brief Feature::getDisplayIsSolved
  * \return
  */
-QString Feature::getDisplayIsSolved() const{
-    return this->isSolved?"true":"false";
+QString Feature::getDisplayIsSolved() const {
+  return this->isSolved ? "true" : "false";
 }
 
 /*!
  * \brief Feature::getDisplayIsUpdated
  * \return
  */
-QString Feature::getDisplayIsUpdated() const{
-    return this->isUpdated?"true":"false";
+QString Feature::getDisplayIsUpdated() const {
+  return this->isUpdated ? "true" : "false";
 }
 
 /*!
  * \brief Feature::getDisplayFunctions
  * \return
  */
-QString Feature::getDisplayFunctions() const{
-    QString display = "";
-    const QList<QPointer<Function> > functions = this->getFunctions();
-    for(int i = 0; i < functions.size(); i++){
-        QPointer<Function> function = functions.at(i);
-        if(!function.isNull()){
-            display += function->getMetaData().name
-                    +  (i < functions.size() -1 ? ", " : "");
-        }
+QString Feature::getDisplayFunctions() const {
+  QString display = "";
+  const QList<QPointer<Function> > functions = this->getFunctions();
+  for (int i = 0; i < functions.size(); i++) {
+    QPointer<Function> function = functions.at(i);
+    if (!function.isNull()) {
+      display +=
+          function->getMetaData().name + (i < functions.size() - 1 ? ", " : "");
     }
-    return display;
+  }
+  return display;
 }
 
 /*!
  * \brief Feature::getDisplayUsedFor
  * \return
  */
-QString Feature::getDisplayUsedFor() const{
-    QString display = "";
-    for(int i = 0; i < this->usedForList.size(); i++){
-        QPointer<FeatureWrapper> feature = this->usedForList.at(i);
-        if(!feature.isNull() && !feature->getFeature().isNull()){
-            display += feature->getFeature()->getFeatureName()
-                    +  (i < this->usedForList.size() -1 ? ", " : "");
-        }
+QString Feature::getDisplayUsedFor() const {
+  QString display = "";
+  for (int i = 0; i < this->usedForList.size(); i++) {
+    QPointer<FeatureWrapper> feature = this->usedForList.at(i);
+    if (!feature.isNull() && !feature->getFeature().isNull()) {
+      display += feature->getFeature()->getFeatureName() +
+                 (i < this->usedForList.size() - 1 ? ", " : "");
     }
-    return display;
+  }
+  return display;
 }
 
 /*!
  * \brief Feature::getDisplayPreviouslyNeeded
  * \return
  */
-QString Feature::getDisplayPreviouslyNeeded() const{
-    QString display = "";
-    for(int i = 0; i < this->previouslyNeededList.size(); i++){
-        QPointer<FeatureWrapper> feature = this->previouslyNeededList.at(i);
-        if(!feature.isNull() && !feature->getFeature().isNull()){
-                display += feature->getFeature()->getFeatureName()
-                        +  (i < this->previouslyNeededList.size() -1 ? ", " : "");
-        }
+QString Feature::getDisplayPreviouslyNeeded() const {
+  QString display = "";
+  for (int i = 0; i < this->previouslyNeededList.size(); i++) {
+    QPointer<FeatureWrapper> feature = this->previouslyNeededList.at(i);
+    if (!feature.isNull() && !feature->getFeature().isNull()) {
+      display += feature->getFeature()->getFeatureName() +
+                 (i < this->previouslyNeededList.size() - 1 ? ", " : "");
     }
-    return display;
+  }
+  return display;
 }
 
 /*!
@@ -830,41 +818,34 @@ QString Feature::getDisplayPreviouslyNeeded() const{
  * \param digits
  * \return
  */
-QString Feature::getDisplayStDev(const UnitType &/*type*/, const int &/*digits*/) const{
-    return QString("-/-");
+QString Feature::getDisplayStDev(const UnitType& /*type*/,
+                                 const int& /*digits*/) const {
+  return QString("-/-");
 }
 
 /*!
  * \brief Feature::getDisplayMeasurementConfig
  * \return
  */
-QString Feature::getDisplayMeasurementConfig() const{
-    return QString("-/-");
-}
+QString Feature::getDisplayMeasurementConfig() const { return QString("-/-"); }
 
 /*!
  * \brief Feature::getDisplayObservations
  * \return
  */
-QString Feature::getDisplayObservations() const{
-    return QString("-/-");
-}
+QString Feature::getDisplayObservations() const { return QString("-/-"); }
 
 /*!
  * \brief Feature::getDisplayIsCommon
  * \return
  */
-QString Feature::getDisplayIsCommon() const{
-    return QString("-/-");
-}
+QString Feature::getDisplayIsCommon() const { return QString("-/-"); }
 
 /*!
  * \brief Feature::getDisplayIsActual
  * \return
  */
-QString Feature::getDisplayIsActual() const{
-    return QString("-/-");
-}
+QString Feature::getDisplayIsActual() const { return QString("-/-"); }
 
 /*!
  * \brief Feature::getDisplayX
@@ -873,8 +854,9 @@ QString Feature::getDisplayIsActual() const{
  * \param showDiff
  * \return
  */
-QString Feature::getDisplayX(const UnitType &/*type*/, const int &/*digits*/, const bool &/*showDiff*/) const{
-    return QString("-/-");
+QString Feature::getDisplayX(const UnitType& /*type*/, const int& /*digits*/,
+                             const bool& /*showDiff*/) const {
+  return QString("-/-");
 }
 
 /*!
@@ -884,8 +866,9 @@ QString Feature::getDisplayX(const UnitType &/*type*/, const int &/*digits*/, co
  * \param showDiff
  * \return
  */
-QString Feature::getDisplayY(const UnitType &/*type*/, const int &/*digits*/, const bool &/*showDiff*/) const{
-    return QString("-/-");
+QString Feature::getDisplayY(const UnitType& /*type*/, const int& /*digits*/,
+                             const bool& /*showDiff*/) const {
+  return QString("-/-");
 }
 
 /*!
@@ -895,8 +878,9 @@ QString Feature::getDisplayY(const UnitType &/*type*/, const int &/*digits*/, co
  * \param showDiff
  * \return
  */
-QString Feature::getDisplayZ(const UnitType &/*type*/, const int &/*digits*/, const bool &/*showDiff*/) const{
-    return QString("-/-");
+QString Feature::getDisplayZ(const UnitType& /*type*/, const int& /*digits*/,
+                             const bool& /*showDiff*/) const {
+  return QString("-/-");
 }
 
 /*!
@@ -905,8 +889,9 @@ QString Feature::getDisplayZ(const UnitType &/*type*/, const int &/*digits*/, co
  * \param showDiff
  * \return
  */
-QString Feature::getDisplayPrimaryI(const int &/*digits*/, const bool &/*showDiff*/) const{
-    return QString("-/-");
+QString Feature::getDisplayPrimaryI(const int& /*digits*/,
+                                    const bool& /*showDiff*/) const {
+  return QString("-/-");
 }
 
 /*!
@@ -915,8 +900,9 @@ QString Feature::getDisplayPrimaryI(const int &/*digits*/, const bool &/*showDif
  * \param showDiff
  * \return
  */
-QString Feature::getDisplayPrimaryJ(const int &/*digits*/, const bool &/*showDiff*/) const{
-    return QString("-/-");
+QString Feature::getDisplayPrimaryJ(const int& /*digits*/,
+                                    const bool& /*showDiff*/) const {
+  return QString("-/-");
 }
 
 /*!
@@ -925,8 +911,9 @@ QString Feature::getDisplayPrimaryJ(const int &/*digits*/, const bool &/*showDif
  * \param showDiff
  * \return
  */
-QString Feature::getDisplayPrimaryK(const int &/*digits*/, const bool &/*showDiff*/) const{
-    return QString("-/-");
+QString Feature::getDisplayPrimaryK(const int& /*digits*/,
+                                    const bool& /*showDiff*/) const {
+  return QString("-/-");
 }
 
 /*!
@@ -936,8 +923,10 @@ QString Feature::getDisplayPrimaryK(const int &/*digits*/, const bool &/*showDif
  * \param showDiff
  * \return
  */
-QString Feature::getDisplayRadiusA(const UnitType &/*type*/, const int &/*digits*/, const bool &/*showDiff*/) const{
-    return QString("-/-");
+QString Feature::getDisplayRadiusA(const UnitType& /*type*/,
+                                   const int& /*digits*/,
+                                   const bool& /*showDiff*/) const {
+  return QString("-/-");
 }
 
 /*!
@@ -947,8 +936,10 @@ QString Feature::getDisplayRadiusA(const UnitType &/*type*/, const int &/*digits
  * \param showDiff
  * \return
  */
-QString Feature::getDisplayRadiusB(const UnitType &/*type*/, const int &/*digits*/, const bool &/*showDiff*/) const{
-    return QString("-/-");
+QString Feature::getDisplayRadiusB(const UnitType& /*type*/,
+                                   const int& /*digits*/,
+                                   const bool& /*showDiff*/) const {
+  return QString("-/-");
 }
 
 /*!
@@ -957,8 +948,9 @@ QString Feature::getDisplayRadiusB(const UnitType &/*type*/, const int &/*digits
  * \param showDiff
  * \return
  */
-QString Feature::getDisplaySecondaryI(const int &/*digits*/, const bool &/*showDiff*/) const{
-    return QString("-/-");
+QString Feature::getDisplaySecondaryI(const int& /*digits*/,
+                                      const bool& /*showDiff*/) const {
+  return QString("-/-");
 }
 
 /*!
@@ -967,8 +959,9 @@ QString Feature::getDisplaySecondaryI(const int &/*digits*/, const bool &/*showD
  * \param showDiff
  * \return
  */
-QString Feature::getDisplaySecondaryJ(const int &/*digits*/, const bool &/*showDiff*/) const{
-    return QString("-/-");
+QString Feature::getDisplaySecondaryJ(const int& /*digits*/,
+                                      const bool& /*showDiff*/) const {
+  return QString("-/-");
 }
 
 /*!
@@ -977,8 +970,9 @@ QString Feature::getDisplaySecondaryJ(const int &/*digits*/, const bool &/*showD
  * \param showDiff
  * \return
  */
-QString Feature::getDisplaySecondaryK(const int &/*digits*/, const bool &/*showDiff*/) const{
-    return QString("-/-");
+QString Feature::getDisplaySecondaryK(const int& /*digits*/,
+                                      const bool& /*showDiff*/) const {
+  return QString("-/-");
 }
 
 /*!
@@ -988,8 +982,10 @@ QString Feature::getDisplaySecondaryK(const int &/*digits*/, const bool &/*showD
  * \param showDiff
  * \return
  */
-QString Feature::getDisplayAperture(const UnitType &/*type*/, const int &/*digits*/, const bool &/*showDiff*/) const{
-    return QString("-/-");
+QString Feature::getDisplayAperture(const UnitType& /*type*/,
+                                    const int& /*digits*/,
+                                    const bool& /*showDiff*/) const {
+  return QString("-/-");
 }
 
 /*!
@@ -999,8 +995,9 @@ QString Feature::getDisplayAperture(const UnitType &/*type*/, const int &/*digit
  * \param showDiff
  * \return
  */
-QString Feature::getDisplayA(const UnitType &/*type*/, const int &/*digits*/, const bool &/*showDiff*/) const{
-    return QString("-/-");
+QString Feature::getDisplayA(const UnitType& /*type*/, const int& /*digits*/,
+                             const bool& /*showDiff*/) const {
+  return QString("-/-");
 }
 
 /*!
@@ -1010,8 +1007,9 @@ QString Feature::getDisplayA(const UnitType &/*type*/, const int &/*digits*/, co
  * \param showDiff
  * \return
  */
-QString Feature::getDisplayB(const UnitType &/*type*/, const int &/*digits*/, const bool &/*showDiff*/) const{
-    return QString("-/-");
+QString Feature::getDisplayB(const UnitType& /*type*/, const int& /*digits*/,
+                             const bool& /*showDiff*/) const {
+  return QString("-/-");
 }
 
 /*!
@@ -1021,8 +1019,9 @@ QString Feature::getDisplayB(const UnitType &/*type*/, const int &/*digits*/, co
  * \param showDiff
  * \return
  */
-QString Feature::getDisplayC(const UnitType &/*type*/, const int &/*digits*/, const bool &/*showDiff*/) const{
-    return QString("-/-");
+QString Feature::getDisplayC(const UnitType& /*type*/, const int& /*digits*/,
+                             const bool& /*showDiff*/) const {
+  return QString("-/-");
 }
 
 /*!
@@ -1032,8 +1031,10 @@ QString Feature::getDisplayC(const UnitType &/*type*/, const int &/*digits*/, co
  * \param showDiff
  * \return
  */
-QString Feature::getDisplayAngle(const UnitType &/*type*/, const int &/*digits*/, const bool &/*showDiff*/) const{
-    return QString("-/-");
+QString Feature::getDisplayAngle(const UnitType& /*type*/,
+                                 const int& /*digits*/,
+                                 const bool& /*showDiff*/) const {
+  return QString("-/-");
 }
 
 /*!
@@ -1043,8 +1044,10 @@ QString Feature::getDisplayAngle(const UnitType &/*type*/, const int &/*digits*/
  * \param showDiff
  * \return
  */
-QString Feature::getDisplayDistance(const UnitType &/*type*/, const int &/*digits*/, const bool &/*showDiff*/) const{
-    return QString("-/-");
+QString Feature::getDisplayDistance(const UnitType& /*type*/,
+                                    const int& /*digits*/,
+                                    const bool& /*showDiff*/) const {
+  return QString("-/-");
 }
 
 /*!
@@ -1054,8 +1057,10 @@ QString Feature::getDisplayDistance(const UnitType &/*type*/, const int &/*digit
  * \param showDiff
  * \return
  */
-QString Feature::getDisplayMeasurementSeries(const UnitType &/*type*/, const int &/*digits*/, const bool &/*showDiff*/) const{
-    return QString("-/-");
+QString Feature::getDisplayMeasurementSeries(const UnitType& /*type*/,
+                                             const int& /*digits*/,
+                                             const bool& /*showDiff*/) const {
+  return QString("-/-");
 }
 
 /*!
@@ -1065,8 +1070,10 @@ QString Feature::getDisplayMeasurementSeries(const UnitType &/*type*/, const int
  * \param showDiff
  * \return
  */
-QString Feature::getDisplayTemperature(const UnitType &/*type*/, const int &/*digits*/, const bool &/*showDiff*/) const{
-    return QString("-/-");
+QString Feature::getDisplayTemperature(const UnitType& /*type*/,
+                                       const int& /*digits*/,
+                                       const bool& /*showDiff*/) const {
+  return QString("-/-");
 }
 
 /*!
@@ -1076,8 +1083,10 @@ QString Feature::getDisplayTemperature(const UnitType &/*type*/, const int &/*di
  * \param showDiff
  * \return
  */
-QString Feature::getDisplayLength(const UnitType &/*type*/, const int &/*digits*/, const bool &/*showDiff*/) const{
-    return QString("-/-");
+QString Feature::getDisplayLength(const UnitType& /*type*/,
+                                  const int& /*digits*/,
+                                  const bool& /*showDiff*/) const {
+  return QString("-/-");
 }
 
 /*!
@@ -1086,8 +1095,9 @@ QString Feature::getDisplayLength(const UnitType &/*type*/, const int &/*digits*
  * \param digits
  * \return
  */
-QString Feature::getDisplayExpansionOriginX(const UnitType &/*type*/, const int &/*digits*/) const{
-    return QString("-/-");
+QString Feature::getDisplayExpansionOriginX(const UnitType& /*type*/,
+                                            const int& /*digits*/) const {
+  return QString("-/-");
 }
 
 /*!
@@ -1096,8 +1106,9 @@ QString Feature::getDisplayExpansionOriginX(const UnitType &/*type*/, const int 
  * \param digits
  * \return
  */
-QString Feature::getDisplayExpansionOriginY(const UnitType &/*type*/, const int &/*digits*/) const{
-    return QString("-/-");
+QString Feature::getDisplayExpansionOriginY(const UnitType& /*type*/,
+                                            const int& /*digits*/) const {
+  return QString("-/-");
 }
 
 /*!
@@ -1106,8 +1117,9 @@ QString Feature::getDisplayExpansionOriginY(const UnitType &/*type*/, const int 
  * \param digits
  * \return
  */
-QString Feature::getDisplayExpansionOriginZ(const UnitType &/*type*/, const int &/*digits*/) const{
-    return QString("-/-");
+QString Feature::getDisplayExpansionOriginZ(const UnitType& /*type*/,
+                                            const int& /*digits*/) const {
+  return QString("-/-");
 }
 
 /*!
@@ -1115,8 +1127,8 @@ QString Feature::getDisplayExpansionOriginZ(const UnitType &/*type*/, const int 
  * \param digits
  * \return
  */
-QString Feature::getDisplayXAxisI(const int &/*digits*/) const{
-    return QString("-/-");
+QString Feature::getDisplayXAxisI(const int& /*digits*/) const {
+  return QString("-/-");
 }
 
 /*!
@@ -1124,8 +1136,8 @@ QString Feature::getDisplayXAxisI(const int &/*digits*/) const{
  * \param digits
  * \return
  */
-QString Feature::getDisplayXAxisJ(const int &/*digits*/) const{
-    return QString("-/-");
+QString Feature::getDisplayXAxisJ(const int& /*digits*/) const {
+  return QString("-/-");
 }
 
 /*!
@@ -1133,8 +1145,8 @@ QString Feature::getDisplayXAxisJ(const int &/*digits*/) const{
  * \param digits
  * \return
  */
-QString Feature::getDisplayXAxisK(const int &/*digits*/) const{
-    return QString("-/-");
+QString Feature::getDisplayXAxisK(const int& /*digits*/) const {
+  return QString("-/-");
 }
 
 /*!
@@ -1142,8 +1154,8 @@ QString Feature::getDisplayXAxisK(const int &/*digits*/) const{
  * \param digits
  * \return
  */
-QString Feature::getDisplayYAxisI(const int &/*digits*/) const{
-    return QString("-/-");
+QString Feature::getDisplayYAxisI(const int& /*digits*/) const {
+  return QString("-/-");
 }
 
 /*!
@@ -1151,8 +1163,8 @@ QString Feature::getDisplayYAxisI(const int &/*digits*/) const{
  * \param digits
  * \return
  */
-QString Feature::getDisplayYAxisJ(const int &/*digits*/) const{
-    return QString("-/-");
+QString Feature::getDisplayYAxisJ(const int& /*digits*/) const {
+  return QString("-/-");
 }
 
 /*!
@@ -1160,8 +1172,8 @@ QString Feature::getDisplayYAxisJ(const int &/*digits*/) const{
  * \param digits
  * \return
  */
-QString Feature::getDisplayYAxisK(const int &/*digits*/) const{
-    return QString("-/-");
+QString Feature::getDisplayYAxisK(const int& /*digits*/) const {
+  return QString("-/-");
 }
 
 /*!
@@ -1169,8 +1181,8 @@ QString Feature::getDisplayYAxisK(const int &/*digits*/) const{
  * \param digits
  * \return
  */
-QString Feature::getDisplayZAxisI(const int &/*digits*/) const{
-    return QString("-/-");
+QString Feature::getDisplayZAxisI(const int& /*digits*/) const {
+  return QString("-/-");
 }
 
 /*!
@@ -1178,8 +1190,8 @@ QString Feature::getDisplayZAxisI(const int &/*digits*/) const{
  * \param digits
  * \return
  */
-QString Feature::getDisplayZAxisJ(const int &/*digits*/) const{
-    return QString("-/-");
+QString Feature::getDisplayZAxisJ(const int& /*digits*/) const {
+  return QString("-/-");
 }
 
 /*!
@@ -1187,25 +1199,21 @@ QString Feature::getDisplayZAxisJ(const int &/*digits*/) const{
  * \param digits
  * \return
  */
-QString Feature::getDisplayZAxisK(const int &/*digits*/) const{
-    return QString("-/-");
+QString Feature::getDisplayZAxisK(const int& /*digits*/) const {
+  return QString("-/-");
 }
 
 /*!
  * \brief Feature::getDisplayStartSystem
  * \return
  */
-QString Feature::getDisplayStartSystem() const{
-    return QString("-/-");
-}
+QString Feature::getDisplayStartSystem() const { return QString("-/-"); }
 
 /*!
  * \brief Feature::getDisplayDestinationSystem
  * \return
  */
-QString Feature::getDisplayDestinationSystem() const{
-    return QString("-/-");
-}
+QString Feature::getDisplayDestinationSystem() const { return QString("-/-"); }
 
 /*!
  * \brief Feature::getDisplayTranslationX
@@ -1213,8 +1221,9 @@ QString Feature::getDisplayDestinationSystem() const{
  * \param digits
  * \return
  */
-QString Feature::getDisplayTranslationX(const UnitType &/*type*/, const int &/*digits*/) const{
-    return QString("-/-");
+QString Feature::getDisplayTranslationX(const UnitType& /*type*/,
+                                        const int& /*digits*/) const {
+  return QString("-/-");
 }
 
 /*!
@@ -1223,8 +1232,9 @@ QString Feature::getDisplayTranslationX(const UnitType &/*type*/, const int &/*d
  * \param digits
  * \return
  */
-QString Feature::getDisplayTranslationY(const UnitType &/*type*/, const int &/*digits*/) const{
-    return QString("-/-");
+QString Feature::getDisplayTranslationY(const UnitType& /*type*/,
+                                        const int& /*digits*/) const {
+  return QString("-/-");
 }
 
 /*!
@@ -1233,8 +1243,9 @@ QString Feature::getDisplayTranslationY(const UnitType &/*type*/, const int &/*d
  * \param digits
  * \return
  */
-QString Feature::getDisplayTranslationZ(const UnitType &/*type*/, const int &/*digits*/) const{
-    return QString("-/-");
+QString Feature::getDisplayTranslationZ(const UnitType& /*type*/,
+                                        const int& /*digits*/) const {
+  return QString("-/-");
 }
 
 /*!
@@ -1243,8 +1254,9 @@ QString Feature::getDisplayTranslationZ(const UnitType &/*type*/, const int &/*d
  * \param digits
  * \return
  */
-QString Feature::getDisplayRotationX(const UnitType &/*type*/, const int &/*digits*/) const{
-    return QString("-/-");
+QString Feature::getDisplayRotationX(const UnitType& /*type*/,
+                                     const int& /*digits*/) const {
+  return QString("-/-");
 }
 
 /*!
@@ -1253,8 +1265,9 @@ QString Feature::getDisplayRotationX(const UnitType &/*type*/, const int &/*digi
  * \param digits
  * \return
  */
-QString Feature::getDisplayRotationY(const UnitType &/*type*/, const int &/*digits*/) const{
-    return QString("-/-");
+QString Feature::getDisplayRotationY(const UnitType& /*type*/,
+                                     const int& /*digits*/) const {
+  return QString("-/-");
 }
 
 /*!
@@ -1263,8 +1276,9 @@ QString Feature::getDisplayRotationY(const UnitType &/*type*/, const int &/*digi
  * \param digits
  * \return
  */
-QString Feature::getDisplayRotationZ(const UnitType &/*type*/, const int &/*digits*/) const{
-    return QString("-/-");
+QString Feature::getDisplayRotationZ(const UnitType& /*type*/,
+                                     const int& /*digits*/) const {
+  return QString("-/-");
 }
 
 /*!
@@ -1272,8 +1286,8 @@ QString Feature::getDisplayRotationZ(const UnitType &/*type*/, const int &/*digi
  * \param digits
  * \return
  */
-QString Feature::getDisplayScaleX(const int &/*digits*/) const{
-    return QString("-/-");
+QString Feature::getDisplayScaleX(const int& /*digits*/) const {
+  return QString("-/-");
 }
 
 /*!
@@ -1281,8 +1295,8 @@ QString Feature::getDisplayScaleX(const int &/*digits*/) const{
  * \param digits
  * \return
  */
-QString Feature::getDisplayScaleY(const int &/*digits*/) const{
-    return QString("-/-");
+QString Feature::getDisplayScaleY(const int& /*digits*/) const {
+  return QString("-/-");
 }
 
 /*!
@@ -1290,40 +1304,34 @@ QString Feature::getDisplayScaleY(const int &/*digits*/) const{
  * \param digits
  * \return
  */
-QString Feature::getDisplayScaleZ(const int &/*digits*/) const{
-    return QString("-/-");
+QString Feature::getDisplayScaleZ(const int& /*digits*/) const {
+  return QString("-/-");
 }
 
 /*!
  * \brief Feature::getDisplayIsUsed
  * \return
  */
-QString Feature::getDisplayIsUsed() const{
-    return QString("-/-");
-}
+QString Feature::getDisplayIsUsed() const { return QString("-/-"); }
 
 /*!
  * \brief Feature::getDisplayValidTime
  * \return
  */
-QString Feature::getDisplayValidTime() const{
-    return QString("-/-");
-}
+QString Feature::getDisplayValidTime() const { return QString("-/-"); }
 
 /*!
  * \brief Feature::getDisplayIsMovement
  * \return
  */
-QString Feature::getDisplayIsMovement() const{
-    return QString("-/-");
-}
+QString Feature::getDisplayIsMovement() const { return QString("-/-"); }
 
 /*!
  * \brief Feature::getDisplayIsDatumTransformation
  * \return
  */
-QString Feature::getDisplayIsDatumTransformation() const{
-    return QString("-/-");
+QString Feature::getDisplayIsDatumTransformation() const {
+  return QString("-/-");
 }
 
 /*!
@@ -1333,50 +1341,48 @@ QString Feature::getDisplayIsDatumTransformation() const{
  * \param showDiff
  * \return
  */
-QString Feature::getDisplayFormError(const UnitType &/*type*/, const int &/*digits*/) const{
-    return QString("-/-");
+QString Feature::getDisplayFormError(const UnitType& /*type*/,
+                                     const int& /*digits*/) const {
+  return QString("-/-");
 }
 
 /*!
  * \brief Feature::setUpFeatureId
  * Generate a new unique id when the current job was set
  */
-void Feature::setUpFeatureId(){
+void Feature::setUpFeatureId() {
+  // check job
+  if (this->job.isNull()) {
+    return;
+  }
 
-    //check job
-    if(this->job.isNull()){
-        return;
+  // let the job generate a new unique id for this feature
+  this->id = job->generateUniqueId();
+
+  // generate unique ids for the feature's functions
+  if (this->producerFunction.has_value() && !this->producerFunction->isNull()) {
+    this->producerFunction.value()->id = this->job->generateUniqueId();
+  }
+  foreach (const QPointer<Function>& function, this->transformFunctions) {
+    if (!function.isNull()) {
+      function->id = this->job->generateUniqueId();
     }
-
-    //let the job generate a new unique id for this feature
-    this->id = job->generateUniqueId();
-
-    //generate unique ids for the feature's functions
-    if(this->producerFunction.has_value() && !this->producerFunction->isNull()){
-        this->producerFunction.value()->id = this->job->generateUniqueId();
-    }
-    foreach(const QPointer<Function> &function, this->transformFunctions){
-        if(!function.isNull()){
-            function->id = this->job->generateUniqueId();
-        }
-    }
-
+  }
 }
 
 /*!
  * \brief Feature::setJob
- * Called by OiJob. Sets the current job this feature belongs to and checks its id
+ * Called by OiJob. Sets the current job this feature belongs to and checks its
+ * id
  * \param job
  */
-void Feature::setJob(const QPointer<OiJob> &job){
+void Feature::setJob(const QPointer<OiJob>& job) {
+  // check and set job
+  if (job.isNull()) {
+    return;
+  }
+  this->job = job;
 
-    //check and set job
-    if(job.isNull()){
-        return;
-    }
-    this->job = job;
-
-    //generate feature id
-    this->setUpFeatureId();
-
+  // generate feature id
+  this->setUpFeatureId();
 }

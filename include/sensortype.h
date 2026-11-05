@@ -1,19 +1,18 @@
 #ifndef SENSORTYPE_H
 #define SENSORTYPE_H
 
-#include <optional>
-
 #include <QList>
 #include <QMetaType>
 #include <QString>
+#include <optional>
 
 #if defined(OI_CORE_LIB)
-#  define OI_CORE_EXPORT Q_DECL_EXPORT
+#define OI_CORE_EXPORT Q_DECL_EXPORT
 #else
-#  define OI_CORE_EXPORT Q_DECL_IMPORT
+#define OI_CORE_EXPORT Q_DECL_IMPORT
 #endif
 
-namespace oi{
+namespace oi {
 
 /*!
  * \brief The SensorType class
@@ -30,34 +29,30 @@ namespace oi{
  * type carries identity and presentation, and is the place to hang per-type
  * defaults if a need for them appears.
  */
-class OI_CORE_EXPORT SensorType
-{
+class OI_CORE_EXPORT SensorType {
+ public:
+  SensorType() = default;
+  SensorType(const QString& id, const QString& displayName,
+             const QString& iconKey = QString());
 
-public:
+  //! derives a type from a plugin interface id such as
+  //! "de.openIndy.plugin.sensor.laserTracker.v1"; returns an invalid type
+  //! for the bare sensor interface or anything unparseable
+  static SensorType fromInterfaceId(const QString& interfaceId);
 
-    SensorType() = default;
-    SensorType(const QString &id, const QString &displayName, const QString &iconKey = QString());
+  const QString& id() const;
+  const QString& displayName() const;
+  const QString& iconKey() const;
 
-    //! derives a type from a plugin interface id such as
-    //! "de.openIndy.plugin.sensor.laserTracker.v1"; returns an invalid type
-    //! for the bare sensor interface or anything unparseable
-    static SensorType fromInterfaceId(const QString &interfaceId);
+  bool isValid() const;
 
-    const QString &id() const;
-    const QString &displayName() const;
-    const QString &iconKey() const;
+  bool operator==(const SensorType& other) const;
+  bool operator!=(const SensorType& other) const;
 
-    bool isValid() const;
-
-    bool operator==(const SensorType &other) const;
-    bool operator!=(const SensorType &other) const;
-
-private:
-
-    QString m_id;
-    QString m_displayName;
-    QString m_iconKey;
-
+ private:
+  QString m_id;
+  QString m_displayName;
+  QString m_iconKey;
 };
 
 /*!
@@ -66,25 +61,20 @@ private:
  * their display names and icons are right; a plugin introducing a new type is
  * resolved by derivation even when it never registers.
  */
-class OI_CORE_EXPORT SensorTypeRegistry
-{
+class OI_CORE_EXPORT SensorTypeRegistry {
+ public:
+  static void registerType(const SensorType& type);
 
-public:
+  static std::optional<SensorType> byId(const QString& id);
 
-    static void registerType(const SensorType &type);
+  static QList<SensorType> all();
 
-    static std::optional<SensorType> byId(const QString &id);
-
-    static QList<SensorType> all();
-
-private:
-
-    static void ensureSeeded();
-
+ private:
+  static void ensureSeeded();
 };
 
-}
+}  // namespace oi
 
-Q_DECLARE_METATYPE( oi::SensorType )
+Q_DECLARE_METATYPE(oi::SensorType)
 
-#endif // SENSORTYPE_H
+#endif  // SENSORTYPE_H

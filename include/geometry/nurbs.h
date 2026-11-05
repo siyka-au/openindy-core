@@ -6,55 +6,53 @@
 
 #include "geometry.h"
 
-namespace oi{
+namespace oi {
 
 /*!
  * \brief The Nurbs class
  */
-class OI_CORE_EXPORT Nurbs : public Geometry
-{
-    Q_OBJECT
+class OI_CORE_EXPORT Nurbs : public Geometry {
+  Q_OBJECT
 
-public:
-    Nurbs(QObject *parent = 0);
+ public:
+  Nurbs(QObject* parent = 0);
 
-    Nurbs(const Nurbs &copy, QObject *parent = 0);
+  Nurbs(const Nurbs& copy, QObject* parent = 0);
 
-    Nurbs &operator=(const Nurbs &copy);
+  Nurbs& operator=(const Nurbs& copy);
 
-    ~Nurbs();
+  ~Nurbs();
 
-    //########################################
-    //order of unknown parameters (Qxx-matrix)
-    //########################################
+  // ########################################
+  // order of unknown parameters (Qxx-matrix)
+  // ########################################
 
-    enum NurbsUnknowns{
+  enum NurbsUnknowns {
 
-    };
+  };
 
-    //###################################################################
-    //check wether this geometry has a direction, a position and a radius
-    //###################################################################
+  // ###################################################################
+  // check wether this geometry has a direction, a position and a radius
+  // ###################################################################
 
-    //###########################
-    //get or set nurbs parameters
-    //###########################
+  // ###########################
+  // get or set nurbs parameters
+  // ###########################
 
-    //###########################
-    //reexecute the function list
-    //###########################
+  // ###########################
+  // reexecute the function list
+  // ###########################
 
-    void recalc();
+  void recalc();
 
-    //#################
-    //save and load XML
-    //#################
+  // #################
+  // save and load XML
+  // #################
 
-    QDomElement toOpenIndyXML(QDomDocument &xmlDoc) const;
-    bool fromOpenIndyXML(QDomElement &xmlElem);
-
+  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const;
+  bool fromOpenIndyXML(QDomElement& xmlElem);
 };
 
-}
+}  // namespace oi
 
-#endif // NURBS_H
+#endif  // NURBS_H

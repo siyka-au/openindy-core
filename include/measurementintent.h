@@ -1,10 +1,10 @@
 #ifndef MEASUREMENTINTENT_H
 #define MEASUREMENTINTENT_H
 
-#include <QString>
 #include <QMetaType>
+#include <QString>
 
-namespace oi{
+namespace oi {
 
 /*!
  * \brief The MeasurementIntent class
@@ -27,21 +27,23 @@ namespace oi{
  * a stored membership list - re-measuring re-evaluates it, which is what
  * removes manual backfilling.
  */
-class MeasurementIntent{
-public:
-    MeasurementIntent() : featureId(-1) {}
-    MeasurementIntent(int featureId, const QString &roleName) : featureId(featureId), roleName(roleName) {}
+class MeasurementIntent {
+ public:
+  MeasurementIntent() : featureId(-1) {}
+  MeasurementIntent(int featureId, const QString& roleName)
+      : featureId(featureId), roleName(roleName) {}
 
-    bool operator==(const MeasurementIntent &other) const {
-        return this->featureId == other.featureId && this->roleName == other.roleName;
-    }
+  bool operator==(const MeasurementIntent& other) const {
+    return this->featureId == other.featureId &&
+           this->roleName == other.roleName;
+  }
 
-    int featureId;
-    QString roleName;
+  int featureId;
+  QString roleName;
 };
 
-}
+}  // namespace oi
 
-Q_DECLARE_METATYPE( oi::MeasurementIntent )
+Q_DECLARE_METATYPE(oi::MeasurementIntent)
 
-#endif // MEASUREMENTINTENT_H
+#endif  // MEASUREMENTINTENT_H

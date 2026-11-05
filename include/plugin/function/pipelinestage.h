@@ -2,13 +2,13 @@
 #define PIPELINESTAGE_H
 
 #include <QList>
+#include <QMetaType>
 #include <QString>
 #include <QtXml>
-#include <QMetaType>
 
 #include "types.h"
 
-namespace oi{
+namespace oi {
 
 /*!
  * \brief The PipelineStageType enum
@@ -24,10 +24,12 @@ namespace oi{
  * deterministic stages that make hand-picking and auto-tagging one
  * mechanism instead of two.
  */
-enum PipelineStageType{
-    eExplicitListStage = 0,             //only these element ids survive
-    eExcludeStage = 1,                  //these element ids are dropped, each carrying a reason (D16)
-    eResidualOutlierRejectionStage = 2  //drop candidates whose fit residual exceeds sigmaMultiplier * stdev
+enum PipelineStageType {
+  eExplicitListStage = 0,  // only these element ids survive
+  eExcludeStage =
+      1,  // these element ids are dropped, each carrying a reason (D16)
+  eResidualOutlierRejectionStage =
+      2  // drop candidates whose fit residual exceeds sigmaMultiplier * stdev
 };
 
 /*!
@@ -41,17 +43,18 @@ enum PipelineStageType{
  * traceability requirement: a silently dropped point is not acceptable
  * in an inspection context.
  */
-class OI_CORE_EXPORT PipelineExclusion{
-public:
-    PipelineExclusion() : elementId(-1){}
-    PipelineExclusion(int elementId, const QString &reason) : elementId(elementId), reason(reason){}
+class OI_CORE_EXPORT PipelineExclusion {
+ public:
+  PipelineExclusion() : elementId(-1) {}
+  PipelineExclusion(int elementId, const QString& reason)
+      : elementId(elementId), reason(reason) {}
 
-    bool operator==(const PipelineExclusion &other) const {
-        return this->elementId == other.elementId;
-    }
+  bool operator==(const PipelineExclusion& other) const {
+    return this->elementId == other.elementId;
+  }
 
-    int elementId;
-    QString reason;
+  int elementId;
+  QString reason;
 };
 
 /*!
@@ -79,29 +82,33 @@ public:
  * this predates it; follow the existing convention, do not scope-creep
  * into building Stage 10 early.
  */
-class OI_CORE_EXPORT PipelineStage{
-public:
-    PipelineStage() : type(eExcludeStage), sigmaMultiplier(3.0){}
-    explicit PipelineStage(PipelineStageType type) : type(type), sigmaMultiplier(3.0){}
+class OI_CORE_EXPORT PipelineStage {
+ public:
+  PipelineStage() : type(eExcludeStage), sigmaMultiplier(3.0) {}
+  explicit PipelineStage(PipelineStageType type)
+      : type(type), sigmaMultiplier(3.0) {}
 
-    static PipelineStage explicitList(const QList<int> &ids);
-    static PipelineStage exclude(int elementId, const QString &reason);
-    static PipelineStage exclude(const QList<PipelineExclusion> &exclusions);
-    static PipelineStage residualOutlierRejection(double sigmaMultiplier = 3.0);
+  static PipelineStage explicitList(const QList<int>& ids);
+  static PipelineStage exclude(int elementId, const QString& reason);
+  static PipelineStage exclude(const QList<PipelineExclusion>& exclusions);
+  static PipelineStage residualOutlierRejection(double sigmaMultiplier = 3.0);
 
-    PipelineStageType type;
+  PipelineStageType type;
 
-    QList<int> explicitIds;                        //eExplicitListStage: only these ids survive
-    QList<PipelineExclusion> explicitExclusions;    //eExcludeStage: these ids are dropped, each with its own reason
-    double sigmaMultiplier;                         //eResidualOutlierRejectionStage: reject beyond this many sigma
+  QList<int> explicitIds;  // eExplicitListStage: only these ids survive
+  QList<PipelineExclusion>
+      explicitExclusions;  // eExcludeStage: these ids are dropped, each with
+                           // its own reason
+  double sigmaMultiplier;  // eResidualOutlierRejectionStage: reject beyond this
+                           // many sigma
 
-    QDomElement toOpenIndyXML(QDomDocument &xmlDoc) const;
-    bool fromOpenIndyXML(const QDomElement &xmlElem);
+  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const;
+  bool fromOpenIndyXML(const QDomElement& xmlElem);
 };
 
-}
+}  // namespace oi
 
-Q_DECLARE_METATYPE( oi::PipelineStage )
-Q_DECLARE_METATYPE( oi::PipelineExclusion )
+Q_DECLARE_METATYPE(oi::PipelineStage)
+Q_DECLARE_METATYPE(oi::PipelineExclusion)
 
-#endif // PIPELINESTAGE_H
+#endif  // PIPELINESTAGE_H

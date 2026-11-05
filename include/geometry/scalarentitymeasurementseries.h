@@ -6,78 +6,78 @@
 
 #include "geometry.h"
 
-namespace oi{
+namespace oi {
 
 /*!
  * \brief The ScalarEntityMeasurementSeries class
  */
-class OI_CORE_EXPORT ScalarEntityMeasurementSeries : public Geometry
-{
-    Q_OBJECT
+class OI_CORE_EXPORT ScalarEntityMeasurementSeries : public Geometry {
+  Q_OBJECT
 
-public:
-    ScalarEntityMeasurementSeries(QObject *parent = 0);
-    ScalarEntityMeasurementSeries(const double &seriesValue, QObject *parent = 0);
+ public:
+  ScalarEntityMeasurementSeries(QObject* parent = 0);
+  ScalarEntityMeasurementSeries(const double& seriesValue, QObject* parent = 0);
 
-    ScalarEntityMeasurementSeries(const ScalarEntityMeasurementSeries &copy, QObject *parent = 0);
+  ScalarEntityMeasurementSeries(const ScalarEntityMeasurementSeries& copy,
+                                QObject* parent = 0);
 
-    ScalarEntityMeasurementSeries &operator=(const ScalarEntityMeasurementSeries &copy);
+  ScalarEntityMeasurementSeries& operator=(
+      const ScalarEntityMeasurementSeries& copy);
 
-    ~ScalarEntityMeasurementSeries();
+  ~ScalarEntityMeasurementSeries();
 
-    //########################################
-    //order of unknown parameters (Qxx-matrix)
-    //########################################
+  // ########################################
+  // order of unknown parameters (Qxx-matrix)
+  // ########################################
 
-    enum MeasurementSeriesUnknowns{
-        unknownMeasurementSeries = 0
-    };
+  enum MeasurementSeriesUnknowns { unknownMeasurementSeries = 0 };
 
-    //########################################
-    //get or set measurement series parameters
-    //########################################
+  // ########################################
+  // get or set measurement series parameters
+  // ########################################
 
-    const double &getSeriesValue() const;
+  const double& getSeriesValue() const;
 
-    void setSeriesValue(const double &seriesValue);
+  void setSeriesValue(const double& seriesValue);
 
-    //#############################
-    //get or set unknown parameters
-    //#############################
+  // #############################
+  // get or set unknown parameters
+  // #############################
 
-    virtual QMap<GeometryParameters, QString> getUnknownParameters(const QMap<DimensionType, UnitType> &displayUnits,
-                                                          const QMap<DimensionType, int> &displayDigits) const;
-    virtual void applyUnknownParameters(const QMap<GeometryParameters, double> &parameters);
+  virtual QMap<GeometryParameters, QString> getUnknownParameters(
+      const QMap<DimensionType, UnitType>& displayUnits,
+      const QMap<DimensionType, int>& displayDigits) const;
+  virtual void applyUnknownParameters(
+      const QMap<GeometryParameters, double>& parameters);
 
-    //###########################
-    //reexecute the function list
-    //###########################
+  // ###########################
+  // reexecute the function list
+  // ###########################
 
-    void recalc();
+  void recalc();
 
-    //#################
-    //save and load XML
-    //#################
+  // #################
+  // save and load XML
+  // #################
 
-    QDomElement toOpenIndyXML(QDomDocument &xmlDoc) const;
-    bool fromOpenIndyXML(QDomElement &xmlElem);
+  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const;
+  bool fromOpenIndyXML(QDomElement& xmlElem);
 
-    //###############
-    //display methods
-    //###############
+  // ###############
+  // display methods
+  // ###############
 
-    QString getDisplayMeasurementSeries(const UnitType &type, const int &digits, const bool &showDiff = false) const;
+  QString getDisplayMeasurementSeries(const UnitType& type, const int& digits,
+                                      const bool& showDiff = false) const;
 
-private:
+ private:
+  // #############################
+  // measurement series attributes
+  // #############################
 
-    //#############################
-    //measurement series attributes
-    //#############################
-
-    double seriesValue;
-
+  double seriesValue;
 };
 
-}
+}  // namespace oi
 
-#endif // SCALARENTITYMEASUREMENTSERIES_H
+#endif  // SCALARENTITYMEASUREMENTSERIES_H
