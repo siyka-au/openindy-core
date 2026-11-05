@@ -27,7 +27,7 @@ namespace {
 class FakeAverageFit : public FitFunction, public Producer<Point> {
   Q_OBJECT
  public:
-  FakeAverageFit(QObject* parent = nullptr) : FitFunction(parent) {
+  explicit FakeAverageFit(QObject* parent = nullptr) : FitFunction(parent) {
     this->metaData.name = "FakeAverageFit";
     this->neededElements.clear();
     NeededElement param;

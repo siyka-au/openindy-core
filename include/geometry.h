@@ -227,7 +227,7 @@ class OI_CORE_EXPORT Geometry : public Feature {
   // ###################
 
   // common
-  bool isCommon;
+  bool isCommon{false};
 
   // D17: which nominal this geometry realises, if any. Only ever set on
   // an actual (an actual's fit set it when it was told which nominal it

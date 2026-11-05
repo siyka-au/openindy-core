@@ -19,7 +19,7 @@ class OI_CORE_EXPORT Cylinder : public Geometry {
   Q_OBJECT
 
  public:
-  Cylinder(QObject* parent = nullptr);
+  explicit Cylinder(QObject* parent = nullptr);
   Cylinder(const Position& axisPoint, const Direction& axis,
            const Radius& radius, QObject* parent = nullptr);
 

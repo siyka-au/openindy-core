@@ -97,9 +97,7 @@ bool implementsTransform(oi::Function* function) {
  * \brief Function::Function
  * \param parent
  */
-Function::Function(QObject* parent) : QObject(parent) {
-  this->supportsWeights = false;
-}
+Function::Function(QObject *parent) : QObject(parent), supportsWeights(false) {}
 
 /*!
  * \brief Function::~Function
@@ -722,7 +720,7 @@ void Function::replaceInputElement(const InputElement& element,
  */
 bool Function::getIsUsed(const int& position, const int& id) {
   if (this->inputElements.contains(position)) {
-    int index = this->inputElements[position].indexOf(id);
+    int index = this->inputElements[position].indexOf(InputElement(id));
     if (index > -1) {
       return this->inputElements[position][index].isUsed;
     }
@@ -739,7 +737,7 @@ bool Function::getIsUsed(const int& position, const int& id) {
  */
 bool Function::getShouldBeUsed(const int& position, const int& id) {
   if (this->inputElements.contains(position)) {
-    int index = this->inputElements[position].indexOf(id);
+    int index = this->inputElements[position].indexOf(InputElement(id));
     if (index > -1) {
       return this->inputElements[position][index].shouldBeUsed;
     }
@@ -758,7 +756,7 @@ void Function::setShouldBeUsed(const int& position, const int& id,
                                const bool& state) {
   // get the element at position with id and set shouldBeUsed to state
   if (this->inputElements.contains(position)) {
-    int index = this->inputElements[position].indexOf(id);
+    int index = this->inputElements[position].indexOf(InputElement(id));
     if (index > -1) {
       this->inputElements[position][index].shouldBeUsed = state;
       emit this->inputElementsChanged();
@@ -1289,7 +1287,7 @@ void Function::setIsUsed(const int& position, const int& id,
                          const bool& state) {
   // get the element at position with id and set isUsed to state
   if (this->inputElements.contains(position)) {
-    int index = this->inputElements[position].indexOf(id);
+    int index = this->inputElements[position].indexOf(InputElement(id));
     if (index > -1) {
       this->inputElements[position][index].isUsed = state;
     }

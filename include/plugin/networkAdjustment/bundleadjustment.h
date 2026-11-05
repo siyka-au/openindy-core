@@ -16,7 +16,7 @@ namespace oi {
 
 class BundleException : public std::exception {
  public:
-  BundleException(const char* const& message, int featureId = -1)
+  explicit BundleException(const char* const& message, int featureId = -1)
       : message(message), featureId(featureId) {}
 
   int getFeatureId() { return featureId; }
@@ -34,7 +34,7 @@ class BundleException : public std::exception {
  */
 class BundleTransformation {
  public:
-  BundleTransformation() : id(-1) {}
+  BundleTransformation() {}
 
   bool operator==(const BundleTransformation& other) const {
     if (this->id == other.id) {
@@ -44,7 +44,7 @@ class BundleTransformation {
   }
 
   // station feature id
-  int id;
+  int id{-1};
 
   // transformation parameters
   QMap<TrafoParamParameters, double> parameters;
@@ -56,7 +56,7 @@ class BundleTransformation {
  */
 class BundleGeometry {
  public:
-  BundleGeometry() : id(-1) {}
+  BundleGeometry() {}
 
   bool operator==(const BundleGeometry& other) const {
     if (this->id == other.id) {
@@ -66,7 +66,7 @@ class BundleGeometry {
   }
 
   // geometry feature id
-  int id;
+  int id{-1};
 
   // geometry parameters
   QMap<GeometryParameters, double> parameters;
@@ -79,14 +79,8 @@ class BundleGeometry {
 class BundleStation {
  public:
   BundleStation()
-      : id(-1),
-        tx(true),
-        ty(true),
-        tz(true),
-        rx(true),
-        ry(true),
-        rz(true),
-        m(true) {}
+
+  {}
 
   bool operator==(const BundleStation& other) const {
     if (this->id == other.id) {
@@ -96,12 +90,12 @@ class BundleStation {
   }
 
   // station feature id
-  int id;
+  int id{-1};
 
   // defines which parameters to calculate
-  bool tx, ty, tz;
-  bool rx, ry, rz;
-  bool m;
+  bool tx{true}, ty{true}, tz{true};
+  bool rx{true}, ry{true}, rz{true};
+  bool m{true};
 
   // geometries solved in station system
   QList<BundleGeometry> geometries;
@@ -115,7 +109,7 @@ class OI_CORE_EXPORT BundleAdjustment : public QObject {
   Q_OBJECT
 
  public:
-  BundleAdjustment(QObject* parent = nullptr);
+  explicit BundleAdjustment(QObject* parent = nullptr);
   ~BundleAdjustment() override;
 
   // ############################

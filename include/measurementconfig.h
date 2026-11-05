@@ -41,11 +41,10 @@ class OI_CORE_EXPORT MeasurementConfigKey {
   MeasurementConfigKey(QString name, ConfigTypes configType,
                        SensorType sensorType = SensorType())
       : name(name), configType(configType), sensorType(sensorType) {}
-  MeasurementConfigKey(const MeasurementConfigKey& copy) {
-    this->name = copy.name;
-    this->configType = copy.configType;
-    this->sensorType = copy.sensorType;
-  }
+  MeasurementConfigKey(const MeasurementConfigKey& copy)
+      : name(copy.name),
+        configType(copy.configType),
+        sensorType(copy.sensorType) {}
   MeasurementConfigKey& operator=(const MeasurementConfigKey& copy) {
     this->name = copy.name;
     this->configType = copy.configType;
@@ -196,7 +195,7 @@ class OI_CORE_EXPORT MeasurementConfig {
   // measurement config attributes
   // #############################
   QString name;
-  ConfigTypes configType;
+  ConfigTypes configType{eUndefinded};
 
   bool measureTwoSides;  // true if the sensor shall measure in both faces
                          // (false if not)
@@ -212,7 +211,7 @@ class OI_CORE_EXPORT MeasurementConfig {
 
   SensorType sensorType;
 
-  bool editable;
+  bool editable{true};
 };
 
 }  // namespace oi

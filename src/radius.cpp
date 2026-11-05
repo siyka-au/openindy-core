@@ -6,25 +6,22 @@ using namespace oi;
  * \brief Radius::Radius
  * \param parent
  */
-Radius::Radius(QObject* parent) : Element(parent) { this->radius = 0.0; }
+Radius::Radius(QObject* parent) : Element(parent), radius(0.0) {}
 
 /*!
  * \brief Radius::Radius
  * \param r
  * \param parent
  */
-Radius::Radius(const double& r, QObject* parent) : Element(parent) {
-  this->radius = r;
-}
+Radius::Radius(const double& r, QObject* parent) : Element(parent), radius(r) {}
 
 /*!
  * \brief Radius::Radius
  * \param copy
  * \param parent
  */
-Radius::Radius(const Radius& copy, QObject* parent) : Element(copy, parent) {
-  this->radius = copy.radius;
-}
+Radius::Radius(const Radius& copy, QObject* parent)
+    : Element(copy, parent), radius(copy.radius) {}
 
 /*!
  * \brief Radius::operator =

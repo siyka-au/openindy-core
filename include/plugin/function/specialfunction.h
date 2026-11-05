@@ -13,7 +13,7 @@ class OI_CORE_EXPORT SpecialFunction : public Function {
   Q_OBJECT
 
  public:
-  SpecialFunction(QObject* parent = nullptr) : Function(parent) {}
+  explicit SpecialFunction(QObject* parent = nullptr) : Function(parent) {}
 
   ~SpecialFunction() override {}
 };

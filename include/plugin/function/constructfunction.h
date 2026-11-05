@@ -13,7 +13,7 @@ class OI_CORE_EXPORT ConstructFunction : public Function {
   Q_OBJECT
 
  public:
-  ConstructFunction(QObject* parent = nullptr) : Function(parent) {}
+  explicit ConstructFunction(QObject* parent = nullptr) : Function(parent) {}
 
   ~ConstructFunction() override {}
 };

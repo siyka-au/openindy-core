@@ -67,10 +67,7 @@ Position::Position(const double& x, const double& y, const double& z,
  * \param parent
  */
 Position::Position(const Position& copy, QObject* parent)
-    : Element(copy, parent) {
-  this->xyz = copy.xyz;
-  this->xyzH = copy.xyzH;
-}
+    : Element(copy, parent), xyz(copy.xyz), xyzH(copy.xyzH) {}
 
 /*!
  * \brief Position::operator =

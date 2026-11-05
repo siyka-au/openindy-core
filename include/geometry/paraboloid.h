@@ -19,7 +19,7 @@ class OI_CORE_EXPORT Paraboloid : public Geometry {
   Q_OBJECT
 
  public:
-  Paraboloid(QObject* parent = nullptr);
+  explicit Paraboloid(QObject* parent = nullptr);
   Paraboloid(const Position& apex, const Direction& axis, const double& a,
              QObject* parent = nullptr);
 

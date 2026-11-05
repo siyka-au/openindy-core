@@ -20,7 +20,7 @@ class OI_CORE_EXPORT SlottedHole : public Geometry {
   Q_OBJECT
 
  public:
-  SlottedHole(QObject* parent = nullptr);
+  explicit SlottedHole(QObject* parent = nullptr);
   SlottedHole(const Position& center, const Direction& normal,
               const Radius& radius, const double& length,
               const Direction& holeAxis, QObject* parent = nullptr);

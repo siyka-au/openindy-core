@@ -26,7 +26,7 @@ class OI_CORE_EXPORT SensorControl : public QObject {
   Q_OBJECT
 
  public:
-  SensorControl(QPointer<Station>& station, QObject* parent = nullptr);
+  explicit SensorControl(QPointer<Station>& station, QObject* parent = nullptr);
 
   ~SensorControl() override;
 
@@ -175,7 +175,7 @@ class OI_CORE_EXPORT SensorControl : public QObject {
   QList<Sensor> usedSensors;
 
   // current sensor state
-  bool sensorValid;
+  bool sensorValid{false};
 
   // sensor worker
   QPointer<SensorWorker> worker;

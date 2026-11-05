@@ -13,7 +13,8 @@ class OI_CORE_EXPORT GenerateFeatureFunction : public Function {
   Q_OBJECT
 
  public:
-  GenerateFeatureFunction(QObject* parent = nullptr) : Function(parent) {}
+  explicit GenerateFeatureFunction(QObject* parent = nullptr)
+      : Function(parent) {}
 
   ~GenerateFeatureFunction() override {}
 

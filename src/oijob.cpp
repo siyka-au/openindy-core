@@ -7,8 +7,7 @@ using namespace oi;
  * \brief OiJob::OiJob
  * \param parent
  */
-OiJob::OiJob(QObject* parent)
-    : QObject(parent), activeGroup("All Groups"), nextId(1) {}
+OiJob::OiJob(QObject* parent) : QObject(parent), activeGroup("All Groups") {}
 
 /*!
  * \brief OiJob::~OiJob

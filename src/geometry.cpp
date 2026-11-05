@@ -14,7 +14,7 @@ using namespace oi::math;
  * \brief Geometry::Geometry
  * \param parent
  */
-Geometry::Geometry(QObject* parent) : Feature(parent), isCommon(false) {}
+Geometry::Geometry(QObject* parent) : Feature(parent) {}
 
 /*!
  * \brief Geometry::Geometry
@@ -22,16 +22,15 @@ Geometry::Geometry(QObject* parent) : Feature(parent), isCommon(false) {}
  * \param parent
  */
 Geometry::Geometry(const Geometry& copy, QObject* parent)
-    : Feature(copy, parent) {
+    : Feature(copy, parent),
+      activeMeasurementConfig(copy.activeMeasurementConfig),
+      ijk(copy.ijk),
+      isCommon(copy.isCommon),
+      radius(copy.radius),
+      simulationData(copy.simulationData),
+      statistic(copy.statistic),
+      xyz(copy.xyz) {
   // copy attributes
-  this->isCommon = copy.isCommon;
-  this->statistic = copy.statistic;
-  this->simulationData = copy.simulationData;
-  this->activeMeasurementConfig = copy.activeMeasurementConfig;
-
-  this->xyz = copy.xyz;
-  this->ijk = copy.ijk;
-  this->radius = copy.radius;
 
   // deliberately not copied: realises, observations, nominalSystem -
   // duplicating a feature must not duplicate what it realises, what

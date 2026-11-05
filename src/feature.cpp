@@ -13,11 +13,7 @@ using namespace oi;
  * \brief Feature::Feature
  * \param parent
  */
-Feature::Feature(QObject* parent)
-    : Element(parent),
-      isSolved(false),
-      isUpdated(false),
-      isActiveFeature(false) {
+Feature::Feature(QObject* parent) : Element(parent) {
   this->selfFeature = new FeatureWrapper();
 }
 
@@ -26,20 +22,20 @@ Feature::Feature(QObject* parent)
  * \param copy
  * \param parent
  */
-Feature::Feature(const Feature& copy, QObject* parent) : Element(copy, parent) {
+Feature::Feature(const Feature& copy, QObject* parent)
+    : Element(copy, parent),
+      comment(copy.comment),
+      group(copy.group),
+      isActiveFeature(copy.isActiveFeature),
+      isSolved(copy.isSolved),
+      isUpdated(copy.isUpdated),
+      name(copy.name),
+      selfFeature(new FeatureWrapper()) {
   // copy attributes
-  this->name = copy.name;
-  this->comment = copy.comment;
-  this->group = copy.group;
-  this->isSolved = copy.isSolved;
-  this->isActiveFeature = copy.isActiveFeature;
-  this->isUpdated = copy.isUpdated;
 
   // copy functions (usedFor is not copied)
   // this->functionList = copy.functionList;
   // this->previouslyNeeded = copy.previouslyNeeded;
-
-  this->selfFeature = new FeatureWrapper();
 }
 
 /*!

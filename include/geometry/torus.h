@@ -19,7 +19,7 @@ class OI_CORE_EXPORT Torus : public Geometry {
   Q_OBJECT
 
  public:
-  Torus(QObject* parent = nullptr);
+  explicit Torus(QObject* parent = nullptr);
   Torus(const Position& center, const Direction& normal, const Radius& radiusA,
         const Radius& radiusB, QObject* parent = nullptr);
 

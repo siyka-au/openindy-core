@@ -17,11 +17,11 @@ Group::Group(const QString& name, const FeatureTypes& constraint,
   this->constraint = constraint;
 }
 
-Group::Group(const Group& copy, QObject* parent) : Feature(copy, parent) {
+Group::Group(const Group &copy, QObject *parent)
+    : Feature(copy, parent), constraint(copy.constraint),
+      members(copy.members) {
   // members are references, so a copied group references the same
   // features - it does not clone them. That is the whole contract.
-  this->members = copy.members;
-  this->constraint = copy.constraint;
 }
 
 Group& Group::operator=(const Group& copy) {

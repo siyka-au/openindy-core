@@ -7,13 +7,7 @@ using namespace oi;
  * \param locker
  * \param parent
  */
-SensorWorker::SensorWorker(QObject* parent)
-    : QObject(parent),
-      streamFormat(eUndefinedReading),
-      isReadingStreamStarted(false),
-      isConnectionStreamStarted(false),
-      isStatusStreamStarted(false),
-      isSensorConnected(false) {}
+SensorWorker::SensorWorker(QObject* parent) : QObject(parent) {}
 
 /*!
  * \brief SensorWorker::~SensorWorker

@@ -15,9 +15,9 @@ class OI_CORE_EXPORT ScalarEntityMeasurementSeries : public Geometry {
   Q_OBJECT
 
  public:
-  ScalarEntityMeasurementSeries(QObject* parent = nullptr);
-  ScalarEntityMeasurementSeries(const double& seriesValue,
-                                QObject* parent = nullptr);
+  explicit ScalarEntityMeasurementSeries(QObject* parent = nullptr);
+  explicit ScalarEntityMeasurementSeries(const double& seriesValue,
+                                         QObject* parent = nullptr);
 
   ScalarEntityMeasurementSeries(const ScalarEntityMeasurementSeries& copy,
                                 QObject* parent = nullptr);

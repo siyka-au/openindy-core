@@ -18,7 +18,7 @@ class OI_CORE_EXPORT Ellipse : public Geometry {
   Q_OBJECT
 
  public:
-  Ellipse(QObject* parent = nullptr);
+  explicit Ellipse(QObject* parent = nullptr);
   Ellipse(const Position& center, const Direction& normal, const double& a,
           const double& b, const Direction& semiMajorAxis,
           QObject* parent = nullptr);

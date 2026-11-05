@@ -680,8 +680,8 @@ QDomElement CoordinateSystem::toOpenIndyXML(QDomDocument& xmlDoc) const {
 
   QDomElement parametersTmp = xmlDoc.createElement("parameters");
   QJsonArray tmpArray = this->bundleTemplate["parameters"].toArray();
-  for (int i = 0; i < tmpArray.size(); i++) {
-    parametersTmp.setAttribute(tmpArray.at(i).toString(), "");
+  for (auto&& i : tmpArray) {
+    parametersTmp.setAttribute(i.toString(), "");
   }
   bundleTmp.appendChild(parametersTmp);
 

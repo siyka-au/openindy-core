@@ -53,31 +53,23 @@ class OI_CORE_EXPORT ConnectionConfig {
  */
 class OI_CORE_EXPORT Accuracy {
  public:
-  Accuracy()
-      : sigmaAzimuth(0.0),
-        sigmaZenith(0.0),
-        sigmaDistance(0.0),
-        sigmaXyz(OiVec(3)),
-        sigmaTemp(0.0),
-        sigmaI(0.0),
-        sigmaJ(0.0),
-        sigmaK(0.0) {}
+  Accuracy() : sigmaXyz(OiVec(3)) {}
 
   // polar
-  double sigmaAzimuth;
-  double sigmaZenith;
-  double sigmaDistance;
+  double sigmaAzimuth{0.0};
+  double sigmaZenith{0.0};
+  double sigmaDistance{0.0};
 
   // cartesian
   OiVec sigmaXyz;
 
   // temperature
-  double sigmaTemp;
+  double sigmaTemp{0.0};
 
   // level
-  double sigmaI;
-  double sigmaJ;
-  double sigmaK;
+  double sigmaI{0.0};
+  double sigmaJ{0.0};
+  double sigmaK{0.0};
 
   // undefined
   QMap<QString, double> sigmaUndefined;
@@ -159,7 +151,7 @@ class OI_CORE_EXPORT SensorConfiguration {
   // ###############################
 
   QString name;
-  bool isSaved;
+  bool isSaved{false};
 
   QString pluginName;
   QString sensorName;

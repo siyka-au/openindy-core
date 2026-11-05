@@ -18,8 +18,8 @@ class OI_CORE_EXPORT Point : public Geometry {
   Q_OBJECT
 
  public:
-  Point(QObject* parent = nullptr);
-  Point(const Position& xyz, QObject* parent = nullptr);
+  explicit Point(QObject* parent = nullptr);
+  explicit Point(const Position& xyz, QObject* parent = nullptr);
   Point(int id, const Position& xyz, QObject* parent = nullptr);
 
   Point(const Point& copy, QObject* parent = nullptr);

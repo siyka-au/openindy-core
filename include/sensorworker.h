@@ -21,7 +21,7 @@ class OI_CORE_EXPORT SensorWorker : public QObject {
   Q_OBJECT
 
  public:
-  SensorWorker(QObject* parent = nullptr);
+  explicit SensorWorker(QObject* parent = nullptr);
 
   ~SensorWorker() override;
 
@@ -170,15 +170,15 @@ class OI_CORE_EXPORT SensorWorker : public QObject {
   QPointer<Sensor> sensor;
 
   // reading stream format
-  ReadingTypes streamFormat;
+  ReadingTypes streamFormat{eUndefinedReading};
 
   // stream states
-  bool isReadingStreamStarted;
-  bool isConnectionStreamStarted;
-  bool isStatusStreamStarted;
+  bool isReadingStreamStarted{false};
+  bool isConnectionStreamStarted{false};
+  bool isStatusStreamStarted{false};
 
   // connection status
-  bool isSensorConnected;
+  bool isSensorConnected{false};
 };
 
 }  // namespace oi

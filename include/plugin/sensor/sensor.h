@@ -38,7 +38,7 @@ class OI_CORE_EXPORT SensorInterface : public QObject {
   Q_OBJECT
 
  public:
-  SensorInterface(QObject* parent = nullptr);
+  explicit SensorInterface(QObject* parent = nullptr);
   // ############################
   // sensor initialization method
   // ############################

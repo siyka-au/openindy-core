@@ -15,8 +15,8 @@ class OI_CORE_EXPORT ScalarEntityAngle : public Geometry {
   Q_OBJECT
 
  public:
-  ScalarEntityAngle(QObject* parent = nullptr);
-  ScalarEntityAngle(const double& angle, QObject* parent = nullptr);
+  explicit ScalarEntityAngle(QObject* parent = nullptr);
+  explicit ScalarEntityAngle(const double& angle, QObject* parent = nullptr);
 
   ScalarEntityAngle(const ScalarEntityAngle& copy, QObject* parent = nullptr);
 

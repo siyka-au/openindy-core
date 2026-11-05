@@ -18,6 +18,8 @@ Checks: >
   -cppcoreguidelines-macro-usage,
   -cppcoreguidelines-non-private-member-variables-in-classes,
   -cppcoreguidelines-avoid-non-const-global-variables
+# loop-convert: never apply it to QDomNodeList; Qt 6.12 range-for over it hung
+#   ProjectExchanger::loadObservations. Keep index loops (length()/at(i)) there.
 # owning-memory: Qt parent/child ownership makes raw `new QObject(parent)` idiomatic.
 # macro-usage: Q_OBJECT/Q_DECLARE_*/Q_PLUGIN_METADATA are unavoidable.
 # magic-numbers / non-private-members / non-const-globals: too noisy for the

@@ -6,27 +6,24 @@ using namespace oi::math;
 /*!
  * \brief Statistic::Statistic
  */
-Statistic::Statistic() {
-  this->isValid = false;
-
-  this->s0_apriori = 0.0;
-  this->s0_aposteriori = 0.0;
-  this->stdev = 0.0;
-  this->formError = 0.0;
-}
+Statistic::Statistic()
+    : isValid(false),
+      formError(0.0),
+      s0_aposteriori(0.0),
+      s0_apriori(0.0),
+      stdev(0.0) {}
 
 /*!
  * \brief Statistic::Statistic
  * \param copy
  */
-Statistic::Statistic(const Statistic& copy) {
-  this->s0_apriori = copy.s0_apriori;
-  this->s0_aposteriori = copy.s0_aposteriori;
-  this->stdev = copy.stdev;
-  this->formError = copy.formError;
-
+Statistic::Statistic(const Statistic& copy)
+    : s0_apriori(copy.s0_apriori),
+      formError(copy.formError),
+      isValid(copy.isValid),
+      s0_aposteriori(copy.s0_aposteriori),
+      stdev(copy.stdev) {
   // this->displayResiduals = copy.displayResiduals;
-  this->isValid = copy.isValid;
 
   this->p.replace(copy.p);
   this->qxx.replace(copy.qxx);

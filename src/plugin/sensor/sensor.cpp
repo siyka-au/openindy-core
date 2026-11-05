@@ -19,23 +19,24 @@ Sensor::Sensor(QObject* parent) : SensorInterface(parent) {}
  * \param copy
  * \param parent
  */
-Sensor::Sensor(const Sensor& copy, QObject* parent) : SensorInterface(parent) {
+Sensor::Sensor(const Sensor& copy, QObject* parent)
+    : SensorInterface(parent),
+      acquisitionResultShape(copy.getAcquisitionResultShape()),
+      defaultAccuracy(copy.getDefaultAccuracy()),
+      doubleParameters(copy.getDoubleParameter()),
+      integerParameters(copy.getIntegerParameter()),
+      metaData(copy.getMetaData()),
+      selfDefinedActions(copy.getSelfDefinedActions()),
+      sensorConfiguration(copy.getSensorConfiguration()),
+      stringParameters(copy.getStringParameter()),
+      supportedConnectionTypes(copy.getSupportedConnectionTypes()),
+      supportedReadingTypes(copy.getSupportedReadingTypes()),
+      supportedSensorActions(copy.getSupportedSensorActions()) {
   // sensor configuration
-  this->sensorConfiguration = copy.getSensorConfiguration();
 
   // meta information about the sensor
-  this->supportedReadingTypes = copy.getSupportedReadingTypes();
-  this->supportedSensorActions = copy.getSupportedSensorActions();
-  this->supportedConnectionTypes = copy.getSupportedConnectionTypes();
-  this->selfDefinedActions = copy.getSelfDefinedActions();
-  this->defaultAccuracy = copy.getDefaultAccuracy();
-  this->metaData = copy.getMetaData();
-  this->acquisitionResultShape = copy.getAcquisitionResultShape();
 
   // the needed scalar input parameters including default values
-  this->integerParameters = copy.getIntegerParameter();
-  this->doubleParameters = copy.getDoubleParameter();
-  this->stringParameters = copy.getStringParameter();
 }
 
 /*!

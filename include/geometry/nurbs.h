@@ -15,7 +15,7 @@ class OI_CORE_EXPORT Nurbs : public Geometry {
   Q_OBJECT
 
  public:
-  Nurbs(QObject* parent = nullptr);
+  explicit Nurbs(QObject* parent = nullptr);
 
   Nurbs(const Nurbs& copy, QObject* parent = nullptr);
 

@@ -100,8 +100,9 @@ class OI_CORE_EXPORT ExchangeSimpleAscii : public ExchangeInterface {
   QList<ExchangeSimpleAscii::ColumnType>
       userDefinedColumns;  // an ordered list of enum values that specify what
                            // to do with each column
-  GeometryTypes typeOfGeometry;  // specifies which type of geometry shall be
-                                 // im- or exported
+  GeometryTypes typeOfGeometry{
+      eUndefinedGeometry};  // specifies which type of geometry shall be
+                            // im- or exported
   bool skipFirstLine;  // Skip the first line in a file during import / do not
                        // write headers to file during export
   QString

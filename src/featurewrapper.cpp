@@ -6,9 +6,8 @@ using namespace oi;
  * \brief FeatureWrapper::FeatureWrapper
  * \param parent
  */
-FeatureWrapper::FeatureWrapper(QObject* parent) : QObject(parent) {
-  this->typeOfFeature = eUndefinedFeature;
-}
+FeatureWrapper::FeatureWrapper(QObject* parent)
+    : QObject(parent), typeOfFeature(eUndefinedFeature) {}
 
 /*!
  * \brief FeatureWrapper::operator ==

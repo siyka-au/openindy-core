@@ -30,7 +30,7 @@ class CylinderApproximation {
   double stdev;
   QString comment;
 
-  operator QString() const {
+  explicit operator QString() const {
     return QString(
                "comment=%1, stdev=%2, approxXm=%3, approxYm=%4, "
                "approxAlpha=%5, approxBeta=%6, approxRadius=%7")
@@ -62,7 +62,7 @@ class OI_CORE_EXPORT FitFunction : public Function {
   friend class BestFitCylinderUtil;
 
  public:
-  FitFunction(QObject* parent = nullptr) : Function(parent) {
+  explicit FitFunction(QObject* parent = nullptr) : Function(parent) {
     // needed elements are only observations
     NeededElement element;
     element.typeOfElement = eObservationElement;
@@ -517,14 +517,14 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
     CylinderApproximation bestApproximation;
     double bestStdev = numeric_limits<double>::max();
     foreach (const CylinderApproximation& approximation, approximations) {
-      qDebug() << "approximation" << approximation;
+      qDebug() << "approximation" << QString(approximation);
       if (approximation.stdev < bestStdev) {
         bestStdev = approximation.stdev;
         bestApproximation = approximation;
       }
     }
 
-    qDebug() << "bestApproximation" << bestApproximation;
+    qDebug() << "bestApproximation" << QString(bestApproximation);
 
     OiMat Ralpha(4, 4);
     OiMat Rbeta(4, 4);
@@ -544,14 +544,13 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
     Rall = Rbeta * Ralpha;
     Rall.setAt(3, 3, 1.0);
 
-    for (int i = 0; i < reducedInputObservations.size(); i++) {
-      reducedInputObservations[i].xyz = Rall * reducedInputObservations[i].xyz;
-      reducedInputObservations[i].xyz.setAt(3, 1.0);
+    for (auto& reducedInputObservation : reducedInputObservations) {
+      reducedInputObservation.xyz = Rall * reducedInputObservation.xyz;
+      reducedInputObservation.xyz.setAt(3, 1.0);
     }
-    for (int i = 0; i < allReducedInputObservations.size(); i++) {
-      allReducedInputObservations[i].xyz =
-          Rall * allReducedInputObservations[i].xyz;
-      allReducedInputObservations[i].xyz.setAt(3, 1.0);
+    for (auto& allReducedInputObservation : allReducedInputObservations) {
+      allReducedInputObservation.xyz = Rall * allReducedInputObservation.xyz;
+      allReducedInputObservation.xyz.setAt(3, 1.0);
     }
 
     bestApproximation.approxAlpha = 0.0;

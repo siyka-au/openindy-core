@@ -15,8 +15,9 @@ class OI_CORE_EXPORT ScalarEntityTemperature : public Geometry {
   Q_OBJECT
 
  public:
-  ScalarEntityTemperature(QObject* parent = nullptr);
-  ScalarEntityTemperature(const double& temperature, QObject* parent = nullptr);
+  explicit ScalarEntityTemperature(QObject* parent = nullptr);
+  explicit ScalarEntityTemperature(const double& temperature,
+                                   QObject* parent = nullptr);
 
   ScalarEntityTemperature(const ScalarEntityTemperature& copy,
                           QObject* parent = nullptr);

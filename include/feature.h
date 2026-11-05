@@ -258,11 +258,12 @@ class OI_CORE_EXPORT Feature : public Element {
   QString group;
   QString comment;
 
-  bool isSolved;   // true of the feature is solved in the current disply system
-  bool isUpdated;  // helper attribute to indicate if a feature was already
-                   // recalced during recalculation process
+  bool isSolved{
+      false};  // true of the feature is solved in the current disply system
+  bool isUpdated{false};  // helper attribute to indicate if a feature was
+                          // already recalced during recalculation process
 
-  bool isActiveFeature;
+  bool isActiveFeature{false};
 
   // Stage 7d/D21 (domain-model.md S7): at most one producer - the
   // function that defines this feature's value from external inputs (a

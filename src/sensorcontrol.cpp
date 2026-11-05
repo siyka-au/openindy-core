@@ -8,7 +8,7 @@ using namespace oi;
  * \param parent
  */
 SensorControl::SensorControl(QPointer<Station>& station, QObject* parent)
-    : QObject(parent), station(station), sensorValid(false) {
+    : QObject(parent), station(station) {
   this->worker = new SensorWorker();
   this->connectSensorWorker();
 }

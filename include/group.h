@@ -40,7 +40,7 @@ class OI_CORE_EXPORT Group : public Feature {
 
  public:
   explicit Group(QObject* parent = nullptr);
-  Group(const QString& name, QObject* parent = nullptr);
+  explicit Group(const QString& name, QObject* parent = nullptr);
 
   //! a group that will only accept members of one feature type
   Group(const QString& name, const FeatureTypes& constraint,

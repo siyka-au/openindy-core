@@ -552,12 +552,12 @@ enum MaterialsTempComp {
  */
 class ScalarInputParams {
  public:
-  ScalarInputParams() { isValid = false; }
+   ScalarInputParams() {}
 
-  bool isValid;
-  QMap<QString, double> doubleParameter;
-  QMap<QString, int> intParameter;
-  QMap<QString, QString> stringParameter;
+   bool isValid{false};
+   QMap<QString, double> doubleParameter;
+   QMap<QString, int> intParameter;
+   QMap<QString, QString> stringParameter;
 };
 
 enum SensorStatus {

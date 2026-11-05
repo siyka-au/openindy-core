@@ -19,7 +19,7 @@ class OI_CORE_EXPORT Hyperboloid : public Geometry {
   Q_OBJECT
 
  public:
-  Hyperboloid(QObject* parent = nullptr);
+  explicit Hyperboloid(QObject* parent = nullptr);
   Hyperboloid(const Position& center, const Direction& axis, const double& a,
               const double& c, QObject* parent = nullptr);
 

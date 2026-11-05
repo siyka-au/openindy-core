@@ -6,35 +6,33 @@ using namespace oi;
  * \brief MeasurementConfig::MeasurementConfig
  */
 MeasurementConfig::MeasurementConfig()
-    : configType(eUndefinded), editable(true) {
+    : distanceInterval(0.0),
+      maxObservations(500),
+      measureTwoSides(false),
+      measurementMode(eFast_MeasurementMode),
+      measurementType(eSinglePoint_MeasurementType),
+      timeInterval(0.0) {
   // set defaults
-  this->measurementType = eSinglePoint_MeasurementType;
-  this->measurementMode = eFast_MeasurementMode;
-  this->measureTwoSides = false;
-  this->maxObservations = 500;
-  this->timeInterval = 0.0;
-  this->distanceInterval = 0.0;
 }
 
 /*!
  * \brief MeasurementConfig::MeasurementConfig
  * \param copy
  */
-MeasurementConfig::MeasurementConfig(const MeasurementConfig& copy) {
+MeasurementConfig::MeasurementConfig(const MeasurementConfig& copy)
+    : name(copy.name),
+      configType(copy.configType),
+      distanceInterval(copy.distanceInterval),
+      editable(copy.editable),
+      maxObservations(copy.maxObservations),
+      measureTwoSides(copy.measureTwoSides),
+      measurementMode(copy.measurementMode),
+      measurementType(copy.measurementType),
+      sensorType(copy.sensorType),
+      timeInterval(copy.timeInterval),
+      transientData(copy.transientData) {
   // copy measurement config attributes
-  this->name = copy.name;
-  this->measurementType = copy.measurementType;
-  this->measurementMode = copy.measurementMode;
-  this->measureTwoSides = copy.measureTwoSides;
-  this->maxObservations = copy.maxObservations;
-  this->timeInterval = copy.timeInterval;
-  this->distanceInterval = copy.distanceInterval;
 
-  this->configType = copy.configType;
-  this->editable = copy.editable;
-  this->sensorType = copy.sensorType;
-
-  this->transientData = copy.transientData;
   this->transientData.detach();
 }
 

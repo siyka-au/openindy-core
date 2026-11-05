@@ -16,9 +16,9 @@ using namespace math;
  */
 class OI_CORE_EXPORT Residual {
  public:
-  Residual() : elementId(-1) {}
+  Residual() {}
 
-  int elementId;  // id of the element this residual belongs to
+  int elementId{-1};  // id of the element this residual belongs to
   QMap<QString, double> corrections;  // the correction values (key: name)
   DimensionType dimension;            // dimension of the correction values
 };

@@ -60,10 +60,7 @@ Direction::Direction(const double& x, const double& y, const double& z,
  * \param parent
  */
 Direction::Direction(const Direction& copy, QObject* parent)
-    : Element(copy, parent) {
-  this->ijk = copy.ijk;
-  this->ijkH = copy.ijkH;
-}
+    : Element(copy, parent), ijk(copy.ijk), ijkH(copy.ijkH) {}
 
 /*!
  * \brief Direction::operator =

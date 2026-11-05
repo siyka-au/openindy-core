@@ -33,10 +33,10 @@ class OI_CORE_EXPORT Point_PC {
  */
 class OI_CORE_EXPORT BoundingBox_PC {
  public:
-  BoundingBox_PC() : min{0.0f, 0.0f, 0.0f}, max{0.0f, 0.0f, 0.0f} {}
+  BoundingBox_PC() {}
 
-  float min[3];
-  float max[3];
+  float min[3]{0.0f, 0.0f, 0.0f};
+  float max[3]{0.0f, 0.0f, 0.0f};
 };
 
 /*!
@@ -46,7 +46,7 @@ class OI_CORE_EXPORT PointCloud : public Geometry, public PointCollection {
   Q_OBJECT
 
  public:
-  PointCloud(QObject* parent = nullptr);
+  explicit PointCloud(QObject* parent = nullptr);
 
   PointCloud(const PointCloud& copy, QObject* parent = nullptr);
 

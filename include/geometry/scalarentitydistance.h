@@ -15,8 +15,9 @@ class OI_CORE_EXPORT ScalarEntityDistance : public Geometry {
   Q_OBJECT
 
  public:
-  ScalarEntityDistance(QObject* parent = nullptr);
-  ScalarEntityDistance(const double& distance, QObject* parent = nullptr);
+  explicit ScalarEntityDistance(QObject* parent = nullptr);
+  explicit ScalarEntityDistance(const double& distance,
+                                QObject* parent = nullptr);
 
   ScalarEntityDistance(const ScalarEntityDistance& copy,
                        QObject* parent = nullptr);

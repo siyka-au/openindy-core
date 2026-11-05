@@ -18,7 +18,7 @@ class OI_CORE_EXPORT Ellipsoid : public Geometry {
   Q_OBJECT
 
  public:
-  Ellipsoid(QObject* parent = nullptr);
+  explicit Ellipsoid(QObject* parent = nullptr);
   Ellipsoid(const Position& center, const Direction& majorAxis, const double& a,
             const double& b, QObject* parent = nullptr);
 

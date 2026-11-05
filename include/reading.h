@@ -36,21 +36,16 @@ class Station;
 class OI_CORE_EXPORT ReadingPolar {
  public:
   ReadingPolar()
-      : azimuth(0.0),
-        zenith(0.0),
-        distance(0.0),
-        sigmaAzimuth(0.0),
-        sigmaZenith(0.0),
-        sigmaDistance(0.0),
-        isValid(false) {}
 
-  double azimuth;
-  double zenith;
-  double distance;
-  double sigmaAzimuth;
-  double sigmaZenith;
-  double sigmaDistance;
-  bool isValid;
+  {}
+
+  double azimuth{0.0};
+  double zenith{0.0};
+  double distance{0.0};
+  double sigmaAzimuth{0.0};
+  double sigmaZenith{0.0};
+  double sigmaDistance{0.0};
+  bool isValid{false};
 };
 
 /*!
@@ -59,17 +54,14 @@ class OI_CORE_EXPORT ReadingPolar {
 class OI_CORE_EXPORT ReadingDirection {
  public:
   ReadingDirection()
-      : azimuth(0.0),
-        zenith(0.0),
-        sigmaAzimuth(0.0),
-        sigmaZenith(0.0),
-        isValid(false) {}
 
-  double azimuth;
-  double zenith;
-  double sigmaAzimuth;
-  double sigmaZenith;
-  bool isValid;
+  {}
+
+  double azimuth{0.0};
+  double zenith{0.0};
+  double sigmaAzimuth{0.0};
+  double sigmaZenith{0.0};
+  bool isValid{false};
 };
 
 /*!
@@ -77,11 +69,11 @@ class OI_CORE_EXPORT ReadingDirection {
  */
 class OI_CORE_EXPORT ReadingDistance {
  public:
-  ReadingDistance() : distance(0.0), sigmaDistance(0.0), isValid(false) {}
+  ReadingDistance() {}
 
-  double distance;
-  double sigmaDistance;
-  bool isValid;
+  double distance{0.0};
+  double sigmaDistance{0.0};
+  bool isValid{false};
 };
 
 /*!
@@ -89,11 +81,11 @@ class OI_CORE_EXPORT ReadingDistance {
  */
 class OI_CORE_EXPORT ReadingCartesian {
  public:
-  ReadingCartesian() : xyz(3), sigmaXyz(3), isValid(false) {}
+  ReadingCartesian() : xyz(3), sigmaXyz(3) {}
 
   OiVec xyz;
   OiVec sigmaXyz;
-  bool isValid;
+  bool isValid{false};
 };
 
 /*!
@@ -101,12 +93,12 @@ class OI_CORE_EXPORT ReadingCartesian {
  */
 class OI_CORE_EXPORT ReadingCartesian6D {
  public:
-  ReadingCartesian6D() : xyz(3), ijk(3), sigmaXyz(3), isValid(false) {}
+  ReadingCartesian6D() : xyz(3), ijk(3), sigmaXyz(3) {}
 
   OiVec xyz;
   OiVec ijk;
   OiVec sigmaXyz;
-  bool isValid;
+  bool isValid{false};
 };
 
 /*!
@@ -114,12 +106,11 @@ class OI_CORE_EXPORT ReadingCartesian6D {
  */
 class OI_CORE_EXPORT ReadingTemperature {
  public:
-  ReadingTemperature()
-      : temperature(0.0), sigmaTemperature(0.0), isValid(false) {}
+  ReadingTemperature() {}
 
-  double temperature;
-  double sigmaTemperature;
-  bool isValid;
+  double temperature{0.0};
+  double sigmaTemperature{0.0};
+  bool isValid{false};
 };
 
 /*!
@@ -127,11 +118,11 @@ class OI_CORE_EXPORT ReadingTemperature {
  */
 class OI_CORE_EXPORT ReadingUndefined {
  public:
-  ReadingUndefined() : isValid(false) {}
+  ReadingUndefined() {}
 
   QMap<QString, double> values;
   QMap<QString, double> sigmaValues;
-  bool isValid;
+  bool isValid{false};
 };
 
 /*!
@@ -139,14 +130,14 @@ class OI_CORE_EXPORT ReadingUndefined {
  */
 class OI_CORE_EXPORT ReadingLevel {
  public:
-  ReadingLevel() : isValid(false) {}
+  ReadingLevel() {}
   double i;
   double j;
   double k;
   double sigmaI;
   double sigmaJ;
   double sigmaK;
-  bool isValid;
+  bool isValid{false};
 };
 
 // ########################

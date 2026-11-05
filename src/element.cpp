@@ -2,13 +2,10 @@
 
 using namespace oi;
 
-Element::Element(QObject* parent)
-    : QObject(parent), id(-1), isNullObject(false) {}
+Element::Element(QObject* parent) : QObject(parent) {}
 
-Element::Element(const Element& copy, QObject* parent) : QObject(parent) {
-  this->id = copy.id;
-  this->isNullObject = copy.isNullObject;
-}
+Element::Element(const Element& copy, QObject* parent)
+    : QObject(parent), id(copy.id), isNullObject(copy.isNullObject) {}
 
 Element& Element::operator=(const Element& copy) {
   this->id = copy.id;

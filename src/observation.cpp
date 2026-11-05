@@ -39,25 +39,26 @@ Observation::Observation(QObject* parent)
  * \param parent
  */
 Observation::Observation(const Observation& copy, QObject* parent)
-    : Point(copy, parent) {
+    : Point(copy, parent),
+      hasDirection(copy.hasDirection),
+      ijk(copy.ijk),
+      isDummyPoint(copy.isDummyPoint),
+      isSolved(copy.isSolved),
+      isValid(copy.isValid),
+      originalIjk(copy.originalIjk),
+      originalSigmaIjk(copy.originalSigmaIjk),
+      originalSigmaXyz(copy.originalSigmaXyz),
+      originalXyz(copy.originalXyz),
+      reading(copy.reading),
+      sigmaIjk(copy.sigmaIjk),
+      sigmaXyz(copy.sigmaXyz),
+      station(copy.station),
+      xyz(copy.xyz) {
   // copy attributes
-  this->isValid = copy.isValid;
-  this->isSolved = copy.isSolved;
-  this->hasDirection = copy.hasDirection;
+
   // this->isActiveCoordSys = copy.isActiveCoordSys;
-  this->xyz = copy.xyz;
-  this->originalXyz = copy.originalXyz;
-  this->sigmaXyz = copy.sigmaXyz;
-  this->originalSigmaXyz = copy.originalSigmaXyz;
-  this->ijk = copy.ijk;
-  this->originalIjk = copy.originalIjk;
-  this->sigmaIjk = copy.sigmaIjk;
-  this->originalSigmaIjk = copy.originalSigmaIjk;
-  this->isDummyPoint = copy.isDummyPoint;
 
   // copy reading and station
-  this->reading = copy.reading;
-  this->station = copy.station;
 }
 
 /*!

@@ -16,7 +16,7 @@ namespace oi {
 class OI_CORE_EXPORT Line : public Geometry {
   Q_OBJECT
  public:
-  Line(QObject* parent = nullptr);
+  explicit Line(QObject* parent = nullptr);
   Line(const Position& xyz, const Direction& axis, QObject* parent = nullptr);
 
   Line(const Line& copy, QObject* parent = nullptr);

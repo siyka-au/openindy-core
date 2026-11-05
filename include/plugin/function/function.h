@@ -90,7 +90,8 @@ class NeededElement {
 class InputElement {
  public:
   InputElement() : id(-1), shouldBeUsed(true), isUsed(true) {}
-  InputElement(const int& id) : id(id), shouldBeUsed(true), isUsed(true) {}
+  explicit InputElement(const int& id)
+      : id(id), shouldBeUsed(true), isUsed(true) {}
 
   //! custom comparison operator to compare input elements by their id
   bool operator==(const InputElement& other) const {
@@ -159,7 +160,7 @@ class InputElement {
 class FixedParameter {
  public:
   FixedParameter() : value(0.0) {}
-  FixedParameter(const GeometryParameters& param)
+  explicit FixedParameter(const GeometryParameters& param)
       : parameter(param), value(0.0) {}
 
   //! custom comparison operator to compare fixed parameters
@@ -219,7 +220,7 @@ class OI_CORE_EXPORT Function : public QObject {
   Q_OBJECT
 
  public:
-  Function(QObject* parent = nullptr);
+  explicit Function(QObject* parent = nullptr);
 
   ~Function() override;
 

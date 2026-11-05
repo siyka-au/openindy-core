@@ -13,7 +13,7 @@ class OI_CORE_EXPORT GeodeticFunction : public Function {
   Q_OBJECT
 
  public:
-  GeodeticFunction(QObject* parent = nullptr) : Function(parent) {}
+  explicit GeodeticFunction(QObject* parent = nullptr) : Function(parent) {}
 
   ~GeodeticFunction() override {}
 };

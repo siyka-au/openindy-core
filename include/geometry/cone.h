@@ -18,7 +18,7 @@ class OI_CORE_EXPORT Cone : public Geometry {
   Q_OBJECT
 
  public:
-  Cone(QObject* parent = nullptr);
+  explicit Cone(QObject* parent = nullptr);
   Cone(const Position& apex, const Direction& axis, const double& aperture,
        QObject* parent = nullptr);
 

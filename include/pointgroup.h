@@ -36,7 +36,7 @@ class OI_CORE_EXPORT PointGroup : public Group, public PointCollection {
 
  public:
   explicit PointGroup(QObject* parent = nullptr);
-  PointGroup(const QString& name, QObject* parent = nullptr);
+  explicit PointGroup(const QString& name, QObject* parent = nullptr);
 
   PointGroup(const PointGroup& copy, QObject* parent = nullptr);
   PointGroup& operator=(const PointGroup& copy);

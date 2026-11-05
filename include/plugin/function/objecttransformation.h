@@ -13,7 +13,7 @@ class OI_CORE_EXPORT ObjectTransformation : public Function {
   Q_OBJECT
 
  public:
-  ObjectTransformation(QObject* parent = nullptr) : Function(parent) {}
+  explicit ObjectTransformation(QObject* parent = nullptr) : Function(parent) {}
 
   ~ObjectTransformation() override {}
 };

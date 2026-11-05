@@ -52,9 +52,9 @@ class OI_CORE_EXPORT Element : public QObject {
                                const QString& group, const FeatureTypes& type);
 
  protected:
-  int id;
+  int id{-1};
   // indicates null object or invalid object
-  bool isNullObject;
+  bool isNullObject{false};
 };
 
 }  // namespace oi

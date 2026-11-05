@@ -7,25 +7,20 @@ using namespace oi;
 /*!
  * \brief SensorConfiguration::SensorConfiguration
  */
-SensorConfiguration::SensorConfiguration() : isSaved(false) {}
+SensorConfiguration::SensorConfiguration() {}
 
 /*!
  * \brief SensorConfiguration::SensorConfiguration
  * \param copy
  */
-SensorConfiguration::SensorConfiguration(const SensorConfiguration& copy) {
+SensorConfiguration::SensorConfiguration(const SensorConfiguration &copy)
+    : name(copy.name), accuracy(copy.accuracy),
+      availableStringParameter(copy.availableStringParameter),
+      cConfig(copy.cConfig), doubleParameter(copy.doubleParameter),
+      integerParameter(copy.integerParameter), isSaved(copy.isSaved),
+      pluginName(copy.pluginName), sensorName(copy.sensorName),
+      stringParameter(copy.stringParameter), typeOfSensor(copy.typeOfSensor) {
   // copy sensor config attributes
-  this->name = copy.name;
-  this->isSaved = copy.isSaved;
-  this->typeOfSensor = copy.typeOfSensor;
-  this->pluginName = copy.pluginName;
-  this->sensorName = copy.sensorName;
-  this->accuracy = copy.accuracy;
-  this->cConfig = copy.cConfig;
-  this->integerParameter = copy.integerParameter;
-  this->doubleParameter = copy.doubleParameter;
-  this->stringParameter = copy.stringParameter;
-  this->availableStringParameter = copy.availableStringParameter;
 }
 
 /*!

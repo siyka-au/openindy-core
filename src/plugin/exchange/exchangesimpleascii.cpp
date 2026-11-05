@@ -7,7 +7,7 @@ using namespace oi;
  * \param parent
  */
 ExchangeSimpleAscii::ExchangeSimpleAscii(QObject* parent)
-    : ExchangeInterface(parent), typeOfGeometry(eUndefinedGeometry) {
+    : ExchangeInterface(parent) {
   this->distanceDigits = 2;
   this->angleDigits = 6;
   this->temperatureDigits = 1;

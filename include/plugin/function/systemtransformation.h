@@ -17,7 +17,7 @@ class OI_CORE_EXPORT SystemTransformation : public Function {
   Q_OBJECT
 
  public:
-  SystemTransformation(QObject* parent = nullptr) : Function(parent) {
+  explicit SystemTransformation(QObject* parent = nullptr) : Function(parent) {
     // only applicable for trafo params
     this->applicableFor.clear();
     this->applicableFor.append(eTrafoParamFeature);

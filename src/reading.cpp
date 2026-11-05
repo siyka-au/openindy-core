@@ -10,11 +10,10 @@ using namespace oi::math;
  * \brief Reading::Reading
  * \param parent
  */
-Reading::Reading(QObject* parent) : Element(parent), hasBackup(false) {
+Reading::Reading(QObject *parent)
+    : Element(parent), face(eUndefinedSide), imported(false), hasBackup(false) {
   // set default attributes
   this->measuredAt = QDateTime::currentDateTime();
-  this->face = eUndefinedSide;
-  this->imported = false;
 }
 
 /*!
@@ -22,18 +21,16 @@ Reading::Reading(QObject* parent) : Element(parent), hasBackup(false) {
  * \param reading
  * \param parent
  */
-Reading::Reading(const ReadingPolar& reading, QObject* parent)
-    : Element(parent), hasBackup(false) {
+Reading::Reading(const ReadingPolar &reading, QObject *parent)
+    : Element(parent), face(eUndefinedSide), imported(false), rPolar(reading),
+      typeOfReading(ePolarReading), hasBackup(false) {
   // set the reading and transform into cartesian
-  this->typeOfReading = ePolarReading;
-  this->rPolar = reading;
+
   this->toCartesian();
   this->rCartesian.sigmaXyz = this->errorPropagationPolarToCartesian();
 
   // set default attributes
   this->measuredAt = QDateTime::currentDateTime();
-  this->face = eUndefinedSide;
-  this->imported = false;
 }
 
 /*!
@@ -81,16 +78,13 @@ Reading::Reading(const ReadingCartesian6D& reading, QObject* parent)
  * \param reading
  * \param parent
  */
-Reading::Reading(const ReadingDirection& reading, QObject* parent)
-    : Element(parent), hasBackup(false) {
+Reading::Reading(const ReadingDirection &reading, QObject *parent)
+    : Element(parent), face(eUndefinedSide), imported(false),
+      rDirection(reading), typeOfReading(eDirectionReading), hasBackup(false) {
   // set the reading
-  this->typeOfReading = eDirectionReading;
-  this->rDirection = reading;
 
   // set default attributes
   this->measuredAt = QDateTime::currentDateTime();
-  this->face = eUndefinedSide;
-  this->imported = false;
 }
 
 /*!
@@ -98,16 +92,13 @@ Reading::Reading(const ReadingDirection& reading, QObject* parent)
  * \param reading
  * \param parent
  */
-Reading::Reading(const ReadingDistance& reading, QObject* parent)
-    : Element(parent), hasBackup(false) {
+Reading::Reading(const ReadingDistance &reading, QObject *parent)
+    : Element(parent), face(eUndefinedSide), imported(false),
+      rDistance(reading), typeOfReading(eDistanceReading), hasBackup(false) {
   // set the reading and
-  this->typeOfReading = eDistanceReading;
-  this->rDistance = reading;
 
   // set default attributes
   this->measuredAt = QDateTime::currentDateTime();
-  this->face = eUndefinedSide;
-  this->imported = false;
 }
 
 /*!
@@ -115,16 +106,14 @@ Reading::Reading(const ReadingDistance& reading, QObject* parent)
  * \param reading
  * \param parent
  */
-Reading::Reading(const ReadingTemperature& reading, QObject* parent)
-    : Element(parent), hasBackup(false) {
+Reading::Reading(const ReadingTemperature &reading, QObject *parent)
+    : Element(parent), face(eUndefinedSide), imported(false),
+      rTemperature(reading), typeOfReading(eTemperatureReading),
+      hasBackup(false) {
   // set the reading
-  this->typeOfReading = eTemperatureReading;
-  this->rTemperature = reading;
 
   // set default attributes
   this->measuredAt = QDateTime::currentDateTime();
-  this->face = eUndefinedSide;
-  this->imported = false;
 }
 
 /*!
@@ -132,16 +121,13 @@ Reading::Reading(const ReadingTemperature& reading, QObject* parent)
  * \param reading
  * \param parent
  */
-Reading::Reading(const ReadingLevel& reading, QObject* parent)
-    : Element(parent), hasBackup(false) {
+Reading::Reading(const ReadingLevel &reading, QObject *parent)
+    : Element(parent), face(eUndefinedSide), imported(false), rLevel(reading),
+      typeOfReading(eLevelReading), hasBackup(false) {
   // set the reading
-  this->typeOfReading = eLevelReading;
-  this->rLevel = reading;
 
   // set default attributes
   this->measuredAt = QDateTime::currentDateTime();
-  this->face = eUndefinedSide;
-  this->imported = false;
 }
 
 /*!
@@ -149,16 +135,13 @@ Reading::Reading(const ReadingLevel& reading, QObject* parent)
  * \param reading
  * \param parent
  */
-Reading::Reading(const ReadingUndefined& reading, QObject* parent)
-    : Element(parent), hasBackup(false) {
+Reading::Reading(const ReadingUndefined &reading, QObject *parent)
+    : Element(parent), face(eUndefinedSide), imported(false),
+      rUndefined(reading), typeOfReading(eUndefinedReading), hasBackup(false) {
   // set the reading
-  this->typeOfReading = eUndefinedReading;
-  this->rUndefined = reading;
 
   // set default attributes
   this->measuredAt = QDateTime::currentDateTime();
-  this->face = eUndefinedSide;
-  this->imported = false;
 }
 
 /*!
@@ -166,32 +149,21 @@ Reading::Reading(const ReadingUndefined& reading, QObject* parent)
  * \param copy
  * \param parent
  */
-Reading::Reading(const Reading& copy, QObject* parent) : Element(copy, parent) {
+Reading::Reading(const Reading &copy, QObject *parent)
+    : Element(copy, parent), backupCartesian(copy.backupCartesian),
+      backupDirection(copy.backupDirection),
+      backupDistance(copy.backupDistance), backupLevel(copy.backupLevel),
+      backupPolar(copy.backupPolar), backupTemperature(copy.backupTemperature),
+      backupUndefined(copy.backupUndefined), face(copy.face),
+      hasBackup(copy.hasBackup), imported(copy.imported), mConfig(copy.mConfig),
+      measuredAt(copy.measuredAt), observation(copy.observation),
+      rCartesian(copy.rCartesian), rDirection(copy.rDirection),
+      rDistance(copy.rDistance), rLevel(copy.rLevel), rPolar(copy.rPolar),
+      rTemperature(copy.rTemperature), rUndefined(copy.rUndefined),
+      sConfig(copy.sConfig), typeOfReading(copy.typeOfReading) {
   // copy reading attributes
-  this->measuredAt = copy.measuredAt;
-  this->mConfig = copy.mConfig;
-  this->face = copy.face;
-  this->sConfig = copy.sConfig;
-  this->observation = copy.observation;
-  this->hasBackup = copy.hasBackup;
-  this->imported = copy.imported;
 
   // copy readings
-  this->typeOfReading = copy.typeOfReading;
-  this->rPolar = copy.rPolar;
-  this->backupPolar = copy.backupPolar;
-  this->rCartesian = copy.rCartesian;
-  this->backupCartesian = copy.backupCartesian;
-  this->rDirection = copy.rDirection;
-  this->backupDirection = copy.backupDirection;
-  this->rDistance = copy.rDistance;
-  this->backupDistance = copy.backupDistance;
-  this->rTemperature = copy.rTemperature;
-  this->backupTemperature = copy.backupTemperature;
-  this->rLevel = copy.rLevel;
-  this->backupLevel = copy.backupLevel;
-  this->rUndefined = copy.rUndefined;
-  this->backupUndefined = copy.backupUndefined;
 }
 
 /*!

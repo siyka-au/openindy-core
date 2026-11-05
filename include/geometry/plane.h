@@ -17,7 +17,7 @@ class OI_CORE_EXPORT Plane : public Geometry {
   Q_OBJECT
 
  public:
-  Plane(QObject* parent = nullptr);
+  explicit Plane(QObject* parent = nullptr);
   Plane(const Position& xyz, const Direction& normal,
         QObject* parent = nullptr);
   Plane(const Direction& normal, const double& d, QObject* parent = nullptr);

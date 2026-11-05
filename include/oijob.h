@@ -457,7 +457,7 @@ class OI_CORE_EXPORT OiJob : public QObject {
 
   FeatureContainer featureContainer;  // all features of this job
 
-  int nextId;  // the next free id an element of this job could get
+  int nextId{1};  // the next free id an element of this job could get
 
   void enableOrDisableObservations(const int& featureId, bool enable);
   void enableOrDisableStationObservations(QPointer<Station> station,

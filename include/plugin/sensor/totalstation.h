@@ -12,7 +12,7 @@ class OI_CORE_EXPORT TotalStation : public Sensor {
   Q_OBJECT
 
  public:
-  TotalStation(QObject* parent = nullptr) : Sensor(parent) {}
+  explicit TotalStation(QObject* parent = nullptr) : Sensor(parent) {}
 
   ~TotalStation() override {}
 

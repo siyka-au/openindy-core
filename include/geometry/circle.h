@@ -18,7 +18,7 @@ class OI_CORE_EXPORT Circle : public Geometry {
   Q_OBJECT
 
  public:
-  Circle(QObject* parent = nullptr);
+  explicit Circle(QObject* parent = nullptr);
   Circle(const Position& center, const Direction& normal, const Radius& radius,
          QObject* parent = nullptr);
 

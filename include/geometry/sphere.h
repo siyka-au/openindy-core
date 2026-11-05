@@ -18,7 +18,7 @@ class OI_CORE_EXPORT Sphere : public Geometry {
   Q_OBJECT
 
  public:
-  Sphere(QObject* parent = nullptr);
+  explicit Sphere(QObject* parent = nullptr);
   Sphere(const Position& center, const Radius& radius,
          QObject* parent = nullptr);
 
