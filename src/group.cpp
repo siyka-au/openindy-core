@@ -17,8 +17,9 @@ Group::Group(const QString& name, const FeatureTypes& constraint,
   this->constraint = constraint;
 }
 
-Group::Group(const Group &copy, QObject *parent)
-    : Feature(copy, parent), constraint(copy.constraint),
+Group::Group(const Group& copy, QObject* parent)
+    : Feature(copy, parent),
+      constraint(copy.constraint),
       members(copy.members) {
   // members are references, so a copied group references the same
   // features - it does not clone them. That is the whole contract.
@@ -182,7 +183,7 @@ QDomElement Group::toOpenIndyXML(QDomDocument& xmlDoc) const {
   // distinguishes a plain Group from a PointGroup on load. PointGroup's
   // own toOpenIndyXML() calls this one and then overwrites just this
   // attribute - the rest of the XML shape is identical between the two.
-  group.setAttribute("type", getFeatureTypeName(eGroupFeature));
+  group.setAttribute("type", getFeatureTypeName(FeatureTypes::eGroupFeature));
 
   if (this->constraint.has_value()) {
     group.setAttribute("constraint",
@@ -213,7 +214,7 @@ bool Group::fromOpenIndyXML(QDomElement& xmlElem) {
   if (xmlElem.hasAttribute("constraint")) {
     const FeatureTypes type =
         getFeatureTypeEnum(xmlElem.attribute("constraint"));
-    if (type != eUndefinedFeature) {
+    if (type != FeatureTypes::eUndefinedFeature) {
       this->constraint = type;
     }
   }

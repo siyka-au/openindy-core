@@ -24,7 +24,7 @@ namespace oi {
  * deterministic stages that make hand-picking and auto-tagging one
  * mechanism instead of two.
  */
-enum PipelineStageType {
+enum class PipelineStageType {
   eExplicitListStage = 0,  // only these element ids survive
   eExcludeStage =
       1,  // these element ids are dropped, each carrying a reason (D16)
@@ -84,7 +84,8 @@ class OI_CORE_EXPORT PipelineExclusion {
  */
 class OI_CORE_EXPORT PipelineStage {
  public:
-  PipelineStage() : type(eExcludeStage), sigmaMultiplier(3.0) {}
+  PipelineStage()
+      : type(PipelineStageType::eExcludeStage), sigmaMultiplier(3.0) {}
   explicit PipelineStage(PipelineStageType type)
       : type(type), sigmaMultiplier(3.0) {}
 

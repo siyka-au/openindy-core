@@ -95,9 +95,10 @@ QMap<GeometryParameters, QString> ScalarEntityAngle::getUnknownParameters(
   QMap<GeometryParameters, QString> parameters;
 
   parameters.insert(
-      eUnknownAngle,
-      this->getDisplayAngle(displayUnits.value(eAngular, eUnitRadiant),
-                            displayDigits.value(eAngular, 0)));
+      GeometryParameters::eUnknownAngle,
+      this->getDisplayAngle(
+          displayUnits.value(DimensionType::eAngular, UnitType::eUnitRadiant),
+          displayDigits.value(DimensionType::eAngular, 0)));
 
   return parameters;
 }
@@ -115,8 +116,8 @@ void ScalarEntityAngle::applyUnknownParameters(
   QList<GeometryParameters> keys = parameters.keys();
   foreach (const GeometryParameters& key, keys) {
     switch (key) {
-      case eUnknownAngle:
-        angle = parameters.value(eUnknownAngle);
+      case GeometryParameters::eUnknownAngle:
+        angle = parameters.value(GeometryParameters::eUnknownAngle);
         break;
       default:
         break;
@@ -151,8 +152,8 @@ QDomElement ScalarEntityAngle::toOpenIndyXML(QDomDocument& xmlDoc) const {
     return entityAngle;
   }
 
-  entityAngle.setAttribute("type",
-                           getGeometryTypeName(eScalarEntityAngleGeometry));
+  entityAngle.setAttribute(
+      "type", getGeometryTypeName(GeometryTypes::eScalarEntityAngleGeometry));
 
   // add angle
   QDomElement angle = xmlDoc.createElement("angle");

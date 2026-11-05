@@ -25,7 +25,7 @@ void BundleAdjustment::init() {}
 bool BundleAdjustment::runBundle() {
   emit this->sendMessage(
       "Bundle \"" + this->getMetaData().name + "\" not implemented",
-      eCriticalMessage, eMessageBoxMessage);
+      MessageTypes::eCriticalMessage, MessageDestinations::eMessageBoxMessage);
   return false;
 }
 

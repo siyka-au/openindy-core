@@ -22,7 +22,7 @@ class ProjectExchanger;
 
 namespace oi {
 
-enum CompatibilyCheckResult {
+enum class CompatibilyCheckResult {
   eCheckResult_match = 0,
   eCheckResult_job_wo_valid_version,
   eCheckResult_oi_wo_valid_version,
@@ -307,7 +307,8 @@ class OI_CORE_EXPORT OiJob : public QObject {
   // ###################################################
 
   void sendMessage(const QString& msg, const MessageTypes& msgType,
-                   const MessageDestinations& msgDest = eConsoleMessage) const;
+                   const MessageDestinations& msgDest =
+                       MessageDestinations::eConsoleMessage) const;
 
   // ##############################
   // signals to force recalculation

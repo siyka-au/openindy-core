@@ -187,7 +187,8 @@ class OI_CORE_EXPORT BundleAdjustment : public QObject {
 
   // messaging
   void sendMessage(const QString& msg, const MessageTypes& msgType,
-                   const MessageDestinations& msgDest = eConsoleMessage);
+                   const MessageDestinations& msgDest =
+                       MessageDestinations::eConsoleMessage);
 
   // input parameters changed
   void scalarInputParametersChanged();

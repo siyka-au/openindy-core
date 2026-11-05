@@ -243,10 +243,10 @@ bool FeatureContainer::addFeature(const QPointer<FeatureWrapper>& feature) {
                                   feature);
   }
   switch (feature->getFeatureTypeEnum()) {
-    case eCoordinateSystemFeature:
+    case FeatureTypes::eCoordinateSystemFeature:
       this->coordSystems.append(feature->getCoordinateSystem());
       break;
-    case eStationFeature:
+    case FeatureTypes::eStationFeature:
       this->stationsList.append(feature->getStation());
       if (!feature->getStation()->getCoordinateSystem().isNull()) {
         QPointer<FeatureWrapper> stationSystem = new FeatureWrapper();
@@ -257,7 +257,7 @@ bool FeatureContainer::addFeature(const QPointer<FeatureWrapper>& feature) {
             stationSystem);
       }
       break;
-    case eTrafoParamFeature:
+    case FeatureTypes::eTrafoParamFeature:
       this->trafoParamsList.append(feature->getTrafoParam());
       break;
     default:  // geometry
@@ -322,13 +322,13 @@ bool FeatureContainer::removeFeature(const int& featureId) {
                                   feature);
   }
   switch (feature->getFeatureTypeEnum()) {
-    case eCoordinateSystemFeature:
+    case FeatureTypes::eCoordinateSystemFeature:
       this->coordSystems.removeOne(feature->getCoordinateSystem());
       break;
-    case eStationFeature:
+    case FeatureTypes::eStationFeature:
       this->stationsList.removeOne(feature->getStation());
       break;
-    case eTrafoParamFeature:
+    case FeatureTypes::eTrafoParamFeature:
       this->trafoParamsList.removeOne(feature->getTrafoParam());
       break;
     default:  // geometry

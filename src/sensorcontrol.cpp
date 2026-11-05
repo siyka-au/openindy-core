@@ -31,7 +31,8 @@ Sensor SensorControl::getSensor() {
                                 Q_RETURN_ARG(Sensor, sensor));
   if (!hasInvoked) {
     emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             eErrorMessage, eConsoleMessage);
+                             MessageTypes::eErrorMessage,
+                             MessageDestinations::eConsoleMessage);
   }
 
   return sensor;
@@ -59,7 +60,8 @@ void SensorControl::setSensor(const QPointer<Sensor>& sensor) {
                                 Q_ARG(QPointer<Sensor>, sensor));
   if (!hasInvoked) {
     emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             eErrorMessage, eConsoleMessage);
+                             MessageTypes::eErrorMessage,
+                             MessageDestinations::eConsoleMessage);
   }
 
   // set sensor valid
@@ -85,7 +87,8 @@ QPointer<Sensor> SensorControl::takeSensor() {
       Q_RETURN_ARG(QPointer<Sensor>, sensor));
   if (!hasInvoked) {
     emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             eErrorMessage, eConsoleMessage);
+                             MessageTypes::eErrorMessage,
+                             MessageDestinations::eConsoleMessage);
   }
 
   // set sensor invalid
@@ -109,7 +112,8 @@ void SensorControl::resetSensor() {
                                               Qt::QueuedConnection);
   if (!hasInvoked) {
     emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             eErrorMessage, eConsoleMessage);
+                             MessageTypes::eErrorMessage,
+                             MessageDestinations::eConsoleMessage);
   }
 
   // set sensor invalid
@@ -138,13 +142,14 @@ void SensorControl::setUsedSensors(const QList<Sensor>& sensors) {
  */
 ReadingTypes SensorControl::getStreamFormat() {
   // call method of sensor worker
-  ReadingTypes type = eUndefinedReading;
+  ReadingTypes type = ReadingTypes::eUndefinedReading;
   bool hasInvoked = QMetaObject::invokeMethod(this->worker, "getStreamFormat",
                                               Qt::DirectConnection,
                                               Q_RETURN_ARG(ReadingTypes, type));
   if (!hasInvoked) {
     emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             eErrorMessage, eConsoleMessage);
+                             MessageTypes::eErrorMessage,
+                             MessageDestinations::eConsoleMessage);
   }
 
   return type;
@@ -161,7 +166,8 @@ void SensorControl::setStreamFormat(ReadingTypes streamFormat) {
       Q_ARG(ReadingTypes, streamFormat));
   if (!hasInvoked) {
     emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             eErrorMessage, eConsoleMessage);
+                             MessageTypes::eErrorMessage,
+                             MessageDestinations::eConsoleMessage);
   }
 }
 
@@ -183,7 +189,8 @@ bool SensorControl::getIsSensorConnected() {
       Q_RETURN_ARG(bool, isConnected));
   if (!hasInvoked) {
     emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             eErrorMessage, eConsoleMessage);
+                             MessageTypes::eErrorMessage,
+                             MessageDestinations::eConsoleMessage);
   }
 
   return isConnected;
@@ -201,7 +208,8 @@ bool SensorControl::getIsReadyForMeasurement() {
       Q_RETURN_ARG(bool, isReady));
   if (!hasInvoked) {
     emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             eErrorMessage, eConsoleMessage);
+                             MessageTypes::eErrorMessage,
+                             MessageDestinations::eConsoleMessage);
   }
 
   return isReady;
@@ -219,7 +227,8 @@ bool SensorControl::getIsBusy() {
                                 Q_RETURN_ARG(bool, isBusy));
   if (!hasInvoked) {
     emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             eErrorMessage, eConsoleMessage);
+                             MessageTypes::eErrorMessage,
+                             MessageDestinations::eConsoleMessage);
   }
 
   return isBusy;
@@ -237,7 +246,8 @@ QMap<QString, QString> SensorControl::getSensorStatus() {
       Q_RETURN_ARG(StringStringMap, status));
   if (!hasInvoked) {
     emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             eErrorMessage, eConsoleMessage);
+                             MessageTypes::eErrorMessage,
+                             MessageDestinations::eConsoleMessage);
   }
 
   return status;
@@ -255,7 +265,8 @@ SensorType SensorControl::getActiveSensorType() {
       Q_RETURN_ARG(SensorType, type));
   if (!hasInvoked) {
     emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             eErrorMessage, eConsoleMessage);
+                             MessageTypes::eErrorMessage,
+                             MessageDestinations::eConsoleMessage);
   }
 
   return type;
@@ -273,7 +284,8 @@ QList<ReadingTypes> SensorControl::getSupportedReadingTypes() {
       Q_RETURN_ARG(QList<ReadingTypes>, types));
   if (!hasInvoked) {
     emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             eErrorMessage, eConsoleMessage);
+                             MessageTypes::eErrorMessage,
+                             MessageDestinations::eConsoleMessage);
   }
 
   return types;
@@ -291,7 +303,8 @@ QList<ConnectionKind> SensorControl::getSupportedConnectionTypes() {
       Q_RETURN_ARG(QList<ConnectionKind>, types));
   if (!hasInvoked) {
     emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             eErrorMessage, eConsoleMessage);
+                             MessageTypes::eErrorMessage,
+                             MessageDestinations::eConsoleMessage);
   }
 
   return types;
@@ -309,7 +322,8 @@ QList<SensorFunctions> SensorControl::getSupportedSensorActions() {
       Q_RETURN_ARG(QList<SensorFunctions>, actions));
   if (!hasInvoked) {
     emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             eErrorMessage, eConsoleMessage);
+                             MessageTypes::eErrorMessage,
+                             MessageDestinations::eConsoleMessage);
   }
 
   return actions;
@@ -327,7 +341,8 @@ QStringList SensorControl::getSelfDefinedActions() {
       Q_RETURN_ARG(QStringList, actions));
   if (!hasInvoked) {
     emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             eErrorMessage, eConsoleMessage);
+                             MessageTypes::eErrorMessage,
+                             MessageDestinations::eConsoleMessage);
   }
 
   return actions;
@@ -345,7 +360,8 @@ SensorConfiguration SensorControl::getSensorConfiguration() {
       Q_RETURN_ARG(SensorConfiguration, sConfig));
   if (!hasInvoked) {
     emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             eErrorMessage, eConsoleMessage);
+                             MessageTypes::eErrorMessage,
+                             MessageDestinations::eConsoleMessage);
   }
 
   return sConfig;
@@ -364,7 +380,8 @@ void SensorControl::setSensorConfiguration(const SensorConfiguration& sConfig) {
       Q_ARG(SensorConfiguration, sConfig));
   if (!hasInvoked) {
     emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             eErrorMessage, eConsoleMessage);
+                             MessageTypes::eErrorMessage,
+                             MessageDestinations::eConsoleMessage);
   }
 }
 
@@ -379,7 +396,8 @@ void SensorControl::connectSensor() {
                                                 : Qt::QueuedConnection);
   if (!hasInvoked) {
     emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             eErrorMessage, eConsoleMessage);
+                             MessageTypes::eErrorMessage,
+                             MessageDestinations::eConsoleMessage);
   }
 }
 
@@ -394,7 +412,8 @@ void SensorControl::disconnectSensor() {
                                                 : Qt::QueuedConnection);
   if (!hasInvoked) {
     emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             eErrorMessage, eConsoleMessage);
+                             MessageTypes::eErrorMessage,
+                             MessageDestinations::eConsoleMessage);
   }
 }
 
@@ -413,7 +432,8 @@ void SensorControl::measure(const int& geomId,
       Q_ARG(int, geomId), Q_ARG(MeasurementConfig, mConfig));
   if (!hasInvoked) {
     emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             eErrorMessage, eConsoleMessage);
+                             MessageTypes::eErrorMessage,
+                             MessageDestinations::eConsoleMessage);
   }
 }
 
@@ -441,7 +461,8 @@ void SensorControl::move(const double& azimuth, const double& zenith,
       Q_ARG(MeasurementConfig, mConfig));
   if (!hasInvoked) {
     emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             eErrorMessage, eConsoleMessage);
+                             MessageTypes::eErrorMessage,
+                             MessageDestinations::eConsoleMessage);
   }
 }
 
@@ -467,7 +488,8 @@ void SensorControl::move(const double& x, const double& y, const double& z,
       Q_ARG(MeasurementConfig, mConfig));
   if (!hasInvoked) {
     emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             eErrorMessage, eConsoleMessage);
+                             MessageTypes::eErrorMessage,
+                             MessageDestinations::eConsoleMessage);
   }
 }
 
@@ -482,7 +504,8 @@ void SensorControl::initialize() {
                                                 : Qt::QueuedConnection);
   if (!hasInvoked) {
     emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             eErrorMessage, eConsoleMessage);
+                             MessageTypes::eErrorMessage,
+                             MessageDestinations::eConsoleMessage);
   }
 }
 
@@ -497,7 +520,8 @@ void SensorControl::motorState() {
                                                 : Qt::QueuedConnection);
   if (!hasInvoked) {
     emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             eErrorMessage, eConsoleMessage);
+                             MessageTypes::eErrorMessage,
+                             MessageDestinations::eConsoleMessage);
   }
 }
 
@@ -512,7 +536,8 @@ void SensorControl::home() {
                                                 : Qt::QueuedConnection);
   if (!hasInvoked) {
     emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             eErrorMessage, eConsoleMessage);
+                             MessageTypes::eErrorMessage,
+                             MessageDestinations::eConsoleMessage);
   }
 }
 
@@ -527,7 +552,8 @@ void SensorControl::toggleSight() {
                                                 : Qt::QueuedConnection);
   if (!hasInvoked) {
     emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             eErrorMessage, eConsoleMessage);
+                             MessageTypes::eErrorMessage,
+                             MessageDestinations::eConsoleMessage);
   }
 }
 
@@ -542,7 +568,8 @@ void SensorControl::compensation() {
                                                 : Qt::QueuedConnection);
   if (!hasInvoked) {
     emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             eErrorMessage, eConsoleMessage);
+                             MessageTypes::eErrorMessage,
+                             MessageDestinations::eConsoleMessage);
   }
 }
 
@@ -559,7 +586,8 @@ void SensorControl::selfDefinedAction(const QString& action) {
       Q_ARG(QString, action));
   if (!hasInvoked) {
     emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             eErrorMessage, eConsoleMessage);
+                             MessageTypes::eErrorMessage,
+                             MessageDestinations::eConsoleMessage);
   }
 }
 void SensorControl::search() {
@@ -570,7 +598,8 @@ void SensorControl::search() {
                                                 : Qt::QueuedConnection);
   if (!hasInvoked) {
     emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             eErrorMessage, eConsoleMessage);
+                             MessageTypes::eErrorMessage,
+                             MessageDestinations::eConsoleMessage);
   }
 }
 
@@ -585,7 +614,8 @@ void SensorControl::startReadingStream() {
                                                 : Qt::QueuedConnection);
   if (!hasInvoked) {
     emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             eErrorMessage, eConsoleMessage);
+                             MessageTypes::eErrorMessage,
+                             MessageDestinations::eConsoleMessage);
   }
 }
 
@@ -600,7 +630,8 @@ void SensorControl::stopReadingStream() {
                                                 : Qt::QueuedConnection);
   if (!hasInvoked) {
     emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             eErrorMessage, eConsoleMessage);
+                             MessageTypes::eErrorMessage,
+                             MessageDestinations::eConsoleMessage);
   }
 }
 
@@ -615,7 +646,8 @@ void SensorControl::startConnectionMonitoringStream() {
                                                 : Qt::QueuedConnection);
   if (!hasInvoked) {
     emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             eErrorMessage, eConsoleMessage);
+                             MessageTypes::eErrorMessage,
+                             MessageDestinations::eConsoleMessage);
   }
 }
 
@@ -630,7 +662,8 @@ void SensorControl::stopConnectionMonitoringStream() {
                                                 : Qt::QueuedConnection);
   if (!hasInvoked) {
     emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             eErrorMessage, eConsoleMessage);
+                             MessageTypes::eErrorMessage,
+                             MessageDestinations::eConsoleMessage);
   }
 }
 
@@ -645,7 +678,8 @@ void SensorControl::startStatusMonitoringStream() {
                                                 : Qt::QueuedConnection);
   if (!hasInvoked) {
     emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             eErrorMessage, eConsoleMessage);
+                             MessageTypes::eErrorMessage,
+                             MessageDestinations::eConsoleMessage);
   }
 }
 
@@ -660,7 +694,8 @@ void SensorControl::stopStatusMonitoringStream() {
                                                 : Qt::QueuedConnection);
   if (!hasInvoked) {
     emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             eErrorMessage, eConsoleMessage);
+                             MessageTypes::eErrorMessage,
+                             MessageDestinations::eConsoleMessage);
   }
 }
 
@@ -672,7 +707,8 @@ void SensorControl::finishMeasurement() {
                                                 : Qt::QueuedConnection);
   if (!hasInvoked) {
     emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             eErrorMessage, eConsoleMessage);
+                             MessageTypes::eErrorMessage,
+                             MessageDestinations::eConsoleMessage);
   }
 }
 /*!

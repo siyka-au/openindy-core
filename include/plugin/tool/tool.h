@@ -64,7 +64,8 @@ class OI_CORE_EXPORT Tool : public QWidget {
   // ############################################
 
   void sendMessage(const QString& msg, const MessageTypes& msgType,
-                   const MessageDestinations& msgDest = eConsoleMessage);
+                   const MessageDestinations& msgDest =
+                       MessageDestinations::eConsoleMessage);
   void customXmlResponse(OiRequestResponse* response);
 
   // ###############################

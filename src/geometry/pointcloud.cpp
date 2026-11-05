@@ -193,7 +193,8 @@ QDomElement PointCloud::toOpenIndyXML(QDomDocument& xmlDoc) const {
     return pointCloud;
   }
 
-  pointCloud.setAttribute("type", getGeometryTypeName(ePointCloudGeometry));
+  pointCloud.setAttribute(
+      "type", getGeometryTypeName(GeometryTypes::ePointCloudGeometry));
 
   return pointCloud;
 }

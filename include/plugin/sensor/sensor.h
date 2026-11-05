@@ -146,7 +146,8 @@ class OI_CORE_EXPORT SensorInterface : public QObject {
   // ##############################################
   void sensorStatus(const SensorStatus& status, const QString& msg);
   void sensorMessage(const QString& msg, const MessageTypes& msgType,
-                     const MessageDestinations& msgDest = eConsoleMessage);
+                     const MessageDestinations& msgDest =
+                         MessageDestinations::eConsoleMessage);
   void asyncSensorResponse(
       const QJsonObject& response,
       const SensorAction sensorAction = SensorAction::eSensorActionUndefind);
@@ -170,7 +171,7 @@ class OI_CORE_EXPORT Sensor : public SensorInterface {
 
   ~Sensor() override;
 
-  enum SensorMessage { eSensorOk, eSensorWarning, eSensorError };
+  enum class SensorMessage { eSensorOk, eSensorWarning, eSensorError };
 
   // ############################
   // sensor initialization method

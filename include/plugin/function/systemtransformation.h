@@ -20,7 +20,7 @@ class OI_CORE_EXPORT SystemTransformation : public Function {
   explicit SystemTransformation(QObject* parent = nullptr) : Function(parent) {
     // only applicable for trafo params
     this->applicableFor.clear();
-    this->applicableFor.append(eTrafoParamFeature);
+    this->applicableFor.append(FeatureTypes::eTrafoParamFeature);
   }
 
   ~SystemTransformation() override {}

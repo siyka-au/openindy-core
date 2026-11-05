@@ -148,39 +148,49 @@ QMap<GeometryParameters, QString> Ellipse::getUnknownParameters(
     const QMap<DimensionType, int>& displayDigits) const {
   QMap<GeometryParameters, QString> parameters;
 
-  parameters.insert(eUnknownX,
-                    this->getDisplayX(displayUnits.value(eMetric, eUnitMeter),
-                                      displayDigits.value(eMetric, 0)));
-  parameters.insert(eUnknownY,
-                    this->getDisplayY(displayUnits.value(eMetric, eUnitMeter),
-                                      displayDigits.value(eMetric, 0)));
-  parameters.insert(eUnknownZ,
-                    this->getDisplayZ(displayUnits.value(eMetric, eUnitMeter),
-                                      displayDigits.value(eMetric, 0)));
   parameters.insert(
-      eUnknownPrimaryI,
-      this->getDisplayPrimaryI(displayDigits.value(eDimensionless, 0)));
+      GeometryParameters::eUnknownX,
+      this->getDisplayX(
+          displayUnits.value(DimensionType::eMetric, UnitType::eUnitMeter),
+          displayDigits.value(DimensionType::eMetric, 0)));
   parameters.insert(
-      eUnknownPrimaryJ,
-      this->getDisplayPrimaryJ(displayDigits.value(eDimensionless, 0)));
+      GeometryParameters::eUnknownY,
+      this->getDisplayY(
+          displayUnits.value(DimensionType::eMetric, UnitType::eUnitMeter),
+          displayDigits.value(DimensionType::eMetric, 0)));
   parameters.insert(
-      eUnknownPrimaryK,
-      this->getDisplayPrimaryK(displayDigits.value(eDimensionless, 0)));
-  parameters.insert(eUnknownA,
-                    this->getDisplayA(displayUnits.value(eMetric, eUnitMeter),
-                                      displayDigits.value(eMetric, 0)));
-  parameters.insert(eUnknownB,
-                    this->getDisplayB(displayUnits.value(eMetric, eUnitMeter),
-                                      displayDigits.value(eMetric, 0)));
+      GeometryParameters::eUnknownZ,
+      this->getDisplayZ(
+          displayUnits.value(DimensionType::eMetric, UnitType::eUnitMeter),
+          displayDigits.value(DimensionType::eMetric, 0)));
+  parameters.insert(GeometryParameters::eUnknownPrimaryI,
+                    this->getDisplayPrimaryI(
+                        displayDigits.value(DimensionType::eDimensionless, 0)));
+  parameters.insert(GeometryParameters::eUnknownPrimaryJ,
+                    this->getDisplayPrimaryJ(
+                        displayDigits.value(DimensionType::eDimensionless, 0)));
+  parameters.insert(GeometryParameters::eUnknownPrimaryK,
+                    this->getDisplayPrimaryK(
+                        displayDigits.value(DimensionType::eDimensionless, 0)));
   parameters.insert(
-      eUnknownSecondaryI,
-      this->getDisplaySecondaryI(displayDigits.value(eDimensionless, 0)));
+      GeometryParameters::eUnknownA,
+      this->getDisplayA(
+          displayUnits.value(DimensionType::eMetric, UnitType::eUnitMeter),
+          displayDigits.value(DimensionType::eMetric, 0)));
   parameters.insert(
-      eUnknownSecondaryJ,
-      this->getDisplaySecondaryJ(displayDigits.value(eDimensionless, 0)));
-  parameters.insert(
-      eUnknownSecondaryK,
-      this->getDisplaySecondaryK(displayDigits.value(eDimensionless, 0)));
+      GeometryParameters::eUnknownB,
+      this->getDisplayB(
+          displayUnits.value(DimensionType::eMetric, UnitType::eUnitMeter),
+          displayDigits.value(DimensionType::eMetric, 0)));
+  parameters.insert(GeometryParameters::eUnknownSecondaryI,
+                    this->getDisplaySecondaryI(
+                        displayDigits.value(DimensionType::eDimensionless, 0)));
+  parameters.insert(GeometryParameters::eUnknownSecondaryJ,
+                    this->getDisplaySecondaryJ(
+                        displayDigits.value(DimensionType::eDimensionless, 0)));
+  parameters.insert(GeometryParameters::eUnknownSecondaryK,
+                    this->getDisplaySecondaryK(
+                        displayDigits.value(DimensionType::eDimensionless, 0)));
 
   return parameters;
 }
@@ -202,38 +212,44 @@ void Ellipse::applyUnknownParameters(
   QList<GeometryParameters> keys = parameters.keys();
   foreach (const GeometryParameters& key, keys) {
     switch (key) {
-      case eUnknownX:
-        position.setAt(0, parameters.value(eUnknownX));
+      case GeometryParameters::eUnknownX:
+        position.setAt(0, parameters.value(GeometryParameters::eUnknownX));
         break;
-      case eUnknownY:
-        position.setAt(1, parameters.value(eUnknownY));
+      case GeometryParameters::eUnknownY:
+        position.setAt(1, parameters.value(GeometryParameters::eUnknownY));
         break;
-      case eUnknownZ:
-        position.setAt(2, parameters.value(eUnknownZ));
+      case GeometryParameters::eUnknownZ:
+        position.setAt(2, parameters.value(GeometryParameters::eUnknownZ));
         break;
-      case eUnknownPrimaryI:
-        directionA.setAt(0, parameters.value(eUnknownPrimaryI));
+      case GeometryParameters::eUnknownPrimaryI:
+        directionA.setAt(
+            0, parameters.value(GeometryParameters::eUnknownPrimaryI));
         break;
-      case eUnknownPrimaryJ:
-        directionA.setAt(1, parameters.value(eUnknownPrimaryJ));
+      case GeometryParameters::eUnknownPrimaryJ:
+        directionA.setAt(
+            1, parameters.value(GeometryParameters::eUnknownPrimaryJ));
         break;
-      case eUnknownPrimaryK:
-        directionA.setAt(2, parameters.value(eUnknownPrimaryK));
+      case GeometryParameters::eUnknownPrimaryK:
+        directionA.setAt(
+            2, parameters.value(GeometryParameters::eUnknownPrimaryK));
         break;
-      case eUnknownA:
-        a = parameters.value(eUnknownA);
+      case GeometryParameters::eUnknownA:
+        a = parameters.value(GeometryParameters::eUnknownA);
         break;
-      case eUnknownB:
-        b = parameters.value(eUnknownB);
+      case GeometryParameters::eUnknownB:
+        b = parameters.value(GeometryParameters::eUnknownB);
         break;
-      case eUnknownSecondaryI:
-        directionB.setAt(0, parameters.value(eUnknownSecondaryI));
+      case GeometryParameters::eUnknownSecondaryI:
+        directionB.setAt(
+            0, parameters.value(GeometryParameters::eUnknownSecondaryI));
         break;
-      case eUnknownSecondaryJ:
-        directionB.setAt(1, parameters.value(eUnknownSecondaryJ));
+      case GeometryParameters::eUnknownSecondaryJ:
+        directionB.setAt(
+            1, parameters.value(GeometryParameters::eUnknownSecondaryJ));
         break;
-      case eUnknownSecondaryK:
-        directionB.setAt(2, parameters.value(eUnknownSecondaryK));
+      case GeometryParameters::eUnknownSecondaryK:
+        directionB.setAt(
+            2, parameters.value(GeometryParameters::eUnknownSecondaryK));
         break;
       default:
         break;
@@ -277,7 +293,8 @@ QDomElement Ellipse::toOpenIndyXML(QDomDocument& xmlDoc) const {
     return ellipse;
   }
 
-  ellipse.setAttribute("type", getGeometryTypeName(eEllipseGeometry));
+  ellipse.setAttribute("type",
+                       getGeometryTypeName(GeometryTypes::eEllipseGeometry));
 
   // set semi-major axis length
   QDomElement a = xmlDoc.createElement("a");

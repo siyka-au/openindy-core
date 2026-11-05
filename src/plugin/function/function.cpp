@@ -97,7 +97,7 @@ bool implementsTransform(oi::Function* function) {
  * \brief Function::Function
  * \param parent
  */
-Function::Function(QObject *parent) : QObject(parent), supportsWeights(false) {}
+Function::Function(QObject* parent) : QObject(parent), supportsWeights(false) {}
 
 /*!
  * \brief Function::~Function
@@ -178,125 +178,125 @@ std::expected<void, QString> Function::execByFeatureType(
   }
 
   switch (feature->getFeatureTypeEnum()) {
-    case eStationFeature:
+    case FeatureTypes::eStationFeature:
       if (!feature->getStation().isNull()) {
         return execAs<Station>(this, feature->getStation().data(), "station");
       }
       break;
-    case eTrafoParamFeature:
+    case FeatureTypes::eTrafoParamFeature:
       if (!feature->getTrafoParam().isNull()) {
         return execAs<TrafoParam>(this, feature->getTrafoParam().data(),
                                   "transformation parameter");
       }
       break;
-    case eCoordinateSystemFeature:
+    case FeatureTypes::eCoordinateSystemFeature:
       if (!feature->getCoordinateSystem().isNull()) {
         return execAs<CoordinateSystem>(
             this, feature->getCoordinateSystem().data(), "coordinate system");
       }
       break;
-    case eCircleFeature:
+    case FeatureTypes::eCircleFeature:
       if (!feature->getCircle().isNull()) {
         return execAs<Circle>(this, feature->getCircle().data(), "circle");
       }
       break;
-    case eConeFeature:
+    case FeatureTypes::eConeFeature:
       if (!feature->getCone().isNull()) {
         return execAs<Cone>(this, feature->getCone().data(), "cone");
       }
       break;
-    case eCylinderFeature:
+    case FeatureTypes::eCylinderFeature:
       if (!feature->getCylinder().isNull()) {
         return execAs<Cylinder>(this, feature->getCylinder().data(),
                                 "cylinder");
       }
       break;
-    case eEllipseFeature:
+    case FeatureTypes::eEllipseFeature:
       if (!feature->getEllipse().isNull()) {
         return execAs<Ellipse>(this, feature->getEllipse().data(), "ellipse");
       }
       break;
-    case eEllipsoidFeature:
+    case FeatureTypes::eEllipsoidFeature:
       if (!feature->getEllipsoid().isNull()) {
         return execAs<Ellipsoid>(this, feature->getEllipsoid().data(),
                                  "ellipsoid");
       }
       break;
-    case eHyperboloidFeature:
+    case FeatureTypes::eHyperboloidFeature:
       if (!feature->getHyperboloid().isNull()) {
         return execAs<Hyperboloid>(this, feature->getHyperboloid().data(),
                                    "hyperboloid");
       }
       break;
-    case eLineFeature:
+    case FeatureTypes::eLineFeature:
       if (!feature->getLine().isNull()) {
         return execAs<Line>(this, feature->getLine().data(), "line");
       }
       break;
-    case eNurbsFeature:
+    case FeatureTypes::eNurbsFeature:
       if (!feature->getNurbs().isNull()) {
         return execAs<Nurbs>(this, feature->getNurbs().data(), "nurbs");
       }
       break;
-    case eParaboloidFeature:
+    case FeatureTypes::eParaboloidFeature:
       if (!feature->getParaboloid().isNull()) {
         return execAs<Paraboloid>(this, feature->getParaboloid().data(),
                                   "paraboloid");
       }
       break;
-    case ePlaneFeature:
+    case FeatureTypes::ePlaneFeature:
       if (!feature->getPlane().isNull()) {
         return execAs<Plane>(this, feature->getPlane().data(), "plane");
       }
       break;
-    case ePointFeature:
+    case FeatureTypes::ePointFeature:
       if (!feature->getPoint().isNull()) {
         return execAs<Point>(this, feature->getPoint().data(), "point");
       }
       break;
-    case ePointCloudFeature:
+    case FeatureTypes::ePointCloudFeature:
       if (!feature->getPointCloud().isNull()) {
         return execAs<PointCloud>(this, feature->getPointCloud().data(),
                                   "point cloud");
       }
       break;
-    case eScalarEntityAngleFeature:
+    case FeatureTypes::eScalarEntityAngleFeature:
       if (!feature->getScalarEntityAngle().isNull()) {
         return execAs<ScalarEntityAngle>(
             this, feature->getScalarEntityAngle().data(), "angle");
       }
       break;
-    case eScalarEntityDistanceFeature:
+    case FeatureTypes::eScalarEntityDistanceFeature:
       if (!feature->getScalarEntityDistance().isNull()) {
         return execAs<ScalarEntityDistance>(
             this, feature->getScalarEntityDistance().data(), "distance");
       }
       break;
-    case eScalarEntityMeasurementSeriesFeature:
+    case FeatureTypes::eScalarEntityMeasurementSeriesFeature:
       if (!feature->getScalarEntityMeasurementSeries().isNull()) {
         return execAs<ScalarEntityMeasurementSeries>(
             this, feature->getScalarEntityMeasurementSeries().data(),
             "measurement series");
       }
       break;
-    case eScalarEntityTemperatureFeature:
+    case FeatureTypes::eScalarEntityTemperatureFeature:
       if (!feature->getScalarEntityTemperature().isNull()) {
         return execAs<ScalarEntityTemperature>(
             this, feature->getScalarEntityTemperature().data(), "temperature");
       }
       break;
-    case eSlottedHoleFeature:
+    case FeatureTypes::eSlottedHoleFeature:
       if (!feature->getSlottedHole().isNull()) {
         return execAs<SlottedHole>(this, feature->getSlottedHole().data(),
                                    "slotted hole");
       }
       break;
-    case eSphereFeature:
+    case FeatureTypes::eSphereFeature:
       if (!feature->getSphere().isNull()) {
         return execAs<Sphere>(this, feature->getSphere().data(), "sphere");
       }
       break;
-    case eTorusFeature:
+    case FeatureTypes::eTorusFeature:
       if (!feature->getTorus().isNull()) {
         return execAs<Torus>(this, feature->getTorus().data(), "torus");
       }
@@ -335,49 +335,49 @@ bool Function::canActAsProducer(const FeatureTypes& type, Function* function) {
   }
 
   switch (type) {
-    case eStationFeature:
+    case FeatureTypes::eStationFeature:
       return implementsProducer<Station>(function);
-    case eTrafoParamFeature:
+    case FeatureTypes::eTrafoParamFeature:
       return implementsProducer<TrafoParam>(function);
-    case eCoordinateSystemFeature:
+    case FeatureTypes::eCoordinateSystemFeature:
       return implementsProducer<CoordinateSystem>(function);
-    case eCircleFeature:
+    case FeatureTypes::eCircleFeature:
       return implementsProducer<Circle>(function);
-    case eConeFeature:
+    case FeatureTypes::eConeFeature:
       return implementsProducer<Cone>(function);
-    case eCylinderFeature:
+    case FeatureTypes::eCylinderFeature:
       return implementsProducer<Cylinder>(function);
-    case eEllipseFeature:
+    case FeatureTypes::eEllipseFeature:
       return implementsProducer<Ellipse>(function);
-    case eEllipsoidFeature:
+    case FeatureTypes::eEllipsoidFeature:
       return implementsProducer<Ellipsoid>(function);
-    case eHyperboloidFeature:
+    case FeatureTypes::eHyperboloidFeature:
       return implementsProducer<Hyperboloid>(function);
-    case eLineFeature:
+    case FeatureTypes::eLineFeature:
       return implementsProducer<Line>(function);
-    case eNurbsFeature:
+    case FeatureTypes::eNurbsFeature:
       return implementsProducer<Nurbs>(function);
-    case eParaboloidFeature:
+    case FeatureTypes::eParaboloidFeature:
       return implementsProducer<Paraboloid>(function);
-    case ePlaneFeature:
+    case FeatureTypes::ePlaneFeature:
       return implementsProducer<Plane>(function);
-    case ePointFeature:
+    case FeatureTypes::ePointFeature:
       return implementsProducer<Point>(function);
-    case ePointCloudFeature:
+    case FeatureTypes::ePointCloudFeature:
       return implementsProducer<PointCloud>(function);
-    case eScalarEntityAngleFeature:
+    case FeatureTypes::eScalarEntityAngleFeature:
       return implementsProducer<ScalarEntityAngle>(function);
-    case eScalarEntityDistanceFeature:
+    case FeatureTypes::eScalarEntityDistanceFeature:
       return implementsProducer<ScalarEntityDistance>(function);
-    case eScalarEntityMeasurementSeriesFeature:
+    case FeatureTypes::eScalarEntityMeasurementSeriesFeature:
       return implementsProducer<ScalarEntityMeasurementSeries>(function);
-    case eScalarEntityTemperatureFeature:
+    case FeatureTypes::eScalarEntityTemperatureFeature:
       return implementsProducer<ScalarEntityTemperature>(function);
-    case eSlottedHoleFeature:
+    case FeatureTypes::eSlottedHoleFeature:
       return implementsProducer<SlottedHole>(function);
-    case eSphereFeature:
+    case FeatureTypes::eSphereFeature:
       return implementsProducer<Sphere>(function);
-    case eTorusFeature:
+    case FeatureTypes::eTorusFeature:
       return implementsProducer<Torus>(function);
     default:
       return false;
@@ -402,49 +402,49 @@ bool Function::canActAsTransform(const FeatureTypes& type, Function* function) {
   }
 
   switch (type) {
-    case eStationFeature:
+    case FeatureTypes::eStationFeature:
       return implementsTransform<Station>(function);
-    case eTrafoParamFeature:
+    case FeatureTypes::eTrafoParamFeature:
       return implementsTransform<TrafoParam>(function);
-    case eCoordinateSystemFeature:
+    case FeatureTypes::eCoordinateSystemFeature:
       return implementsTransform<CoordinateSystem>(function);
-    case eCircleFeature:
+    case FeatureTypes::eCircleFeature:
       return implementsTransform<Circle>(function);
-    case eConeFeature:
+    case FeatureTypes::eConeFeature:
       return implementsTransform<Cone>(function);
-    case eCylinderFeature:
+    case FeatureTypes::eCylinderFeature:
       return implementsTransform<Cylinder>(function);
-    case eEllipseFeature:
+    case FeatureTypes::eEllipseFeature:
       return implementsTransform<Ellipse>(function);
-    case eEllipsoidFeature:
+    case FeatureTypes::eEllipsoidFeature:
       return implementsTransform<Ellipsoid>(function);
-    case eHyperboloidFeature:
+    case FeatureTypes::eHyperboloidFeature:
       return implementsTransform<Hyperboloid>(function);
-    case eLineFeature:
+    case FeatureTypes::eLineFeature:
       return implementsTransform<Line>(function);
-    case eNurbsFeature:
+    case FeatureTypes::eNurbsFeature:
       return implementsTransform<Nurbs>(function);
-    case eParaboloidFeature:
+    case FeatureTypes::eParaboloidFeature:
       return implementsTransform<Paraboloid>(function);
-    case ePlaneFeature:
+    case FeatureTypes::ePlaneFeature:
       return implementsTransform<Plane>(function);
-    case ePointFeature:
+    case FeatureTypes::ePointFeature:
       return implementsTransform<Point>(function);
-    case ePointCloudFeature:
+    case FeatureTypes::ePointCloudFeature:
       return implementsTransform<PointCloud>(function);
-    case eScalarEntityAngleFeature:
+    case FeatureTypes::eScalarEntityAngleFeature:
       return implementsTransform<ScalarEntityAngle>(function);
-    case eScalarEntityDistanceFeature:
+    case FeatureTypes::eScalarEntityDistanceFeature:
       return implementsTransform<ScalarEntityDistance>(function);
-    case eScalarEntityMeasurementSeriesFeature:
+    case FeatureTypes::eScalarEntityMeasurementSeriesFeature:
       return implementsTransform<ScalarEntityMeasurementSeries>(function);
-    case eScalarEntityTemperatureFeature:
+    case FeatureTypes::eScalarEntityTemperatureFeature:
       return implementsTransform<ScalarEntityTemperature>(function);
-    case eSlottedHoleFeature:
+    case FeatureTypes::eSlottedHoleFeature:
       return implementsTransform<SlottedHole>(function);
-    case eSphereFeature:
+    case FeatureTypes::eSphereFeature:
       return implementsTransform<Sphere>(function);
-    case eTorusFeature:
+    case FeatureTypes::eTorusFeature:
       return implementsTransform<Torus>(function);
     default:
       return false;
@@ -872,7 +872,7 @@ bool Function::applyDeterministicPipelineStages() {
 
     foreach (const PipelineStage& stage, stages) {
       switch (stage.type) {
-        case eExplicitListStage: {
+        case PipelineStageType::eExplicitListStage: {
           QList<int> next;
           foreach (int id, survivors) {
             if (stage.explicitIds.contains(id)) {
@@ -886,7 +886,7 @@ bool Function::applyDeterministicPipelineStages() {
           break;
         }
 
-        case eExcludeStage: {
+        case PipelineStageType::eExcludeStage: {
           foreach (const PipelineExclusion& excl, stage.explicitExclusions) {
             if (survivors.removeOne(excl.elementId)) {
               exclusions.append(excl);
@@ -895,7 +895,7 @@ bool Function::applyDeterministicPipelineStages() {
           break;
         }
 
-        case eResidualOutlierRejectionStage:
+        case PipelineStageType::eResidualOutlierRejectionStage:
           // handled after a fit exists - see applyResidualPipelineStages()
           break;
       }
@@ -938,7 +938,7 @@ bool Function::applyResidualPipelineStages() {
     bool hasResidualStage = false;
     double sigmaMultiplier = 3.0;
     foreach (const PipelineStage& stage, stages) {
-      if (stage.type == eResidualOutlierRejectionStage) {
+      if (stage.type == PipelineStageType::eResidualOutlierRejectionStage) {
         hasResidualStage = true;
         sigmaMultiplier = stage.sigmaMultiplier;
         break;
@@ -1076,7 +1076,7 @@ QDomElement Function::toOpenIndyXML(QDomDocument& xmlDoc) const {
     foreach (const InputElement& input, inputIterator.value()) {
       QDomElement inputElement = xmlDoc.createElement("element");
       inputElement.setAttribute("index", inputIterator.key());
-      inputElement.setAttribute("type", input.typeOfElement);
+      inputElement.setAttribute("type", static_cast<int>(input.typeOfElement));
       inputElement.setAttribute("ref", input.id);
       inputElement.setAttribute("isUsed", input.isUsed);
       inputElement.setAttribute("shouldBeUsed", input.shouldBeUsed);
@@ -1314,7 +1314,7 @@ void Function::filterObservations(
 void Function::addDisplayResidual(int elementId, double vr) {
   Residual residual;
   residual.elementId = elementId;
-  residual.dimension = eMetric;
+  residual.dimension = DimensionType::eMetric;
   residual.corrections.insert(
       getObservationDisplayAttributesName(eObservationDisplayVR), vr);
   this->statistic.addDisplayResidual(residual);
@@ -1324,7 +1324,7 @@ void Function::addDisplayResidual(int elementId, double vx, double vy,
                                   double vz, double v) {
   Residual residual;
   residual.elementId = elementId;
-  residual.dimension = eMetric;
+  residual.dimension = DimensionType::eMetric;
   residual.corrections.insert(
       getObservationDisplayAttributesName(eObservationDisplayVX), vx);
   residual.corrections.insert(
@@ -1341,7 +1341,7 @@ void Function::addDisplayResidual(int elementId, double vx, double vy,
                                   double vk) {
   Residual residual;
   residual.elementId = elementId;
-  residual.dimension = eMetric;
+  residual.dimension = DimensionType::eMetric;
   residual.corrections.insert(
       getObservationDisplayAttributesName(eObservationDisplayVX), vx);
   residual.corrections.insert(

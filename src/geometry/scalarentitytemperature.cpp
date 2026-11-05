@@ -100,9 +100,10 @@ QMap<GeometryParameters, QString> ScalarEntityTemperature::getUnknownParameters(
   QMap<GeometryParameters, QString> parameters;
 
   parameters.insert(
-      eUnknownTemperature,
-      this->getDisplayTemperature(displayUnits.value(eTemperature, eUnitGrad),
-                                  displayDigits.value(eTemperature, 0)));
+      GeometryParameters::eUnknownTemperature,
+      this->getDisplayTemperature(
+          displayUnits.value(DimensionType::eTemperature, UnitType::eUnitGrad),
+          displayDigits.value(DimensionType::eTemperature, 0)));
 
   return parameters;
 }
@@ -120,8 +121,8 @@ void ScalarEntityTemperature::applyUnknownParameters(
   QList<GeometryParameters> keys = parameters.keys();
   foreach (const GeometryParameters& key, keys) {
     switch (key) {
-      case eUnknownTemperature:
-        temperature = parameters.value(eUnknownTemperature);
+      case GeometryParameters::eUnknownTemperature:
+        temperature = parameters.value(GeometryParameters::eUnknownTemperature);
         break;
       default:
         break;
@@ -157,7 +158,8 @@ QDomElement ScalarEntityTemperature::toOpenIndyXML(QDomDocument& xmlDoc) const {
   }
 
   entityTemperature.setAttribute(
-      "type", getGeometryTypeName(eScalarEntityTemperatureGeometry));
+      "type",
+      getGeometryTypeName(GeometryTypes::eScalarEntityTemperatureGeometry));
 
   // add temperature
   QDomElement temperature = xmlDoc.createElement("temperature");

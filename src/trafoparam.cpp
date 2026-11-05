@@ -394,30 +394,45 @@ QMap<TrafoParamParameters, QString> TrafoParam::getUnknownParameters(
     const QMap<DimensionType, int>& displayDigits) const {
   QMap<TrafoParamParameters, QString> parameters;
 
-  parameters.insert(eUnknownTX, this->getDisplayTranslationX(
-                                    displayUnits.value(eMetric, eUnitMeter),
-                                    displayDigits.value(eMetric, 0)));
-  parameters.insert(eUnknownTY, this->getDisplayTranslationY(
-                                    displayUnits.value(eMetric, eUnitMeter),
-                                    displayDigits.value(eMetric, 0)));
-  parameters.insert(eUnknownTZ, this->getDisplayTranslationZ(
-                                    displayUnits.value(eMetric, eUnitMeter),
-                                    displayDigits.value(eMetric, 0)));
-  parameters.insert(eUnknownRX, this->getDisplayRotationX(
-                                    displayUnits.value(eAngular, eUnitRadiant),
-                                    displayDigits.value(eAngular, 0)));
-  parameters.insert(eUnknownRY, this->getDisplayRotationY(
-                                    displayUnits.value(eAngular, eUnitRadiant),
-                                    displayDigits.value(eAngular, 0)));
-  parameters.insert(eUnknownRZ, this->getDisplayRotationZ(
-                                    displayUnits.value(eAngular, eUnitRadiant),
-                                    displayDigits.value(eAngular, 0)));
-  parameters.insert(eUnknownSX, this->getDisplayScaleX(
-                                    displayDigits.value(eDimensionless, 0)));
-  parameters.insert(eUnknownSY, this->getDisplayScaleY(
-                                    displayDigits.value(eDimensionless, 0)));
-  parameters.insert(eUnknownSZ, this->getDisplayScaleZ(
-                                    displayDigits.value(eDimensionless, 0)));
+  parameters.insert(
+      TrafoParamParameters::eUnknownTX,
+      this->getDisplayTranslationX(
+          displayUnits.value(DimensionType::eMetric, UnitType::eUnitMeter),
+          displayDigits.value(DimensionType::eMetric, 0)));
+  parameters.insert(
+      TrafoParamParameters::eUnknownTY,
+      this->getDisplayTranslationY(
+          displayUnits.value(DimensionType::eMetric, UnitType::eUnitMeter),
+          displayDigits.value(DimensionType::eMetric, 0)));
+  parameters.insert(
+      TrafoParamParameters::eUnknownTZ,
+      this->getDisplayTranslationZ(
+          displayUnits.value(DimensionType::eMetric, UnitType::eUnitMeter),
+          displayDigits.value(DimensionType::eMetric, 0)));
+  parameters.insert(
+      TrafoParamParameters::eUnknownRX,
+      this->getDisplayRotationX(
+          displayUnits.value(DimensionType::eAngular, UnitType::eUnitRadiant),
+          displayDigits.value(DimensionType::eAngular, 0)));
+  parameters.insert(
+      TrafoParamParameters::eUnknownRY,
+      this->getDisplayRotationY(
+          displayUnits.value(DimensionType::eAngular, UnitType::eUnitRadiant),
+          displayDigits.value(DimensionType::eAngular, 0)));
+  parameters.insert(
+      TrafoParamParameters::eUnknownRZ,
+      this->getDisplayRotationZ(
+          displayUnits.value(DimensionType::eAngular, UnitType::eUnitRadiant),
+          displayDigits.value(DimensionType::eAngular, 0)));
+  parameters.insert(TrafoParamParameters::eUnknownSX,
+                    this->getDisplayScaleX(
+                        displayDigits.value(DimensionType::eDimensionless, 0)));
+  parameters.insert(TrafoParamParameters::eUnknownSY,
+                    this->getDisplayScaleY(
+                        displayDigits.value(DimensionType::eDimensionless, 0)));
+  parameters.insert(TrafoParamParameters::eUnknownSZ,
+                    this->getDisplayScaleZ(
+                        displayDigits.value(DimensionType::eDimensionless, 0)));
 
   return parameters;
 }
@@ -437,32 +452,35 @@ void TrafoParam::setUnknownParameters(
   QList<TrafoParamParameters> keys = parameters.keys();
   foreach (const TrafoParamParameters& key, keys) {
     switch (key) {
-      case eUnknownTX:
-        translation.setAt(0, parameters.value(eUnknownTX));
+      case TrafoParamParameters::eUnknownTX:
+        translation.setAt(0,
+                          parameters.value(TrafoParamParameters::eUnknownTX));
         break;
-      case eUnknownTY:
-        translation.setAt(1, parameters.value(eUnknownTY));
+      case TrafoParamParameters::eUnknownTY:
+        translation.setAt(1,
+                          parameters.value(TrafoParamParameters::eUnknownTY));
         break;
-      case eUnknownTZ:
-        translation.setAt(2, parameters.value(eUnknownTZ));
+      case TrafoParamParameters::eUnknownTZ:
+        translation.setAt(2,
+                          parameters.value(TrafoParamParameters::eUnknownTZ));
         break;
-      case eUnknownRX:
-        rotation.setAt(0, parameters.value(eUnknownRX));
+      case TrafoParamParameters::eUnknownRX:
+        rotation.setAt(0, parameters.value(TrafoParamParameters::eUnknownRX));
         break;
-      case eUnknownRY:
-        rotation.setAt(1, parameters.value(eUnknownRY));
+      case TrafoParamParameters::eUnknownRY:
+        rotation.setAt(1, parameters.value(TrafoParamParameters::eUnknownRY));
         break;
-      case eUnknownRZ:
-        rotation.setAt(2, parameters.value(eUnknownRZ));
+      case TrafoParamParameters::eUnknownRZ:
+        rotation.setAt(2, parameters.value(TrafoParamParameters::eUnknownRZ));
         break;
-      case eUnknownSX:
-        scale.setAt(0, parameters.value(eUnknownSX));
+      case TrafoParamParameters::eUnknownSX:
+        scale.setAt(0, parameters.value(TrafoParamParameters::eUnknownSX));
         break;
-      case eUnknownSY:
-        scale.setAt(1, parameters.value(eUnknownSY));
+      case TrafoParamParameters::eUnknownSY:
+        scale.setAt(1, parameters.value(TrafoParamParameters::eUnknownSY));
         break;
-      case eUnknownSZ:
-        scale.setAt(2, parameters.value(eUnknownSZ));
+      case TrafoParamParameters::eUnknownSZ:
+        scale.setAt(2, parameters.value(TrafoParamParameters::eUnknownSZ));
         break;
     }
   }

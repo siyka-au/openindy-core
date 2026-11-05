@@ -23,7 +23,7 @@ class FixedPositionFunction : public ConstructFunction, public Producer<Point> {
   explicit FixedPositionFunction(QObject* parent = nullptr)
       : ConstructFunction(parent) {
     this->metaData.name = "FixedPositionFunction";
-    this->applicableFor.append(ePointFeature);
+    this->applicableFor.append(FeatureTypes::ePointFeature);
   }
   double x = 0.0, y = 0.0, z = 0.0;
   std::expected<Point, QString> exec() override {
@@ -49,11 +49,11 @@ class CopyPointFunction : public ConstructFunction, public Producer<Point> {
       : ConstructFunction(parent) {
     this->metaData.name = "CopyPointFunction";
     NeededElement param;
-    param.typeOfElement = ePointElement;
+    param.typeOfElement = ElementTypes::ePointElement;
     param.infinite = false;
     param.description = "the owner feature this accessor is bound to";
     this->neededElements.append(param);
-    this->applicableFor.append(ePointFeature);
+    this->applicableFor.append(FeatureTypes::ePointFeature);
   }
   std::expected<Point, QString> exec() override {
     if (!this->inputElements.contains(0) ||
@@ -99,7 +99,7 @@ class OwnedSubGeometryTest : public QObject {
 };
 
 void OwnedSubGeometryTest::initTestCase() {
-  ChooseLALib::setLinearAlgebra(ChooseLALib::Armadillo);
+  ChooseLALib::setLinearAlgebra(ChooseLALib::LinearAlgebraLibrary::Armadillo);
 }
 
 QPointer<OiJob> OwnedSubGeometryTest::makeJob() { return new OiJob(); }

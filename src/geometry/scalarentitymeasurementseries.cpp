@@ -101,9 +101,10 @@ ScalarEntityMeasurementSeries::getUnknownParameters(
   QMap<GeometryParameters, QString> parameters;
 
   parameters.insert(
-      eUnknownMeasurementSeries,
-      this->getDisplayMeasurementSeries(displayUnits.value(eMetric, eUnitMeter),
-                                        displayDigits.value(eMetric, 0)));
+      GeometryParameters::eUnknownMeasurementSeries,
+      this->getDisplayMeasurementSeries(
+          displayUnits.value(DimensionType::eMetric, UnitType::eUnitMeter),
+          displayDigits.value(DimensionType::eMetric, 0)));
 
   return parameters;
 }
@@ -121,8 +122,9 @@ void ScalarEntityMeasurementSeries::applyUnknownParameters(
   QList<GeometryParameters> keys = parameters.keys();
   foreach (const GeometryParameters& key, keys) {
     switch (key) {
-      case eUnknownMeasurementSeries:
-        series = parameters.value(eUnknownMeasurementSeries);
+      case GeometryParameters::eUnknownMeasurementSeries:
+        series =
+            parameters.value(GeometryParameters::eUnknownMeasurementSeries);
         break;
       default:
         break;
@@ -159,7 +161,8 @@ QDomElement ScalarEntityMeasurementSeries::toOpenIndyXML(
   }
 
   entityMeasurementSeries.setAttribute(
-      "type", getGeometryTypeName(eScalarEntityMeasurementSeriesGeometry));
+      "type", getGeometryTypeName(
+                  GeometryTypes::eScalarEntityMeasurementSeriesGeometry));
 
   // add series value
   QDomElement seriesValue = xmlDoc.createElement("seriesValue");

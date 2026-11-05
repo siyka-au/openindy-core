@@ -6,10 +6,10 @@
 using namespace oi;
 
 PointGroup::PointGroup(QObject* parent)
-    : Group(QString(), ePointFeature, parent) {}
+    : Group(QString(), FeatureTypes::ePointFeature, parent) {}
 
 PointGroup::PointGroup(const QString& name, QObject* parent)
-    : Group(name, ePointFeature, parent) {}
+    : Group(name, FeatureTypes::ePointFeature, parent) {}
 
 PointGroup::PointGroup(const PointGroup& copy, QObject* parent)
     : Group(copy, parent) {}
@@ -63,7 +63,8 @@ QDomElement PointGroup::toOpenIndyXML(QDomDocument& xmlDoc) const {
   QDomElement group = Group::toOpenIndyXML(xmlDoc);
 
   if (!group.isNull()) {
-    group.setAttribute("type", getFeatureTypeName(ePointGroupFeature));
+    group.setAttribute("type",
+                       getFeatureTypeName(FeatureTypes::ePointGroupFeature));
   }
 
   return group;

@@ -57,8 +57,9 @@ class OI_CORE_EXPORT SensorWorker : public QObject {
   // special sensor messages
   // #######################
 
-  void sensorMessage(QString msg, MessageTypes msgType,
-                     MessageDestinations msgDest = eConsoleMessage);
+  void sensorMessage(
+      QString msg, MessageTypes msgType,
+      MessageDestinations msgDest = MessageDestinations::eConsoleMessage);
 
  public slots:
 
@@ -170,7 +171,7 @@ class OI_CORE_EXPORT SensorWorker : public QObject {
   QPointer<Sensor> sensor;
 
   // reading stream format
-  ReadingTypes streamFormat{eUndefinedReading};
+  ReadingTypes streamFormat{ReadingTypes::eUndefinedReading};
 
   // stream states
   bool isReadingStreamStarted{false};

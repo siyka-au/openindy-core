@@ -31,11 +31,11 @@ class FakeAverageFit : public FitFunction, public Producer<Point> {
     this->metaData.name = "FakeAverageFit";
     this->neededElements.clear();
     NeededElement param;
-    param.typeOfElement = ePointElement;
+    param.typeOfElement = ElementTypes::ePointElement;
     param.infinite = true;
     param.roleName = "default";
     this->neededElements.append(param);
-    this->applicableFor.append(ePointFeature);
+    this->applicableFor.append(FeatureTypes::ePointFeature);
   }
 
   std::expected<Point, QString> exec() override {
@@ -122,7 +122,7 @@ class PipelineTest : public QObject {
 };
 
 void PipelineTest::initTestCase() {
-  ChooseLALib::setLinearAlgebra(ChooseLALib::Armadillo);
+  ChooseLALib::setLinearAlgebra(ChooseLALib::LinearAlgebraLibrary::Armadillo);
 }
 
 QPointer<FeatureWrapper> PipelineTest::makeTargetPoint(const QString& name) {
@@ -160,11 +160,11 @@ void PipelineTest::undeclaredPipelineLeavesShouldBeUsedUntouched() {
   QPointer<Point> p1 = this->makeCandidate(0.0, job);
   QPointer<Point> p2 = this->makeCandidate(10.0, job);
   InputElement e1(p1->getId());
-  e1.typeOfElement = ePointElement;
+  e1.typeOfElement = ElementTypes::ePointElement;
   e1.point = p1;
   function->addInputElement(e1, 0);
   InputElement e2(p2->getId());
-  e2.typeOfElement = ePointElement;
+  e2.typeOfElement = ElementTypes::ePointElement;
   e2.point = p2;
   function->addInputElement(e2, 0);
 
@@ -195,7 +195,7 @@ void PipelineTest::explicitListStageKeepsOnlyListedIdsAndRecordsReasons() {
   foreach (const QPointer<Point>& p,
            (QList<QPointer<Point> >() << p1 << p2 << p3)) {
     InputElement e(p->getId());
-    e.typeOfElement = ePointElement;
+    e.typeOfElement = ElementTypes::ePointElement;
     e.point = p;
     function->addInputElement(e, 0);
   }
@@ -231,7 +231,7 @@ void PipelineTest::excludeStageDropsSpecificIdWithReason() {
   QPointer<Point> p2 = this->makeCandidate(10.0, job);
   foreach (const QPointer<Point>& p, (QList<QPointer<Point> >() << p1 << p2)) {
     InputElement e(p->getId());
-    e.typeOfElement = ePointElement;
+    e.typeOfElement = ElementTypes::ePointElement;
     e.point = p;
     function->addInputElement(e, 0);
   }
@@ -291,7 +291,7 @@ void PipelineTest::residualOutlierRejectionExcludesTheOutlierAndConverges() {
   }
   foreach (const QPointer<Point>& p, candidates) {
     InputElement e(p->getId());
-    e.typeOfElement = ePointElement;
+    e.typeOfElement = ElementTypes::ePointElement;
     e.point = p;
     function->addInputElement(e, 0);
   }
@@ -346,7 +346,7 @@ void PipelineTest::omittingTheFilterLeavesTheResultSkewedByTheOutlier() {
   foreach (double x, xs) {
     QPointer<Point> p = this->makeCandidate(x, job);
     InputElement e(p->getId());
-    e.typeOfElement = ePointElement;
+    e.typeOfElement = ElementTypes::ePointElement;
     e.point = p;
     function->addInputElement(e, 0);
   }
@@ -383,7 +383,7 @@ void PipelineTest::addingANewOutlierLaterReTriggersTheFilterOnRecalc() {
     QPointer<Point> p = this->makeCandidate(0.0, job);
     candidates.append(p);
     InputElement e(p->getId());
-    e.typeOfElement = ePointElement;
+    e.typeOfElement = ElementTypes::ePointElement;
     e.point = p;
     function->addInputElement(e, 0);
   }
@@ -398,7 +398,7 @@ void PipelineTest::addingANewOutlierLaterReTriggersTheFilterOnRecalc() {
   // a new outlier arrives later - no pipeline redeclaration, just new data
   QPointer<Point> outlier = this->makeCandidate(1000.0, job);
   InputElement e(outlier->getId());
-  e.typeOfElement = ePointElement;
+  e.typeOfElement = ElementTypes::ePointElement;
   e.point = outlier;
   function->addInputElement(e, 0);
 
@@ -432,13 +432,14 @@ void PipelineTest::pipelineStagesRoundTripThroughXml() {
   const QList<PipelineStage> stages = restored->getPipeline(0);
   QCOMPARE(stages.size(), 2);
 
-  QCOMPARE(stages.at(0).type, eExcludeStage);
+  QCOMPARE(stages.at(0).type, PipelineStageType::eExcludeStage);
   QCOMPARE(stages.at(0).explicitExclusions.size(), 1);
   QCOMPARE(stages.at(0).explicitExclusions.first().elementId, 7);
   QCOMPARE(stages.at(0).explicitExclusions.first().reason,
            QString("operator-flagged"));
 
-  QCOMPARE(stages.at(1).type, eResidualOutlierRejectionStage);
+  QCOMPARE(stages.at(1).type,
+           PipelineStageType::eResidualOutlierRejectionStage);
   QCOMPARE(stages.at(1).sigmaMultiplier, 2.5);
 }
 

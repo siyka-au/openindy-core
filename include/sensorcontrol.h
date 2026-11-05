@@ -152,8 +152,9 @@ class OI_CORE_EXPORT SensorControl : public QObject {
   // special sensor messages
   // #######################
 
-  void sensorMessage(QString msg, MessageTypes msgType,
-                     MessageDestinations msgDest = eConsoleMessage);
+  void sensorMessage(
+      QString msg, MessageTypes msgType,
+      MessageDestinations msgDest = MessageDestinations::eConsoleMessage);
 
  private:
   // ##############

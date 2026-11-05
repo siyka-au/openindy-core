@@ -35,7 +35,7 @@ class ReadingTest : public QObject {
 };
 
 void ReadingTest::initTestCase() {
-  ChooseLALib::setLinearAlgebra(ChooseLALib::Armadillo);
+  ChooseLALib::setLinearAlgebra(ChooseLALib::LinearAlgebraLibrary::Armadillo);
 }
 
 ReadingTest::ReadingTest() {}
@@ -81,7 +81,7 @@ void ReadingTest::testCartesian6D() {
 
   ReadingCartesian6D in = inReading->getCartesianReading6D();
 
-  QVERIFY(inReading->getTypeOfReading() == eCartesianReading6D);
+  QVERIFY(inReading->getTypeOfReading() == ReadingTypes::eCartesianReading6D);
   QVERIFY(in.isValid);
   COMPARE_DOUBLE(in.xyz.getAt(0), 1., 0.01);
   COMPARE_DOUBLE(in.xyz.getAt(1), 2., 0.01);
@@ -104,7 +104,7 @@ void ReadingTest::testCartesian() {
 
   ReadingCartesian in = inReading->getCartesianReading();
 
-  QVERIFY(inReading->getTypeOfReading() == eCartesianReading);
+  QVERIFY(inReading->getTypeOfReading() == ReadingTypes::eCartesianReading);
   QVERIFY(in.isValid);
   COMPARE_DOUBLE(in.xyz.getAt(0), 1., 0.01);
   COMPARE_DOUBLE(in.xyz.getAt(1), 2., 0.01);
@@ -121,7 +121,7 @@ void ReadingTest::testDistanceReading() {
 
   ReadingDistance in = inReading->getDistanceReading();
 
-  QVERIFY(inReading->getTypeOfReading() == eDistanceReading);
+  QVERIFY(inReading->getTypeOfReading() == ReadingTypes::eDistanceReading);
   QVERIFY(in.isValid);
   COMPARE_DOUBLE(in.distance, 123.4, 0.01);
 }
@@ -138,7 +138,7 @@ void ReadingTest::testPolarReading() {
 
   ReadingPolar in = inReading->getPolarReading();
 
-  QVERIFY(inReading->getTypeOfReading() == ePolarReading);
+  QVERIFY(inReading->getTypeOfReading() == ReadingTypes::ePolarReading);
   QVERIFY(in.isValid);
   COMPARE_DOUBLE(in.azimuth, 12.2, 0.01);
   COMPARE_DOUBLE(in.zenith, 23.3, 0.01);
@@ -156,7 +156,7 @@ void ReadingTest::testDirectionReading() {
 
   ReadingDirection in = inReading->getDirectionReading();
 
-  QVERIFY(inReading->getTypeOfReading() == eDirectionReading);
+  QVERIFY(inReading->getTypeOfReading() == ReadingTypes::eDirectionReading);
   QVERIFY(in.isValid);
   COMPARE_DOUBLE(in.azimuth, 12.2, 0.01);
   COMPARE_DOUBLE(in.zenith, 23.3, 0.01);
@@ -172,7 +172,7 @@ void ReadingTest::testTemperatureReading() {
 
   ReadingTemperature in = inReading->getTemperatureReading();
 
-  QVERIFY(inReading->getTypeOfReading() == eTemperatureReading);
+  QVERIFY(inReading->getTypeOfReading() == ReadingTypes::eTemperatureReading);
   QVERIFY(in.isValid);
   COMPARE_DOUBLE(in.temperature, 27.1, 0.01);
 }
@@ -189,7 +189,7 @@ void ReadingTest::testLevelReading() {
 
   ReadingLevel in = inReading->getLevelReading();
 
-  QVERIFY(inReading->getTypeOfReading() == eLevelReading);
+  QVERIFY(inReading->getTypeOfReading() == ReadingTypes::eLevelReading);
   QVERIFY(in.isValid);
   COMPARE_DOUBLE(in.i, .1, 0.01);
   COMPARE_DOUBLE(in.j, .9, 0.01);

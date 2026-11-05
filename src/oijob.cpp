@@ -66,7 +66,7 @@ void OiJob::setDigest(const QString& digest) { this->digest = digest; }
 CompatibilyCheckResult OiJob::checkCompatibilty() const {
   QStringList jobParts = loadedVersion.split(".");
   if (jobParts.length() < 2) {
-    return eCheckResult_job_wo_valid_version;
+    return CompatibilyCheckResult::eCheckResult_job_wo_valid_version;
   }
 
   int jobMajor = jobParts.at(0).toInt();
@@ -74,26 +74,26 @@ CompatibilyCheckResult OiJob::checkCompatibilty() const {
 
   QStringList oiParts = QString(OPENINDY_VERSION).split(".");
   if (oiParts.length() < 2) {
-    return eCheckResult_oi_wo_valid_version;
+    return CompatibilyCheckResult::eCheckResult_oi_wo_valid_version;
   }
 
   int oiMajor = oiParts.at(0).toInt();
   int oiMinor = oiParts.at(1).toInt();
 
   if (jobMajor <= 22 && jobMinor <= 1) {
-    return eCheckResult_job_lt_oi_22_1;
+    return CompatibilyCheckResult::eCheckResult_job_lt_oi_22_1;
   } else if (oiMajor == jobMajor) {
     if (oiMinor == jobMinor) {
-      return eCheckResult_match;
+      return CompatibilyCheckResult::eCheckResult_match;
     } else if (oiMinor > jobMinor) {
-      return eCheckResult_oi_gt_job;
+      return CompatibilyCheckResult::eCheckResult_oi_gt_job;
     } else {
-      return eCheckResult_oi_lt_job;
+      return CompatibilyCheckResult::eCheckResult_oi_lt_job;
     }
   } else if (oiMajor > jobMajor) {
-    return eCheckResult_oi_gt_job;
+    return CompatibilyCheckResult::eCheckResult_oi_gt_job;
   } else {
-    return eCheckResult_oi_lt_job;
+    return CompatibilyCheckResult::eCheckResult_oi_lt_job;
   }
 }
 
@@ -432,11 +432,12 @@ bool OiJob::addFeature(const QPointer<FeatureWrapper>& feature) {
 
   // features added signals
   emit this->featureSetChanged();
-  if (feature->getFeatureTypeEnum() == eCoordinateSystemFeature) {
+  if (feature->getFeatureTypeEnum() == FeatureTypes::eCoordinateSystemFeature) {
     emit this->coordSystemSetChanged();
-  } else if (feature->getFeatureTypeEnum() == eStationFeature) {
+  } else if (feature->getFeatureTypeEnum() == FeatureTypes::eStationFeature) {
     emit this->stationSetChanged();
-  } else if (feature->getFeatureTypeEnum() == eTrafoParamFeature) {
+  } else if (feature->getFeatureTypeEnum() ==
+             FeatureTypes::eTrafoParamFeature) {
     emit this->trafoParamSetChanged();
   } else {
     emit this->geometrySetChanged();
@@ -472,7 +473,7 @@ QList<QPointer<FeatureWrapper> > OiJob::addFeatures(
         features.at(0)->getCoordinateSystem().isNull() ||
         features.at(0)->getCoordinateSystem()->getIsStationSystem()) {
       emit this->sendMessage("No valid nominal system specified",
-                             eErrorMessage);
+                             MessageTypes::eErrorMessage);
       return result;
     }
     nominalSystem = features.at(0)->getCoordinateSystem();
@@ -481,7 +482,7 @@ QList<QPointer<FeatureWrapper> > OiJob::addFeatures(
   // if type is a TrafoParam then start and destination system have to be in the
   // job
   QPointer<CoordinateSystem> startSystem, destSystem;
-  if (fAttr.typeOfFeature == eTrafoParamFeature) {
+  if (fAttr.typeOfFeature == FeatureTypes::eTrafoParamFeature) {
     QList<QPointer<FeatureWrapper> > startSystems =
         this->featureContainer.getFeaturesByName(fAttr.startSystem);
     QList<QPointer<FeatureWrapper> > destinationSystems =
@@ -489,7 +490,8 @@ QList<QPointer<FeatureWrapper> > OiJob::addFeatures(
     if (startSystems.size() != 1 || destinationSystems.size() != 1 ||
         startSystems.at(0).isNull() || destinationSystems.at(0).isNull()) {
       emit this->sendMessage(
-          "No valid start and/or destination system specified", eErrorMessage);
+          "No valid start and/or destination system specified",
+          MessageTypes::eErrorMessage);
       return result;
     }
     if (!startSystems.at(0)->getCoordinateSystem().isNull()) {
@@ -514,7 +516,8 @@ QList<QPointer<FeatureWrapper> > OiJob::addFeatures(
 
     if (startSystem.isNull() || destSystem.isNull()) {
       emit this->sendMessage(
-          "No valid start and/or destination system specified", eErrorMessage);
+          "No valid start and/or destination system specified",
+          MessageTypes::eErrorMessage);
       return result;
     }
   }
@@ -523,7 +526,8 @@ QList<QPointer<FeatureWrapper> > OiJob::addFeatures(
   QStringList featureNames = this->createFeatureNames(fAttr.name, fAttr.count);
   foreach (const QString& name, featureNames) {
     if (!validateFeatureName(name, fAttr.typeOfFeature)) {
-      emit this->sendMessage("No valid feature name specified", eErrorMessage);
+      emit this->sendMessage("No valid feature name specified",
+                             MessageTypes::eErrorMessage);
       return result;
     }
   }
@@ -595,7 +599,7 @@ QList<QPointer<FeatureWrapper> > OiJob::addFeatures(
       feature->getFeature()->group = fAttr.group;
 
       // if type is trafo param set start and destination system
-      if (fAttr.typeOfFeature == eTrafoParamFeature) {
+      if (fAttr.typeOfFeature == FeatureTypes::eTrafoParamFeature) {
         feature->getTrafoParam()->from = startSystem;
         feature->getTrafoParam()->to = destSystem;
         startSystem->trafoParams.append(feature->getTrafoParam());
@@ -622,7 +626,7 @@ QList<QPointer<FeatureWrapper> > OiJob::addFeatures(
       }
 
       // if type of feature is a coordinate system
-      if (fAttr.typeOfFeature == eCoordinateSystemFeature) {
+      if (fAttr.typeOfFeature == FeatureTypes::eCoordinateSystemFeature) {
         feature->getCoordinateSystem()->isBundleSystem = fAttr.isBundleSystem;
         if (feature->getCoordinateSystem()->isBundleSystem) {
           this->activeBundleSystem = feature->getCoordinateSystem();
@@ -643,11 +647,11 @@ QList<QPointer<FeatureWrapper> > OiJob::addFeatures(
     emit this->availableGroupsChanged();
   }
   emit this->featureSetChanged();
-  if (fAttr.typeOfFeature == eCoordinateSystemFeature) {
+  if (fAttr.typeOfFeature == FeatureTypes::eCoordinateSystemFeature) {
     emit this->coordSystemSetChanged();
-  } else if (fAttr.typeOfFeature == eStationFeature) {
+  } else if (fAttr.typeOfFeature == FeatureTypes::eStationFeature) {
     emit this->stationSetChanged();
-  } else if (fAttr.typeOfFeature == eTrafoParamFeature) {
+  } else if (fAttr.typeOfFeature == FeatureTypes::eTrafoParamFeature) {
     emit this->trafoParamSetChanged();
   } else {
     emit this->geometrySetChanged();
@@ -688,15 +692,15 @@ bool OiJob::addFeatures(const QList<QPointer<FeatureWrapper> >& features,
 
   // features added signals
   emit this->featureSetChanged();
-  if (addedFeatureTypes.contains(eCoordinateSystemFeature)) {
+  if (addedFeatureTypes.contains(FeatureTypes::eCoordinateSystemFeature)) {
     emit this->coordSystemSetChanged();
-    addedFeatureTypes.removeOne(eCoordinateSystemFeature);
-  } else if (addedFeatureTypes.contains(eStationFeature)) {
+    addedFeatureTypes.removeOne(FeatureTypes::eCoordinateSystemFeature);
+  } else if (addedFeatureTypes.contains(FeatureTypes::eStationFeature)) {
     emit this->stationSetChanged();
-    addedFeatureTypes.removeOne(eStationFeature);
-  } else if (addedFeatureTypes.contains(eTrafoParamFeature)) {
+    addedFeatureTypes.removeOne(FeatureTypes::eStationFeature);
+  } else if (addedFeatureTypes.contains(FeatureTypes::eTrafoParamFeature)) {
     emit this->trafoParamSetChanged();
-    addedFeatureTypes.removeOne(eTrafoParamFeature);
+    addedFeatureTypes.removeOne(FeatureTypes::eTrafoParamFeature);
   } else if (addedFeatureTypes.size() > 0) {
     emit this->geometrySetChanged();
   }
@@ -721,7 +725,7 @@ bool OiJob::removeFeature(const int& featureId) {
   if (!this->canRemoveFeature(feature)) {
     emit this->sendMessage(QString("Cannot remove feature %1")
                                .arg(feature->getFeature()->getFeatureName()),
-                           eWarningMessage);
+                           MessageTypes::eWarningMessage);
     return false;
   }
 
@@ -765,7 +769,7 @@ bool OiJob::removeFeature(const QPointer<FeatureWrapper>& feature) {
   if (!this->canRemoveFeature(feature)) {
     emit this->sendMessage(QString("Cannot remove feature %1")
                                .arg(feature->getFeature()->getFeatureName()),
-                           eWarningMessage);
+                           MessageTypes::eWarningMessage);
     return false;
   }
 
@@ -886,7 +890,7 @@ void OiJob::addFunction(const QPointer<Function>& function) {
   // check active feature
   if (this->activeFeature.isNull() ||
       this->activeFeature->getFeature().isNull()) {
-    emit this->sendMessage("No active feature", eErrorMessage);
+    emit this->sendMessage("No active feature", MessageTypes::eErrorMessage);
     return;
   }
 
@@ -927,13 +931,13 @@ bool OiJob::addOwnedSubGeometry(const QPointer<FeatureWrapper>& owner,
   // check owner
   if (owner.isNull() || owner->getGeometry().isNull()) {
     emit this->sendMessage("No valid owner feature for owned sub-geometry",
-                           eErrorMessage);
+                           MessageTypes::eErrorMessage);
     return false;
   }
   if (this->featureContainer.getFeatureById(owner->getGeometry()->getId())
           .isNull()) {
     emit this->sendMessage("Owner feature is not part of this job",
-                           eErrorMessage);
+                           MessageTypes::eErrorMessage);
     return false;
   }
 
@@ -942,25 +946,25 @@ bool OiJob::addOwnedSubGeometry(const QPointer<FeatureWrapper>& owner,
   // accessor's producer gets attached)
   if (subGeometry.isNull() || subGeometry->getGeometry().isNull()) {
     emit this->sendMessage("No valid feature to generate as owned sub-geometry",
-                           eErrorMessage);
+                           MessageTypes::eErrorMessage);
     return false;
   }
   if (this->featureContainer.getFeatureById(subGeometry->getGeometry()->getId())
           .isNull()) {
     emit this->sendMessage("Sub-geometry feature is not part of this job",
-                           eErrorMessage);
+                           MessageTypes::eErrorMessage);
     return false;
   }
   if (!subGeometry->getGeometry()->getFunctions().isEmpty()) {
     emit this->sendMessage("Feature already has a producer function",
-                           eErrorMessage);
+                           MessageTypes::eErrorMessage);
     return false;
   }
 
   // check function
   if (producerFunction.isNull()) {
     emit this->sendMessage("No valid function for owned sub-geometry",
-                           eErrorMessage);
+                           MessageTypes::eErrorMessage);
     return false;
   }
 
@@ -996,7 +1000,7 @@ void OiJob::removeFunction(const int& functionIndex) {
   // check active feature
   if (this->activeFeature.isNull() ||
       this->activeFeature->getFeature().isNull()) {
-    emit this->sendMessage("No active feature", eErrorMessage);
+    emit this->sendMessage("No active feature", MessageTypes::eErrorMessage);
     return;
   }
 
@@ -1074,7 +1078,7 @@ void OiJob::addInputObservation(const QPointer<FeatureWrapper>& target,
 
   // create and add input element
   InputElement element(observation->getId());
-  element.typeOfElement = eObservationElement;
+  element.typeOfElement = ElementTypes::eObservationElement;
   element.observation = observation;
   target->getFeature()
       ->getFunctions()
@@ -1124,7 +1128,7 @@ void OiJob::addInputPoint(const QPointer<FeatureWrapper>& target,
 
   // create and add input element
   InputElement element(point->getId());
-  element.typeOfElement = ePointElement;
+  element.typeOfElement = ElementTypes::ePointElement;
   element.point = point;
   element.geometry = point;
   function->addInputElement(element, neededElementsIndex);
@@ -1167,7 +1171,8 @@ void OiJob::resolvePointIntent(const QPointer<Point>& point,
     for (int neededElementsIndex = 0; neededElementsIndex < needed.size();
          ++neededElementsIndex) {
       const NeededElement& ne = needed.at(neededElementsIndex);
-      if (ne.typeOfElement == ePointElement && ne.roleName == intent.roleName) {
+      if (ne.typeOfElement == ElementTypes::ePointElement &&
+          ne.roleName == intent.roleName) {
         this->addInputPoint(target, functionPosition, neededElementsIndex,
                             point);
       }
@@ -1226,22 +1231,22 @@ void OiJob::addInputReading(const QPointer<FeatureWrapper>& target,
   element.typeOfElement = getElementTypeEnum(reading->getTypeOfReading());
 
   switch (reading->getTypeOfReading()) {
-    case eDistanceReading:
+    case ReadingTypes::eDistanceReading:
       element.distanceReading = reading;
       break;
-    case eCartesianReading:
+    case ReadingTypes::eCartesianReading:
       element.cartesianReading = reading;
       break;
-    case ePolarReading:
+    case ReadingTypes::ePolarReading:
       element.polarReading = reading;
       break;
-    case eDirectionReading:
+    case ReadingTypes::eDirectionReading:
       element.directionReading = reading;
       break;
-    case eTemperatureReading:
+    case ReadingTypes::eTemperatureReading:
       element.temperatureReading = reading;
       break;
-    case eLevelReading:
+    case ReadingTypes::eLevelReading:
       element.levelReading = reading;
       break;
     default:
@@ -1287,7 +1292,8 @@ void OiJob::addInputFeature(const QPointer<FeatureWrapper>& target,
   // check circular reference
   if (this->checkCircleWarning(target->getFeature(), feature->getFeature())) {
     emit this->sendMessage("Cannot add input element: circular reference error",
-                           eErrorMessage, eMessageBoxMessage);
+                           MessageTypes::eErrorMessage,
+                           MessageDestinations::eMessageBoxMessage);
     return;
   }
 
@@ -1305,7 +1311,7 @@ void OiJob::addInputFeature(const QPointer<FeatureWrapper>& target,
       function->getNeededElements().at(neededElementsIndex).typeOfElement;
 
   switch (element.typeOfElement) {
-    case eCircleElement: {
+    case ElementTypes::eCircleElement: {
       // check circle
       if (feature->getGeometry().isNull() || feature->getCircle().isNull()) {
         return;
@@ -1317,7 +1323,7 @@ void OiJob::addInputFeature(const QPointer<FeatureWrapper>& target,
 
       break;
     }
-    case eConeElement: {
+    case ElementTypes::eConeElement: {
       // check cone
       if (feature->getGeometry().isNull() || feature->getCone().isNull()) {
         return;
@@ -1329,7 +1335,7 @@ void OiJob::addInputFeature(const QPointer<FeatureWrapper>& target,
 
       break;
     }
-    case eCylinderElement: {
+    case ElementTypes::eCylinderElement: {
       // check cylinder
       if (feature->getGeometry().isNull() || feature->getCylinder().isNull()) {
         return;
@@ -1341,7 +1347,7 @@ void OiJob::addInputFeature(const QPointer<FeatureWrapper>& target,
 
       break;
     }
-    case eEllipseElement: {
+    case ElementTypes::eEllipseElement: {
       // check ellipse
       if (feature->getGeometry().isNull() || feature->getEllipse().isNull()) {
         return;
@@ -1353,7 +1359,7 @@ void OiJob::addInputFeature(const QPointer<FeatureWrapper>& target,
 
       break;
     }
-    case eEllipsoidElement: {
+    case ElementTypes::eEllipsoidElement: {
       // check ellipsoid
       if (feature->getGeometry().isNull() || feature->getEllipsoid().isNull()) {
         return;
@@ -1365,7 +1371,7 @@ void OiJob::addInputFeature(const QPointer<FeatureWrapper>& target,
 
       break;
     }
-    case eHyperboloidElement: {
+    case ElementTypes::eHyperboloidElement: {
       // check hyperboloid
       if (feature->getGeometry().isNull() ||
           feature->getHyperboloid().isNull()) {
@@ -1378,7 +1384,7 @@ void OiJob::addInputFeature(const QPointer<FeatureWrapper>& target,
 
       break;
     }
-    case eLineElement: {
+    case ElementTypes::eLineElement: {
       // check line
       if (feature->getGeometry().isNull() || feature->getLine().isNull()) {
         return;
@@ -1390,7 +1396,7 @@ void OiJob::addInputFeature(const QPointer<FeatureWrapper>& target,
 
       break;
     }
-    case eNurbsElement: {
+    case ElementTypes::eNurbsElement: {
       // check nurbs
       if (feature->getGeometry().isNull() || feature->getNurbs().isNull()) {
         return;
@@ -1402,7 +1408,7 @@ void OiJob::addInputFeature(const QPointer<FeatureWrapper>& target,
 
       break;
     }
-    case eParaboloidElement: {
+    case ElementTypes::eParaboloidElement: {
       // check paraboloid
       if (feature->getGeometry().isNull() ||
           feature->getParaboloid().isNull()) {
@@ -1415,7 +1421,7 @@ void OiJob::addInputFeature(const QPointer<FeatureWrapper>& target,
 
       break;
     }
-    case ePlaneElement: {
+    case ElementTypes::ePlaneElement: {
       // check plane
       if (feature->getGeometry().isNull() || feature->getPlane().isNull()) {
         return;
@@ -1427,7 +1433,7 @@ void OiJob::addInputFeature(const QPointer<FeatureWrapper>& target,
 
       break;
     }
-    case ePointElement: {
+    case ElementTypes::ePointElement: {
       // check point
       if (feature->getGeometry().isNull() || feature->getPoint().isNull()) {
         return;
@@ -1439,7 +1445,7 @@ void OiJob::addInputFeature(const QPointer<FeatureWrapper>& target,
 
       break;
     }
-    case ePointCloudElement: {
+    case ElementTypes::ePointCloudElement: {
       // check point cloud
       if (feature->getGeometry().isNull() ||
           feature->getPointCloud().isNull()) {
@@ -1452,7 +1458,7 @@ void OiJob::addInputFeature(const QPointer<FeatureWrapper>& target,
 
       break;
     }
-    case eScalarEntityAngleElement: {
+    case ElementTypes::eScalarEntityAngleElement: {
       // check angle
       if (feature->getGeometry().isNull() ||
           feature->getScalarEntityAngle().isNull()) {
@@ -1465,7 +1471,7 @@ void OiJob::addInputFeature(const QPointer<FeatureWrapper>& target,
 
       break;
     }
-    case eScalarEntityDistanceElement: {
+    case ElementTypes::eScalarEntityDistanceElement: {
       // check distance
       if (feature->getGeometry().isNull() ||
           feature->getScalarEntityDistance().isNull()) {
@@ -1478,7 +1484,7 @@ void OiJob::addInputFeature(const QPointer<FeatureWrapper>& target,
 
       break;
     }
-    case eScalarEntityMeasurementSeriesElement: {
+    case ElementTypes::eScalarEntityMeasurementSeriesElement: {
       // check series
       if (feature->getGeometry().isNull() ||
           feature->getScalarEntityMeasurementSeries().isNull()) {
@@ -1492,7 +1498,7 @@ void OiJob::addInputFeature(const QPointer<FeatureWrapper>& target,
 
       break;
     }
-    case eScalarEntityTemperatureElement: {
+    case ElementTypes::eScalarEntityTemperatureElement: {
       // check temperature
       if (feature->getGeometry().isNull() ||
           feature->getScalarEntityTemperature().isNull()) {
@@ -1505,7 +1511,7 @@ void OiJob::addInputFeature(const QPointer<FeatureWrapper>& target,
 
       break;
     }
-    case eSlottedHoleElement: {
+    case ElementTypes::eSlottedHoleElement: {
       // check slotted hole
       if (feature->getGeometry().isNull() ||
           feature->getSlottedHole().isNull()) {
@@ -1518,7 +1524,7 @@ void OiJob::addInputFeature(const QPointer<FeatureWrapper>& target,
 
       break;
     }
-    case eSphereElement: {
+    case ElementTypes::eSphereElement: {
       // check sphere
       if (feature->getGeometry().isNull() || feature->getSphere().isNull()) {
         return;
@@ -1530,7 +1536,7 @@ void OiJob::addInputFeature(const QPointer<FeatureWrapper>& target,
 
       break;
     }
-    case eTorusElement: {
+    case ElementTypes::eTorusElement: {
       // check torus
       if (feature->getGeometry().isNull() || feature->getTorus().isNull()) {
         return;
@@ -1542,7 +1548,7 @@ void OiJob::addInputFeature(const QPointer<FeatureWrapper>& target,
 
       break;
     }
-    case eDirectionElement: {
+    case ElementTypes::eDirectionElement: {
       // check direction
       if (feature->getGeometry().isNull() ||
           !feature->getGeometry()->hasDirection()) {
@@ -1554,7 +1560,7 @@ void OiJob::addInputFeature(const QPointer<FeatureWrapper>& target,
 
       break;
     }
-    case ePositionElement: {
+    case ElementTypes::ePositionElement: {
       // check position
       if (feature->getGeometry().isNull() ||
           !feature->getGeometry()->hasPosition()) {
@@ -1566,7 +1572,7 @@ void OiJob::addInputFeature(const QPointer<FeatureWrapper>& target,
 
       break;
     }
-    case eRadiusElement: {
+    case ElementTypes::eRadiusElement: {
       // check radius
       if (feature->getGeometry().isNull() ||
           !feature->getGeometry()->hasRadius()) {
@@ -1578,7 +1584,7 @@ void OiJob::addInputFeature(const QPointer<FeatureWrapper>& target,
 
       break;
     }
-    case eCoordinateSystemElement: {
+    case ElementTypes::eCoordinateSystemElement: {
       // check coordinate system
       if (feature->getCoordinateSystem().isNull()) {
         return;
@@ -1589,7 +1595,7 @@ void OiJob::addInputFeature(const QPointer<FeatureWrapper>& target,
 
       break;
     }
-    case eStationElement: {
+    case ElementTypes::eStationElement: {
       // check station
       if (feature->getStation().isNull()) {
         return;
@@ -1600,7 +1606,7 @@ void OiJob::addInputFeature(const QPointer<FeatureWrapper>& target,
 
       break;
     }
-    case eTrafoParamElement: {
+    case ElementTypes::eTrafoParamElement: {
       // check trafo param
       if (feature->getTrafoParam().isNull()) {
         return;
@@ -1703,7 +1709,7 @@ void OiJob::addMeasurementResults(const int& geomId,
   if (activeStation.isNull() || activeStation->getCoordinateSystem().isNull()) {
     emit this->sendMessage(
         "Measurement rejected: no active station with a coordinate system",
-        eErrorMessage, eMessageBoxMessage);
+        MessageTypes::eErrorMessage, MessageDestinations::eMessageBoxMessage);
     foreach (const QPointer<Reading>& reading, readings) {
       if (!reading.isNull()) {
         delete reading.data();
@@ -1721,7 +1727,7 @@ void OiJob::addMeasurementResults(const int& geomId,
     emit this->sendMessage(
         QString("Measurement rejected: target feature %1 could not be resolved")
             .arg(geomId),
-        eErrorMessage, eMessageBoxMessage);
+        MessageTypes::eErrorMessage, MessageDestinations::eMessageBoxMessage);
     foreach (const QPointer<Reading>& reading, readings) {
       if (!reading.isNull()) {
         delete reading.data();
@@ -1764,11 +1770,11 @@ void OiJob::addMeasurementResults(const int& geomId,
   // exactly why the point is registered as a dependency below before
   // anything is recalculated.
   QPointer<FeatureWrapper> pointFeature =
-      this->createFeatureWrapper(ePointFeature);
+      this->createFeatureWrapper(FeatureTypes::ePointFeature);
   if (pointFeature.isNull() || pointFeature->getPoint().isNull()) {
     emit this->sendMessage(
         "Measurement rejected: could not create the resulting point",
-        eErrorMessage, eMessageBoxMessage);
+        MessageTypes::eErrorMessage, MessageDestinations::eMessageBoxMessage);
     return;
   }
 
@@ -1846,7 +1852,7 @@ void OiJob::enableOrDisableObservations(const int& featureId, bool enable) {
         QString("Cannot enable or disable observations from %1")
             .arg(feature.isNull() ? QString("feature id: %1").arg(featureId)
                                   : feature->getFeature()->getFeatureName()),
-        eWarningMessage);
+        MessageTypes::eWarningMessage);
     return;
   }
 
@@ -1878,7 +1884,7 @@ void OiJob::enableOrDisableGeometryObservations(const int& featureId,
         QString("Cannot enable or disable observations from %1")
             .arg(feature.isNull() ? QString("feature id: %1").arg(featureId)
                                   : feature->getFeature()->getFeatureName()),
-        eWarningMessage);
+        MessageTypes::eWarningMessage);
     return;
   }
 
@@ -2611,7 +2617,7 @@ void OiJob::connectFeature(const QPointer<FeatureWrapper>& feature) {
   }
 
   // trafo param connects
-  if (feature->getFeatureTypeEnum() == eTrafoParamFeature) {
+  if (feature->getFeatureTypeEnum() == FeatureTypes::eTrafoParamFeature) {
     QObject::connect(feature->getTrafoParam().data(),
                      &TrafoParam::transformationParameterChanged, this,
                      &OiJob::setTrafoParamParameters, Qt::AutoConnection);
@@ -2633,7 +2639,7 @@ void OiJob::connectFeature(const QPointer<FeatureWrapper>& feature) {
   }
 
   // station connects
-  if (feature->getFeatureTypeEnum() == eStationFeature) {
+  if (feature->getFeatureTypeEnum() == FeatureTypes::eStationFeature) {
     QObject::connect(feature->getStation().data(),
                      &Station::activeStationChanged, this,
                      &OiJob::setActiveStation, Qt::AutoConnection);
@@ -2653,7 +2659,7 @@ void OiJob::connectFeature(const QPointer<FeatureWrapper>& feature) {
   }
 
   // coordinate system connects
-  if (feature->getFeatureTypeEnum() == eCoordinateSystemFeature) {
+  if (feature->getFeatureTypeEnum() == FeatureTypes::eCoordinateSystemFeature) {
     QObject::connect(feature->getCoordinateSystem().data(),
                      &CoordinateSystem::nominalsChanged, this,
                      &OiJob::setSystemsNominals, Qt::AutoConnection);
@@ -2736,7 +2742,7 @@ void OiJob::disconnectFeature(const QPointer<FeatureWrapper>& feature) {
   }
 
   // trafo param connects
-  if (feature->getFeatureTypeEnum() == eTrafoParamFeature) {
+  if (feature->getFeatureTypeEnum() == FeatureTypes::eTrafoParamFeature) {
     QObject::disconnect(feature->getTrafoParam().data(),
                         &TrafoParam::transformationParameterChanged, this,
                         &OiJob::setTrafoParamParameters);
@@ -2756,7 +2762,7 @@ void OiJob::disconnectFeature(const QPointer<FeatureWrapper>& feature) {
   }
 
   // station connects
-  if (feature->getFeatureTypeEnum() == eStationFeature) {
+  if (feature->getFeatureTypeEnum() == FeatureTypes::eStationFeature) {
     QObject::disconnect(feature->getStation().data(),
                         &Station::activeStationChanged, this,
                         &OiJob::setActiveStation);
@@ -2776,7 +2782,7 @@ void OiJob::disconnectFeature(const QPointer<FeatureWrapper>& feature) {
   }
 
   // coordinate system connects
-  if (feature->getFeatureTypeEnum() == eCoordinateSystemFeature) {
+  if (feature->getFeatureTypeEnum() == FeatureTypes::eCoordinateSystemFeature) {
     QObject::disconnect(feature->getCoordinateSystem().data(),
                         &CoordinateSystem::nominalsChanged, this,
                         &OiJob::setSystemsNominals);
@@ -2866,125 +2872,125 @@ QPointer<FeatureWrapper> OiJob::createFeatureWrapper(
   QPointer<FeatureWrapper> feature = new FeatureWrapper();
 
   switch (type) {
-    case eStationFeature: {
+    case FeatureTypes::eStationFeature: {
       Station* station = new Station();
       feature->setStation(station);
       break;
     }
-    case eTrafoParamFeature: {
+    case FeatureTypes::eTrafoParamFeature: {
       TrafoParam* trafoParam = new TrafoParam();
       feature->setTrafoParam(trafoParam);
       break;
     }
-    case eCoordinateSystemFeature: {
+    case FeatureTypes::eCoordinateSystemFeature: {
       CoordinateSystem* coordSystem = new CoordinateSystem();
       feature->setCoordinateSystem(coordSystem);
       break;
     }
-    case eCircleFeature: {
+    case FeatureTypes::eCircleFeature: {
       Circle* circle = new Circle();
       feature->setCircle(circle);
       break;
     }
-    case eConeFeature: {
+    case FeatureTypes::eConeFeature: {
       Cone* cone = new Cone();
       feature->setCone(cone);
       break;
     }
-    case eCylinderFeature: {
+    case FeatureTypes::eCylinderFeature: {
       Cylinder* cylinder = new Cylinder();
       feature->setCylinder(cylinder);
       break;
     }
-    case eEllipseFeature: {
+    case FeatureTypes::eEllipseFeature: {
       Ellipse* ellipse = new Ellipse();
       feature->setEllipse(ellipse);
       break;
     }
-    case eEllipsoidFeature: {
+    case FeatureTypes::eEllipsoidFeature: {
       Ellipsoid* ellipsoid = new Ellipsoid();
       feature->setEllipsoid(ellipsoid);
       break;
     }
-    case eHyperboloidFeature: {
+    case FeatureTypes::eHyperboloidFeature: {
       Hyperboloid* hyperboloid = new Hyperboloid();
       feature->setHyperboloid(hyperboloid);
       break;
     }
-    case eLineFeature: {
+    case FeatureTypes::eLineFeature: {
       Line* line = new Line();
       feature->setLine(line);
       break;
     }
-    case eNurbsFeature: {
+    case FeatureTypes::eNurbsFeature: {
       Nurbs* nurbs = new Nurbs();
       feature->setNurbs(nurbs);
       break;
     }
-    case eParaboloidFeature: {
+    case FeatureTypes::eParaboloidFeature: {
       Paraboloid* paraboloid = new Paraboloid();
       feature->setParaboloid(paraboloid);
       break;
     }
-    case ePlaneFeature: {
+    case FeatureTypes::ePlaneFeature: {
       Plane* plane = new Plane();
       feature->setPlane(plane);
       break;
     }
-    case ePointFeature: {
+    case FeatureTypes::ePointFeature: {
       Point* point = new Point();
       feature->setPoint(point);
       break;
     }
-    case ePointCloudFeature: {
+    case FeatureTypes::ePointCloudFeature: {
       PointCloud* pointCloud = new PointCloud();
       feature->setPointCloud(pointCloud);
       break;
     }
-    case eGroupFeature: {
+    case FeatureTypes::eGroupFeature: {
       // organisational, never nominal: a group holds references and is
       // neither measured nor solved, so isNominal has no meaning for it
       Group* group = new Group();
       feature->setGroup(group);
       break;
     }
-    case ePointGroupFeature: {
+    case FeatureTypes::ePointGroupFeature: {
       PointGroup* pointGroup = new PointGroup();
       feature->setPointGroup(pointGroup);
       break;
     }
-    case eScalarEntityAngleFeature: {
+    case FeatureTypes::eScalarEntityAngleFeature: {
       ScalarEntityAngle* angle = new ScalarEntityAngle();
       feature->setScalarEntityAngle(angle);
       break;
     }
-    case eScalarEntityDistanceFeature: {
+    case FeatureTypes::eScalarEntityDistanceFeature: {
       ScalarEntityDistance* distance = new ScalarEntityDistance();
       feature->setScalarEntityDistance(distance);
       break;
     }
-    case eScalarEntityMeasurementSeriesFeature: {
+    case FeatureTypes::eScalarEntityMeasurementSeriesFeature: {
       ScalarEntityMeasurementSeries* measurementSeries =
           new ScalarEntityMeasurementSeries();
       feature->setScalarEntityMeasurementSeries(measurementSeries);
       break;
     }
-    case eScalarEntityTemperatureFeature: {
+    case FeatureTypes::eScalarEntityTemperatureFeature: {
       ScalarEntityTemperature* temperature = new ScalarEntityTemperature();
       feature->setScalarEntityTemperature(temperature);
       break;
     }
-    case eSlottedHoleFeature: {
+    case FeatureTypes::eSlottedHoleFeature: {
       SlottedHole* slottedHole = new SlottedHole();
       feature->setSlottedHole(slottedHole);
       break;
     }
-    case eSphereFeature: {
+    case FeatureTypes::eSphereFeature: {
       Sphere* sphere = new Sphere();
       feature->setSphere(sphere);
       break;
     }
-    case eTorusFeature: {
+    case FeatureTypes::eTorusFeature: {
       Torus* torus = new Torus();
       feature->setTorus(torus);
       break;
@@ -3016,7 +3022,8 @@ bool OiJob::checkAndSetUpNewFeature(const QPointer<FeatureWrapper>& feature,
   if (!this->validateFeatureName(feature->getFeature()->getFeatureName(),
                                  feature->getFeatureTypeEnum())) {
     // check if feature should be overwritten
-    if (overwrite && feature->getFeatureTypeEnum() == ePointFeature) {
+    if (overwrite &&
+        feature->getFeatureTypeEnum() == FeatureTypes::ePointFeature) {
       // get existing feature and set new values
       // get a list of features with name name
       QList<QPointer<FeatureWrapper> > features =
@@ -3030,12 +3037,13 @@ bool OiJob::checkAndSetUpNewFeature(const QPointer<FeatureWrapper>& feature,
           // overwrite existing position with new position
           fw->getPoint()->setPoint(feature->getPoint()->getPosition());
           emit this->sendMessage("changed values of existing features",
-                                 eWarningMessage);
+                                 MessageTypes::eWarningMessage);
           return false;
         }
       }
     } else {
-      emit this->sendMessage("feature name already exists", eWarningMessage);
+      emit this->sendMessage("feature name already exists",
+                             MessageTypes::eWarningMessage);
       return false;
     }
   }
@@ -3044,7 +3052,7 @@ bool OiJob::checkAndSetUpNewFeature(const QPointer<FeatureWrapper>& feature,
   feature->getFeature()->setActiveFeatureState(false);
 
   // check feature relations
-  if (feature->getFeatureTypeEnum() == eCoordinateSystemFeature) {
+  if (feature->getFeatureTypeEnum() == FeatureTypes::eCoordinateSystemFeature) {
     if (!feature->getCoordinateSystem().isNull() &&
         feature->getCoordinateSystem()->getIsBundleSystem()) {
       this->activeBundleSystem = feature->getCoordinateSystem();
@@ -3074,11 +3082,12 @@ bool OiJob::checkAndSetUpNewFeature(const QPointer<FeatureWrapper>& feature,
       return true;
     }
 
-  } else if (feature->getFeatureTypeEnum() == eStationFeature) {
+  } else if (feature->getFeatureTypeEnum() == FeatureTypes::eStationFeature) {
     // new station shall not be active
     feature->getStation()->setActiveStationState(false);
 
-  } else if (feature->getFeatureTypeEnum() == eTrafoParamFeature) {
+  } else if (feature->getFeatureTypeEnum() ==
+             FeatureTypes::eTrafoParamFeature) {
     // start and destination system have to exist in this job
     if (feature->getTrafoParam()->getStartSystem().isNull() ||
         feature->getTrafoParam()->getDestinationSystem().isNull()) {
@@ -3168,7 +3177,8 @@ bool OiJob::canRemoveFeature(const QPointer<FeatureWrapper>& feature) const {
   // do not remove active station or active coordinate system
   if (!feature->getStation().isNull() &&
       feature->getStation()->getIsActiveStation()) {
-    emit this->sendMessage("Cannot delete the active station", eWarningMessage);
+    emit this->sendMessage("Cannot delete the active station",
+                           MessageTypes::eWarningMessage);
     return false;
   }
   if ((!feature->getCoordinateSystem().isNull() &&
@@ -3179,7 +3189,7 @@ bool OiJob::canRemoveFeature(const QPointer<FeatureWrapper>& feature) const {
            ->getCoordinateSystem()
            ->getIsActiveCoordinateSystem())) {
     emit this->sendMessage("Cannot delete the active coordinate system",
-                           eWarningMessage);
+                           MessageTypes::eWarningMessage);
     return false;
   }
 
@@ -3188,7 +3198,7 @@ bool OiJob::canRemoveFeature(const QPointer<FeatureWrapper>& feature) const {
       feature->getCoordinateSystem()->getIsStationSystem()) {
     emit this->sendMessage(
         "Cannot delete a station system without the corresponding station",
-        eWarningMessage);
+        MessageTypes::eWarningMessage);
     return false;
   }
 
@@ -3199,7 +3209,7 @@ bool OiJob::canRemoveFeature(const QPointer<FeatureWrapper>& feature) const {
           0) {
     emit this->sendMessage(
         "Cannot delete a station which contains one or more observations",
-        eWarningMessage);
+        MessageTypes::eWarningMessage);
     return false;
   }
 
@@ -3208,7 +3218,7 @@ bool OiJob::canRemoveFeature(const QPointer<FeatureWrapper>& feature) const {
       feature->getCoordinateSystem()->getNominals().size() > 0) {
     emit this->sendMessage(
         "Cannot delete a coordinate system which contains one or more nominals",
-        eWarningMessage);
+        MessageTypes::eWarningMessage);
     return false;
   }
 
@@ -3280,140 +3290,140 @@ void OiJob::setUpDependencies(const InputElement& element,
                               const QPointer<Feature>& feature) {
   if (getIsFeature(element.typeOfElement)) {
     switch (element.typeOfElement) {
-      case eCircleElement: {
+      case ElementTypes::eCircleElement: {
         if (!element.geometry.isNull() &&
             !element.geometry->getFeatureWrapper().isNull()) {
           feature->addPreviouslyNeeded(element.geometry->getFeatureWrapper());
         }
         break;
       }
-      case eConeElement: {
+      case ElementTypes::eConeElement: {
         if (!element.geometry.isNull() &&
             !element.geometry->getFeatureWrapper().isNull()) {
           feature->addPreviouslyNeeded(element.geometry->getFeatureWrapper());
         }
         break;
       }
-      case eCylinderElement: {
+      case ElementTypes::eCylinderElement: {
         if (!element.geometry.isNull() &&
             !element.geometry->getFeatureWrapper().isNull()) {
           feature->addPreviouslyNeeded(element.geometry->getFeatureWrapper());
         }
         break;
       }
-      case eEllipseElement: {
+      case ElementTypes::eEllipseElement: {
         if (!element.geometry.isNull() &&
             !element.geometry->getFeatureWrapper().isNull()) {
           feature->addPreviouslyNeeded(element.geometry->getFeatureWrapper());
         }
         break;
       }
-      case eEllipsoidElement: {
+      case ElementTypes::eEllipsoidElement: {
         if (!element.geometry.isNull() &&
             !element.geometry->getFeatureWrapper().isNull()) {
           feature->addPreviouslyNeeded(element.geometry->getFeatureWrapper());
         }
         break;
       }
-      case eHyperboloidElement: {
+      case ElementTypes::eHyperboloidElement: {
         if (!element.geometry.isNull() &&
             !element.geometry->getFeatureWrapper().isNull()) {
           feature->addPreviouslyNeeded(element.geometry->getFeatureWrapper());
         }
         break;
       }
-      case eLineElement: {
+      case ElementTypes::eLineElement: {
         if (!element.geometry.isNull() &&
             !element.geometry->getFeatureWrapper().isNull()) {
           feature->addPreviouslyNeeded(element.geometry->getFeatureWrapper());
         }
         break;
       }
-      case eNurbsElement: {
+      case ElementTypes::eNurbsElement: {
         if (!element.geometry.isNull() &&
             !element.geometry->getFeatureWrapper().isNull()) {
           feature->addPreviouslyNeeded(element.geometry->getFeatureWrapper());
         }
         break;
       }
-      case eParaboloidElement: {
+      case ElementTypes::eParaboloidElement: {
         if (!element.geometry.isNull() &&
             !element.geometry->getFeatureWrapper().isNull()) {
           feature->addPreviouslyNeeded(element.geometry->getFeatureWrapper());
         }
         break;
       }
-      case ePlaneElement: {
+      case ElementTypes::ePlaneElement: {
         if (!element.geometry.isNull() &&
             !element.geometry->getFeatureWrapper().isNull()) {
           feature->addPreviouslyNeeded(element.geometry->getFeatureWrapper());
         }
         break;
       }
-      case ePointElement: {
+      case ElementTypes::ePointElement: {
         if (!element.geometry.isNull() &&
             !element.geometry->getFeatureWrapper().isNull()) {
           feature->addPreviouslyNeeded(element.geometry->getFeatureWrapper());
         }
         break;
       }
-      case ePointCloudElement: {
+      case ElementTypes::ePointCloudElement: {
         if (!element.geometry.isNull() &&
             !element.geometry->getFeatureWrapper().isNull()) {
           feature->addPreviouslyNeeded(element.geometry->getFeatureWrapper());
         }
         break;
       }
-      case eScalarEntityAngleElement: {
+      case ElementTypes::eScalarEntityAngleElement: {
         if (!element.geometry.isNull() &&
             !element.geometry->getFeatureWrapper().isNull()) {
           feature->addPreviouslyNeeded(element.geometry->getFeatureWrapper());
         }
         break;
       }
-      case eScalarEntityDistanceElement: {
+      case ElementTypes::eScalarEntityDistanceElement: {
         if (!element.geometry.isNull() &&
             !element.geometry->getFeatureWrapper().isNull()) {
           feature->addPreviouslyNeeded(element.geometry->getFeatureWrapper());
         }
         break;
       }
-      case eScalarEntityMeasurementSeriesElement: {
+      case ElementTypes::eScalarEntityMeasurementSeriesElement: {
         if (!element.geometry.isNull() &&
             !element.geometry->getFeatureWrapper().isNull()) {
           feature->addPreviouslyNeeded(element.geometry->getFeatureWrapper());
         }
         break;
       }
-      case eScalarEntityTemperatureElement: {
+      case ElementTypes::eScalarEntityTemperatureElement: {
         if (!element.geometry.isNull() &&
             !element.geometry->getFeatureWrapper().isNull()) {
           feature->addPreviouslyNeeded(element.geometry->getFeatureWrapper());
         }
         break;
       }
-      case eSlottedHoleElement: {
+      case ElementTypes::eSlottedHoleElement: {
         if (!element.geometry.isNull() &&
             !element.geometry->getFeatureWrapper().isNull()) {
           feature->addPreviouslyNeeded(element.geometry->getFeatureWrapper());
         }
         break;
       }
-      case eSphereElement: {
+      case ElementTypes::eSphereElement: {
         if (!element.geometry.isNull() &&
             !element.geometry->getFeatureWrapper().isNull()) {
           feature->addPreviouslyNeeded(element.geometry->getFeatureWrapper());
         }
         break;
       }
-      case eTorusElement: {
+      case ElementTypes::eTorusElement: {
         if (!element.geometry.isNull() &&
             !element.geometry->getFeatureWrapper().isNull()) {
           feature->addPreviouslyNeeded(element.geometry->getFeatureWrapper());
         }
         break;
       }
-      case eCoordinateSystemElement: {
+      case ElementTypes::eCoordinateSystemElement: {
         if (!element.coordSystem.isNull() &&
             !element.coordSystem->getFeatureWrapper().isNull()) {
           feature->addPreviouslyNeeded(
@@ -3421,14 +3431,14 @@ void OiJob::setUpDependencies(const InputElement& element,
         }
         break;
       }
-      case eStationElement: {
+      case ElementTypes::eStationElement: {
         if (!element.station.isNull() &&
             !element.station->getFeatureWrapper().isNull()) {
           feature->addPreviouslyNeeded(element.station->getFeatureWrapper());
         }
         break;
       }
-      case eTrafoParamElement: {
+      case ElementTypes::eTrafoParamElement: {
         if (!element.trafoParam.isNull() &&
             !element.trafoParam->getFeatureWrapper().isNull()) {
           feature->addPreviouslyNeeded(element.trafoParam->getFeatureWrapper());
@@ -3450,7 +3460,7 @@ void OiJob::setUpDependencies(const InputElement& element,
   } else if (getIsReading(element.typeOfElement)) {
     return;
 
-  } else if (element.typeOfElement != eUndefinedElement) {
+  } else if (element.typeOfElement != ElementTypes::eUndefinedElement) {
     if (!element.geometry.isNull() &&
         !element.geometry->getFeatureWrapper().isNull()) {
       feature->addPreviouslyNeeded(element.geometry->getFeatureWrapper());
@@ -3467,7 +3477,7 @@ void OiJob::resetDependencies(const InputElement& element,
                               const QPointer<Feature>& feature) {
   if (getIsFeature(element.typeOfElement)) {
     switch (element.typeOfElement) {
-      case eCircleElement: {
+      case ElementTypes::eCircleElement: {
         if (!element.geometry.isNull() &&
             !element.geometry->getFeatureWrapper().isNull()) {
           feature->removePreviouslyNeeded(
@@ -3475,7 +3485,7 @@ void OiJob::resetDependencies(const InputElement& element,
         }
         break;
       }
-      case eConeElement: {
+      case ElementTypes::eConeElement: {
         if (!element.geometry.isNull() &&
             !element.geometry->getFeatureWrapper().isNull()) {
           feature->removePreviouslyNeeded(
@@ -3483,7 +3493,7 @@ void OiJob::resetDependencies(const InputElement& element,
         }
         break;
       }
-      case eCylinderElement: {
+      case ElementTypes::eCylinderElement: {
         if (!element.geometry.isNull() &&
             !element.geometry->getFeatureWrapper().isNull()) {
           feature->removePreviouslyNeeded(
@@ -3491,7 +3501,7 @@ void OiJob::resetDependencies(const InputElement& element,
         }
         break;
       }
-      case eEllipseElement: {
+      case ElementTypes::eEllipseElement: {
         if (!element.geometry.isNull() &&
             !element.geometry->getFeatureWrapper().isNull()) {
           feature->removePreviouslyNeeded(
@@ -3499,7 +3509,7 @@ void OiJob::resetDependencies(const InputElement& element,
         }
         break;
       }
-      case eEllipsoidElement: {
+      case ElementTypes::eEllipsoidElement: {
         if (!element.geometry.isNull() &&
             !element.geometry->getFeatureWrapper().isNull()) {
           feature->removePreviouslyNeeded(
@@ -3507,7 +3517,7 @@ void OiJob::resetDependencies(const InputElement& element,
         }
         break;
       }
-      case eHyperboloidElement: {
+      case ElementTypes::eHyperboloidElement: {
         if (!element.geometry.isNull() &&
             !element.geometry->getFeatureWrapper().isNull()) {
           feature->removePreviouslyNeeded(
@@ -3515,7 +3525,7 @@ void OiJob::resetDependencies(const InputElement& element,
         }
         break;
       }
-      case eLineElement: {
+      case ElementTypes::eLineElement: {
         if (!element.geometry.isNull() &&
             !element.geometry->getFeatureWrapper().isNull()) {
           feature->removePreviouslyNeeded(
@@ -3523,7 +3533,7 @@ void OiJob::resetDependencies(const InputElement& element,
         }
         break;
       }
-      case eNurbsElement: {
+      case ElementTypes::eNurbsElement: {
         if (!element.geometry.isNull() &&
             !element.geometry->getFeatureWrapper().isNull()) {
           feature->removePreviouslyNeeded(
@@ -3531,7 +3541,7 @@ void OiJob::resetDependencies(const InputElement& element,
         }
         break;
       }
-      case eParaboloidElement: {
+      case ElementTypes::eParaboloidElement: {
         if (!element.geometry.isNull() &&
             !element.geometry->getFeatureWrapper().isNull()) {
           feature->removePreviouslyNeeded(
@@ -3539,7 +3549,7 @@ void OiJob::resetDependencies(const InputElement& element,
         }
         break;
       }
-      case ePlaneElement: {
+      case ElementTypes::ePlaneElement: {
         if (!element.geometry.isNull() &&
             !element.geometry->getFeatureWrapper().isNull()) {
           feature->removePreviouslyNeeded(
@@ -3547,7 +3557,7 @@ void OiJob::resetDependencies(const InputElement& element,
         }
         break;
       }
-      case ePointElement: {
+      case ElementTypes::ePointElement: {
         if (!element.geometry.isNull() &&
             !element.geometry->getFeatureWrapper().isNull()) {
           feature->removePreviouslyNeeded(
@@ -3555,7 +3565,7 @@ void OiJob::resetDependencies(const InputElement& element,
         }
         break;
       }
-      case ePointCloudElement: {
+      case ElementTypes::ePointCloudElement: {
         if (!element.geometry.isNull() &&
             !element.geometry->getFeatureWrapper().isNull()) {
           feature->removePreviouslyNeeded(
@@ -3563,7 +3573,7 @@ void OiJob::resetDependencies(const InputElement& element,
         }
         break;
       }
-      case eScalarEntityAngleElement: {
+      case ElementTypes::eScalarEntityAngleElement: {
         if (!element.geometry.isNull() &&
             !element.geometry->getFeatureWrapper().isNull()) {
           feature->removePreviouslyNeeded(
@@ -3571,7 +3581,7 @@ void OiJob::resetDependencies(const InputElement& element,
         }
         break;
       }
-      case eScalarEntityDistanceElement: {
+      case ElementTypes::eScalarEntityDistanceElement: {
         if (!element.geometry.isNull() &&
             !element.geometry->getFeatureWrapper().isNull()) {
           feature->removePreviouslyNeeded(
@@ -3579,7 +3589,7 @@ void OiJob::resetDependencies(const InputElement& element,
         }
         break;
       }
-      case eScalarEntityMeasurementSeriesElement: {
+      case ElementTypes::eScalarEntityMeasurementSeriesElement: {
         if (!element.geometry.isNull() &&
             !element.geometry->getFeatureWrapper().isNull()) {
           feature->removePreviouslyNeeded(
@@ -3587,7 +3597,7 @@ void OiJob::resetDependencies(const InputElement& element,
         }
         break;
       }
-      case eScalarEntityTemperatureElement: {
+      case ElementTypes::eScalarEntityTemperatureElement: {
         if (!element.geometry.isNull() &&
             !element.geometry->getFeatureWrapper().isNull()) {
           feature->removePreviouslyNeeded(
@@ -3595,7 +3605,7 @@ void OiJob::resetDependencies(const InputElement& element,
         }
         break;
       }
-      case eSlottedHoleElement: {
+      case ElementTypes::eSlottedHoleElement: {
         if (!element.geometry.isNull() &&
             !element.geometry->getFeatureWrapper().isNull()) {
           feature->removePreviouslyNeeded(
@@ -3603,7 +3613,7 @@ void OiJob::resetDependencies(const InputElement& element,
         }
         break;
       }
-      case eSphereElement: {
+      case ElementTypes::eSphereElement: {
         if (!element.geometry.isNull() &&
             !element.geometry->getFeatureWrapper().isNull()) {
           feature->removePreviouslyNeeded(
@@ -3611,7 +3621,7 @@ void OiJob::resetDependencies(const InputElement& element,
         }
         break;
       }
-      case eTorusElement: {
+      case ElementTypes::eTorusElement: {
         if (!element.geometry.isNull() &&
             !element.geometry->getFeatureWrapper().isNull()) {
           feature->removePreviouslyNeeded(
@@ -3619,7 +3629,7 @@ void OiJob::resetDependencies(const InputElement& element,
         }
         break;
       }
-      case eCoordinateSystemElement: {
+      case ElementTypes::eCoordinateSystemElement: {
         if (!element.coordSystem.isNull() &&
             !element.coordSystem->getFeatureWrapper().isNull()) {
           feature->removePreviouslyNeeded(
@@ -3627,14 +3637,14 @@ void OiJob::resetDependencies(const InputElement& element,
         }
         break;
       }
-      case eStationElement: {
+      case ElementTypes::eStationElement: {
         if (!element.station.isNull() &&
             !element.station->getFeatureWrapper().isNull()) {
           feature->removePreviouslyNeeded(element.station->getFeatureWrapper());
         }
         break;
       }
-      case eTrafoParamElement: {
+      case ElementTypes::eTrafoParamElement: {
         if (!element.trafoParam.isNull() &&
             !element.trafoParam->getFeatureWrapper().isNull()) {
           feature->removePreviouslyNeeded(
@@ -3657,7 +3667,7 @@ void OiJob::resetDependencies(const InputElement& element,
   } else if (getIsReading(element.typeOfElement)) {
     return;
 
-  } else if (element.typeOfElement != eUndefinedElement) {
+  } else if (element.typeOfElement != ElementTypes::eUndefinedElement) {
     if (!element.geometry.isNull() &&
         !element.geometry->getFeatureWrapper().isNull()) {
       feature->removePreviouslyNeeded(element.geometry->getFeatureWrapper());

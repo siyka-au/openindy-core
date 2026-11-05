@@ -63,7 +63,8 @@ QDomElement Nurbs::toOpenIndyXML(QDomDocument& xmlDoc) const {
     return nurbs;
   }
 
-  nurbs.setAttribute("type", getGeometryTypeName(eNurbsGeometry));
+  nurbs.setAttribute("type",
+                     getGeometryTypeName(GeometryTypes::eNurbsGeometry));
 
   return nurbs;
 }

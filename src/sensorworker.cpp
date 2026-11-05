@@ -425,7 +425,7 @@ void SensorWorker::move(double azimuth, double zenith, double distance,
     attr.moveIsRelative = isRelative;
 
     // move
-    success = this->sensor->accept(eMoveAngle, attr);
+    success = this->sensor->accept(SensorFunctions::eMoveAngle, attr);
     if (success) {
       msg = SensorWorkerMessage::MOVING_SENSOR_FINISHED_PREFIX;
 
@@ -483,7 +483,7 @@ void SensorWorker::move(double x, double y, double z, bool measure, int geomId,
       attr.moveIsRelative = false;
 
       // move
-      success = this->sensor->accept(eMoveXYZ, attr);
+      success = this->sensor->accept(SensorFunctions::eMoveXYZ, attr);
       if (success) {
         msg = SensorWorkerMessage::MOVING_SENSOR_FINISHED_PREFIX;
 
@@ -539,7 +539,8 @@ void SensorWorker::initialize() {
       msg = SensorWorkerMessage::SENSOR_IS_NOT_CONNECTED;
     } else {
       // initialize sensor
-      success = this->sensor->accept(eInitialize, SensorAttributes());
+      success = this->sensor->accept(SensorFunctions::eInitialize,
+                                     SensorAttributes());
       if (success) {
         msg = SensorWorkerMessage::INITIALIZING_FINISHED;
       }
@@ -574,7 +575,8 @@ void SensorWorker::motorState() {
     msg = SensorWorkerMessage::SENSOR_IS_NOT_CONNECTED;
   } else {
     // changing motor state
-    success = this->sensor->accept(eMotorState, SensorAttributes());
+    success =
+        this->sensor->accept(SensorFunctions::eMotorState, SensorAttributes());
     if (success) {
       msg = SensorWorkerMessage::CHANGING_MOTOR_STATE_FINISHED;
     }
@@ -600,7 +602,7 @@ void SensorWorker::home() {
     msg = SensorWorkerMessage::SENSOR_IS_NOT_CONNECTED;
   } else {
     // setting sensor to home position
-    success = this->sensor->accept(eHome, SensorAttributes());
+    success = this->sensor->accept(SensorFunctions::eHome, SensorAttributes());
     if (success) {
       msg = SensorWorkerMessage::SETTING_HOME_FINISHED;
     }
@@ -628,7 +630,8 @@ void SensorWorker::toggleSight() {
       msg = SensorWorkerMessage::SENSOR_IS_NOT_CONNECTED;
     } else {
       // toggle sight
-      success = this->sensor->accept(eToggleSight, SensorAttributes());
+      success = this->sensor->accept(SensorFunctions::eToggleSight,
+                                     SensorAttributes());
       if (success) {
         msg = SensorWorkerMessage::TOGGLE_SIGHT_ORIENTATION_FINISHED;
       }
@@ -663,7 +666,8 @@ void SensorWorker::compensation() {
     msg = SensorWorkerMessage::SENSOR_IS_NOT_CONNECTED;
   } else {
     // starting compensation
-    success = this->sensor->accept(eCompensation, SensorAttributes());
+    success = this->sensor->accept(SensorFunctions::eCompensation,
+                                   SensorAttributes());
     if (success) {
       msg = SensorWorkerMessage::STARTING_COMPENSATION_FINISHED;
     }
@@ -721,7 +725,8 @@ void SensorWorker::startReadingStream() {
   if (this->sensor.isNull()) {
     this->isReadingStreamStarted = false;
     emit this->sensorMessage(SensorWorkerMessage::NO_SENSOR_INSTANCE,
-                             eErrorMessage, eConsoleMessage);
+                             MessageTypes::eErrorMessage,
+                             MessageDestinations::eConsoleMessage);
     return;
   }
 
@@ -748,7 +753,8 @@ void SensorWorker::startConnectionMonitoringStream() {
   if (this->sensor.isNull()) {
     this->isConnectionStreamStarted = false;
     emit this->sensorMessage(SensorWorkerMessage::NO_SENSOR_INSTANCE,
-                             eErrorMessage, eConsoleMessage);
+                             MessageTypes::eErrorMessage,
+                             MessageDestinations::eConsoleMessage);
     return;
   }
 
@@ -778,7 +784,8 @@ void SensorWorker::startStatusMonitoringStream() {
   if (this->sensor.isNull()) {
     this->isStatusStreamStarted = false;
     emit this->sensorMessage(SensorWorkerMessage::NO_SENSOR_INSTANCE,
-                             eErrorMessage, eConsoleMessage);
+                             MessageTypes::eErrorMessage,
+                             MessageDestinations::eConsoleMessage);
     return;
   }
 

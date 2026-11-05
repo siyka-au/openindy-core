@@ -31,11 +31,11 @@ class FakeConsumer : public ConstructFunction, public Producer<Point> {
       : ConstructFunction(parent) {
     this->metaData.name = "FakeConsumer";
     NeededElement param;
-    param.typeOfElement = ePointElement;
+    param.typeOfElement = ElementTypes::ePointElement;
     param.infinite = true;
     param.roleName = roleName;
     this->neededElements.append(param);
-    this->applicableFor.append(ePointFeature);
+    this->applicableFor.append(FeatureTypes::ePointFeature);
   }
   std::expected<Point, QString> exec() override { return Point(); }
 };
@@ -78,7 +78,7 @@ class MeasurementIntentTest : public QObject {
 };
 
 void MeasurementIntentTest::initTestCase() {
-  ChooseLALib::setLinearAlgebra(ChooseLALib::Armadillo);
+  ChooseLALib::setLinearAlgebra(ChooseLALib::LinearAlgebraLibrary::Armadillo);
 }
 
 QPointer<OiJob> MeasurementIntentTest::makeJobWithActiveStation(

@@ -8,9 +8,9 @@ using namespace oi;
  */
 ExchangeInterface::ExchangeInterface(QObject* parent) : QObject(parent) {
   // init units
-  this->units.insert(eMetric, eUnitMeter);
-  this->units.insert(eAngular, eUnitDecimalDegree);
-  this->units.insert(eTemperature, eUnitGrad);
+  this->units.insert(DimensionType::eMetric, UnitType::eUnitMeter);
+  this->units.insert(DimensionType::eAngular, UnitType::eUnitDecimalDegree);
+  this->units.insert(DimensionType::eTemperature, UnitType::eUnitGrad);
 }
 
 /*!
@@ -146,7 +146,7 @@ void ExchangeInterface::importOiData() {
   emit this->sendMessage(
       QString(
           "Exchange Plugin not implemented correctly: import method missing"),
-      eCriticalMessage, eMessageBoxMessage);
+      MessageTypes::eCriticalMessage, MessageDestinations::eMessageBoxMessage);
 }
 
 /*!
@@ -156,7 +156,7 @@ void ExchangeInterface::exportOiData() {
   emit this->sendMessage(
       QString(
           "Exchange Plugin not implemented correctly: export method missing"),
-      eCriticalMessage, eMessageBoxMessage);
+      MessageTypes::eCriticalMessage, MessageDestinations::eMessageBoxMessage);
 }
 
 /*!

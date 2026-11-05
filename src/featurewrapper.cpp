@@ -7,7 +7,7 @@ using namespace oi;
  * \param parent
  */
 FeatureWrapper::FeatureWrapper(QObject* parent)
-    : QObject(parent), typeOfFeature(eUndefinedFeature) {}
+    : QObject(parent), typeOfFeature(FeatureTypes::eUndefinedFeature) {}
 
 /*!
  * \brief FeatureWrapper::operator ==
@@ -251,10 +251,11 @@ FeatureWrapper::getScalarEntityMeasurementSeries() const {
  */
 void FeatureWrapper::setCoordinateSystem(
     const QPointer<CoordinateSystem>& coordSystem) {
-  if (!coordSystem.isNull() && this->typeOfFeature == eUndefinedFeature) {
+  if (!coordSystem.isNull() &&
+      this->typeOfFeature == FeatureTypes::eUndefinedFeature) {
     this->feature = coordSystem;
     this->coordinateSystem = coordSystem;
-    this->typeOfFeature = eCoordinateSystemFeature;
+    this->typeOfFeature = FeatureTypes::eCoordinateSystemFeature;
   }
 }
 
@@ -263,10 +264,11 @@ void FeatureWrapper::setCoordinateSystem(
  * \param trafoParam
  */
 void FeatureWrapper::setTrafoParam(const QPointer<TrafoParam>& trafoParam) {
-  if (!trafoParam.isNull() && this->typeOfFeature == eUndefinedFeature) {
+  if (!trafoParam.isNull() &&
+      this->typeOfFeature == FeatureTypes::eUndefinedFeature) {
     this->feature = trafoParam;
     this->trafoParam = trafoParam;
-    this->typeOfFeature = eTrafoParamFeature;
+    this->typeOfFeature = FeatureTypes::eTrafoParamFeature;
   }
 }
 
@@ -275,10 +277,11 @@ void FeatureWrapper::setTrafoParam(const QPointer<TrafoParam>& trafoParam) {
  * \param station
  */
 void FeatureWrapper::setStation(const QPointer<Station>& station) {
-  if (!station.isNull() && this->typeOfFeature == eUndefinedFeature) {
+  if (!station.isNull() &&
+      this->typeOfFeature == FeatureTypes::eUndefinedFeature) {
     this->feature = station;
     this->station = station;
-    this->typeOfFeature = eStationFeature;
+    this->typeOfFeature = FeatureTypes::eStationFeature;
   }
 }
 
@@ -287,11 +290,12 @@ void FeatureWrapper::setStation(const QPointer<Station>& station) {
  * \param point
  */
 void FeatureWrapper::setPoint(const QPointer<Point>& point) {
-  if (!point.isNull() && this->typeOfFeature == eUndefinedFeature) {
+  if (!point.isNull() &&
+      this->typeOfFeature == FeatureTypes::eUndefinedFeature) {
     this->feature = point;
     this->geometry = point;
     this->point = point;
-    this->typeOfFeature = ePointFeature;
+    this->typeOfFeature = FeatureTypes::ePointFeature;
   }
 }
 
@@ -300,11 +304,12 @@ void FeatureWrapper::setPoint(const QPointer<Point>& point) {
  * \param line
  */
 void FeatureWrapper::setLine(const QPointer<Line>& line) {
-  if (!line.isNull() && this->typeOfFeature == eUndefinedFeature) {
+  if (!line.isNull() &&
+      this->typeOfFeature == FeatureTypes::eUndefinedFeature) {
     this->feature = line;
     this->geometry = line;
     this->line = line;
-    this->typeOfFeature = eLineFeature;
+    this->typeOfFeature = FeatureTypes::eLineFeature;
   }
 }
 
@@ -313,11 +318,12 @@ void FeatureWrapper::setLine(const QPointer<Line>& line) {
  * \param plane
  */
 void FeatureWrapper::setPlane(const QPointer<Plane>& plane) {
-  if (!plane.isNull() && this->typeOfFeature == eUndefinedFeature) {
+  if (!plane.isNull() &&
+      this->typeOfFeature == FeatureTypes::eUndefinedFeature) {
     this->feature = plane;
     this->geometry = plane;
     this->plane = plane;
-    this->typeOfFeature = ePlaneFeature;
+    this->typeOfFeature = FeatureTypes::ePlaneFeature;
   }
 }
 
@@ -326,11 +332,12 @@ void FeatureWrapper::setPlane(const QPointer<Plane>& plane) {
  * \param sphere
  */
 void FeatureWrapper::setSphere(const QPointer<Sphere>& sphere) {
-  if (!sphere.isNull() && this->typeOfFeature == eUndefinedFeature) {
+  if (!sphere.isNull() &&
+      this->typeOfFeature == FeatureTypes::eUndefinedFeature) {
     this->feature = sphere;
     this->geometry = sphere;
     this->sphere = sphere;
-    this->typeOfFeature = eSphereFeature;
+    this->typeOfFeature = FeatureTypes::eSphereFeature;
   }
 }
 
@@ -339,11 +346,12 @@ void FeatureWrapper::setSphere(const QPointer<Sphere>& sphere) {
  * \param circle
  */
 void FeatureWrapper::setCircle(const QPointer<Circle>& circle) {
-  if (!circle.isNull() && this->typeOfFeature == eUndefinedFeature) {
+  if (!circle.isNull() &&
+      this->typeOfFeature == FeatureTypes::eUndefinedFeature) {
     this->feature = circle;
     this->geometry = circle;
     this->circle = circle;
-    this->typeOfFeature = eCircleFeature;
+    this->typeOfFeature = FeatureTypes::eCircleFeature;
   }
 }
 
@@ -352,11 +360,12 @@ void FeatureWrapper::setCircle(const QPointer<Circle>& circle) {
  * \param cone
  */
 void FeatureWrapper::setCone(const QPointer<Cone>& cone) {
-  if (!cone.isNull() && this->typeOfFeature == eUndefinedFeature) {
+  if (!cone.isNull() &&
+      this->typeOfFeature == FeatureTypes::eUndefinedFeature) {
     this->feature = cone;
     this->geometry = cone;
     this->cone = cone;
-    this->typeOfFeature = eConeFeature;
+    this->typeOfFeature = FeatureTypes::eConeFeature;
   }
 }
 
@@ -365,11 +374,12 @@ void FeatureWrapper::setCone(const QPointer<Cone>& cone) {
  * \param cylinder
  */
 void FeatureWrapper::setCylinder(const QPointer<Cylinder>& cylinder) {
-  if (!cylinder.isNull() && this->typeOfFeature == eUndefinedFeature) {
+  if (!cylinder.isNull() &&
+      this->typeOfFeature == FeatureTypes::eUndefinedFeature) {
     this->feature = cylinder;
     this->geometry = cylinder;
     this->cylinder = cylinder;
-    this->typeOfFeature = eCylinderFeature;
+    this->typeOfFeature = FeatureTypes::eCylinderFeature;
   }
 }
 
@@ -378,11 +388,12 @@ void FeatureWrapper::setCylinder(const QPointer<Cylinder>& cylinder) {
  * \param ellipsoid
  */
 void FeatureWrapper::setEllipsoid(const QPointer<Ellipsoid>& ellipsoid) {
-  if (!ellipsoid.isNull() && this->typeOfFeature == eUndefinedFeature) {
+  if (!ellipsoid.isNull() &&
+      this->typeOfFeature == FeatureTypes::eUndefinedFeature) {
     this->feature = ellipsoid;
     this->geometry = ellipsoid;
     this->ellipsoid = ellipsoid;
-    this->typeOfFeature = eEllipsoidFeature;
+    this->typeOfFeature = FeatureTypes::eEllipsoidFeature;
   }
 }
 
@@ -391,11 +402,12 @@ void FeatureWrapper::setEllipsoid(const QPointer<Ellipsoid>& ellipsoid) {
  * \param hyperboloid
  */
 void FeatureWrapper::setHyperboloid(const QPointer<Hyperboloid>& hyperboloid) {
-  if (!hyperboloid.isNull() && this->typeOfFeature == eUndefinedFeature) {
+  if (!hyperboloid.isNull() &&
+      this->typeOfFeature == FeatureTypes::eUndefinedFeature) {
     this->feature = hyperboloid;
     this->geometry = hyperboloid;
     this->hyperboloid = hyperboloid;
-    this->typeOfFeature = eHyperboloidFeature;
+    this->typeOfFeature = FeatureTypes::eHyperboloidFeature;
   }
 }
 
@@ -404,11 +416,12 @@ void FeatureWrapper::setHyperboloid(const QPointer<Hyperboloid>& hyperboloid) {
  * \param paraboloid
  */
 void FeatureWrapper::setParaboloid(const QPointer<Paraboloid>& paraboloid) {
-  if (!paraboloid.isNull() && this->typeOfFeature == eUndefinedFeature) {
+  if (!paraboloid.isNull() &&
+      this->typeOfFeature == FeatureTypes::eUndefinedFeature) {
     this->feature = paraboloid;
     this->geometry = paraboloid;
     this->paraboloid = paraboloid;
-    this->typeOfFeature = eParaboloidFeature;
+    this->typeOfFeature = FeatureTypes::eParaboloidFeature;
   }
 }
 
@@ -417,10 +430,11 @@ void FeatureWrapper::setParaboloid(const QPointer<Paraboloid>& paraboloid) {
  * \param pointCloud
  */
 void FeatureWrapper::setGroup(const QPointer<Group>& group) {
-  if (!group.isNull() && this->typeOfFeature == eUndefinedFeature) {
+  if (!group.isNull() &&
+      this->typeOfFeature == FeatureTypes::eUndefinedFeature) {
     this->feature = group;
     this->groupFeature = group;
-    this->typeOfFeature = eGroupFeature;
+    this->typeOfFeature = FeatureTypes::eGroupFeature;
   }
 }
 
@@ -429,13 +443,14 @@ void FeatureWrapper::setGroup(const QPointer<Group>& group) {
  * \param pointGroup
  */
 void FeatureWrapper::setPointGroup(const QPointer<PointGroup>& pointGroup) {
-  if (!pointGroup.isNull() && this->typeOfFeature == eUndefinedFeature) {
+  if (!pointGroup.isNull() &&
+      this->typeOfFeature == FeatureTypes::eUndefinedFeature) {
     this->feature = pointGroup;
     // a PointGroup is-a Group, so both handles resolve - a consumer that
     // only cares about grouping doesn't need to know which kind it got
     this->groupFeature = pointGroup;
     this->pointGroup = pointGroup;
-    this->typeOfFeature = ePointGroupFeature;
+    this->typeOfFeature = FeatureTypes::ePointGroupFeature;
   }
 }
 
@@ -444,11 +459,12 @@ void FeatureWrapper::setPointGroup(const QPointer<PointGroup>& pointGroup) {
  * \param pointCloud
  */
 void FeatureWrapper::setPointCloud(const QPointer<PointCloud>& pointCloud) {
-  if (!pointCloud.isNull() && this->typeOfFeature == eUndefinedFeature) {
+  if (!pointCloud.isNull() &&
+      this->typeOfFeature == FeatureTypes::eUndefinedFeature) {
     this->feature = pointCloud;
     this->geometry = pointCloud;
     this->pointCloud = pointCloud;
-    this->typeOfFeature = ePointCloudFeature;
+    this->typeOfFeature = FeatureTypes::ePointCloudFeature;
   }
 }
 
@@ -457,11 +473,12 @@ void FeatureWrapper::setPointCloud(const QPointer<PointCloud>& pointCloud) {
  * \param nurbs
  */
 void FeatureWrapper::setNurbs(const QPointer<Nurbs>& nurbs) {
-  if (!nurbs.isNull() && this->typeOfFeature == eUndefinedFeature) {
+  if (!nurbs.isNull() &&
+      this->typeOfFeature == FeatureTypes::eUndefinedFeature) {
     this->feature = nurbs;
     this->geometry = nurbs;
     this->nurbs = nurbs;
-    this->typeOfFeature = eNurbsFeature;
+    this->typeOfFeature = FeatureTypes::eNurbsFeature;
   }
 }
 
@@ -470,11 +487,12 @@ void FeatureWrapper::setNurbs(const QPointer<Nurbs>& nurbs) {
  * \param ellipse
  */
 void FeatureWrapper::setEllipse(const QPointer<Ellipse>& ellipse) {
-  if (!ellipse.isNull() && this->typeOfFeature == eUndefinedFeature) {
+  if (!ellipse.isNull() &&
+      this->typeOfFeature == FeatureTypes::eUndefinedFeature) {
     this->feature = ellipse;
     this->geometry = ellipse;
     this->ellipse = ellipse;
-    this->typeOfFeature = eEllipseFeature;
+    this->typeOfFeature = FeatureTypes::eEllipseFeature;
   }
 }
 
@@ -483,11 +501,12 @@ void FeatureWrapper::setEllipse(const QPointer<Ellipse>& ellipse) {
  * \param slottedHole
  */
 void FeatureWrapper::setSlottedHole(const QPointer<SlottedHole>& slottedHole) {
-  if (!slottedHole.isNull() && this->typeOfFeature == eUndefinedFeature) {
+  if (!slottedHole.isNull() &&
+      this->typeOfFeature == FeatureTypes::eUndefinedFeature) {
     this->feature = slottedHole;
     this->geometry = slottedHole;
     this->slottedHole = slottedHole;
-    this->typeOfFeature = eSlottedHoleFeature;
+    this->typeOfFeature = FeatureTypes::eSlottedHoleFeature;
   }
 }
 
@@ -496,11 +515,12 @@ void FeatureWrapper::setSlottedHole(const QPointer<SlottedHole>& slottedHole) {
  * \param torus
  */
 void FeatureWrapper::setTorus(const QPointer<Torus>& torus) {
-  if (!torus.isNull() && this->typeOfFeature == eUndefinedFeature) {
+  if (!torus.isNull() &&
+      this->typeOfFeature == FeatureTypes::eUndefinedFeature) {
     this->feature = torus;
     this->geometry = torus;
     this->torus = torus;
-    this->typeOfFeature = eTorusFeature;
+    this->typeOfFeature = FeatureTypes::eTorusFeature;
   }
 }
 
@@ -510,11 +530,12 @@ void FeatureWrapper::setTorus(const QPointer<Torus>& torus) {
  */
 void FeatureWrapper::setScalarEntityAngle(
     const QPointer<ScalarEntityAngle>& angle) {
-  if (!angle.isNull() && this->typeOfFeature == eUndefinedFeature) {
+  if (!angle.isNull() &&
+      this->typeOfFeature == FeatureTypes::eUndefinedFeature) {
     this->feature = angle;
     this->geometry = angle;
     this->angle = angle;
-    this->typeOfFeature = eScalarEntityAngleFeature;
+    this->typeOfFeature = FeatureTypes::eScalarEntityAngleFeature;
   }
 }
 
@@ -524,11 +545,12 @@ void FeatureWrapper::setScalarEntityAngle(
  */
 void FeatureWrapper::setScalarEntityDistance(
     const QPointer<ScalarEntityDistance>& distance) {
-  if (!distance.isNull() && this->typeOfFeature == eUndefinedFeature) {
+  if (!distance.isNull() &&
+      this->typeOfFeature == FeatureTypes::eUndefinedFeature) {
     this->feature = distance;
     this->geometry = distance;
     this->distance = distance;
-    this->typeOfFeature = eScalarEntityDistanceFeature;
+    this->typeOfFeature = FeatureTypes::eScalarEntityDistanceFeature;
   }
 }
 
@@ -538,11 +560,12 @@ void FeatureWrapper::setScalarEntityDistance(
  */
 void FeatureWrapper::setScalarEntityTemperature(
     const QPointer<ScalarEntityTemperature>& temperature) {
-  if (!temperature.isNull() && this->typeOfFeature == eUndefinedFeature) {
+  if (!temperature.isNull() &&
+      this->typeOfFeature == FeatureTypes::eUndefinedFeature) {
     this->feature = temperature;
     this->geometry = temperature;
     this->temperature = temperature;
-    this->typeOfFeature = eScalarEntityTemperatureFeature;
+    this->typeOfFeature = FeatureTypes::eScalarEntityTemperatureFeature;
   }
 }
 
@@ -552,10 +575,11 @@ void FeatureWrapper::setScalarEntityTemperature(
  */
 void FeatureWrapper::setScalarEntityMeasurementSeries(
     const QPointer<ScalarEntityMeasurementSeries>& measurementSeries) {
-  if (!measurementSeries.isNull() && this->typeOfFeature == eUndefinedFeature) {
+  if (!measurementSeries.isNull() &&
+      this->typeOfFeature == FeatureTypes::eUndefinedFeature) {
     this->feature = measurementSeries;
     this->geometry = measurementSeries;
     this->measurementSeries = measurementSeries;
-    this->typeOfFeature = eScalarEntityMeasurementSeriesFeature;
+    this->typeOfFeature = FeatureTypes::eScalarEntityMeasurementSeriesFeature;
   }
 }

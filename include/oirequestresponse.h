@@ -15,7 +15,7 @@ namespace oi {
  */
 class OiRequestResponse {
  public:
-  enum RequestType {
+  enum class RequestType {
 
     eGetProject = 0,
     eGetActiveFeature,
@@ -53,7 +53,7 @@ class OiRequestResponse {
 
   };
 
-  enum ErrorCode {
+  enum class ErrorCode {
 
     eNoError = 0,
     eNoJob,

@@ -154,7 +154,7 @@ bool Feature::rejectIfNotEditable(const QString& attemptedEdit) const {
     emit this->job->sendMessage(
         QString("Cannot edit %1 of \"%2\": it is owned by %3 and is read-only.")
             .arg(attemptedEdit, this->name, *owner),
-        eErrorMessage, eMessageBoxMessage);
+        MessageTypes::eErrorMessage, MessageDestinations::eMessageBoxMessage);
   }
 
   return true;
@@ -343,7 +343,8 @@ void Feature::addFunction(const QPointer<Function>& function) {
                   "Function \"%1\" cannot be attached to \"%2\": it implements "
                   "neither Producer<T> nor Transform<T> for this feature type")
                   .arg(function->getMetaData().name, this->getFeatureName());
-    emit function->sendMessage(reason, eCriticalMessage, eMessageBoxMessage);
+    emit function->sendMessage(reason, MessageTypes::eCriticalMessage,
+                               MessageDestinations::eMessageBoxMessage);
     return;
   }
 

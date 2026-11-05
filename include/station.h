@@ -212,8 +212,9 @@ class OI_CORE_EXPORT Station : public Feature {
   // special sensor messages
   // #######################
 
-  void sensorMessage(QString msg, MessageTypes msgType,
-                     MessageDestinations msgDest = eConsoleMessage);
+  void sensorMessage(
+      QString msg, MessageTypes msgType,
+      MessageDestinations msgDest = MessageDestinations::eConsoleMessage);
 
   void finishMeasurement();
 

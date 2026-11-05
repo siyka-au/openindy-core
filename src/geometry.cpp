@@ -788,7 +788,8 @@ QString Geometry::getDisplayObservations() const {
     foreach (const int& key, keys) {
       // check if input alements at key are observations
       if (inputElements[key].size() > 0 &&
-          inputElements[key][0].typeOfElement == eObservationElement) {
+          inputElements[key][0].typeOfElement ==
+              ElementTypes::eObservationElement) {
         // run through all observations and check their used state
         foreach (const InputElement& element, inputElements[key]) {
           if (element.isUsed) {

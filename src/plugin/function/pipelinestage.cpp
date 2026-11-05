@@ -8,7 +8,7 @@ using namespace oi;
  * \return
  */
 PipelineStage PipelineStage::explicitList(const QList<int>& ids) {
-  PipelineStage stage(eExplicitListStage);
+  PipelineStage stage(PipelineStageType::eExplicitListStage);
   stage.explicitIds = ids;
   return stage;
 }
@@ -21,7 +21,7 @@ PipelineStage PipelineStage::explicitList(const QList<int>& ids) {
  * \return
  */
 PipelineStage PipelineStage::exclude(int elementId, const QString& reason) {
-  PipelineStage stage(eExcludeStage);
+  PipelineStage stage(PipelineStageType::eExcludeStage);
   stage.explicitExclusions.append(PipelineExclusion(elementId, reason));
   return stage;
 }
@@ -33,7 +33,7 @@ PipelineStage PipelineStage::exclude(int elementId, const QString& reason) {
  */
 PipelineStage PipelineStage::exclude(
     const QList<PipelineExclusion>& exclusions) {
-  PipelineStage stage(eExcludeStage);
+  PipelineStage stage(PipelineStageType::eExcludeStage);
   stage.explicitExclusions = exclusions;
   return stage;
 }
@@ -44,7 +44,7 @@ PipelineStage PipelineStage::exclude(
  * \return
  */
 PipelineStage PipelineStage::residualOutlierRejection(double sigmaMultiplier) {
-  PipelineStage stage(eResidualOutlierRejectionStage);
+  PipelineStage stage(PipelineStageType::eResidualOutlierRejectionStage);
   stage.sigmaMultiplier = sigmaMultiplier;
   return stage;
 }
@@ -62,7 +62,7 @@ QDomElement PipelineStage::toOpenIndyXML(QDomDocument& xmlDoc) const {
   QDomElement stage = xmlDoc.createElement("stage");
 
   switch (this->type) {
-    case eExplicitListStage:
+    case PipelineStageType::eExplicitListStage:
       stage.setAttribute("type", "explicitList");
       foreach (int id, this->explicitIds) {
         QDomElement idElem = xmlDoc.createElement("id");
@@ -70,7 +70,7 @@ QDomElement PipelineStage::toOpenIndyXML(QDomDocument& xmlDoc) const {
         stage.appendChild(idElem);
       }
       break;
-    case eExcludeStage:
+    case PipelineStageType::eExcludeStage:
       stage.setAttribute("type", "exclude");
       foreach (const PipelineExclusion& excl, this->explicitExclusions) {
         QDomElement exclElem = xmlDoc.createElement("excluded");
@@ -79,7 +79,7 @@ QDomElement PipelineStage::toOpenIndyXML(QDomDocument& xmlDoc) const {
         stage.appendChild(exclElem);
       }
       break;
-    case eResidualOutlierRejectionStage:
+    case PipelineStageType::eResidualOutlierRejectionStage:
       stage.setAttribute("type", "residualOutlierRejection");
       stage.setAttribute("sigmaMultiplier", this->sigmaMultiplier);
       break;
@@ -101,7 +101,7 @@ bool PipelineStage::fromOpenIndyXML(const QDomElement& xmlElem) {
   const QString typeAttr = xmlElem.attribute("type");
 
   if (typeAttr.compare("explicitList") == 0) {
-    this->type = eExplicitListStage;
+    this->type = PipelineStageType::eExplicitListStage;
     this->explicitIds.clear();
 
     QDomNodeList idList = xmlElem.elementsByTagName("id");
@@ -113,7 +113,7 @@ bool PipelineStage::fromOpenIndyXML(const QDomElement& xmlElem) {
     }
 
   } else if (typeAttr.compare("exclude") == 0) {
-    this->type = eExcludeStage;
+    this->type = PipelineStageType::eExcludeStage;
     this->explicitExclusions.clear();
 
     QDomNodeList exclList = xmlElem.elementsByTagName("excluded");
@@ -126,7 +126,7 @@ bool PipelineStage::fromOpenIndyXML(const QDomElement& xmlElem) {
     }
 
   } else if (typeAttr.compare("residualOutlierRejection") == 0) {
-    this->type = eResidualOutlierRejectionStage;
+    this->type = PipelineStageType::eResidualOutlierRejectionStage;
     this->sigmaMultiplier =
         xmlElem.hasAttribute("sigmaMultiplier")
             ? xmlElem.attribute("sigmaMultiplier").toDouble()

@@ -27,7 +27,7 @@ namespace oi {
 // #######################
 
 //! all types of messages
-enum MessageTypes {
+enum class MessageTypes {
   eInformationMessage = 0,
   eWarningMessage,
   eErrorMessage,
@@ -36,7 +36,7 @@ enum MessageTypes {
 };
 
 //! used to specify where to print a message
-enum MessageDestinations {
+enum class MessageDestinations {
   eConsoleMessage = 0,
   eMessageBoxMessage,
   eStatusBarMessage
@@ -47,7 +47,7 @@ enum MessageDestinations {
 // #######################
 
 //! all OpenIndy element types
-enum ElementTypes {
+enum class ElementTypes {
 
   // geometry types
   eCircleElement = 0,
@@ -101,7 +101,7 @@ enum ElementTypes {
 };
 
 //! all OpenIndy feature types
-enum FeatureTypes {
+enum class FeatureTypes {
   // keep order !
   // geometry types
   eCircleFeature = 0,
@@ -141,7 +141,7 @@ enum FeatureTypes {
 };
 
 //! all OpenIndy geometry types
-enum GeometryTypes {
+enum class GeometryTypes {
 
   eCircleGeometry = 0,
   eConeGeometry,
@@ -173,7 +173,7 @@ enum GeometryTypes {
 // ################################
 
 // unknown parameters of all available geometry types
-enum GeometryParameters {
+enum class GeometryParameters {
 
   eUnknownX = 0,  // point coordinates
   eUnknownY,
@@ -199,7 +199,7 @@ enum GeometryParameters {
 };
 
 // unknown parameters of trafo param features
-enum TrafoParamParameters {
+enum class TrafoParamParameters {
 
   eUnknownTX = 0,  // translation
   eUnknownTY,
@@ -217,7 +217,7 @@ enum TrafoParamParameters {
 // available reading types
 // #######################
 
-enum ReadingTypes {
+enum class ReadingTypes {
 
   eDistanceReading = 0,
   eCartesianReading,
@@ -394,7 +394,7 @@ enum ReadingDisplayAttributes {
 // available units
 // ###############
 
-enum UnitType {
+enum class UnitType {
 
   // metric unit types
   eUnitMilliMeter = 0,
@@ -417,7 +417,7 @@ enum UnitType {
 
 };
 
-enum DimensionType {
+enum class DimensionType {
 
   eMetric = 0,
   eAngular,
@@ -430,7 +430,7 @@ enum DimensionType {
 // sensor specific enums
 // #####################
 
-enum SensorFaces {
+enum class SensorFaces {
 
   eFrontSide = 0,
   eBackSide,
@@ -438,7 +438,7 @@ enum SensorFaces {
 
 };
 
-enum SensorFunctions {
+enum class SensorFunctions {
 
   eMoveAngle = 0,
   eMoveXYZ,
@@ -505,7 +505,7 @@ enum class AcquisitionResultShape {
 // tool types (categories of tools)
 // ################################
 
-enum ToolTypes {
+enum class ToolTypes {
 
   eReportTool = 0,
   eUnknownTool
@@ -516,7 +516,7 @@ enum ToolTypes {
 // actual nominal filter options
 // #############################
 
-enum ActualNominalFilter {
+enum class ActualNominalFilter {
 
   eFilterActualNominal = 0,
   eFilterActual,
@@ -527,7 +527,7 @@ enum ActualNominalFilter {
 // ######################################
 // materials for temperature compensation
 // ######################################
-enum MaterialsTempComp {
+enum class MaterialsTempComp {
 
   eMaterialSteel = 0,
   eMaterialAluminum,
@@ -552,15 +552,15 @@ enum MaterialsTempComp {
  */
 class ScalarInputParams {
  public:
-   ScalarInputParams() {}
+  ScalarInputParams() {}
 
-   bool isValid{false};
-   QMap<QString, double> doubleParameter;
-   QMap<QString, int> intParameter;
-   QMap<QString, QString> stringParameter;
+  bool isValid{false};
+  QMap<QString, double> doubleParameter;
+  QMap<QString, int> intParameter;
+  QMap<QString, QString> stringParameter;
 };
 
-enum SensorStatus {
+enum class SensorStatus {
 
   eUnknown = 0,
   eReadyForMeasurement,  // target present, device ready, measurement arm ready
@@ -570,7 +570,7 @@ enum SensorStatus {
   eClearStatus  // TODO later: define behaviour !!!
 };
 
-enum SensorAction {
+enum class SensorAction {
   eSensorActionUndefind = 0,  // TODO implement all SensorActions
   eSensorActionMove,          // aim or move
   eSensorActionMeasure,

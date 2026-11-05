@@ -99,9 +99,10 @@ QMap<GeometryParameters, QString> ScalarEntityDistance::getUnknownParameters(
   QMap<GeometryParameters, QString> parameters;
 
   parameters.insert(
-      eUnknownDistance,
-      this->getDisplayDistance(displayUnits.value(eMetric, eUnitMeter),
-                               displayDigits.value(eMetric, 0)));
+      GeometryParameters::eUnknownDistance,
+      this->getDisplayDistance(
+          displayUnits.value(DimensionType::eMetric, UnitType::eUnitMeter),
+          displayDigits.value(DimensionType::eMetric, 0)));
 
   return parameters;
 }
@@ -119,8 +120,8 @@ void ScalarEntityDistance::applyUnknownParameters(
   QList<GeometryParameters> keys = parameters.keys();
   foreach (const GeometryParameters& key, keys) {
     switch (key) {
-      case eUnknownDistance:
-        distance = parameters.value(eUnknownDistance);
+      case GeometryParameters::eUnknownDistance:
+        distance = parameters.value(GeometryParameters::eUnknownDistance);
         break;
       default:
         break;
@@ -156,7 +157,8 @@ QDomElement ScalarEntityDistance::toOpenIndyXML(QDomDocument& xmlDoc) const {
   }
 
   entityDistance.setAttribute(
-      "type", getGeometryTypeName(eScalarEntityDistanceGeometry));
+      "type",
+      getGeometryTypeName(GeometryTypes::eScalarEntityDistanceGeometry));
 
   // add distance
   QDomElement distance = xmlDoc.createElement("distance");

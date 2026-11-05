@@ -66,7 +66,7 @@ class OwnershipTest : public QObject {
 };
 
 void OwnershipTest::initTestCase() {
-  ChooseLALib::setLinearAlgebra(ChooseLALib::Armadillo);
+  ChooseLALib::setLinearAlgebra(ChooseLALib::LinearAlgebraLibrary::Armadillo);
 }
 
 void OwnershipTest::freshGeometryIsUserOwnedAndEditable() {
@@ -99,7 +99,7 @@ void OwnershipTest::readOnlyGeometryRejectsDirectParameterEdits() {
   QVERIFY(point.getOwnerDescription().has_value());
 
   QMap<GeometryParameters, double> edit;
-  edit.insert(eUnknownX, 99.0);
+  edit.insert(GeometryParameters::eUnknownX, 99.0);
   point.setUnknownParameters(edit);
 
   // rejected at the API - the fit owns this point, so the edit must not
@@ -238,7 +238,7 @@ void OwnershipTest::ownedSubGeometryRejectsDirectParameterEdits() {
   QVERIFY(child.setOwnerFeature(owner.getFeatureWrapper()->getGeometry()));
 
   QMap<GeometryParameters, double> edit;
-  edit.insert(eUnknownX, 99.0);
+  edit.insert(GeometryParameters::eUnknownX, 99.0);
   child.setUnknownParameters(edit);
 
   // rejected at the API, exactly like the fit-owned case above

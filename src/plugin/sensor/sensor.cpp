@@ -246,7 +246,7 @@ bool Sensor::abortAction() { return false; }
 bool Sensor::connectSensor() {
   emit this->sensorMessage(
       QString("Sensor not implemented correctly: connect method missing"),
-      eCriticalMessage, eMessageBoxMessage);
+      MessageTypes::eCriticalMessage, MessageDestinations::eMessageBoxMessage);
   return false;
 }
 
@@ -257,7 +257,7 @@ bool Sensor::connectSensor() {
 bool Sensor::disconnectSensor() {
   emit this->sensorMessage(
       QString("Sensor not implemented correctly: disconnect method missing"),
-      eCriticalMessage, eMessageBoxMessage);
+      MessageTypes::eCriticalMessage, MessageDestinations::eMessageBoxMessage);
   return false;
 }
 
@@ -270,7 +270,7 @@ QList<QPointer<Reading> > Sensor::measure(
     const MeasurementConfig& /*mConfig*/) {
   emit this->sensorMessage(
       QString("Sensor not implemented correctly: measure method missing"),
-      eCriticalMessage, eMessageBoxMessage);
+      MessageTypes::eCriticalMessage, MessageDestinations::eMessageBoxMessage);
   return QList<QPointer<Reading> >();
 }
 
@@ -283,7 +283,7 @@ QVariantMap Sensor::readingStream(const ReadingTypes& /*streamFormat*/) {
   emit this->sensorMessage(
       QString(
           "Sensor not implemented correctly: reading stream method missing"),
-      eCriticalMessage, eMessageBoxMessage);
+      MessageTypes::eCriticalMessage, MessageDestinations::eMessageBoxMessage);
   return QVariantMap();
 }
 
@@ -295,7 +295,7 @@ bool Sensor::getConnectionState() {
   emit this->sensorMessage(
       QString(
           "Sensor not implemented correctly: connection state method missing"),
-      eCriticalMessage, eMessageBoxMessage);
+      MessageTypes::eCriticalMessage, MessageDestinations::eMessageBoxMessage);
   return false;
 }
 
@@ -306,7 +306,7 @@ bool Sensor::getConnectionState() {
 bool Sensor::getIsReadyForMeasurement() {
   emit this->sensorMessage(
       QString("Sensor not implemented correctly: is ready method missing"),
-      eCriticalMessage, eMessageBoxMessage);
+      MessageTypes::eCriticalMessage, MessageDestinations::eMessageBoxMessage);
   return false;
 }
 
@@ -317,7 +317,7 @@ bool Sensor::getIsReadyForMeasurement() {
 bool Sensor::getIsBusy() {
   emit this->sensorMessage(
       QString("Sensor not implemented correctly: is busy method missing"),
-      eCriticalMessage, eMessageBoxMessage);
+      MessageTypes::eCriticalMessage, MessageDestinations::eMessageBoxMessage);
   return false;
 }
 
@@ -328,7 +328,7 @@ bool Sensor::getIsBusy() {
 QMap<QString, QString> Sensor::getSensorStatus() {
   emit this->sensorMessage(
       QString("Sensor not implemented correctly: sensor status method missing"),
-      eCriticalMessage, eMessageBoxMessage);
+      MessageTypes::eCriticalMessage, MessageDestinations::eMessageBoxMessage);
   return QMap<QString, QString>();
 }
 
@@ -374,21 +374,21 @@ void Sensor::init() {}
 
 ReadingTypes Sensor::getReadingType(const MeasurementConfig& mConfig) const {
   switch (mConfig.getMeasurementType()) {
-    case eSinglePoint_MeasurementType:
-    case eScanDistanceDependent_MeasurementType:
-    case eScanTimeDependent_MeasurementType:
+    case MeasurementTypes::eSinglePoint_MeasurementType:
+    case MeasurementTypes::eScanDistanceDependent_MeasurementType:
+    case MeasurementTypes::eScanTimeDependent_MeasurementType:
       return getReadingTypeEnum(
           this->sensorConfiguration.getStringParameter().value("reading type",
                                                                "cartesian"));
-    case eDistance_MeasurementType:
-      return eDistanceReading;
-    case eDirection_MeasurementType:
-      return eDirectionReading;
-    case eLevel_MeasurementType:
-      return eLevelReading;
-    case eTemperature_MeasurementType:
-      return eTemperatureReading;
+    case MeasurementTypes::eDistance_MeasurementType:
+      return ReadingTypes::eDistanceReading;
+    case MeasurementTypes::eDirection_MeasurementType:
+      return ReadingTypes::eDirectionReading;
+    case MeasurementTypes::eLevel_MeasurementType:
+      return ReadingTypes::eLevelReading;
+    case MeasurementTypes::eTemperature_MeasurementType:
+      return ReadingTypes::eTemperatureReading;
     default:
-      return eUndefinedReading;
+      return ReadingTypes::eUndefinedReading;
   }
 }

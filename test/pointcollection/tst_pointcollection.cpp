@@ -51,7 +51,7 @@ class PointCollectionTest : public QObject {
 };
 
 void PointCollectionTest::initTestCase() {
-  ChooseLALib::setLinearAlgebra(ChooseLALib::Armadillo);
+  ChooseLALib::setLinearAlgebra(ChooseLALib::LinearAlgebraLibrary::Armadillo);
 }
 
 void PointCollectionTest::groupHoldsReferencesNotCopies() {

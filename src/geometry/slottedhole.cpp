@@ -248,37 +248,49 @@ QMap<GeometryParameters, QString> SlottedHole::getUnknownParameters(
     const QMap<DimensionType, int>& displayDigits) const {
   QMap<GeometryParameters, QString> parameters;
 
-  parameters.insert(eUnknownX,
-                    this->getDisplayX(displayUnits.value(eMetric, eUnitMeter),
-                                      displayDigits.value(eMetric, 0)));
-  parameters.insert(eUnknownY,
-                    this->getDisplayY(displayUnits.value(eMetric, eUnitMeter),
-                                      displayDigits.value(eMetric, 0)));
-  parameters.insert(eUnknownZ,
-                    this->getDisplayZ(displayUnits.value(eMetric, eUnitMeter),
-                                      displayDigits.value(eMetric, 0)));
-  parameters.insert(eUnknownPrimaryI, this->getDisplayPrimaryI(
-                                          displayDigits.value(eDimensionless)));
-  parameters.insert(eUnknownPrimaryJ, this->getDisplayPrimaryJ(
-                                          displayDigits.value(eDimensionless)));
-  parameters.insert(eUnknownPrimaryK, this->getDisplayPrimaryK(
-                                          displayDigits.value(eDimensionless)));
   parameters.insert(
-      eUnknownRadiusA,
-      this->getDisplayRadiusA(displayUnits.value(eMetric, eUnitMeter),
-                              displayDigits.value(eMetric, 0)));
-  parameters.insert(eUnknownLength, this->getDisplayLength(
-                                        displayUnits.value(eMetric, eUnitMeter),
-                                        displayDigits.value(eMetric, 0)));
+      GeometryParameters::eUnknownX,
+      this->getDisplayX(
+          displayUnits.value(DimensionType::eMetric, UnitType::eUnitMeter),
+          displayDigits.value(DimensionType::eMetric, 0)));
   parameters.insert(
-      eUnknownSecondaryI,
-      this->getDisplaySecondaryI(displayDigits.value(eDimensionless)));
+      GeometryParameters::eUnknownY,
+      this->getDisplayY(
+          displayUnits.value(DimensionType::eMetric, UnitType::eUnitMeter),
+          displayDigits.value(DimensionType::eMetric, 0)));
   parameters.insert(
-      eUnknownSecondaryJ,
-      this->getDisplaySecondaryJ(displayDigits.value(eDimensionless)));
+      GeometryParameters::eUnknownZ,
+      this->getDisplayZ(
+          displayUnits.value(DimensionType::eMetric, UnitType::eUnitMeter),
+          displayDigits.value(DimensionType::eMetric, 0)));
+  parameters.insert(GeometryParameters::eUnknownPrimaryI,
+                    this->getDisplayPrimaryI(
+                        displayDigits.value(DimensionType::eDimensionless)));
+  parameters.insert(GeometryParameters::eUnknownPrimaryJ,
+                    this->getDisplayPrimaryJ(
+                        displayDigits.value(DimensionType::eDimensionless)));
+  parameters.insert(GeometryParameters::eUnknownPrimaryK,
+                    this->getDisplayPrimaryK(
+                        displayDigits.value(DimensionType::eDimensionless)));
   parameters.insert(
-      eUnknownSecondaryK,
-      this->getDisplaySecondaryK(displayDigits.value(eDimensionless)));
+      GeometryParameters::eUnknownRadiusA,
+      this->getDisplayRadiusA(
+          displayUnits.value(DimensionType::eMetric, UnitType::eUnitMeter),
+          displayDigits.value(DimensionType::eMetric, 0)));
+  parameters.insert(
+      GeometryParameters::eUnknownLength,
+      this->getDisplayLength(
+          displayUnits.value(DimensionType::eMetric, UnitType::eUnitMeter),
+          displayDigits.value(DimensionType::eMetric, 0)));
+  parameters.insert(GeometryParameters::eUnknownSecondaryI,
+                    this->getDisplaySecondaryI(
+                        displayDigits.value(DimensionType::eDimensionless)));
+  parameters.insert(GeometryParameters::eUnknownSecondaryJ,
+                    this->getDisplaySecondaryJ(
+                        displayDigits.value(DimensionType::eDimensionless)));
+  parameters.insert(GeometryParameters::eUnknownSecondaryK,
+                    this->getDisplaySecondaryK(
+                        displayDigits.value(DimensionType::eDimensionless)));
 
   return parameters;
 }
@@ -300,38 +312,44 @@ void SlottedHole::applyUnknownParameters(
   QList<GeometryParameters> keys = parameters.keys();
   foreach (const GeometryParameters& key, keys) {
     switch (key) {
-      case eUnknownX:
-        position.setAt(0, parameters.value(eUnknownX));
+      case GeometryParameters::eUnknownX:
+        position.setAt(0, parameters.value(GeometryParameters::eUnknownX));
         break;
-      case eUnknownY:
-        position.setAt(1, parameters.value(eUnknownY));
+      case GeometryParameters::eUnknownY:
+        position.setAt(1, parameters.value(GeometryParameters::eUnknownY));
         break;
-      case eUnknownZ:
-        position.setAt(2, parameters.value(eUnknownZ));
+      case GeometryParameters::eUnknownZ:
+        position.setAt(2, parameters.value(GeometryParameters::eUnknownZ));
         break;
-      case eUnknownPrimaryI:
-        directionA.setAt(0, parameters.value(eUnknownPrimaryI));
+      case GeometryParameters::eUnknownPrimaryI:
+        directionA.setAt(
+            0, parameters.value(GeometryParameters::eUnknownPrimaryI));
         break;
-      case eUnknownPrimaryJ:
-        directionA.setAt(1, parameters.value(eUnknownPrimaryJ));
+      case GeometryParameters::eUnknownPrimaryJ:
+        directionA.setAt(
+            1, parameters.value(GeometryParameters::eUnknownPrimaryJ));
         break;
-      case eUnknownPrimaryK:
-        directionA.setAt(2, parameters.value(eUnknownPrimaryK));
+      case GeometryParameters::eUnknownPrimaryK:
+        directionA.setAt(
+            2, parameters.value(GeometryParameters::eUnknownPrimaryK));
         break;
-      case eUnknownRadiusA:
-        radius = parameters.value(eUnknownRadiusA);
+      case GeometryParameters::eUnknownRadiusA:
+        radius = parameters.value(GeometryParameters::eUnknownRadiusA);
         break;
-      case eUnknownLength:
-        length = parameters.value(eUnknownLength);
+      case GeometryParameters::eUnknownLength:
+        length = parameters.value(GeometryParameters::eUnknownLength);
         break;
-      case eUnknownSecondaryI:
-        directionB.setAt(0, parameters.value(eUnknownSecondaryI));
+      case GeometryParameters::eUnknownSecondaryI:
+        directionB.setAt(
+            0, parameters.value(GeometryParameters::eUnknownSecondaryI));
         break;
-      case eUnknownSecondaryJ:
-        directionB.setAt(1, parameters.value(eUnknownSecondaryJ));
+      case GeometryParameters::eUnknownSecondaryJ:
+        directionB.setAt(
+            1, parameters.value(GeometryParameters::eUnknownSecondaryJ));
         break;
-      case eUnknownSecondaryK:
-        directionB.setAt(2, parameters.value(eUnknownSecondaryK));
+      case GeometryParameters::eUnknownSecondaryK:
+        directionB.setAt(
+            2, parameters.value(GeometryParameters::eUnknownSecondaryK));
         break;
       default:
         break;
@@ -379,7 +397,8 @@ QDomElement SlottedHole::toOpenIndyXML(QDomDocument& xmlDoc) const {
     return slottedHole;
   }
 
-  slottedHole.setAttribute("type", getGeometryTypeName(eNurbsGeometry));
+  slottedHole.setAttribute("type",
+                           getGeometryTypeName(GeometryTypes::eNurbsGeometry));
 
   // set length
   QDomElement length = xmlDoc.createElement("length");

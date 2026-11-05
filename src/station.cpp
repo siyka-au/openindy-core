@@ -507,7 +507,7 @@ QStringList Station::getSelfDefinedActions() const {
 ReadingTypes Station::getStreamFormat() {
   // check sensor control
   if (this->sensorControl.isNull()) {
-    return eUndefinedReading;
+    return ReadingTypes::eUndefinedReading;
   }
 
   return this->sensorControl->getStreamFormat();
@@ -989,22 +989,22 @@ void Station::addReadings(const int& geomId,
     reading->setMeasurementConfig(measurementConfig);
 
     switch (reading->getTypeOfReading()) {
-      case eCartesianReading:
+      case ReadingTypes::eCartesianReading:
         this->cartesianReadings.append(reading);
         break;
-      case eDirectionReading:
+      case ReadingTypes::eDirectionReading:
         this->directionReadings.append(reading);
         break;
-      case eDistanceReading:
+      case ReadingTypes::eDistanceReading:
         this->distanceReadings.append(reading);
         break;
-      case ePolarReading:
+      case ReadingTypes::ePolarReading:
         this->polarReadings.append(reading);
         break;
-      case eLevelReading:
+      case ReadingTypes::eLevelReading:
         this->levelReadings.append(reading);
         break;
-      case eTemperatureReading:
+      case ReadingTypes::eTemperatureReading:
         this->temperatureRadings.append(reading);
         break;
       default:

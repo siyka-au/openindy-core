@@ -47,7 +47,7 @@ class CylinderApproximation {
   }
 };
 
-enum ApproximationTypes {
+enum class ApproximationTypes {
   eFirstTwoPoints = 0,
   eDirection,
   eGuessAxis,
@@ -68,7 +68,7 @@ class OI_CORE_EXPORT FitFunction : public Function {
   explicit FitFunction(QObject* parent = nullptr) : Function(parent) {
     // needed elements are only observations
     NeededElement element;
-    element.typeOfElement = eObservationElement;
+    element.typeOfElement = ElementTypes::eObservationElement;
     element.description = QString(
         "Select as many observations as you want to be used to fit the target "
         "geometry.");
@@ -115,12 +115,12 @@ class OI_CORE_EXPORT BestFitUtil : public FunctionUtil {
     InputElement inputElement = function->getInputElements()[pos][0];
     OiVec dp;
     switch (elementType) {
-      case eObservationElement:
+      case ElementTypes::eObservationElement:
         dp = inputElement.observation->getXYZ();
         dp.removeLast();
         dummyPoint = dp;
         break;
-      case ePointElement:
+      case ElementTypes::ePointElement:
         dummyPoint = inputElement.point->getPosition().getVector();
         break;
       default:
@@ -368,7 +368,7 @@ class OI_CORE_EXPORT BestFitCircleUtil : public BestFitUtil {
         return false;
       }
     } catch (const exception& e) {
-      emit function->sendMessage(e.what(), eErrorMessage);
+      emit function->sendMessage(e.what(), MessageTypes::eErrorMessage);
       return false;
     }
 
@@ -471,18 +471,19 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
  protected:
   bool bestFitCylinder(FitFunction* function, Cylinder& cylinder,
                        QList<IdPoint> points, QList<IdPoint> usablePoints) {
-    ApproximationTypes approximationType = eFirstTwoPoints;  // default
+    ApproximationTypes approximationType =
+        ApproximationTypes::eFirstTwoPoints;  // default
     if (function->getScalarInputParams().stringParameter.size() > 0) {
       QString value = function->getScalarInputParams().stringParameter.value(
           "approximation");
       if (value.compare("direction") == 0) {
-        approximationType = eDirection;
+        approximationType = ApproximationTypes::eDirection;
       } else if (value.compare("guess axis") == 0) {
-        approximationType = eGuessAxis;
+        approximationType = ApproximationTypes::eGuessAxis;
       } else if (value.compare("first two dummy points") == 0) {
-        approximationType = eFirstTwoDummyPoint;
+        approximationType = ApproximationTypes::eFirstTwoDummyPoint;
       } else if (value.compare("first two points") == 0) {
-        approximationType = eFirstTwoPoints;
+        approximationType = ApproximationTypes::eFirstTwoPoints;
       }
     }
 
@@ -513,7 +514,7 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
           QString("Error while generating approximations for cylinder "
                   "parameters of cylinder %1")
               .arg(cylinder.getFeatureName()),
-          eErrorMessage);
+          MessageTypes::eErrorMessage);
       return false;
     }
 
@@ -566,14 +567,14 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
           QString("Error while fitting cylinder %1 with solution: %2")
               .arg(cylinder.getFeatureName())
               .arg(bestApproximation.comment),
-          eErrorMessage);
+          MessageTypes::eErrorMessage);
       return false;
     }
 
     emit function->sendMessage(QString("cylinder (%1) best solution: %2")
                                    .arg(cylinder.getFeatureName())
                                    .arg(bestApproximation.comment),
-                               eInformationMessage);
+                               MessageTypes::eInformationMessage);
 
     // transform cylinder position (centroid + rotation)
     Position cylinderPosition = cylinder.getPosition();
@@ -590,10 +591,10 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
 
     OiVec direction(3);
     switch (approximationType) {
-      case eGuessAxis: {
+      case ApproximationTypes::eGuessAxis: {
         break;
       }
-      case eDirection: {
+      case ApproximationTypes::eDirection: {
         foreach (const InputElement& element, function->getInputElements()[1]) {
           if (!element.geometry.isNull() && element.geometry->getIsSolved() &&
               element.geometry->hasDirection()) {
@@ -603,7 +604,7 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
         }
         break;
       }
-      case eFirstTwoDummyPoint: {
+      case ApproximationTypes::eFirstTwoDummyPoint: {
         // D12/Stage 7c-ii: the dummyPoint role now resolves to
         // ePointElement (every fit function but BestFitPoint does),
         // not just eObservationElement - read whichever the
@@ -627,7 +628,7 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
         }
         break;
       }
-      case eFirstTwoPoints: {
+      case ApproximationTypes::eFirstTwoPoints: {
         OiVec diff = points.at(1).xyz - points.at(0).xyz;
         diff.removeLast();
         diff.normalize();
@@ -671,7 +672,7 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
     this->approximations.clear();
 
     switch (approximationType) {
-      case eGuessAxis: {
+      case ApproximationTypes::eGuessAxis: {
         // get the number of observations
         int numPoints = inputObservations.size();
 
@@ -707,7 +708,7 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
         } catch (const exception& e) {
           emit function->sendMessage(
               QString("SVD error cylinder minimum solution: %1").arg(e.what()),
-              eErrorMessage);
+              MessageTypes::eErrorMessage);
           return false;
         }
 
@@ -726,7 +727,7 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
         return foundOneVaildApproximation;
         break;
       }
-      case eDirection: {
+      case ApproximationTypes::eDirection: {
         // ########################
         //  approximation direction
         // ########################
@@ -751,7 +752,7 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
 
         break;
       }
-      case eFirstTwoDummyPoint: {
+      case ApproximationTypes::eFirstTwoDummyPoint: {
         // D12/Stage 7c-ii: see the identical fix in bestFitCylinder()
         // above - the dummyPoint role resolves to ePointElement now.
         QList<OiVec> dummyPoints;
@@ -775,7 +776,7 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
 
         break;
       }
-      case eFirstTwoPoints: {
+      case ApproximationTypes::eFirstTwoPoints: {
         default:
           // ##############################################################
           // another approximation comes from the first two cylinder points
@@ -968,13 +969,13 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
     try {
       if (!OiMat::solve(s, A2.t() * A2, -1.0 * A2.t() * A1)) {
         emit function->sendMessage("can not solve cylinder parameters",
-                                   eErrorMessage);
+                                   MessageTypes::eErrorMessage);
         return false;
       }
     } catch (const exception& e) {
       emit function->sendMessage(
           QString("inv error cylinder minimum solution: %1").arg(e.what()),
-          eErrorMessage);
+          MessageTypes::eErrorMessage);
       return false;
     }
 
@@ -1167,13 +1168,13 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
       try {
         if (!OiMat::solve(res, N, -1.0 * c)) {
           emit function->sendMessage(QString("solve error cylinder fit"),
-                                     eErrorMessage);
+                                     MessageTypes::eErrorMessage);
           return false;
         }
       } catch (const exception& e) {
         emit function->sendMessage(
             QString("solve error cylinder fit: %1").arg(e.what()),
-            eErrorMessage);
+            MessageTypes::eErrorMessage);
         return false;
       }
 
@@ -1277,7 +1278,7 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
     if (numIterations >= 1000) {
       emit function->sendMessage(
           QString("to many iterations: %1").arg(numIterations),
-          eWarningMessage);
+          MessageTypes::eWarningMessage);
       return false;
     }
 

@@ -105,24 +105,30 @@ QMap<GeometryParameters, QString> Line::getUnknownParameters(
     const QMap<DimensionType, int>& displayDigits) const {
   QMap<GeometryParameters, QString> parameters;
 
-  parameters.insert(eUnknownX,
-                    this->getDisplayX(displayUnits.value(eMetric, eUnitMeter),
-                                      displayDigits.value(eMetric, 0)));
-  parameters.insert(eUnknownY,
-                    this->getDisplayY(displayUnits.value(eMetric, eUnitMeter),
-                                      displayDigits.value(eMetric, 0)));
-  parameters.insert(eUnknownZ,
-                    this->getDisplayZ(displayUnits.value(eMetric, eUnitMeter),
-                                      displayDigits.value(eMetric, 0)));
   parameters.insert(
-      eUnknownPrimaryI,
-      this->getDisplayPrimaryI(displayDigits.value(eDimensionless, 0)));
+      GeometryParameters::eUnknownX,
+      this->getDisplayX(
+          displayUnits.value(DimensionType::eMetric, UnitType::eUnitMeter),
+          displayDigits.value(DimensionType::eMetric, 0)));
   parameters.insert(
-      eUnknownPrimaryJ,
-      this->getDisplayPrimaryJ(displayDigits.value(eDimensionless, 0)));
+      GeometryParameters::eUnknownY,
+      this->getDisplayY(
+          displayUnits.value(DimensionType::eMetric, UnitType::eUnitMeter),
+          displayDigits.value(DimensionType::eMetric, 0)));
   parameters.insert(
-      eUnknownPrimaryK,
-      this->getDisplayPrimaryK(displayDigits.value(eDimensionless, 0)));
+      GeometryParameters::eUnknownZ,
+      this->getDisplayZ(
+          displayUnits.value(DimensionType::eMetric, UnitType::eUnitMeter),
+          displayDigits.value(DimensionType::eMetric, 0)));
+  parameters.insert(GeometryParameters::eUnknownPrimaryI,
+                    this->getDisplayPrimaryI(
+                        displayDigits.value(DimensionType::eDimensionless, 0)));
+  parameters.insert(GeometryParameters::eUnknownPrimaryJ,
+                    this->getDisplayPrimaryJ(
+                        displayDigits.value(DimensionType::eDimensionless, 0)));
+  parameters.insert(GeometryParameters::eUnknownPrimaryK,
+                    this->getDisplayPrimaryK(
+                        displayDigits.value(DimensionType::eDimensionless, 0)));
 
   return parameters;
 }
@@ -141,23 +147,26 @@ void Line::applyUnknownParameters(
   QList<GeometryParameters> keys = parameters.keys();
   foreach (const GeometryParameters& key, keys) {
     switch (key) {
-      case eUnknownX:
-        position.setAt(0, parameters.value(eUnknownX));
+      case GeometryParameters::eUnknownX:
+        position.setAt(0, parameters.value(GeometryParameters::eUnknownX));
         break;
-      case eUnknownY:
-        position.setAt(1, parameters.value(eUnknownY));
+      case GeometryParameters::eUnknownY:
+        position.setAt(1, parameters.value(GeometryParameters::eUnknownY));
         break;
-      case eUnknownZ:
-        position.setAt(2, parameters.value(eUnknownZ));
+      case GeometryParameters::eUnknownZ:
+        position.setAt(2, parameters.value(GeometryParameters::eUnknownZ));
         break;
-      case eUnknownPrimaryI:
-        direction.setAt(0, parameters.value(eUnknownPrimaryI));
+      case GeometryParameters::eUnknownPrimaryI:
+        direction.setAt(0,
+                        parameters.value(GeometryParameters::eUnknownPrimaryI));
         break;
-      case eUnknownPrimaryJ:
-        direction.setAt(1, parameters.value(eUnknownPrimaryJ));
+      case GeometryParameters::eUnknownPrimaryJ:
+        direction.setAt(1,
+                        parameters.value(GeometryParameters::eUnknownPrimaryJ));
         break;
-      case eUnknownPrimaryK:
-        direction.setAt(2, parameters.value(eUnknownPrimaryK));
+      case GeometryParameters::eUnknownPrimaryK:
+        direction.setAt(2,
+                        parameters.value(GeometryParameters::eUnknownPrimaryK));
         break;
       default:
         break;
@@ -196,7 +205,7 @@ QDomElement Line::toOpenIndyXML(QDomDocument& xmlDoc) const {
     return line;
   }
 
-  line.setAttribute("type", getGeometryTypeName(eLineGeometry));
+  line.setAttribute("type", getGeometryTypeName(GeometryTypes::eLineGeometry));
 
   return line;
 }

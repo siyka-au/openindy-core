@@ -23,12 +23,12 @@ class OI_CORE_EXPORT TotalStation : public Sensor {
   bool accept(const SensorFunctions& method,
               const SensorAttributes& sAttr) override {
     switch (method) {
-      case (eMoveAngle):
+      case (SensorFunctions::eMoveAngle):
         return this->move(sAttr.moveAzimuth, sAttr.moveZenith,
                           sAttr.moveDistance, sAttr.moveIsRelative);
-      case (eMoveXYZ):
+      case (SensorFunctions::eMoveXYZ):
         return this->move(sAttr.moveX, sAttr.moveY, sAttr.moveZ);
-      case (eToggleSight):
+      case (SensorFunctions::eToggleSight):
         return this->toggleSightOrientation();
       default:
         break;
@@ -53,7 +53,8 @@ class OI_CORE_EXPORT TotalStation : public Sensor {
                     const double& /*distance*/, const bool& /*isRelative*/) {
     emit this->sensorMessage(
         QString("Total Station not implemented correctly: move method missing"),
-        eCriticalMessage, eMessageBoxMessage);
+        MessageTypes::eCriticalMessage,
+        MessageDestinations::eMessageBoxMessage);
     return false;
   }
 
@@ -68,7 +69,8 @@ class OI_CORE_EXPORT TotalStation : public Sensor {
                     const double& /*z*/) {
     emit this->sensorMessage(
         QString("Total Station not implemented correctly: move method missing"),
-        eCriticalMessage, eMessageBoxMessage);
+        MessageTypes::eCriticalMessage,
+        MessageDestinations::eMessageBoxMessage);
     return false;
   }
 
@@ -79,7 +81,8 @@ class OI_CORE_EXPORT TotalStation : public Sensor {
   virtual bool toggleSightOrientation() {
     emit this->sensorMessage(QString("Total Station not implemented correctly: "
                                      "toggle sight method missing"),
-                             eCriticalMessage, eMessageBoxMessage);
+                             MessageTypes::eCriticalMessage,
+                             MessageDestinations::eMessageBoxMessage);
     return false;
   }
 };

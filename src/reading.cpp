@@ -10,8 +10,11 @@ using namespace oi::math;
  * \brief Reading::Reading
  * \param parent
  */
-Reading::Reading(QObject *parent)
-    : Element(parent), face(eUndefinedSide), imported(false), hasBackup(false) {
+Reading::Reading(QObject* parent)
+    : Element(parent),
+      face(SensorFaces::eUndefinedSide),
+      imported(false),
+      hasBackup(false) {
   // set default attributes
   this->measuredAt = QDateTime::currentDateTime();
 }
@@ -21,9 +24,13 @@ Reading::Reading(QObject *parent)
  * \param reading
  * \param parent
  */
-Reading::Reading(const ReadingPolar &reading, QObject *parent)
-    : Element(parent), face(eUndefinedSide), imported(false), rPolar(reading),
-      typeOfReading(ePolarReading), hasBackup(false) {
+Reading::Reading(const ReadingPolar& reading, QObject* parent)
+    : Element(parent),
+      face(SensorFaces::eUndefinedSide),
+      imported(false),
+      rPolar(reading),
+      typeOfReading(ReadingTypes::ePolarReading),
+      hasBackup(false) {
   // set the reading and transform into cartesian
 
   this->toCartesian();
@@ -41,36 +48,36 @@ Reading::Reading(const ReadingPolar &reading, QObject *parent)
 Reading::Reading(const ReadingCartesian& reading, QObject* parent)
     : Element(parent), hasBackup(false) {
   if (reading.xyz.getSize() != 3 || reading.sigmaXyz.getSize() != 3) {
-    this->typeOfReading = eCartesianReading;
+    this->typeOfReading = ReadingTypes::eCartesianReading;
     return;
   }
 
   // set the reading and transform into polar
-  this->typeOfReading = eCartesianReading;
+  this->typeOfReading = ReadingTypes::eCartesianReading;
   this->rCartesian = reading;
   this->toPolar();
 
   // set default attributes
   this->measuredAt = QDateTime::currentDateTime();
-  this->face = eUndefinedSide;
+  this->face = SensorFaces::eUndefinedSide;
   this->imported = false;
 }
 Reading::Reading(const ReadingCartesian6D& reading, QObject* parent)
     : Element(parent), hasBackup(false) {
   if (reading.xyz.getSize() != 3 || reading.ijk.getSize() != 3 ||
       reading.sigmaXyz.getSize() != 3) {
-    this->typeOfReading = eCartesianReading6D;
+    this->typeOfReading = ReadingTypes::eCartesianReading6D;
     return;
   }
 
   // set the reading and transform into polar
-  this->typeOfReading = eCartesianReading6D;
+  this->typeOfReading = ReadingTypes::eCartesianReading6D;
   this->rCartesian6D = reading;
   this->toPolar();
 
   // set default attributes
   this->measuredAt = QDateTime::currentDateTime();
-  this->face = eUndefinedSide;
+  this->face = SensorFaces::eUndefinedSide;
   this->imported = false;
 }
 /*!
@@ -78,37 +85,12 @@ Reading::Reading(const ReadingCartesian6D& reading, QObject* parent)
  * \param reading
  * \param parent
  */
-Reading::Reading(const ReadingDirection &reading, QObject *parent)
-    : Element(parent), face(eUndefinedSide), imported(false),
-      rDirection(reading), typeOfReading(eDirectionReading), hasBackup(false) {
-  // set the reading
-
-  // set default attributes
-  this->measuredAt = QDateTime::currentDateTime();
-}
-
-/*!
- * \brief Reading::Reading
- * \param reading
- * \param parent
- */
-Reading::Reading(const ReadingDistance &reading, QObject *parent)
-    : Element(parent), face(eUndefinedSide), imported(false),
-      rDistance(reading), typeOfReading(eDistanceReading), hasBackup(false) {
-  // set the reading and
-
-  // set default attributes
-  this->measuredAt = QDateTime::currentDateTime();
-}
-
-/*!
- * \brief Reading::Reading
- * \param reading
- * \param parent
- */
-Reading::Reading(const ReadingTemperature &reading, QObject *parent)
-    : Element(parent), face(eUndefinedSide), imported(false),
-      rTemperature(reading), typeOfReading(eTemperatureReading),
+Reading::Reading(const ReadingDirection& reading, QObject* parent)
+    : Element(parent),
+      face(SensorFaces::eUndefinedSide),
+      imported(false),
+      rDirection(reading),
+      typeOfReading(ReadingTypes::eDirectionReading),
       hasBackup(false) {
   // set the reading
 
@@ -121,9 +103,31 @@ Reading::Reading(const ReadingTemperature &reading, QObject *parent)
  * \param reading
  * \param parent
  */
-Reading::Reading(const ReadingLevel &reading, QObject *parent)
-    : Element(parent), face(eUndefinedSide), imported(false), rLevel(reading),
-      typeOfReading(eLevelReading), hasBackup(false) {
+Reading::Reading(const ReadingDistance& reading, QObject* parent)
+    : Element(parent),
+      face(SensorFaces::eUndefinedSide),
+      imported(false),
+      rDistance(reading),
+      typeOfReading(ReadingTypes::eDistanceReading),
+      hasBackup(false) {
+  // set the reading and
+
+  // set default attributes
+  this->measuredAt = QDateTime::currentDateTime();
+}
+
+/*!
+ * \brief Reading::Reading
+ * \param reading
+ * \param parent
+ */
+Reading::Reading(const ReadingTemperature& reading, QObject* parent)
+    : Element(parent),
+      face(SensorFaces::eUndefinedSide),
+      imported(false),
+      rTemperature(reading),
+      typeOfReading(ReadingTypes::eTemperatureReading),
+      hasBackup(false) {
   // set the reading
 
   // set default attributes
@@ -135,9 +139,31 @@ Reading::Reading(const ReadingLevel &reading, QObject *parent)
  * \param reading
  * \param parent
  */
-Reading::Reading(const ReadingUndefined &reading, QObject *parent)
-    : Element(parent), face(eUndefinedSide), imported(false),
-      rUndefined(reading), typeOfReading(eUndefinedReading), hasBackup(false) {
+Reading::Reading(const ReadingLevel& reading, QObject* parent)
+    : Element(parent),
+      face(SensorFaces::eUndefinedSide),
+      imported(false),
+      rLevel(reading),
+      typeOfReading(ReadingTypes::eLevelReading),
+      hasBackup(false) {
+  // set the reading
+
+  // set default attributes
+  this->measuredAt = QDateTime::currentDateTime();
+}
+
+/*!
+ * \brief Reading::Reading
+ * \param reading
+ * \param parent
+ */
+Reading::Reading(const ReadingUndefined& reading, QObject* parent)
+    : Element(parent),
+      face(SensorFaces::eUndefinedSide),
+      imported(false),
+      rUndefined(reading),
+      typeOfReading(ReadingTypes::eUndefinedReading),
+      hasBackup(false) {
   // set the reading
 
   // set default attributes
@@ -149,18 +175,30 @@ Reading::Reading(const ReadingUndefined &reading, QObject *parent)
  * \param copy
  * \param parent
  */
-Reading::Reading(const Reading &copy, QObject *parent)
-    : Element(copy, parent), backupCartesian(copy.backupCartesian),
+Reading::Reading(const Reading& copy, QObject* parent)
+    : Element(copy, parent),
+      backupCartesian(copy.backupCartesian),
       backupDirection(copy.backupDirection),
-      backupDistance(copy.backupDistance), backupLevel(copy.backupLevel),
-      backupPolar(copy.backupPolar), backupTemperature(copy.backupTemperature),
-      backupUndefined(copy.backupUndefined), face(copy.face),
-      hasBackup(copy.hasBackup), imported(copy.imported), mConfig(copy.mConfig),
-      measuredAt(copy.measuredAt), observation(copy.observation),
-      rCartesian(copy.rCartesian), rDirection(copy.rDirection),
-      rDistance(copy.rDistance), rLevel(copy.rLevel), rPolar(copy.rPolar),
-      rTemperature(copy.rTemperature), rUndefined(copy.rUndefined),
-      sConfig(copy.sConfig), typeOfReading(copy.typeOfReading) {
+      backupDistance(copy.backupDistance),
+      backupLevel(copy.backupLevel),
+      backupPolar(copy.backupPolar),
+      backupTemperature(copy.backupTemperature),
+      backupUndefined(copy.backupUndefined),
+      face(copy.face),
+      hasBackup(copy.hasBackup),
+      imported(copy.imported),
+      mConfig(copy.mConfig),
+      measuredAt(copy.measuredAt),
+      observation(copy.observation),
+      rCartesian(copy.rCartesian),
+      rDirection(copy.rDirection),
+      rDistance(copy.rDistance),
+      rLevel(copy.rLevel),
+      rPolar(copy.rPolar),
+      rTemperature(copy.rTemperature),
+      rUndefined(copy.rUndefined),
+      sConfig(copy.sConfig),
+      typeOfReading(copy.typeOfReading) {
   // copy reading attributes
 
   // copy readings
@@ -576,10 +614,10 @@ QString Reading::getDisplayMeasurementConfigName() const {
  */
 QString Reading::getDisplaySide() const {
   switch (this->face) {
-    case eFrontSide:
+    case SensorFaces::eFrontSide:
       return "FS";
       break;
-    case eBackSide:
+    case SensorFaces::eBackSide:
       return "BS";
       break;
     default:
@@ -942,7 +980,7 @@ QDomElement Reading::toOpenIndyXML(QDomDocument& xmlDoc) const {
   // add measurements
   QDomElement measurements = xmlDoc.createElement("measurements");
   switch (this->typeOfReading) {
-    case eCartesianReading:
+    case ReadingTypes::eCartesianReading:
       if (this->rCartesian.isValid && this->rCartesian.xyz.getSize() >= 3 &&
           this->rCartesian.sigmaXyz.getSize() >= 3) {
         QDomElement x = xmlDoc.createElement("measurement");
@@ -962,7 +1000,7 @@ QDomElement Reading::toOpenIndyXML(QDomDocument& xmlDoc) const {
         measurements.appendChild(z);
       }
       break;
-    case eCartesianReading6D:
+    case ReadingTypes::eCartesianReading6D:
       if (this->rCartesian6D.isValid && this->rCartesian6D.xyz.getSize() >= 3 &&
           this->rCartesian6D.sigmaXyz.getSize() >= 3) {
         QDomElement x = xmlDoc.createElement("measurement");
@@ -997,7 +1035,7 @@ QDomElement Reading::toOpenIndyXML(QDomDocument& xmlDoc) const {
         measurements.appendChild(k);
       }
       break;
-    case eDirectionReading:
+    case ReadingTypes::eDirectionReading:
       if (this->rDirection.isValid) {
         QDomElement azimuth = xmlDoc.createElement("measurement");
         azimuth.setAttribute("type", "azimuth");
@@ -1011,7 +1049,7 @@ QDomElement Reading::toOpenIndyXML(QDomDocument& xmlDoc) const {
         measurements.appendChild(zenith);
       }
       break;
-    case eDistanceReading:
+    case ReadingTypes::eDistanceReading:
       if (this->rDistance.isValid) {
         QDomElement distance = xmlDoc.createElement("measurement");
         distance.setAttribute("type", "distance");
@@ -1020,7 +1058,7 @@ QDomElement Reading::toOpenIndyXML(QDomDocument& xmlDoc) const {
         measurements.appendChild(distance);
       }
       break;
-    case ePolarReading:
+    case ReadingTypes::ePolarReading:
       if (this->rPolar.isValid) {
         QDomElement azimuth = xmlDoc.createElement("measurement");
         azimuth.setAttribute("type", "azimuth");
@@ -1039,7 +1077,7 @@ QDomElement Reading::toOpenIndyXML(QDomDocument& xmlDoc) const {
         measurements.appendChild(distance);
       }
       break;
-    case eTemperatureReading:
+    case ReadingTypes::eTemperatureReading:
       if (this->rTemperature.isValid) {
         QDomElement temperature = xmlDoc.createElement("measurement");
         temperature.setAttribute("type", "temperature");
@@ -1048,7 +1086,7 @@ QDomElement Reading::toOpenIndyXML(QDomDocument& xmlDoc) const {
         measurements.appendChild(temperature);
       }
       break;
-    case eLevelReading:
+    case ReadingTypes::eLevelReading:
       if (this->rLevel.isValid) {
         QDomElement i = xmlDoc.createElement("measurement");
         i.setAttribute("type", "i");
@@ -1067,7 +1105,7 @@ QDomElement Reading::toOpenIndyXML(QDomDocument& xmlDoc) const {
         measurements.appendChild(k);
       }
       break;
-    case eUndefinedReading:
+    case ReadingTypes::eUndefinedReading:
       if (this->rUndefined.isValid && this->rUndefined.values.size() ==
                                           this->rUndefined.sigmaValues.size()) {
         QList<QString> measurementTypes = this->rUndefined.values.keys();
@@ -1111,7 +1149,7 @@ bool Reading::fromOpenIndyXML(QDomElement& xmlElem) {
   this->typeOfReading = getReadingTypeEnum(xmlElem.attribute("type"));
   this->setImported(xmlElem.attribute("imported").toInt());
   this->setSensorFace(xmlElem.attribute("face").isEmpty()
-                          ? eUndefinedSide
+                          ? SensorFaces::eUndefinedSide
                           : (SensorFaces)(xmlElem.attribute("face").toInt()));
 
   QDomElement sensorConfig = xmlElem.firstChildElement("sensorConfig");
@@ -1139,31 +1177,31 @@ bool Reading::fromOpenIndyXML(QDomElement& xmlElem) {
 
   // set isValid
   switch (typeOfReading) {
-    case eDistanceReading:
+    case ReadingTypes::eDistanceReading:
       this->rDistance.isValid = true;
       break;
-    case eCartesianReading:
+    case ReadingTypes::eCartesianReading:
       this->rCartesian.isValid = true;
       // initialize measurement variables
       this->rCartesian.xyz = OiVec(3);
       this->rCartesian.sigmaXyz = OiVec(3);
       break;
-    case ePolarReading:
+    case ReadingTypes::ePolarReading:
       this->rPolar.isValid = true;
       break;
-    case eDirectionReading:
+    case ReadingTypes::eDirectionReading:
       this->rDirection.isValid = true;
       break;
-    case eTemperatureReading:
+    case ReadingTypes::eTemperatureReading:
       this->rTemperature.isValid = true;
       break;
-    case eLevelReading:
+    case ReadingTypes::eLevelReading:
       this->rLevel.isValid = true;
       break;
-    case eCartesianReading6D:
+    case ReadingTypes::eCartesianReading6D:
       this->rCartesian6D.isValid = true;
       break;
-    case eUndefinedReading:
+    case ReadingTypes::eUndefinedReading:
     default:
       return false;
   }

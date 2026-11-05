@@ -114,7 +114,7 @@ bool SimulationModel::distort(const QPointer<Reading>& /*r*/,
   emit this->sendMessage(
       QString(
           "Simulation Model not implemented correctly: distort method missing"),
-      eCriticalMessage, eMessageBoxMessage);
+      MessageTypes::eCriticalMessage, MessageDestinations::eMessageBoxMessage);
   return false;
 }
 
@@ -128,7 +128,7 @@ bool SimulationModel::analyseSimulationData(UncertaintyData& /*d*/) {
   emit this->sendMessage(
       QString(
           "Simulation Model not implemented correctly: analyse method missing"),
-      eCriticalMessage, eMessageBoxMessage);
+      MessageTypes::eCriticalMessage, MessageDestinations::eMessageBoxMessage);
   return false;
 }
 
@@ -143,7 +143,8 @@ double SimulationModel::getCorrelationCoefficient(const QList<double>& /*x*/,
                                                   const QList<double>& /*y*/) {
   emit this->sendMessage(QString("Simulation Model not implemented correctly: "
                                  "correlation method missing"),
-                         eCriticalMessage, eMessageBoxMessage);
+                         MessageTypes::eCriticalMessage,
+                         MessageDestinations::eMessageBoxMessage);
   return 0.0;
 }
 

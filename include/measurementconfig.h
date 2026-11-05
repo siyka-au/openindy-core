@@ -11,7 +11,7 @@
 
 namespace oi {
 
-enum MeasurementTypes {
+enum class MeasurementTypes {
   eUnknown_MeasurementType = -1,
   eSinglePoint_MeasurementType = 0,
   eScanTimeDependent_MeasurementType,
@@ -22,13 +22,13 @@ enum MeasurementTypes {
   eTemperature_MeasurementType
 };
 
-enum MeasurementModes {
+enum class MeasurementModes {
   eFast_MeasurementMode = 0,
   eStandard_MeasurementMode,
   ePrecise_MeasurementMode
 };
 
-enum ConfigTypes {
+enum class ConfigTypes {
   eUndefinded = -1,
   eUserConfig = 0,
   eProjectConfig,
@@ -37,7 +37,7 @@ enum ConfigTypes {
 
 class OI_CORE_EXPORT MeasurementConfigKey {
  public:
-  MeasurementConfigKey() : configType(eUndefinded) {}
+  MeasurementConfigKey() : configType(ConfigTypes::eUndefinded) {}
   MeasurementConfigKey(QString name, ConfigTypes configType,
                        SensorType sensorType = SensorType())
       : name(name), configType(configType), sensorType(sensorType) {}
@@ -89,14 +89,19 @@ class OI_CORE_EXPORT MeasurementConfigKey {
 
   const SensorType& getSensorType() const { return this->sensorType; }
 
-  bool isUserConfig() const { return eUserConfig == this->configType; }
-  bool isProjectConfig() const {
-    return eProjectConfig == this->configType ||
-           eStandardConfig == this->configType;
+  bool isUserConfig() const {
+    return ConfigTypes::eUserConfig == this->configType;
   }
-  bool isStandardConfig() const { return eStandardConfig == this->configType; }
+  bool isProjectConfig() const {
+    return ConfigTypes::eProjectConfig == this->configType ||
+           ConfigTypes::eStandardConfig == this->configType;
+  }
+  bool isStandardConfig() const {
+    return ConfigTypes::eStandardConfig == this->configType;
+  }
   bool isValid() const {
-    return !this->name.isEmpty() && this->configType != eUndefinded;
+    return !this->name.isEmpty() &&
+           this->configType != ConfigTypes::eUndefinded;
   }
 
  private:
@@ -195,10 +200,10 @@ class OI_CORE_EXPORT MeasurementConfig {
   // measurement config attributes
   // #############################
   QString name;
-  ConfigTypes configType{eUndefinded};
+  ConfigTypes configType{ConfigTypes::eUndefinded};
 
-  bool measureTwoSides;  // true if the sensor shall measure in both faces
-                         // (false if not)
+  bool measureTwoSides;     // true if the sensor shall measure in both faces
+                            // (false if not)
   double timeInterval;      // time interval in which the sensor shall measure
   double distanceInterval;  // distance interval in which the sensor shall
                             // measure [mm]

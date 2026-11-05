@@ -362,7 +362,8 @@ class OI_CORE_EXPORT Function : public QObject {
   // ################################################
 
   void sendMessage(const QString& msg, const MessageTypes& msgType,
-                   const MessageDestinations& msgDest = eConsoleMessage);
+                   const MessageDestinations& msgDest =
+                       MessageDestinations::eConsoleMessage);
 
   void inputElementsChanged();
   void scalarInputParametersChanged();

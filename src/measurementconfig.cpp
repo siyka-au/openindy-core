@@ -9,8 +9,8 @@ MeasurementConfig::MeasurementConfig()
     : distanceInterval(0.0),
       maxObservations(500),
       measureTwoSides(false),
-      measurementMode(eFast_MeasurementMode),
-      measurementType(eSinglePoint_MeasurementType),
+      measurementMode(MeasurementModes::eFast_MeasurementMode),
+      measurementType(MeasurementTypes::eSinglePoint_MeasurementType),
       timeInterval(0.0) {
   // set defaults
 }
@@ -79,18 +79,18 @@ MeasurementConfigKey MeasurementConfig::getKey() const {
 }
 
 bool MeasurementConfig::isUserConfig() const {
-  return eUserConfig == this->configType;
+  return ConfigTypes::eUserConfig == this->configType;
 }
 bool MeasurementConfig::isProjectConfig() const {
-  return eProjectConfig == this->configType ||
-         eStandardConfig == this->configType;
+  return ConfigTypes::eProjectConfig == this->configType ||
+         ConfigTypes::eStandardConfig == this->configType;
 }
 bool MeasurementConfig::isStandardConfig() const {
-  return eStandardConfig == this->configType;
+  return ConfigTypes::eStandardConfig == this->configType;
 }
 bool MeasurementConfig::isEditable() const { return this->editable; }
 bool MeasurementConfig::isValid() const {
-  return !this->name.isEmpty() && this->configType != eUndefinded;
+  return !this->name.isEmpty() && this->configType != ConfigTypes::eUndefinded;
 }
 
 /*!
@@ -156,8 +156,10 @@ QDomElement MeasurementConfig::toOpenIndyXML(QDomDocument& xmlDoc) const {
   // set measurement config attributes
   mConfig.setAttribute("name", this->name);
 
-  mConfig.setAttribute("measurementMode", this->measurementMode);
-  mConfig.setAttribute("measurementType", this->measurementType);
+  mConfig.setAttribute("measurementMode",
+                       static_cast<int>(this->measurementMode));
+  mConfig.setAttribute("measurementType",
+                       static_cast<int>(this->measurementType));
   mConfig.setAttribute("measureTwoSides", this->measureTwoSides);
   mConfig.setAttribute("maxObservations", this->maxObservations);
   mConfig.setAttribute("timeInterval", this->timeInterval);
@@ -287,13 +289,13 @@ void MeasurementConfig::setMaxObservations(const int& maxObservations) {
 
 void MeasurementConfig::makeUserConfig() {
   this->editable = true;
-  this->configType = eUserConfig;
+  this->configType = ConfigTypes::eUserConfig;
 }
 void MeasurementConfig::makeProjectConfig() {
   this->editable = true;
-  this->configType = eProjectConfig;
+  this->configType = ConfigTypes::eProjectConfig;
 }
 void MeasurementConfig::makeStandardConfig() {
   this->editable = false;
-  this->configType = eStandardConfig;
+  this->configType = ConfigTypes::eStandardConfig;
 }

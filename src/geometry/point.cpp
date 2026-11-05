@@ -132,15 +132,21 @@ QMap<GeometryParameters, QString> Point::getUnknownParameters(
     const QMap<DimensionType, int>& displayDigits) const {
   QMap<GeometryParameters, QString> parameters;
 
-  parameters.insert(eUnknownX,
-                    this->getDisplayX(displayUnits.value(eMetric, eUnitMeter),
-                                      displayDigits.value(eMetric, 0)));
-  parameters.insert(eUnknownY,
-                    this->getDisplayY(displayUnits.value(eMetric, eUnitMeter),
-                                      displayDigits.value(eMetric, 0)));
-  parameters.insert(eUnknownZ,
-                    this->getDisplayZ(displayUnits.value(eMetric, eUnitMeter),
-                                      displayDigits.value(eMetric, 0)));
+  parameters.insert(
+      GeometryParameters::eUnknownX,
+      this->getDisplayX(
+          displayUnits.value(DimensionType::eMetric, UnitType::eUnitMeter),
+          displayDigits.value(DimensionType::eMetric, 0)));
+  parameters.insert(
+      GeometryParameters::eUnknownY,
+      this->getDisplayY(
+          displayUnits.value(DimensionType::eMetric, UnitType::eUnitMeter),
+          displayDigits.value(DimensionType::eMetric, 0)));
+  parameters.insert(
+      GeometryParameters::eUnknownZ,
+      this->getDisplayZ(
+          displayUnits.value(DimensionType::eMetric, UnitType::eUnitMeter),
+          displayDigits.value(DimensionType::eMetric, 0)));
 
   return parameters;
 }
@@ -158,14 +164,14 @@ void Point::applyUnknownParameters(
   QList<GeometryParameters> keys = parameters.keys();
   foreach (const GeometryParameters& key, keys) {
     switch (key) {
-      case eUnknownX:
-        position.setAt(0, parameters.value(eUnknownX));
+      case GeometryParameters::eUnknownX:
+        position.setAt(0, parameters.value(GeometryParameters::eUnknownX));
         break;
-      case eUnknownY:
-        position.setAt(1, parameters.value(eUnknownY));
+      case GeometryParameters::eUnknownY:
+        position.setAt(1, parameters.value(GeometryParameters::eUnknownY));
         break;
-      case eUnknownZ:
-        position.setAt(2, parameters.value(eUnknownZ));
+      case GeometryParameters::eUnknownZ:
+        position.setAt(2, parameters.value(GeometryParameters::eUnknownZ));
         break;
       default:
         break;
@@ -309,7 +315,8 @@ QDomElement Point::toOpenIndyXML(QDomDocument& xmlDoc) const {
     return point;
   }
 
-  point.setAttribute("type", getGeometryTypeName(ePointGeometry));
+  point.setAttribute("type",
+                     getGeometryTypeName(GeometryTypes::ePointGeometry));
 
   // D12: persisted tags, anchored to feature ids (never names/pointers -
   // see measurementintent.h)

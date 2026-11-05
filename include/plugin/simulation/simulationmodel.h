@@ -195,7 +195,8 @@ class OI_CORE_EXPORT SimulationModel : public QObject {
   // ##################################################
 
   void sendMessage(const QString& msg, const MessageTypes& msgType,
-                   const MessageDestinations& msgDest = eConsoleMessage);
+                   const MessageDestinations& msgDest =
+                       MessageDestinations::eConsoleMessage);
 
  protected:
   // ###########################

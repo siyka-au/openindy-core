@@ -49,7 +49,8 @@ void Tool::closeEvent(QCloseEvent* event) { event->accept(); }
  */
 void Tool::customXmlRequest(OiRequestResponse* /*request*/) {
   emit this->sendMessage(QString("No custom XML request implementation"),
-                         eCriticalMessage, eMessageBoxMessage);
+                         MessageTypes::eCriticalMessage,
+                         MessageDestinations::eMessageBoxMessage);
 }
 
 /*!
@@ -58,7 +59,8 @@ void Tool::customXmlRequest(OiRequestResponse* /*request*/) {
  */
 void Tool::watchWindowKeyPressed(const Qt::Key& /*key*/) {
   emit this->sendMessage(QString("No watch window key pressed implementation"),
-                         eCriticalMessage, eMessageBoxMessage);
+                         MessageTypes::eCriticalMessage,
+                         MessageDestinations::eMessageBoxMessage);
 }
 
 void Tool::setCurrentJob(const QPointer<OiJob>& /*job*/) {}
@@ -66,6 +68,6 @@ void Tool::setCurrentJob(const QPointer<OiJob>& /*job*/) {}
 /*!
  * \brief Tool::init
  */
-void Tool::init() { this->toolType = eUnknownTool; }
+void Tool::init() { this->toolType = ToolTypes::eUnknownTool; }
 
 bool Tool::saveProjectEnabled() { return true; }
