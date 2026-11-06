@@ -17,6 +17,7 @@ namespace oi {
  * y^2/b^2 - z^2/c^2, a=b>0, c>0
  */
 class OI_CORE_EXPORT Hyperboloid : public Geometry {
+  friend struct codec::Access;  // the protobuf codec (see src/codec)
   Q_OBJECT
 
  public:

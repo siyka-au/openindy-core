@@ -270,6 +270,7 @@ target_link_libraries(OpenIndyCore
 # codec::Access friend declared in the model classes.
 add_library(OpenIndyCodec STATIC
     src/codec/convert.cpp
+    src/codec/geometry.cpp
     src/codec/entities.cpp
 )
 set_target_properties(OpenIndyCodec PROPERTIES POSITION_INDEPENDENT_CODE ON)

@@ -2,12 +2,15 @@
 #include <google/protobuf/util/time_util.h>
 
 #include <catch2/catch_test_macros.hpp>
+#include <functional>
 #include <string>
+#include <vector>
 
 #include "chooselalib.h"
 #include "convert.h"
 #include "digest.h"
 #include "openindy/project.pb.h"
+#include "pointgroup.h"
 #include "sensortype.h"
 
 using namespace oi;
@@ -356,4 +359,198 @@ TEST_CASE("a station round trips its own state") {
   CHECK(MessageDifferencer::Equals(in.feature(), out.feature()));
   CHECK(out.active_station());
   delete station.data();
+}
+
+namespace {
+
+// The state every geometry shares, with distinctive values so that a field
+// swapped or dropped by a converter shows up. References are left out: the
+// linking pass owns them.
+oipb::Geometry geometryBase(int id) {
+  oipb::Geometry m;
+  auto* f = m.mutable_common();
+  f->set_id(id);
+  f->set_name("G" + std::to_string(id));
+  f->set_group("walls");
+  f->set_comment("measured on site");
+  f->set_solved(true);
+  f->set_active(true);
+  m.set_is_common(true);
+  *m.mutable_position() = v3(1.25, -2.5, 3.75);
+  *m.mutable_direction() = v3(0.0, 0.6, 0.8);
+  m.set_radius(4.5);
+  auto* st = m.mutable_statistic();
+  st->set_valid(true);
+  st->set_s0_apriori(1.0);
+  st->set_s0_aposteriori(1.1);
+  st->set_stdev(0.002);
+  st->set_form_error(0.0005);
+  m.mutable_measurement_config()->set_name("FastPoint");
+  return m;
+}
+
+}  // namespace
+
+TEST_CASE("every geometry type round trips, with its type-specific state") {
+  useArmadillo();
+
+  const std::vector<
+      std::pair<const char*, std::function<void(oipb::Geometry&)>>>
+      shapes = {
+          {"circle", [](auto& m) { m.mutable_circle(); }},
+          {"cone", [](auto& m) { m.mutable_cone()->set_aperture(0.35); }},
+          {"cylinder", [](auto& m) { m.mutable_cylinder(); }},
+          {"ellipse",
+           [](auto& m) {
+             auto* e = m.mutable_ellipse();
+             e->set_a(7.0);
+             e->set_b(3.0);
+             *e->mutable_semi_major_axis() = v3(1.0, 0.0, 0.0);
+           }},
+          {"ellipsoid",
+           [](auto& m) {
+             m.mutable_ellipsoid()->set_a(5.0);
+             m.mutable_ellipsoid()->set_b(2.0);
+           }},
+          {"hyperboloid",
+           [](auto& m) {
+             m.mutable_hyperboloid()->set_a(1.5);
+             m.mutable_hyperboloid()->set_c(2.5);
+           }},
+          {"line", [](auto& m) { m.mutable_line(); }},
+          {"nurbs", [](auto& m) { m.mutable_nurbs(); }},
+          {"paraboloid", [](auto& m) { m.mutable_paraboloid()->set_a(0.75); }},
+          {"plane",
+           [](auto& m) { m.mutable_plane()->set_distance_from_origin(12.5); }},
+          {"point",
+           [](auto& m) {
+             auto* i = m.mutable_point()->add_intents();
+             i->set_feature_id(40);
+             i->set_role("wall");
+             i = m.mutable_point()->add_intents();
+             i->set_feature_id(41);
+             i->set_role("registration");
+           }},
+          {"point cloud",
+           [](auto& m) {
+             auto* c = m.mutable_point_cloud();
+             for (float x : {1.f, 2.f, 3.f, 4.f, 5.f, 6.f}) {
+               c->add_coordinates(x);
+             }
+             c->add_used(true);
+             c->add_used(false);
+             for (float x : {1.f, 2.f, 3.f}) c->add_bbox_min(x);
+             for (float x : {4.f, 5.f, 6.f}) c->add_bbox_max(x);
+           }},
+          {"scalar angle",
+           [](auto& m) { m.mutable_scalar_angle()->set_angle(1.2); }},
+          {"scalar distance",
+           [](auto& m) { m.mutable_scalar_distance()->set_distance(8.8); }},
+          {"scalar measurement series",
+           [](auto& m) {
+             m.mutable_scalar_measurement_series()->set_series_value(3.3);
+           }},
+          {"scalar temperature",
+           [](auto& m) {
+             m.mutable_scalar_temperature()->set_temperature(21.5);
+           }},
+          {"slotted hole",
+           [](auto& m) {
+             auto* h = m.mutable_slotted_hole();
+             *h->mutable_center() = v3(1, 2, 3);
+             *h->mutable_normal() = v3(0, 0, 1);
+             h->set_radius(2.0);
+             h->set_length(9.0);
+             *h->mutable_hole_axis() = v3(1, 0, 0);
+             *h->mutable_circle_center_a() = v3(-3.5, 2, 3);
+             *h->mutable_circle_center_b() = v3(5.5, 2, 3);
+           }},
+          {"sphere", [](auto& m) { m.mutable_sphere(); }},
+          {"torus", [](auto& m) { m.mutable_torus()->set_radius_b(0.5); }},
+  };
+  REQUIRE(shapes.size() == 19);
+
+  int id = 100;
+  for (const auto& [name, fill] : shapes) {
+    INFO(name);
+    oipb::Geometry in = geometryBase(id++);
+    fill(in);
+
+    const QPointer<Geometry> geometry = codec::createGeometry(in);
+    REQUIRE_FALSE(geometry.isNull());
+    std::string differences;
+    MessageDifferencer differencer;
+    differencer.ReportDifferencesToString(&differences);
+    const bool same = differencer.Compare(in, codec::toProto(*geometry));
+    INFO(differences);
+    CHECK(same);
+    delete geometry.data();
+  }
+}
+
+TEST_CASE("a geometry message without a shape cannot be created") {
+  useArmadillo();
+  CHECK(codec::createGeometry(geometryBase(1)).isNull());
+}
+
+TEST_CASE("a geometry's references are not applied at creation") {
+  useArmadillo();
+  oipb::Geometry in = geometryBase(7);
+  in.mutable_point();
+  in.add_observations(31);
+  in.set_nominal_system(5);
+  in.set_realises(6);
+  in.set_owner_feature(8);
+
+  const QPointer<Geometry> geometry = codec::createGeometry(in);
+  REQUIRE_FALSE(geometry.isNull());
+  const oipb::Geometry out = codec::toProto(*geometry);
+  // left for the linking pass, which reads them from the message
+  CHECK(out.observations_size() == 0);
+  CHECK(out.nominal_system() == 0);
+  CHECK_FALSE(geometry->getRealises().has_value());
+  CHECK_FALSE(geometry->getOwnerFeature().has_value());
+  delete geometry.data();
+}
+
+TEST_CASE("groups round trip, constraint and kind included") {
+  useArmadillo();
+
+  oipb::Group plain;
+  plain.mutable_common()->set_id(200);
+  plain.mutable_common()->set_name("walls");
+  plain.set_constraint(oipb::FEATURE_KIND_PLANE);
+  plain.add_members(1);  // references are left for the linking pass
+
+  QPointer<Group> group = codec::createGroup(plain);
+  REQUIRE_FALSE(group.isNull());
+  CHECK(dynamic_cast<PointGroup*>(group.data()) == nullptr);
+  CHECK(group->getConstraint() == FeatureTypes::ePlaneFeature);
+  oipb::Group out = codec::toProto(*group);
+  CHECK(out.constraint() == oipb::FEATURE_KIND_PLANE);
+  CHECK_FALSE(out.point_group());
+  CHECK(out.common().name() == "walls");
+  delete group.data();
+
+  oipb::Group points;
+  points.mutable_common()->set_id(201);
+  points.mutable_common()->set_name("targets");
+  points.set_constraint(oipb::FEATURE_KIND_POINT);
+  points.set_point_group(true);
+
+  group = codec::createGroup(points);
+  REQUIRE_FALSE(group.isNull());
+  CHECK(dynamic_cast<PointGroup*>(group.data()) != nullptr);
+  out = codec::toProto(*group);
+  CHECK(out.point_group());
+  CHECK(out.constraint() == oipb::FEATURE_KIND_POINT);
+  delete group.data();
+
+  oipb::Group unconstrained;
+  unconstrained.mutable_common()->set_id(202);
+  group = codec::createGroup(unconstrained);
+  REQUIRE_FALSE(group.isNull());
+  CHECK_FALSE(group->getConstraint().has_value());
+  CHECK(codec::toProto(*group).constraint() == oipb::FEATURE_KIND_UNSPECIFIED);
+  delete group.data();
 }

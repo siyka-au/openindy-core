@@ -46,6 +46,7 @@ class CoordinateSystem;
  */
 class OI_CORE_EXPORT Geometry : public Feature {
   friend class OiJob;
+  friend struct codec::Access;  // the protobuf codec (see src/codec)
   Q_OBJECT
 
  public:

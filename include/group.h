@@ -37,6 +37,7 @@ class FeatureWrapper;
  */
 class OI_CORE_EXPORT Group : public Feature {
   friend class OiJob;
+  friend struct codec::Access;  // the protobuf codec (see src/codec)
   Q_OBJECT
 
  public:

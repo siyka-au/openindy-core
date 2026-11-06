@@ -16,6 +16,7 @@ namespace oi {
  * Defines an ellipsoid of rotation
  */
 class OI_CORE_EXPORT Ellipsoid : public Geometry {
+  friend struct codec::Access;  // the protobuf codec (see src/codec)
   Q_OBJECT
 
  public:

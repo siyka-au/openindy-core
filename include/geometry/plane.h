@@ -15,6 +15,7 @@ namespace oi {
  * \brief The Plane class
  */
 class OI_CORE_EXPORT Plane : public Geometry {
+  friend struct codec::Access;  // the protobuf codec (see src/codec)
   Q_OBJECT
 
  public:

@@ -10,6 +10,8 @@
 #include <optional>
 
 #include "coordinatesystem.h"
+#include "geometry.h"
+#include "group.h"
 #include "measurementconfig.h"
 #include "observation.h"
 #include "openindy/project.pb.h"
@@ -60,6 +62,19 @@ namespace oi::codec {
  *  the linking pass replaces them with the saved ones. */
 [[nodiscard]] QPointer<Station> createStation(
     const openindy::v1::Station& message);
+
+/*! Writes any of the 19 concrete geometry types (not an Observation, which
+ *  has its own message). The shape is chosen from the object's real type. */
+[[nodiscard]] openindy::v1::Geometry toProto(const Geometry& geometry);
+/*! Null if the message has no shape. The geometry's references (observations,
+ *  nominal system, realised nominal, owner) are left for the linking pass. */
+[[nodiscard]] QPointer<Geometry> createGeometry(
+    const openindy::v1::Geometry& message);
+
+[[nodiscard]] openindy::v1::Group toProto(const Group& group);
+/*! A plain Group or a PointGroup, as the message says. Members are left for
+ *  the linking pass. */
+[[nodiscard]] QPointer<Group> createGroup(const openindy::v1::Group& message);
 
 }  // namespace oi::codec
 

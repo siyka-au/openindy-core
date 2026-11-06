@@ -10,180 +10,17 @@
 #include <chrono>
 #include <cmath>
 
+#include "access.h"
 #include "convert.h"
 #include "featurewrapper.h"
 #include "plugin/sensor/sensor.h"
+#include "wire.h"
 
 namespace oi::codec {
 
 namespace oipb = openindy::v1;
 
-struct Access {
-  // ---- Element / Feature ----
-  static void setId(Element& element, int id) { element.id = id; }
-
-  static void restoreCommon(Feature& feature, const oipb::FeatureCommon& c) {
-    feature.id = c.id();
-    feature.name = QString::fromStdString(c.name());
-    feature.group = QString::fromStdString(c.group());
-    feature.comment = QString::fromStdString(c.comment());
-    feature.isSolved = c.solved();
-    feature.isActiveFeature = c.active();
-  }
-
-  // ---- Station ----
-  static void restoreStation(Station& station, const oipb::Station& m) {
-    station.isActiveStation = m.active_station();
-  }
-
-  // ---- CoordinateSystem ----
-  static void restoreSystem(CoordinateSystem& system,
-                            const oipb::CoordinateSystem& m) {
-    system.isActiveCoordinateSystem = m.active_system();
-    system.isBundleSystem = m.bundle_system();
-    system.origin = Position(m.origin().x(), m.origin().y(), m.origin().z());
-    system.xAxis = Direction(m.x_axis().x(), m.x_axis().y(), m.x_axis().z());
-    system.yAxis = Direction(m.y_axis().x(), m.y_axis().y(), m.y_axis().z());
-    system.zAxis = Direction(m.z_axis().x(), m.z_axis().y(), m.z_axis().z());
-    system.expansionOrigin =
-        Position(m.expansion_origin().x(), m.expansion_origin().y(),
-                 m.expansion_origin().z());
-  }
-
-  static void setBundleTemplate(CoordinateSystem& system,
-                                const QJsonObject& value) {
-    system.bundleTemplate = value;
-  }
-
-  // ---- TrafoParam ----
-  static void restoreTrafo(TrafoParam& trafo, const oipb::TrafoParam& m) {
-    const auto set3 = [](OiVec& target, const oipb::Vec3& v) {
-      target.setAt(0, v.x());
-      target.setAt(1, v.y());
-      target.setAt(2, v.z());
-    };
-    set3(trafo.translation, m.translation());
-    set3(trafo.rotation, m.rotation());
-    set3(trafo.scale, m.scale());
-    trafo.isDatumTrafo = m.datum_trafo();
-    trafo.isUsed = m.used();
-    if (m.homogen_matrix_size() == 16) {
-      for (int row = 0; row < 4; ++row) {
-        for (int col = 0; col < 4; ++col) {
-          trafo.homogenMatrix.setAt(row, col, m.homogen_matrix(row * 4 + col));
-        }
-      }
-    }
-  }
-
-  static int fromId(const TrafoParam& t) {
-    return t.from ? t.from->getId() : 0;
-  }
-  static int toId(const TrafoParam& t) { return t.to ? t.to->getId() : 0; }
-
-  // ---- Observation ----
-  static void restoreObservation(Observation& o, const oipb::Observation& m) {
-    o.id = m.id();
-    o.isValid = m.valid();
-    o.isSolved = m.solved();
-    o.isDummyPoint = m.dummy_point();
-    o.hasDirection = m.has_direction();
-    const auto set4 = [](OiVec& target, const oipb::Vec3& v) {
-      target.setAt(0, v.x());
-      target.setAt(1, v.y());
-      target.setAt(2, v.z());
-      target.setAt(3, 1.0);
-    };
-    set4(o.xyz, m.xyz());
-    set4(o.originalXyz, m.original_xyz());
-    set4(o.sigmaXyz, m.sigma_xyz());
-    set4(o.originalSigmaXyz, m.original_sigma_xyz());
-    set4(o.ijk, m.ijk());
-    set4(o.originalIjk, m.original_ijk());
-    set4(o.sigmaIjk, m.sigma_ijk());
-    set4(o.originalSigmaIjk, m.original_sigma_ijk());
-  }
-
-  static void setReading(Observation& o, const QPointer<Reading>& reading) {
-    o.reading = reading;
-  }
-
-  static void encodeObservation(const Observation& o, oipb::Observation* m);
-
-  // ---- Reading ----
-  static void encodeReading(const Reading& r, oipb::Reading* m);
-  static QPointer<Reading> decodeReading(const oipb::Reading& m);
-};
-
 namespace {
-
-oipb::Vec3 vec3(const OiVec& v) {
-  oipb::Vec3 out;
-  if (v.getSize() >= 3) {
-    out.set_x(v.getAt(0));
-    out.set_y(v.getAt(1));
-    out.set_z(v.getAt(2));
-  }
-  return out;
-}
-
-oipb::Vec3 vec3(double x, double y, double z) {
-  oipb::Vec3 out;
-  out.set_x(x);
-  out.set_y(y);
-  out.set_z(z);
-  return out;
-}
-
-OiVec toVec(const oipb::Vec3& v) {
-  OiVec out(3);
-  out.setAt(0, v.x());
-  out.setAt(1, v.y());
-  out.setAt(2, v.z());
-  return out;
-}
-
-int idOf(const Feature* f) { return f != nullptr ? f->getId() : 0; }
-
-void appendIds(const QList<QPointer<FeatureWrapper>>& wrappers,
-               google::protobuf::RepeatedField<int32_t>* out) {
-  for (const auto& wrapper : wrappers) {
-    if (!wrapper.isNull() && !wrapper->getFeature().isNull()) {
-      out->Add(wrapper->getFeature()->getId());
-    }
-  }
-}
-
-oipb::FeatureCommon commonOf(const Feature& f) {
-  oipb::FeatureCommon c;
-  c.set_id(f.getId());
-  c.set_name(f.getFeatureName().toStdString());
-  c.set_group(f.getGroupName().toStdString());
-  c.set_comment(f.getComment().toStdString());
-  c.set_solved(f.getIsSolved());
-  c.set_active(f.getIsActiveFeature());
-  appendIds(f.getUsedFor(), c.mutable_used_for());
-  appendIds(f.getPreviouslyNeeded(), c.mutable_previously_needed());
-  return c;
-}
-
-google::protobuf::Timestamp toTimestamp(
-    std::chrono::system_clock::time_point tp) {
-  using namespace std::chrono;
-  const auto whole = floor<seconds>(tp);
-  google::protobuf::Timestamp out;
-  out.set_seconds(whole.time_since_epoch().count());
-  out.set_nanos(
-      static_cast<int32_t>(duration_cast<nanoseconds>(tp - whole).count()));
-  return out;
-}
-
-std::chrono::system_clock::time_point fromTimestamp(
-    const google::protobuf::Timestamp& ts) {
-  using namespace std::chrono;
-  return system_clock::time_point{} + seconds{ts.seconds()} +
-         duration_cast<system_clock::duration>(nanoseconds{ts.nanos()});
-}
 
 oipb::SensorFace toProto(SensorFaces face) {
   switch (face) {
@@ -270,11 +107,7 @@ void Access::encodeReading(const Reading& r, oipb::Reading* m) {
   m->set_face(toProto(r.face));
   m->set_sensor_config_name(r.sensorConfigName.toStdString());
   if (!r.mConfig.getName().isEmpty()) {
-    auto* ref = m->mutable_measurement_config();
-    ref->set_name(r.mConfig.getName().toStdString());
-    if (r.mConfig.getSensorType().isValid()) {
-      ref->set_sensor_type(r.mConfig.getSensorType().id().toStdString());
-    }
+    *m->mutable_measurement_config() = configRefOf(r.mConfig);
   }
 
   switch (r.typeOfReading) {
@@ -434,16 +267,7 @@ QPointer<Reading> Access::decodeReading(const oipb::Reading& m) {
   reading->face = fromProto(m.face());
   reading->sensorConfigName = QString::fromStdString(m.sensor_config_name());
   if (m.has_measurement_config()) {
-    SensorType sensorType;
-    if (m.measurement_config().has_sensor_type()) {
-      sensorType =
-          SensorTypeRegistry::byId(
-              QString::fromStdString(m.measurement_config().sensor_type()))
-              .value_or(SensorType());
-    }
-    reading->mConfig = MeasurementConfigKey(
-        QString::fromStdString(m.measurement_config().name()),
-        ConfigTypes::eUndefinded, sensorType);
+    reading->mConfig = configKeyOf(m.measurement_config());
   }
   return reading;
 }

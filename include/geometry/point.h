@@ -16,6 +16,7 @@ namespace oi {
  */
 class OI_CORE_EXPORT Point : public Geometry {
   friend class Station;
+  friend struct codec::Access;  // the protobuf codec (see src/codec)
   Q_OBJECT
 
  public:

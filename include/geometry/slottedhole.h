@@ -18,6 +18,7 @@ namespace oi {
  * Defines an elongated bore with one radius
  */
 class OI_CORE_EXPORT SlottedHole : public Geometry {
+  friend struct codec::Access;  // the protobuf codec (see src/codec)
   Q_OBJECT
 
  public:

@@ -13,6 +13,7 @@ namespace oi {
  * \brief The ScalarEntityAngle class
  */
 class OI_CORE_EXPORT ScalarEntityAngle : public Geometry {
+  friend struct codec::Access;  // the protobuf codec (see src/codec)
   Q_OBJECT
 
  public:

@@ -45,6 +45,7 @@ class OI_CORE_EXPORT BoundingBox_PC {
  * \brief The PointCloud class
  */
 class OI_CORE_EXPORT PointCloud : public Geometry, public PointCollection {
+  friend struct codec::Access;  // the protobuf codec (see src/codec)
   Q_OBJECT
 
  public:

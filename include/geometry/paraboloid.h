@@ -17,6 +17,7 @@ namespace oi {
  * a > 0
  */
 class OI_CORE_EXPORT Paraboloid : public Geometry {
+  friend struct codec::Access;  // the protobuf codec (see src/codec)
   Q_OBJECT
 
  public:

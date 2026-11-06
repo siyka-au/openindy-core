@@ -244,6 +244,189 @@ message TrafoParam {
 }
 
 // ---------------------------------------------------------------------------
+// Geometries and groups
+// ---------------------------------------------------------------------------
+
+// The statistics a geometry keeps after a fit. The design matrices and the
+// per-observation residuals are not stored: a recalculation rebuilds them.
+message GeometryStatistic {
+  bool valid = 1;
+  double s0_apriori = 2;
+  double s0_aposteriori = 3;
+  double stdev = 4;
+  double form_error = 5;
+}
+
+// What a point was measured for (feature coding): the feature it serves and
+// the role it plays there.
+message MeasurementIntent {
+  int32 feature_id = 1;
+  string role = 2;
+}
+
+// Geometry types whose state is fully described by the shared fields
+// (position, direction, radius).
+message CircleShape {}
+message CylinderShape {}
+message LineShape {}
+message SphereShape {}
+message NurbsShape {}
+
+message PointShape {
+  repeated MeasurementIntent intents = 1;
+}
+
+message PlaneShape {
+  // Smallest distance from the origin. Derived from the position and
+  // direction, but stored so a reload cannot drift from what was saved.
+  double distance_from_origin = 1;
+}
+
+message ConeShape {
+  // Opening angle: twice the angle between a surface line and the axis.
+  double aperture = 1;
+}
+
+message EllipseShape {
+  double a = 1;
+  double b = 2;
+  Vec3 semi_major_axis = 3;
+}
+
+message EllipsoidShape {
+  double a = 1;
+  double b = 2;
+}
+
+message HyperboloidShape {
+  double a = 1;
+  double c = 2;
+}
+
+message ParaboloidShape {
+  double a = 1;
+}
+
+message TorusShape {
+  // The radius of the centre curve is the geometry's shared radius.
+  double radius_b = 1;
+}
+
+// A slotted hole keeps its own centre, normal and radius rather than the
+// shared ones.
+message SlottedHoleShape {
+  Vec3 center = 1;
+  Vec3 normal = 2;
+  double radius = 3;
+  double length = 4;
+  Vec3 hole_axis = 5;
+  Vec3 circle_center_a = 6;
+  Vec3 circle_center_b = 7;
+}
+
+message PointCloudShape {
+  // x, y, z of each point, three floats per point.
+  repeated float coordinates = 1 [packed = true];
+  // One flag per point: false for points excluded from processing.
+  repeated bool used = 2 [packed = true];
+  repeated float bbox_min = 3 [packed = true];
+  repeated float bbox_max = 4 [packed = true];
+  // Geometries detected in the cloud (segments), by id.
+  repeated int32 segments = 5;
+}
+
+// The four scalar entities hold one number.
+message ScalarEntityAngleShape { double angle = 1; }
+message ScalarEntityDistanceShape { double distance = 1; }
+message ScalarEntityMeasurementSeriesShape { double series_value = 1; }
+message ScalarEntityTemperatureShape { double temperature = 1; }
+
+message Geometry {
+  FeatureCommon common = 1;
+
+  bool is_common = 2;
+  Vec3 position = 3;
+  Vec3 direction = 4;
+  double radius = 5;
+  GeometryStatistic statistic = 6;
+
+  // References, by feature id; 0 means none.
+  repeated int32 observations = 7;
+  int32 nominal_system = 8;
+  // The nominal this geometry realises (many actuals may share one).
+  int32 realises = 9;
+  // The geometry that generated and owns this one (for example a plane's
+  // normal line); owned geometries are regenerated, never edited.
+  int32 owner_feature = 10;
+  // The measurement config in use; unset if none.
+  MeasurementConfigRef measurement_config = 11;
+
+  oneof shape {
+    CircleShape circle = 20;
+    ConeShape cone = 21;
+    CylinderShape cylinder = 22;
+    EllipseShape ellipse = 23;
+    EllipsoidShape ellipsoid = 24;
+    HyperboloidShape hyperboloid = 25;
+    LineShape line = 26;
+    NurbsShape nurbs = 27;
+    ParaboloidShape paraboloid = 28;
+    PlaneShape plane = 29;
+    PointShape point = 30;
+    PointCloudShape point_cloud = 31;
+    ScalarEntityAngleShape scalar_angle = 32;
+    ScalarEntityDistanceShape scalar_distance = 33;
+    ScalarEntityMeasurementSeriesShape scalar_measurement_series = 34;
+    ScalarEntityTemperatureShape scalar_temperature = 35;
+    SlottedHoleShape slotted_hole = 36;
+    SphereShape sphere = 37;
+    TorusShape torus = 38;
+  }
+}
+
+// What kind of feature a group accepts. Wire numbering is independent of
+// the model's enum.
+enum FeatureKind {
+  FEATURE_KIND_UNSPECIFIED = 0;
+  FEATURE_KIND_CIRCLE = 1;
+  FEATURE_KIND_CONE = 2;
+  FEATURE_KIND_CYLINDER = 3;
+  FEATURE_KIND_ELLIPSE = 4;
+  FEATURE_KIND_ELLIPSOID = 5;
+  FEATURE_KIND_HYPERBOLOID = 6;
+  FEATURE_KIND_LINE = 7;
+  FEATURE_KIND_NURBS = 8;
+  FEATURE_KIND_PARABOLOID = 9;
+  FEATURE_KIND_PLANE = 10;
+  FEATURE_KIND_POINT = 11;
+  FEATURE_KIND_POINT_CLOUD = 12;
+  FEATURE_KIND_SCALAR_ANGLE = 13;
+  FEATURE_KIND_SCALAR_DISTANCE = 14;
+  FEATURE_KIND_SCALAR_MEASUREMENT_SERIES = 15;
+  FEATURE_KIND_SCALAR_TEMPERATURE = 16;
+  FEATURE_KIND_SLOTTED_HOLE = 17;
+  FEATURE_KIND_SPHERE = 18;
+  FEATURE_KIND_TORUS = 19;
+  FEATURE_KIND_COORDINATE_SYSTEM = 20;
+  FEATURE_KIND_STATION = 21;
+  FEATURE_KIND_TRAFO_PARAM = 22;
+  FEATURE_KIND_LEVEL = 23;
+  FEATURE_KIND_GROUP = 24;
+  FEATURE_KIND_POINT_GROUP = 25;
+}
+
+// A named collection of references to other features.
+message Group {
+  FeatureCommon common = 1;
+  // Set when the group only accepts one kind of feature.
+  FeatureKind constraint = 2;
+  repeated int32 members = 3;
+  // A point group is a group constrained to points with the point-collection
+  // behaviour on top.
+  bool point_group = 4;
+}
+
+// ---------------------------------------------------------------------------
 // Project
 // ---------------------------------------------------------------------------
 
@@ -258,4 +441,6 @@ message Project {
   int32 next_id = 5;
 
   repeated MeasurementConfig measurement_configs = 16;
+  repeated Geometry geometries = 17;
+  repeated Group groups = 18;
 }

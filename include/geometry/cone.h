@@ -16,6 +16,7 @@ namespace oi {
  * Defines a right circular cone
  */
 class OI_CORE_EXPORT Cone : public Geometry {
+  friend struct codec::Access;  // the protobuf codec (see src/codec)
   Q_OBJECT
 
  public:
