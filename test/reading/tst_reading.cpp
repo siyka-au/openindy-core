@@ -1,5 +1,6 @@
 #include <QString>
 #include <QtTest>
+#include <chrono>
 
 #include "chooselalib.h"
 #include "reading.h"
@@ -29,6 +30,7 @@ class ReadingTest : public QObject {
   void testDirectionReading();
   void testTemperatureReading();
   void testLevelReading();
+  void testMeasuredAtSurvivesXmlRoundTrip();
 
  private:
   QPointer<Reading> writeReadXml(QPointer<Reading> r);
@@ -64,6 +66,21 @@ QPointer<Reading> ReadingTest::writeReadXml(QPointer<Reading> r) {
   QDomElement inElem = inXml.firstChild().toElement();
   inReading->fromOpenIndyXML(inElem);
   return inReading;
+}
+
+// Reading time is a std::chrono time point serialised as ISO-8601 UTC. It is
+// stored with second resolution, so compare at that resolution.
+void ReadingTest::testMeasuredAtSurvivesXmlRoundTrip() {
+  using namespace std::chrono;
+  ReadingUndefined u;
+  QPointer<Reading> reading = new Reading(u);
+  const sys_seconds when =
+      sys_days{year{2024} / 5 / 17} + hours{13} + minutes{45} + seconds{9};
+  reading->setMeasuredAt(when);
+
+  QPointer<Reading> back = writeReadXml(reading);
+  QCOMPARE(floor<seconds>(back->getMeasuredAt()).time_since_epoch().count(),
+           when.time_since_epoch().count());
 }
 
 void ReadingTest::testCartesian6D() {

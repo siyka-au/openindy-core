@@ -3,10 +3,10 @@
 
 #include <QtCore/qmath.h>
 
-#include <QDateTime>
 #include <QObject>
 #include <QPointer>
 #include <QtXml>
+#include <chrono>
 
 #include "core_export.h"
 #include "element.h"
@@ -219,8 +219,8 @@ class OI_CORE_EXPORT Reading : public Element {
   const MeasurementConfigKey& getMeasurementConfig();
   void setMeasurementConfig(const MeasurementConfigKey& mConfig);
 
-  [[nodiscard]] const QDateTime& getMeasuredAt() const;
-  void setMeasuredAt(const QDateTime& measuredAt);
+  [[nodiscard]] std::chrono::system_clock::time_point getMeasuredAt() const;
+  void setMeasuredAt(std::chrono::system_clock::time_point measuredAt);
 
   [[nodiscard]] const SensorFaces& getFace() const;
   void setSensorFace(const SensorFaces& face);
@@ -322,7 +322,7 @@ class OI_CORE_EXPORT Reading : public Element {
   // general reading attributes
   // ##########################
 
-  QDateTime measuredAt;
+  std::chrono::system_clock::time_point measuredAt;
   MeasurementConfigKey mConfig;  // the configuration that the sensor used to
                                  // produce this reading
   SensorFaces face;

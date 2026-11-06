@@ -2818,14 +2818,14 @@ QStringList OiJob::createFeatureNames(const QString& name,
   QString baseName = name;
   QString postFix;
 
-  int index = baseName.lastIndexOf(QRegularExpression("[0-9]*$"),
-                                   baseName.length() - 1);
-  while (index > -1) {
-    postFix.prepend(baseName.mid(index));
-    baseName.resize(index);
-    index = baseName.lastIndexOf(QRegularExpression("[0-9]*$"),
-                                 baseName.length() - 1);
+  // the postfix is the run of ASCII digits at the end of the name
+  qsizetype digitsStart = baseName.size();
+  while (digitsStart > 0 && baseName.at(digitsStart - 1) >= QChar('0') &&
+         baseName.at(digitsStart - 1) <= QChar('9')) {
+    --digitsStart;
   }
+  postFix = baseName.mid(digitsStart);
+  baseName.truncate(digitsStart);
 
   // add leading zero
   int numLeadingZeros = 0;

@@ -1,10 +1,10 @@
 #ifndef CALIBRATEDCONSTELLATION_H
 #define CALIBRATEDCONSTELLATION_H
 
-#include <QDate>
 #include <QList>
 #include <QMetaType>
 #include <QString>
+#include <chrono>
 #include <optional>
 
 #include "core_export.h"
@@ -67,7 +67,8 @@ class OI_CORE_EXPORT CalibratedConstellation {
   CalibratedConstellation() = default;
   CalibratedConstellation(const QString& name, const QList<LocalPoint>& points,
                           const QString& certificateId = QString(),
-                          const QDate& calibratedAt = QDate());
+                          const std::optional<std::chrono::year_month_day>&
+                              calibratedAt = std::nullopt);
 
   [[nodiscard]] const QString& name() const;
   [[nodiscard]] const QList<LocalPoint>& points() const;
@@ -79,7 +80,8 @@ class OI_CORE_EXPORT CalibratedConstellation {
       const QString& label) const;
 
   [[nodiscard]] const QString& certificateId() const;
-  [[nodiscard]] const QDate& calibratedAt() const;
+  [[nodiscard]] const std::optional<std::chrono::year_month_day>& calibratedAt()
+      const;
 
   [[nodiscard]] bool isValid() const;
 
@@ -87,7 +89,7 @@ class OI_CORE_EXPORT CalibratedConstellation {
   QString m_name;
   QList<LocalPoint> m_points;
   QString m_certificateId;
-  QDate m_calibratedAt;
+  std::optional<std::chrono::year_month_day> m_calibratedAt;
 };
 
 }  // namespace oi

@@ -4,7 +4,6 @@
 #include <QMap>
 #include <QObject>
 #include <QThread>
-#include <QTime>
 #include <QVariantMap>
 
 #include "core_export.h"

@@ -1,6 +1,9 @@
 #include "reading.h"
 
+#include <chrono>
 #include <cmath>
+#include <format>
+#include <sstream>
 
 #include "observation.h"
 #include "sensor.h"
@@ -19,7 +22,7 @@ Reading::Reading(QObject* parent)
       imported(false),
       hasBackup(false) {
   // set default attributes
-  this->measuredAt = QDateTime::currentDateTime();
+  this->measuredAt = std::chrono::system_clock::now();
 }
 
 /*!
@@ -40,7 +43,7 @@ Reading::Reading(const ReadingPolar& reading, QObject* parent)
   this->rCartesian.sigmaXyz = this->errorPropagationPolarToCartesian();
 
   // set default attributes
-  this->measuredAt = QDateTime::currentDateTime();
+  this->measuredAt = std::chrono::system_clock::now();
 }
 
 /*!
@@ -61,7 +64,7 @@ Reading::Reading(const ReadingCartesian& reading, QObject* parent)
   this->toPolar();
 
   // set default attributes
-  this->measuredAt = QDateTime::currentDateTime();
+  this->measuredAt = std::chrono::system_clock::now();
   this->face = SensorFaces::eUndefinedSide;
   this->imported = false;
 }
@@ -79,7 +82,7 @@ Reading::Reading(const ReadingCartesian6D& reading, QObject* parent)
   this->toPolar();
 
   // set default attributes
-  this->measuredAt = QDateTime::currentDateTime();
+  this->measuredAt = std::chrono::system_clock::now();
   this->face = SensorFaces::eUndefinedSide;
   this->imported = false;
 }
@@ -98,7 +101,7 @@ Reading::Reading(const ReadingDirection& reading, QObject* parent)
   // set the reading
 
   // set default attributes
-  this->measuredAt = QDateTime::currentDateTime();
+  this->measuredAt = std::chrono::system_clock::now();
 }
 
 /*!
@@ -116,7 +119,7 @@ Reading::Reading(const ReadingDistance& reading, QObject* parent)
   // set the reading and
 
   // set default attributes
-  this->measuredAt = QDateTime::currentDateTime();
+  this->measuredAt = std::chrono::system_clock::now();
 }
 
 /*!
@@ -134,7 +137,7 @@ Reading::Reading(const ReadingTemperature& reading, QObject* parent)
   // set the reading
 
   // set default attributes
-  this->measuredAt = QDateTime::currentDateTime();
+  this->measuredAt = std::chrono::system_clock::now();
 }
 
 /*!
@@ -152,7 +155,7 @@ Reading::Reading(const ReadingLevel& reading, QObject* parent)
   // set the reading
 
   // set default attributes
-  this->measuredAt = QDateTime::currentDateTime();
+  this->measuredAt = std::chrono::system_clock::now();
 }
 
 /*!
@@ -170,7 +173,7 @@ Reading::Reading(const ReadingUndefined& reading, QObject* parent)
   // set the reading
 
   // set default attributes
-  this->measuredAt = QDateTime::currentDateTime();
+  this->measuredAt = std::chrono::system_clock::now();
 }
 
 /*!
@@ -417,13 +420,15 @@ void Reading::setMeasurementConfig(const MeasurementConfigKey& mConfig) {
  * \brief Reading::getMeasuredAt
  * \return
  */
-const QDateTime& Reading::getMeasuredAt() const { return this->measuredAt; }
+std::chrono::system_clock::time_point Reading::getMeasuredAt() const {
+  return this->measuredAt;
+}
 
 /*!
  * \brief Reading::setMeasuredAt
  * \param measuredAt
  */
-void Reading::setMeasuredAt(const QDateTime& measuredAt) {
+void Reading::setMeasuredAt(std::chrono::system_clock::time_point measuredAt) {
   this->measuredAt = measuredAt;
 }
 
@@ -593,7 +598,18 @@ QString Reading::getDisplayType() const {
  * \brief Reading::getDisplayTime
  * \return
  */
-QString Reading::getDisplayTime() const { return this->measuredAt.toString(); }
+QString Reading::getDisplayTime() const {
+  const auto seconds =
+      std::chrono::floor<std::chrono::seconds>(this->measuredAt);
+  try {
+    return QString::fromStdString(std::format(
+        "{:%F %T}",
+        std::chrono::zoned_time{std::chrono::current_zone(), seconds}));
+  } catch (const std::exception&) {
+    // no time zone database available: show UTC rather than nothing
+    return QString::fromStdString(std::format("{:%F %T} UTC", seconds));
+  }
+}
 
 /*!
  * \brief Reading::getDisplaySensorConfigName
@@ -967,7 +983,10 @@ QDomElement Reading::toOpenIndyXML(QDomDocument& xmlDoc) const {
 
   // add reading attributes
   reading.setAttribute("id", this->id);
-  reading.setAttribute("time", this->measuredAt.toString(Qt::ISODate));
+  reading.setAttribute(
+      "time", QString::fromStdString(std::format(
+                  "{:%FT%TZ}",
+                  std::chrono::floor<std::chrono::seconds>(this->measuredAt))));
   reading.setAttribute("type", getReadingTypeName(this->typeOfReading));
   reading.setAttribute("imported", this->isImported());
   reading.setAttribute("face", (int)this->getFace());
@@ -1147,8 +1166,14 @@ bool Reading::fromOpenIndyXML(QDomElement& xmlElem) {
     return false;
   }
   this->id = xmlElem.attribute("id").toInt();
-  this->measuredAt =
-      QDateTime::fromString(xmlElem.attribute("time"), Qt::ISODate);
+  {
+    // ISO-8601 UTC ("...Z"); an older file without the zone is read as UTC too
+    std::chrono::sys_seconds parsed{};
+    std::istringstream timeStream(xmlElem.attribute("time").toStdString());
+    std::chrono::from_stream(timeStream, "%FT%T", parsed);
+    this->measuredAt =
+        timeStream.fail() ? std::chrono::system_clock::time_point{} : parsed;
+  }
   this->typeOfReading = getReadingTypeEnum(xmlElem.attribute("type"));
   this->setImported(xmlElem.attribute("imported").toInt());
   this->setSensorFace(xmlElem.attribute("face").isEmpty()

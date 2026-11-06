@@ -98,7 +98,8 @@ void Sensor::setMeasurementConfig(const MeasurementConfig& mConfig) {
  * \brief Sensor::getLastReading
  * \return
  */
-const QPair<ReadingTypes, QPointer<Reading> >& Sensor::getLastReading() const {
+const std::pair<ReadingTypes, QPointer<Reading> >& Sensor::getLastReading()
+    const {
   return this->lastReading;
 }
 

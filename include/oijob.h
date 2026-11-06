@@ -7,7 +7,6 @@
 #include <QMultiMap>
 #include <QObject>
 #include <QPointer>
-#include <QRegularExpression>
 #include <QSet>
 #include <QString>
 #include <QStringList>

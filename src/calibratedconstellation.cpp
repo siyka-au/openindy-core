@@ -14,7 +14,8 @@ bool LocalPoint::isMeasured() const { return this->m_isMeasured; }
 
 CalibratedConstellation::CalibratedConstellation(
     const QString& name, const QList<LocalPoint>& points,
-    const QString& certificateId, const QDate& calibratedAt)
+    const QString& certificateId,
+    const std::optional<std::chrono::year_month_day>& calibratedAt)
     : m_name(name),
       m_points(points),
       m_certificateId(certificateId),
@@ -60,7 +61,8 @@ const QString& CalibratedConstellation::certificateId() const {
   return this->m_certificateId;
 }
 
-const QDate& CalibratedConstellation::calibratedAt() const {
+const std::optional<std::chrono::year_month_day>&
+CalibratedConstellation::calibratedAt() const {
   return this->m_calibratedAt;
 }
 

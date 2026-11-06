@@ -3,7 +3,6 @@
 
 #include <QtCore/qmath.h>
 
-#include <QDateTime>
 #include <QObject>
 #include <QPointer>
 

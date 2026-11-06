@@ -4,11 +4,11 @@
 #include <QJsonObject>
 #include <QMap>
 #include <QObject>
-#include <QPair>
 #include <QPointer>
 #include <QString>
 #include <QStringList>
 #include <QVariant>
+#include <utility>
 
 #include "core_export.h"
 #include "measurementconfig.h"
@@ -56,7 +56,7 @@ class OI_CORE_EXPORT SensorInterface : public QObject {
 
   virtual void setMeasurementConfig(const MeasurementConfig& mConfig) = 0;
 
-  [[nodiscard]] virtual const QPair<ReadingTypes, QPointer<Reading>>&
+  [[nodiscard]] virtual const std::pair<ReadingTypes, QPointer<Reading>>&
   getLastReading() const = 0;
 
   [[nodiscard]] virtual bool isSensorAsync() const = 0;
@@ -198,8 +198,8 @@ class OI_CORE_EXPORT Sensor : public SensorInterface {
 
   void setMeasurementConfig(const MeasurementConfig& mConfig) override;
 
-  [[nodiscard]] const QPair<ReadingTypes, QPointer<Reading>>& getLastReading()
-      const override;
+  [[nodiscard]] const std::pair<ReadingTypes, QPointer<Reading>>&
+  getLastReading() const override;
 
   [[nodiscard]] bool isSensorAsync() const override;
 
@@ -288,7 +288,7 @@ class OI_CORE_EXPORT Sensor : public SensorInterface {
   SensorConfiguration sensorConfiguration;
   MeasurementConfig actualMeasurementConfig;
 
-  QPair<ReadingTypes, QPointer<Reading>>
+  std::pair<ReadingTypes, QPointer<Reading>>
       lastReading;  // the last reading produced by this sensor
 
   // ###########################

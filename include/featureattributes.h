@@ -1,8 +1,8 @@
 #ifndef FEATUREATTRIBUTES_H
 #define FEATUREATTRIBUTES_H
 
-#include <QPair>
 #include <QString>
+#include <utility>
 
 #include "core_export.h"
 #include "measurementconfig.h"
@@ -38,7 +38,7 @@ class OI_CORE_EXPORT FeatureAttributes {
   MeasurementConfig measurementConfig;
 
   // function
-  QPair<QString, QString> functionPlugin;  // T1 = function, T2 = file path
+  std::pair<QString, QString> functionPlugin;  // T1 = function, T2 = file path
 
   // only when typeOfFeature specifies a trafo param
   QString startSystem;

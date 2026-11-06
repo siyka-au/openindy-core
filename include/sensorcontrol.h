@@ -5,7 +5,6 @@
 #include <QObject>
 #include <QPointer>
 #include <QThread>
-#include <QTime>
 
 #include "core_export.h"
 #include "measurementconfig.h"
