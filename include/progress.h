@@ -8,6 +8,7 @@
 #include <string>
 #include <string_view>
 #include <utility>
+#include <vector>
 
 namespace oi {
 
@@ -139,6 +140,117 @@ class OperationContext {
   std::stop_token stop_;
   double begin_ = 0.0;
   double end_ = 1.0;
+};
+
+/*!
+ * \brief Splits an operation into named, weighted steps and keeps the overall
+ * fraction consistent by construction, so callers never do the arithmetic.
+ *
+ *     ProgressScope scope(ctx, "Bundle adjustment",
+ *                         {{"setup", 1}, {"iterate", 8}, {"report", 1}});
+ *     setup();
+ *     scope.next();               // -> "iterate" (10% .. 90% of ctx)
+ *     iterate(scope.child());     // child fills exactly that slice
+ *     scope.next();               // -> "report"
+ *     report();
+ *     scope.next();               // -> complete (reports 100%)
+ *
+ * Weights are relative: only their ratios matter. Non-positive weights count
+ * as zero; if every weight is zero the steps share the range equally.
+ * Reports the start of the first step on construction and the start of each
+ * following step in next(). Nothing is reported on destruction, so an
+ * exception or cancellation leaves the bar where the work actually got to.
+ */
+class ProgressScope {
+ public:
+  struct Step {
+    std::string name;
+    double weight = 1.0;
+  };
+
+  ProgressScope(const OperationContext& parent, std::string name,
+                std::vector<Step> steps)
+      : parent_(parent), name_(std::move(name)), steps_(std::move(steps)) {
+    computeBounds();
+    finished_ = steps_.empty();
+    if (!finished_) {
+      reportStart();
+    }
+  }
+
+  /*! `count` unnamed steps of equal weight. */
+  ProgressScope(const OperationContext& parent, std::string name,
+                std::size_t count)
+      : ProgressScope(parent, std::move(name), std::vector<Step>(count)) {}
+
+  /*! Index of the step in progress; steps().size() once finished. */
+  [[nodiscard]] std::size_t currentStep() const noexcept { return index_; }
+  [[nodiscard]] bool finished() const noexcept { return finished_; }
+
+  /*! The context for the current step: a child fills only that step's slice. */
+  [[nodiscard]] OperationContext child() const {
+    if (finished_) {
+      return parent_.subrange(1.0, 1.0);
+    }
+    return parent_.subrange(bounds_[index_], bounds_[index_ + 1]);
+  }
+
+  /*!
+   * Finish the current step and start the next. Finishing the last step
+   * reports 100%. This is a cancellation point: it throws OperationCancelled
+   * if the host asked the operation to stop. Calling it when already
+   * finished does nothing.
+   */
+  void next() {
+    parent_.throwIfCancelled();
+    if (finished_) {
+      return;
+    }
+    ++index_;
+    if (index_ >= steps_.size()) {
+      finished_ = true;
+      parent_.report(1.0, name_);
+      return;
+    }
+    reportStart();
+  }
+
+ private:
+  void computeBounds() {
+    double total = 0.0;
+    for (const Step& step : steps_) {
+      total += std::max(step.weight, 0.0);
+    }
+    const bool equal = total <= 0.0;
+    const double n = static_cast<double>(steps_.size());
+    bounds_.assign(1, 0.0);
+    double acc = 0.0;
+    for (const Step& step : steps_) {
+      acc += equal ? 1.0 / n : std::max(step.weight, 0.0) / total;
+      bounds_.push_back(std::min(acc, 1.0));
+    }
+    if (!bounds_.empty()) {
+      bounds_.back() = 1.0;  // no rounding drift at the end
+    }
+  }
+
+  void reportStart() const {
+    const std::string& step = steps_[index_].name;
+    if (name_.empty()) {
+      parent_.report(bounds_[index_], step);
+    } else if (step.empty()) {
+      parent_.report(bounds_[index_], name_);
+    } else {
+      parent_.report(bounds_[index_], name_ + ": " + step);
+    }
+  }
+
+  OperationContext parent_;
+  std::string name_;
+  std::vector<Step> steps_;
+  std::vector<double> bounds_;  // steps_.size() + 1 cumulative boundaries
+  std::size_t index_ = 0;
+  bool finished_ = false;
 };
 
 }  // namespace oi
