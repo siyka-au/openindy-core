@@ -123,7 +123,9 @@ class OI_CORE_EXPORT CoordinateSystem : public Feature {
   // display methods
   // ###############
 
-  [[nodiscard]] QString getDisplayX(const UnitType& type, const int& digits, const bool& showDiff = false) const override;
+  [[nodiscard]] QString getDisplayX(
+      const UnitType& type, const int& digits,
+      const bool& showDiff = false) const override;
   [[nodiscard]] QString getDisplayY(
       const UnitType& type, const int& digits,
       const bool& showDiff = false) const override;
