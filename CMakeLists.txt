@@ -213,6 +213,7 @@ add_library(OpenIndyCore SHARED
     include/sensorworker.h
     include/sensorworkermessage.h
     include/station.h
+    include/progress.h
     include/statistic.h
     include/trafoparam.h
     include/plugin/networkAdjustment/bundleadjustment.h
@@ -269,6 +270,14 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 endif()
 
 add_test(NAME reading COMMAND tst_reading)
+
+# Header-only and deliberately Qt-free: no Qt::Test and no link to OpenIndyCore.
+add_executable(tst_progress test/progress/tst_progress.cpp)
+target_include_directories(tst_progress PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(tst_progress PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+add_test(NAME progress COMMAND tst_progress)
 
 add_executable(tst_measurementconfig test/measurementconfig/tst_measurementconfig.cpp)
 target_compile_definitions(tst_measurementconfig PRIVATE SRCDIR="${CMAKE_CURRENT_SOURCE_DIR}/test/measurementconfig")
