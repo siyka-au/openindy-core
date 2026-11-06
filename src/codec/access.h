@@ -9,6 +9,10 @@
 #include <QPointer>
 
 #include "convert.h"
+#include "featurewrapper.h"
+#include "geometry/point.h"
+#include "geometry/pointcloud.h"
+#include "oijob.h"
 #include "wire.h"
 
 namespace oi::codec {
@@ -124,6 +128,77 @@ struct Access {
                            oipb::BundleAdjustmentRecord* m);
   static void applyBundle(const oipb::BundleAdjustmentRecord& m,
                           BundleAdjustment& b);
+
+  // ---- Linking (project.cpp): state the linker restores after decoding ----
+  static QMap<int, QList<InputElement>>& inputs(Function& f) {
+    return f.inputElements;
+  }
+
+  // The station comes with a default position and station system; the saved
+  // ones replace them.
+  static void setStationPosition(Station& s, const QPointer<Point>& point) {
+    if (s.position != point) {
+      delete s.position.data();
+    }
+    s.position = point;
+  }
+  static void setStationSystem(Station& s,
+                               const QPointer<CoordinateSystem>& system) {
+    if (s.stationSystem != system) {
+      delete s.stationSystem.data();
+    }
+    s.stationSystem = system;
+    system->isStationSystem = true;
+    system->station = &s;
+  }
+  static void setUsedSensors(Station& s, const QList<Sensor>& sensors) {
+    s.setUsedSensors(sensors);
+  }
+  static void addStationReading(Station& s, const QPointer<Reading>& reading) {
+    switch (reading->getTypeOfReading()) {
+      case ReadingTypes::eCartesianReading:
+        s.cartesianReadings.append(reading);
+        break;
+      case ReadingTypes::ePolarReading:
+        s.polarReadings.append(reading);
+        break;
+      case ReadingTypes::eDirectionReading:
+        s.directionReadings.append(reading);
+        break;
+      case ReadingTypes::eDistanceReading:
+        s.distanceReadings.append(reading);
+        break;
+      case ReadingTypes::eLevelReading:
+        s.levelReadings.append(reading);
+        break;
+      case ReadingTypes::eTemperatureReading:
+        s.temperatureRadings.append(reading);
+        break;
+      default:
+        break;
+    }
+  }
+  static void addSystemObservation(CoordinateSystem& system,
+                                   const QPointer<Observation>& observation) {
+    system.observationsList.append(observation);
+    system.observationsMap.insert(observation->getId(), observation);
+  }
+  static void addSystemNominal(CoordinateSystem& system,
+                               const QPointer<FeatureWrapper>& nominal) {
+    system.nominalsList.append(nominal);
+    system.nominalsMap.insert(nominal->getFeature()->getId(), nominal);
+  }
+
+  static void addSegment(PointCloud& cloud,
+                         const QPointer<FeatureWrapper>& segment) {
+    cloud.detectedSegments.append(segment);
+  }
+
+  static int nextId(const OiJob& job) { return job.nextId; }
+  static void setNextId(OiJob& job, int next) { job.nextId = next; }
+  static void adopt(OiJob& job, const QList<QPointer<FeatureWrapper>>& f) {
+    job.addFeaturesFromXml(f);
+  }
 
   // ---- Group (geometry.cpp) ----
   static void encodeGroup(const Group& g, oipb::Group* m);

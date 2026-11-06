@@ -37,6 +37,7 @@ enum class CompatibilyCheckResult {
  */
 class OI_CORE_EXPORT OiJob : public QObject {
   friend class ::ProjectExchanger;
+  friend struct codec::Access;  // the protobuf codec (see src/codec)
   Q_OBJECT
   Q_DISABLE_COPY_MOVE(OiJob)
 

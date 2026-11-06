@@ -469,8 +469,8 @@ void Access::encodeFunction(const Function& f, oipb::FunctionRecord* m) {
       p->set_value(it.value().toStdString());
     }
   } else {
-    for (auto it = f.integerParameters.cbegin(); it != f.integerParameters.cend();
-         ++it) {
+    for (auto it = f.integerParameters.cbegin();
+         it != f.integerParameters.cend(); ++it) {
       auto* p = m->add_int_parameters();
       p->set_name(it.key().toStdString());
       p->set_value(it.value());
@@ -541,8 +541,8 @@ void Access::applyFunction(const oipb::FunctionRecord& m, Function& f) {
         stage.explicitIds.append(id);
       }
       for (const auto& e : entry.exclusions()) {
-        stage.explicitExclusions.append(
-            PipelineExclusion(e.element_id(), QString::fromStdString(e.reason())));
+        stage.explicitExclusions.append(PipelineExclusion(
+            e.element_id(), QString::fromStdString(e.reason())));
       }
       stage.sigmaMultiplier = entry.sigma_multiplier();
       stages.append(stage);

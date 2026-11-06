@@ -11,10 +11,15 @@
 #include "convert.h"
 #include "digest.h"
 #include "fitfunction.h"
+#include "geometry/plane.h"
 #include "geometry/point.h"
+#include "group.h"
+#include "oijob.h"
 #include "openindy/project.pb.h"
 #include "pointgroup.h"
+#include "project_codec.h"
 #include "sensortype.h"
+#include "station.h"
 
 using namespace oi;
 namespace oipb = openindy::v1;
@@ -793,4 +798,303 @@ TEST_CASE("a bundle system saves its attached bundle adjustment") {
 
   CoordinateSystem plain(false);
   CHECK_FALSE(codec::toProto(plain).has_bundle_adjustment());
+}
+
+// ---------------------------------------------------------------------------
+// Whole projects
+// ---------------------------------------------------------------------------
+
+namespace {
+
+class TestHost : public codec::ProjectHost {
+ public:
+  bool pluginsInstalled = true;
+
+  std::unique_ptr<Function> createFunction(const std::string& plugin,
+                                           const std::string& name) override {
+    if (pluginsInstalled && plugin == "Test Plugin" && name == "TestFit") {
+      return std::make_unique<TestFit>();
+    }
+    return nullptr;
+  }
+  std::unique_ptr<BundleAdjustment> createBundleAdjustment(
+      const std::string& plugin, const std::string& name) override {
+    if (pluginsInstalled && plugin == "Test Plugin" && name == "TestBundle") {
+      return std::make_unique<TestBundle>();
+    }
+    return nullptr;
+  }
+  std::unique_ptr<Sensor> createSensor(const std::string&,
+                                       const std::string&) override {
+    return nullptr;
+  }
+  MeasurementConfig measurementConfig(
+      const MeasurementConfigKey&) const override {
+    return {};
+  }
+};
+
+struct World {
+  QPointer<OiJob> job;
+  QPointer<Station> station;
+  QPointer<CoordinateSystem> part;
+  QPointer<Point> a;
+  QPointer<Point> b;
+  QPointer<Point> c;
+  QPointer<Plane> plane;
+  QPointer<Group> group;
+  QPointer<TrafoParam> trafo;
+};
+
+// The job holds its features through wrappers the caller creates.
+template <class T>
+bool addToJob(OiJob& job, const QPointer<T>& feature,
+              void (FeatureWrapper::*set)(const QPointer<T>&)) {
+  QPointer<FeatureWrapper> wrapper = new FeatureWrapper();
+  (wrapper.data()->*set)(feature);
+  return job.addFeature(wrapper);
+}
+
+QPointer<Point> addPoint(OiJob& job, const QString& name, double x) {
+  QPointer<Point> point = new Point(Position(x, 2.0, 3.0));
+  point->setFeatureName(name);
+  point->setIsSolved(true);
+  REQUIRE(addToJob<Point>(job, point, &FeatureWrapper::setPoint));
+  return point;
+}
+
+QPointer<FeatureWrapper> wrapperOf(OiJob& job, int id) {
+  for (const auto& wrapper : job.getFeaturesList()) {
+    if (!wrapper.isNull() && wrapper->getFeature()->getId() == id) {
+      return wrapper;
+    }
+  }
+  return {};
+}
+
+World buildWorld() {
+  useArmadillo();
+  World w;
+  w.job = new OiJob();
+
+  w.station = new Station();
+  w.station->setFeatureName("STATION01");
+  REQUIRE(addToJob<Station>(*w.job, w.station, &FeatureWrapper::setStation));
+  w.part = new CoordinateSystem();
+  w.part->setFeatureName("PART");
+  REQUIRE(addToJob<CoordinateSystem>(*w.job, w.part,
+                                     &FeatureWrapper::setCoordinateSystem));
+  w.station->setActiveStationState(true);
+  w.station->getCoordinateSystem()->setActiveCoordinateSystemState(true);
+
+  QPointer<CoordinateSystem> bundle = new CoordinateSystem(true);
+  bundle->setFeatureName("Bundle01");
+  bundle->setBundlePlugin(new TestBundle());
+  REQUIRE(addToJob<CoordinateSystem>(*w.job, bundle,
+                                     &FeatureWrapper::setCoordinateSystem));
+
+  w.a = addPoint(*w.job, "A", 1.0);
+  w.b = addPoint(*w.job, "B", 2.0);
+
+  // c is computed by a function from a and b
+  w.c = new Point();
+  w.c->setFeatureName("C");
+  auto* fit = new TestFit();
+  fit->setUserParameters();
+  InputElement inA(w.a->getId());
+  inA.typeOfElement = ElementTypes::ePointElement;
+  inA.point = w.a;
+  inA.geometry = w.a;
+  fit->addInput(0, inA);
+  InputElement inB(w.b->getId());
+  inB.typeOfElement = ElementTypes::ePointElement;
+  inB.point = w.b;
+  inB.geometry = w.b;
+  fit->addInput(0, inB);
+  w.c->addFunction(fit);
+  REQUIRE(addToJob<Point>(*w.job, w.c, &FeatureWrapper::setPoint));
+
+  w.plane = new Plane();
+  w.plane->setFeatureName("P1");
+  REQUIRE(addToJob<Plane>(*w.job, w.plane, &FeatureWrapper::setPlane));
+
+  w.group = new Group();
+  w.group->setFeatureName("Both");
+  REQUIRE(w.group->addMember(wrapperOf(*w.job, w.a->getId())));
+  REQUIRE(w.group->addMember(wrapperOf(*w.job, w.plane->getId())));
+  REQUIRE(addToJob<Group>(*w.job, w.group, &FeatureWrapper::setGroup));
+
+  w.trafo = new TrafoParam();
+  w.trafo->setFeatureName("T1");
+  w.trafo->setCoordinateSystems(w.station->getCoordinateSystem(), w.part);
+  REQUIRE(
+      addToJob<TrafoParam>(*w.job, w.trafo, &FeatureWrapper::setTrafoParam));
+  // the systems register a transformation by id, which it only has now
+  w.station->getCoordinateSystem()->addTransformationParameter(w.trafo);
+  w.part->addTransformationParameter(w.trafo);
+  return w;
+}
+
+oipb::Project parse(const std::string& bytes) {
+  oipb::Project project;
+  REQUIRE(project.ParseFromString(bytes));
+  return project;
+}
+
+// the part of a saved project that is not the time it was saved
+oipb::Project withoutTime(const std::string& bytes) {
+  oipb::Project project = parse(bytes);
+  project.clear_saved_at();
+  return project;
+}
+
+}  // namespace
+
+TEST_CASE("a project saves, loads and saves again to the same content") {
+  World w = buildWorld();
+  TestHost host;
+
+  const std::string first = codec::encodeProject(*w.job, host, "1.2.3");
+  codec::DecodeResult loaded = codec::decodeProject(first, host);
+  INFO(loaded.error);
+  REQUIRE(loaded.ok());
+  const std::string second = codec::encodeProject(*loaded.job, host, "1.2.3");
+
+  std::string differences;
+  MessageDifferencer differencer;
+  differencer.ReportDifferencesToString(&differences);
+  const bool same =
+      differencer.Compare(withoutTime(first), withoutTime(second));
+  INFO(differences);
+  CHECK(same);
+  CHECK(loaded.job->getDigest() == w.job->getDigest());
+
+  delete loaded.job.data();
+  delete w.job.data();
+}
+
+TEST_CASE("loading links the references the file only holds as ids") {
+  World w = buildWorld();
+  TestHost host;
+  codec::DecodeResult loaded =
+      codec::decodeProject(codec::encodeProject(*w.job, host, "x"), host);
+  REQUIRE(loaded.ok());
+  OiJob& job = *loaded.job;
+
+  CHECK(job.getStationsList().size() == 1);
+  const QPointer<Station> station = job.getActiveStation();
+  REQUIRE_FALSE(station.isNull());
+  CHECK(station->getFeatureName() == "STATION01");
+  CHECK_FALSE(station->getPosition().isNull());
+  REQUIRE_FALSE(station->getCoordinateSystem().isNull());
+  CHECK(station->getCoordinateSystem()->getIsStationSystem());
+  CHECK(station->getCoordinateSystem()->getStation() == station);
+  CHECK(job.getActiveCoordinateSystem() == station->getCoordinateSystem());
+
+  // the function came back through the host, with its inputs pointing at the
+  // loaded points
+  const auto c = job.getFeaturesByName("C");
+  REQUIRE(c.size() == 1);
+  const auto functions = c.first()->getFeature()->getFunctions();
+  REQUIRE(functions.size() == 1);
+  const auto& inputs = functions.first()->getInputElements();
+  REQUIRE(inputs.contains(0));
+  REQUIRE(inputs.value(0).size() == 2);
+  const auto a = job.getFeaturesByName("A");
+  REQUIRE(a.size() == 1);
+  CHECK(inputs.value(0).at(0).point == a.first()->getPoint());
+  CHECK(inputs.value(0).at(0).geometry == a.first()->getGeometry());
+
+  // the group's members are the loaded features, not the saved ones
+  const auto group = job.getFeaturesByName("Both");
+  REQUIRE(group.size() == 1);
+  CHECK(group.first()->getGroup()->getMembers().size() == 2);
+  CHECK(group.first()->getGroup()->getMembers().contains(a.first()));
+
+  // the transformation knows its two systems
+  const auto trafo = job.getFeaturesByName("T1");
+  REQUIRE(trafo.size() == 1);
+  CHECK(trafo.first()->getTrafoParam()->getStartSystem() ==
+        station->getCoordinateSystem());
+
+  // the bundle adjustment is attached to its system and knows it
+  const auto bundle = job.getFeaturesByName("Bundle01");
+  REQUIRE(bundle.size() == 1);
+  REQUIRE_FALSE(
+      bundle.first()->getCoordinateSystem()->getBundlePlugin().isNull());
+
+  // ids carry on from where the saved job left off
+  CHECK(job.generateUniqueId() == w.job->generateUniqueId());
+
+  delete loaded.job.data();
+  delete w.job.data();
+}
+
+TEST_CASE("a project that needs a plugin that is not installed does not load") {
+  World w = buildWorld();
+  TestHost host;
+  const std::string bytes = codec::encodeProject(*w.job, host, "x");
+
+  host.pluginsInstalled = false;
+  const codec::DecodeResult loaded = codec::decodeProject(bytes, host);
+  CHECK_FALSE(loaded.ok());
+  CHECK(loaded.job.isNull());
+  CHECK(loaded.missingPlugins ==
+        std::vector<std::string>{"Test Plugin/TestBundle",
+                                 "Test Plugin/TestFit"});
+  CHECK_FALSE(loaded.error.empty());
+
+  delete w.job.data();
+}
+
+TEST_CASE("a file that is not a usable project is refused with a reason") {
+  useArmadillo();
+  TestHost host;
+
+  SECTION("not protobuf at all") {
+    const auto loaded = codec::decodeProject("this is not a project", host);
+    CHECK_FALSE(loaded.ok());
+    CHECK_FALSE(loaded.error.empty());
+  }
+  SECTION("a format version this program does not know") {
+    World w = buildWorld();
+    oipb::Project project = parse(codec::encodeProject(*w.job, host, "x"));
+    project.set_format_version(999);
+    const auto loaded = codec::decodeProject(project.SerializeAsString(), host);
+    CHECK_FALSE(loaded.ok());
+    CHECK(loaded.error.find("999") != std::string::npos);
+    delete w.job.data();
+  }
+  SECTION("an active station that is not in the project") {
+    World w = buildWorld();
+    oipb::Project project = parse(codec::encodeProject(*w.job, host, "x"));
+    project.set_active_station(123456);
+    const auto loaded = codec::decodeProject(project.SerializeAsString(), host);
+    CHECK_FALSE(loaded.ok());
+    delete w.job.data();
+  }
+  SECTION("no stations") {
+    World w = buildWorld();
+    oipb::Project project = parse(codec::encodeProject(*w.job, host, "x"));
+    project.clear_stations();
+    const auto loaded = codec::decodeProject(project.SerializeAsString(), host);
+    CHECK_FALSE(loaded.ok());
+    delete w.job.data();
+  }
+}
+
+TEST_CASE("the digest follows the content, not the save time or name") {
+  World w = buildWorld();
+  TestHost host;
+
+  codec::encodeProject(*w.job, host, "1.0");
+  const QString before = w.job->getDigest();
+  codec::encodeProject(*w.job, host, "2.0");
+  CHECK(w.job->getDigest() == before);
+
+  w.a->setFeatureName("A-renamed");
+  codec::encodeProject(*w.job, host, "2.0");
+  CHECK(w.job->getDigest() != before);
+
+  delete w.job.data();
 }

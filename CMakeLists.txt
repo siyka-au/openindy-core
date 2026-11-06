@@ -273,6 +273,7 @@ add_library(OpenIndyCodec STATIC
     src/codec/functions.cpp
     src/codec/geometry.cpp
     src/codec/entities.cpp
+    src/codec/project.cpp
 )
 set_target_properties(OpenIndyCodec PROPERTIES POSITION_INDEPENDENT_CODE ON)
 set(OI_PROTO_GENERATED_DIR ${CMAKE_CURRENT_BINARY_DIR}/generated)
