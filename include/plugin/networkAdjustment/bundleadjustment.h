@@ -107,6 +107,7 @@ class BundleStation {
  * Interface for implementing bundle adjustment plugins.
  */
 class OI_CORE_EXPORT BundleAdjustment : public QObject {
+  friend struct codec::Access;  // the protobuf codec (see src/codec)
   Q_OBJECT
   Q_DISABLE_COPY_MOVE(BundleAdjustment)
 

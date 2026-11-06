@@ -6,9 +6,12 @@
 #include <string>
 #include <vector>
 
+#include "bundleadjustment.h"
 #include "chooselalib.h"
 #include "convert.h"
 #include "digest.h"
+#include "fitfunction.h"
+#include "geometry/point.h"
 #include "openindy/project.pb.h"
 #include "pointgroup.h"
 #include "sensortype.h"
@@ -553,4 +556,241 @@ TEST_CASE("groups round trip, constraint and kind included") {
   CHECK_FALSE(group->getConstraint().has_value());
   CHECK(codec::toProto(*group).constraint() == oipb::FEATURE_KIND_UNSPECIFIED);
   delete group.data();
+}
+
+namespace {
+
+// A function that does nothing but expose what the codec has to save: two
+// input positions, parameters and a pipeline slot. (No Q_OBJECT: it adds no
+// signals or slots.)
+class TestFit : public FitFunction, public Producer<Point> {
+ public:
+  TestFit() {
+    metaData.name = "TestFit";
+    metaData.pluginName = "Test Plugin";
+    NeededElement points;
+    points.typeOfElement = ElementTypes::ePointElement;
+    points.infinite = true;
+    points.roleName = "points";
+    neededElements.append(points);
+    NeededElement plane;
+    plane.typeOfElement = ElementTypes::ePlaneElement;
+    plane.roleName = "plane";
+    neededElements.append(plane);
+    applicableFor.append(FeatureTypes::ePointFeature);
+    integerParameters.insert("iterations", 5);
+    doubleParameters.insert("tolerance", 0.001);
+    stringParameters.insert("method", "robust");
+  }
+
+  std::expected<Point, QString> exec() override {
+    return std::unexpected(QString("not used"));
+  }
+
+  void declare(int position, std::vector<PipelineStage> stages) {
+    for (const PipelineStage& stage : stages) {
+      neededElements[position].pipeline.append(stage);
+    }
+  }
+  void addInput(int position, InputElement input) {
+    inputElements[position].append(input);
+  }
+  void setUserParameters() {
+    scalarInputParams.intParameter.insert("iterations", 12);
+    scalarInputParams.doubleParameter.insert("tolerance", 0.25);
+    scalarInputParams.stringParameter.insert("method", "plain");
+    scalarInputParams.isValid = true;
+  }
+  void fix(GeometryParameters parameter, double value) {
+    FixedParameter fixed(parameter);
+    fixed.value = value;
+    fixedParameters.append(fixed);
+  }
+};
+
+}  // namespace
+
+TEST_CASE("a function record keeps inputs, pipelines and parameters") {
+  useArmadillo();
+
+  TestFit original;
+  original.setUserParameters();
+  original.fix(GeometryParameters::eUnknownRadiusA, 2.5);
+
+  InputElement a(31);
+  a.typeOfElement = ElementTypes::ePointElement;
+  a.label = "corner";
+  a.shouldBeUsed = false;
+  a.isUsed = false;
+  a.ignoredDestinationParams = {GeometryParameters::eUnknownZ};
+  a.ignoredTargetParams = {GeometryParameters::eUnknownRadiusA,
+                           GeometryParameters::eUnknownPrimaryK};
+  original.addInput(0, a);
+  InputElement b(32);
+  b.typeOfElement = ElementTypes::ePointElement;
+  original.addInput(0, b);
+  InputElement c(40);
+  c.typeOfElement = ElementTypes::ePlaneElement;
+  original.addInput(1, c);
+
+  original.declare(
+      0, {PipelineStage::explicitList({31, 32, 33}),
+          PipelineStage::exclude({PipelineExclusion(33, "behind the wall"),
+                                  PipelineExclusion(34, "outlier")}),
+          PipelineStage::residualOutlierRejection(2.5)});
+
+  const oipb::FunctionRecord record = codec::toProto(original);
+  CHECK(record.plugin().name() == "TestFit");
+  CHECK(record.plugin().plugin() == "Test Plugin");
+  CHECK(record.inputs_size() == 3);
+  CHECK(record.pipelines_size() == 1);
+
+  // what the host does on load: make the function from the plugin reference,
+  // then apply the record
+  TestFit restored;
+  codec::applyRecord(record, restored);
+  CHECK(MessageDifferencer::Equals(record, codec::toProto(restored)));
+
+  // and the bytes survive a trip over the wire
+  std::string bytes;
+  REQUIRE(record.SerializeToString(&bytes));
+  oipb::FunctionRecord parsed;
+  REQUIRE(parsed.ParseFromString(bytes));
+  CHECK(MessageDifferencer::Equals(record, parsed));
+}
+
+TEST_CASE("an unedited function saves its default parameters") {
+  useArmadillo();
+  TestFit untouched;
+  const oipb::FunctionRecord record = codec::toProto(untouched);
+  REQUIRE(record.int_parameters_size() == 1);
+  CHECK(record.int_parameters(0).name() == "iterations");
+  CHECK(record.int_parameters(0).value() == 5);
+  REQUIRE(record.double_parameters_size() == 1);
+  CHECK(record.double_parameters(0).value() == 0.001);
+  REQUIRE(record.string_parameters_size() == 1);
+  CHECK(record.string_parameters(0).value() == "robust");
+}
+
+TEST_CASE(
+    "pipelines for positions the function no longer declares are dropped") {
+  useArmadillo();
+  oipb::FunctionRecord record;
+  record.mutable_plugin()->set_name("TestFit");
+  auto* pipeline = record.add_pipelines();
+  pipeline->set_position(7);  // TestFit declares positions 0 and 1
+  pipeline->add_stages()->set_kind(oipb::PIPELINE_STAGE_KIND_EXCLUDE);
+  auto* kept = record.add_pipelines();
+  kept->set_position(1);
+  kept->add_stages()->set_kind(
+      oipb::PIPELINE_STAGE_KIND_RESIDUAL_OUTLIER_REJECTION);
+  kept->mutable_stages(0)->set_sigma_multiplier(4.0);
+
+  TestFit restored;
+  codec::applyRecord(record, restored);
+  const oipb::FunctionRecord out = codec::toProto(restored);
+  REQUIRE(out.pipelines_size() == 1);
+  CHECK(out.pipelines(0).position() == 1);
+  CHECK(out.pipelines(0).stages(0).sigma_multiplier() == 4.0);
+}
+
+TEST_CASE("a feature's functions are part of its common record") {
+  useArmadillo();
+  Point point;
+  auto* fit = new TestFit();
+  fit->setUserParameters();
+  point.addFunction(fit);
+
+  const oipb::Geometry out = codec::toProto(point);
+  REQUIRE(out.common().functions_size() == 1);
+  CHECK(out.common().functions(0).plugin().name() == "TestFit");
+  CHECK(out.common().functions(0).int_parameters(0).value() == 12);
+}
+
+namespace {
+
+class TestBundle : public BundleAdjustment {
+ public:
+  TestBundle() {
+    metaData.name = "TestBundle";
+    metaData.pluginName = "Test Plugin";
+  }
+};
+
+}  // namespace
+
+TEST_CASE("a bundle adjustment record round trips, base station included") {
+  useArmadillo();
+
+  oipb::BundleAdjustmentRecord in;
+  in.mutable_plugin()->set_name("TestBundle");
+  in.mutable_plugin()->set_plugin("Test Plugin");
+
+  auto* a = in.add_stations();
+  a->set_id(60);
+  a->set_tx(true);
+  a->set_ty(true);
+  a->set_tz(false);
+  a->set_rx(false);
+  a->set_ry(true);
+  a->set_rz(true);
+  a->set_m(false);
+  auto* ag = a->add_geometries();
+  ag->set_id(90);
+  auto* p = ag->add_parameters();
+  p->set_parameter(oipb::GEOMETRY_PARAMETER_UNKNOWN_X);
+  p->set_value(1.5);
+  p = ag->add_parameters();
+  p->set_parameter(oipb::GEOMETRY_PARAMETER_UNKNOWN_RADIUS_A);
+  p->set_value(0.25);
+
+  auto* b = in.add_stations();
+  b->set_id(61);
+  b->set_tx(true);
+  b->set_ty(true);
+  b->set_tz(true);
+  b->set_rx(true);
+  b->set_ry(true);
+  b->set_rz(true);
+  b->set_m(true);
+  in.set_base_station(61);
+
+  auto* g = in.add_geometries();
+  g->set_id(91);
+  auto* gp = g->add_parameters();
+  gp->set_parameter(oipb::GEOMETRY_PARAMETER_UNKNOWN_Z);
+  gp->set_value(-3.0);
+
+  auto* t = in.add_transformations();
+  t->set_id(70);
+  auto* tp = t->add_parameters();
+  tp->set_parameter(oipb::TRAFO_PARAMETER_ROTATION_Z);
+  tp->set_value(0.01);
+  tp = t->add_parameters();
+  tp->set_parameter(oipb::TRAFO_PARAMETER_SCALE_X);
+  tp->set_value(1.0001);
+
+  TestBundle bundle;
+  codec::applyRecord(in, bundle);
+
+  std::string differences;
+  MessageDifferencer differencer;
+  differencer.ReportDifferencesToString(&differences);
+  const bool same = differencer.Compare(in, codec::toProto(bundle));
+  INFO(differences);
+  CHECK(same);
+}
+
+TEST_CASE("a bundle system saves its attached bundle adjustment") {
+  useArmadillo();
+  CoordinateSystem system(true);
+  auto* bundle = new TestBundle();
+  system.setBundlePlugin(bundle);
+
+  const oipb::CoordinateSystem out = codec::toProto(system);
+  REQUIRE(out.has_bundle_adjustment());
+  CHECK(out.bundle_adjustment().plugin().name() == "TestBundle");
+
+  CoordinateSystem plain(false);
+  CHECK_FALSE(codec::toProto(plain).has_bundle_adjustment());
 }

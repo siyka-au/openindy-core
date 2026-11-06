@@ -115,6 +115,16 @@ struct Access {
   static void encodeGeometry(const Geometry& g, oipb::Geometry* m);
   static QPointer<Geometry> decodeGeometry(const oipb::Geometry& m);
 
+  // ---- Function (functions.cpp) ----
+  static void encodeFunction(const Function& f, oipb::FunctionRecord* m);
+  static void applyFunction(const oipb::FunctionRecord& m, Function& f);
+
+  // ---- Bundle adjustment (functions.cpp) ----
+  static void encodeBundle(const BundleAdjustment& b,
+                           oipb::BundleAdjustmentRecord* m);
+  static void applyBundle(const oipb::BundleAdjustmentRecord& m,
+                          BundleAdjustment& b);
+
   // ---- Group (geometry.cpp) ----
   static void encodeGroup(const Group& g, oipb::Group* m);
   static QPointer<Group> decodeGroup(const oipb::Group& m);

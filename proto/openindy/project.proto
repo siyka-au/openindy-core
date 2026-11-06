@@ -36,8 +36,8 @@ message FeatureCommon {
   string comment = 4;
   bool solved = 5;
   bool active = 6;
-  // field 7 is reserved for the feature's functions (added with the function
-  // records)
+  // The functions that produce this feature, in execution order.
+  repeated FunctionRecord functions = 7;
   repeated int32 used_for = 8;
   repeated int32 previously_needed = 9;
 }
@@ -225,7 +225,8 @@ message CoordinateSystem {
   repeated int32 trafo_params = 10;
   repeated int32 observations = 11;       // station systems
   repeated int32 nominal_geometries = 12; // nominal systems
-  // field 13 is reserved for the attached bundle adjustment
+  // The bundle adjustment attached to a bundle system, if any.
+  optional BundleAdjustmentRecord bundle_adjustment = 13;
 }
 
 message TrafoParam {
@@ -424,6 +425,222 @@ message Group {
   // A point group is a group constrained to points with the point-collection
   // behaviour on top.
   bool point_group = 4;
+}
+
+// ---------------------------------------------------------------------------
+// Functions
+//
+// A function is stored as a reference to the plugin object that implements it
+// plus the user-facing state that makes a project reproducible: its inputs,
+// pipeline stages and parameters. Whatever the plugin computes (results,
+// residual statistics, protocols) is recomputed on load and not stored.
+// ---------------------------------------------------------------------------
+
+// What kind of thing a function takes as input. Wire numbering is independent
+// of the model's enum.
+enum ElementKind {
+  ELEMENT_KIND_UNSPECIFIED = 0;
+  ELEMENT_KIND_CIRCLE = 1;
+  ELEMENT_KIND_CONE = 2;
+  ELEMENT_KIND_CYLINDER = 3;
+  ELEMENT_KIND_ELLIPSE = 4;
+  ELEMENT_KIND_ELLIPSOID = 5;
+  ELEMENT_KIND_HYPERBOLOID = 6;
+  ELEMENT_KIND_LINE = 7;
+  ELEMENT_KIND_NURBS = 8;
+  ELEMENT_KIND_PARABOLOID = 9;
+  ELEMENT_KIND_PLANE = 10;
+  ELEMENT_KIND_POINT = 11;
+  ELEMENT_KIND_POINT_CLOUD = 12;
+  ELEMENT_KIND_SCALAR_ENTITY_ANGLE = 13;
+  ELEMENT_KIND_SCALAR_ENTITY_DISTANCE = 14;
+  ELEMENT_KIND_SCALAR_ENTITY_MEASUREMENT_SERIES = 15;
+  ELEMENT_KIND_SCALAR_ENTITY_TEMPERATURE = 16;
+  ELEMENT_KIND_SLOTTED_HOLE = 17;
+  ELEMENT_KIND_SPHERE = 18;
+  ELEMENT_KIND_TORUS = 19;
+  ELEMENT_KIND_DIRECTION = 20;
+  ELEMENT_KIND_POSITION = 21;
+  ELEMENT_KIND_RADIUS = 22;
+  ELEMENT_KIND_COORDINATE_SYSTEM = 23;
+  ELEMENT_KIND_STATION = 24;
+  ELEMENT_KIND_TRAFO_PARAM = 25;
+  ELEMENT_KIND_OBSERVATION = 26;
+  ELEMENT_KIND_READING_CARTESIAN = 27;
+  ELEMENT_KIND_READING_POLAR = 28;
+  ELEMENT_KIND_READING_DISTANCE = 29;
+  ELEMENT_KIND_READING_DIRECTION = 30;
+  ELEMENT_KIND_READING_TEMPERATURE = 31;
+  ELEMENT_KIND_READING_LEVEL = 32;
+  ELEMENT_KIND_UNDEFINED = 33;
+  ELEMENT_KIND_LEVEL = 34;
+  ELEMENT_KIND_POINT_COLLECTION = 35;
+}
+
+// A single unknown of a geometry, as named in fixed-parameter and
+// ignored-parameter lists.
+enum GeometryParameter {
+  GEOMETRY_PARAMETER_UNSPECIFIED = 0;
+  GEOMETRY_PARAMETER_UNKNOWN_X = 1;
+  GEOMETRY_PARAMETER_UNKNOWN_Y = 2;
+  GEOMETRY_PARAMETER_UNKNOWN_Z = 3;
+  GEOMETRY_PARAMETER_UNKNOWN_PRIMARY_I = 4;
+  GEOMETRY_PARAMETER_UNKNOWN_PRIMARY_J = 5;
+  GEOMETRY_PARAMETER_UNKNOWN_PRIMARY_K = 6;
+  GEOMETRY_PARAMETER_UNKNOWN_SECONDARY_I = 7;
+  GEOMETRY_PARAMETER_UNKNOWN_SECONDARY_J = 8;
+  GEOMETRY_PARAMETER_UNKNOWN_SECONDARY_K = 9;
+  GEOMETRY_PARAMETER_UNKNOWN_RADIUS_A = 10;
+  GEOMETRY_PARAMETER_UNKNOWN_RADIUS_B = 11;
+  GEOMETRY_PARAMETER_UNKNOWN_APERTURE = 12;
+  GEOMETRY_PARAMETER_UNKNOWN_A = 13;
+  GEOMETRY_PARAMETER_UNKNOWN_B = 14;
+  GEOMETRY_PARAMETER_UNKNOWN_C = 15;
+  GEOMETRY_PARAMETER_UNKNOWN_ANGLE = 16;
+  GEOMETRY_PARAMETER_UNKNOWN_DISTANCE = 17;
+  GEOMETRY_PARAMETER_UNKNOWN_MEASUREMENT_SERIES = 18;
+  GEOMETRY_PARAMETER_UNKNOWN_TEMPERATURE = 19;
+  GEOMETRY_PARAMETER_UNKNOWN_LENGTH = 20;
+}
+
+enum PipelineStageKind {
+  PIPELINE_STAGE_KIND_UNSPECIFIED = 0;
+  // only the listed element ids survive
+  PIPELINE_STAGE_KIND_EXPLICIT_LIST = 1;
+  // the listed element ids are dropped, each with a reason
+  PIPELINE_STAGE_KIND_EXCLUDE = 2;
+  // drop candidates whose fit residual exceeds sigma_multiplier * stdev
+  PIPELINE_STAGE_KIND_RESIDUAL_OUTLIER_REJECTION = 3;
+}
+
+message PipelineExclusion {
+  int32 element_id = 1;
+  string reason = 2;
+}
+
+message PipelineStage {
+  PipelineStageKind kind = 1;
+  repeated int32 explicit_ids = 2;
+  repeated PipelineExclusion exclusions = 3;
+  double sigma_multiplier = 4;
+}
+
+// The declared pipeline of one input position of a function.
+message FunctionPipeline {
+  int32 position = 1;
+  repeated PipelineStage stages = 2;
+}
+
+message FunctionInput {
+  // Which input slot of the function (the function declares what each
+  // position accepts).
+  int32 position = 1;
+  int32 element_id = 2;
+  ElementKind kind = 3;
+  string label = 4;
+  // Single unknowns of this input that the function must not use.
+  repeated GeometryParameter ignored_destination = 5;
+  // Single unknowns of the result that this input must not influence.
+  repeated GeometryParameter ignored_target = 6;
+  bool should_be_used = 7;
+  bool is_used = 8;
+}
+
+message IntParameter {
+  string name = 1;
+  int32 value = 2;
+}
+
+message DoubleParameter {
+  string name = 1;
+  double value = 2;
+}
+
+message StringParameter {
+  string name = 1;
+  string value = 2;
+}
+
+message FixedParameter {
+  GeometryParameter parameter = 1;
+  double value = 2;
+}
+
+message FunctionRecord {
+  // Which function: its name and the plugin it comes from.
+  PluginObjectRef plugin = 1;
+  repeated FunctionInput inputs = 2;
+  repeated FunctionPipeline pipelines = 3;
+  // Parameters are written in name order, so that saving twice gives the
+  // same bytes.
+  repeated IntParameter int_parameters = 4;
+  repeated DoubleParameter double_parameters = 5;
+  repeated StringParameter string_parameters = 6;
+  repeated FixedParameter fixed_parameters = 7;
+}
+
+// ---------------------------------------------------------------------------
+// Bundle adjustment
+//
+// The state a bundle adjustment plugin holds between sessions: which stations
+// and geometries take part, what to solve for, and what it solved. Ids are
+// feature ids.
+// ---------------------------------------------------------------------------
+
+enum TrafoParameter {
+  TRAFO_PARAMETER_UNSPECIFIED = 0;
+  TRAFO_PARAMETER_TRANSLATION_X = 1;
+  TRAFO_PARAMETER_TRANSLATION_Y = 2;
+  TRAFO_PARAMETER_TRANSLATION_Z = 3;
+  TRAFO_PARAMETER_ROTATION_X = 4;
+  TRAFO_PARAMETER_ROTATION_Y = 5;
+  TRAFO_PARAMETER_ROTATION_Z = 6;
+  TRAFO_PARAMETER_SCALE_X = 7;
+  TRAFO_PARAMETER_SCALE_Y = 8;
+  TRAFO_PARAMETER_SCALE_Z = 9;
+}
+
+message GeometryParameterValue {
+  GeometryParameter parameter = 1;
+  double value = 2;
+}
+
+message TrafoParameterValue {
+  TrafoParameter parameter = 1;
+  double value = 2;
+}
+
+message BundleGeometry {
+  int32 id = 1;
+  repeated GeometryParameterValue parameters = 2;
+}
+
+message BundleTransformation {
+  int32 id = 1;
+  repeated TrafoParameterValue parameters = 2;
+}
+
+message BundleStation {
+  int32 id = 1;
+  // which parameters of the station's transformation to solve for
+  bool tx = 2;
+  bool ty = 3;
+  bool tz = 4;
+  bool rx = 5;
+  bool ry = 6;
+  bool rz = 7;
+  bool m = 8;
+  // geometries solved in the station's system
+  repeated BundleGeometry geometries = 9;
+}
+
+message BundleAdjustmentRecord {
+  PluginObjectRef plugin = 1;
+  repeated BundleStation stations = 2;
+  // The station the others are tied to; 0 if none. One of `stations`.
+  int32 base_station = 3;
+  repeated BundleGeometry geometries = 4;
+  repeated BundleTransformation transformations = 5;
 }
 
 // ---------------------------------------------------------------------------

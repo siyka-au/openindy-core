@@ -15,6 +15,8 @@
 #include "measurementconfig.h"
 #include "observation.h"
 #include "openindy/project.pb.h"
+#include "plugin/function/function.h"
+#include "plugin/networkAdjustment/bundleadjustment.h"
 #include "reading.h"
 #include "station.h"
 #include "trafoparam.h"
@@ -75,6 +77,29 @@ namespace oi::codec {
 /*! A plain Group or a PointGroup, as the message says. Members are left for
  *  the linking pass. */
 [[nodiscard]] QPointer<Group> createGroup(const openindy::v1::Group& message);
+
+/*! A function's identity and the user-facing state that makes a project
+ *  reproducible: inputs, pipeline stages, parameters. Results are not stored;
+ *  they are recomputed. */
+[[nodiscard]] openindy::v1::FunctionRecord toProto(const Function& function);
+
+/*! Restores a record onto a function the host created from the record's
+ *  plugin reference: parameters, declared pipelines and input elements. The
+ *  inputs come back with ids and flags but no object pointers; the linking
+ *  pass resolves those. */
+void applyRecord(const openindy::v1::FunctionRecord& record,
+                 Function& function);
+
+/*! The state a bundle adjustment plugin holds: participating stations and
+ *  geometries, what to solve for, and what it solved. */
+[[nodiscard]] openindy::v1::BundleAdjustmentRecord toProto(
+    const BundleAdjustment& bundle);
+
+/*! Restores a record onto a bundle adjustment the host created from the
+ *  record's plugin reference. The bundle system is not part of the record: it
+ *  is the coordinate system the bundle is attached to. */
+void applyRecord(const openindy::v1::BundleAdjustmentRecord& record,
+                 BundleAdjustment& bundle);
 
 }  // namespace oi::codec
 

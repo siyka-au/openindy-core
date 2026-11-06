@@ -221,6 +221,7 @@ class OI_CORE_EXPORT Function : public QObject {
   friend class Feature;
   friend class BestFitPlaneUtil;
 
+  friend struct codec::Access;  // the protobuf codec (see src/codec)
   Q_OBJECT
   Q_DISABLE_COPY_MOVE(Function)
 

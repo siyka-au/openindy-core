@@ -45,13 +45,6 @@ SensorFaces fromProto(oipb::SensorFace face) {
   }
 }
 
-oipb::PluginObjectRef pluginRef(const PluginMetaData& meta) {
-  oipb::PluginObjectRef ref;
-  ref.set_name(meta.name.toStdString());
-  ref.set_plugin(meta.pluginName.toStdString());
-  return ref;
-}
-
 // The bundle template is user-supplied JSON; its values are kept as text.
 std::string jsonText(const QJsonValue& value) {
   if (value.isString()) {
@@ -374,6 +367,9 @@ oipb::CoordinateSystem toProto(const CoordinateSystem& system) {
   *m.mutable_y_axis() = vec3(system.getYAxis().getVector());
   *m.mutable_z_axis() = vec3(system.getZAxis().getVector());
   *m.mutable_expansion_origin() = vec3(system.getExpansionOrigin().getVector());
+  if (!system.getBundlePlugin().isNull()) {
+    *m.mutable_bundle_adjustment() = toProto(*system.getBundlePlugin());
+  }
   const QJsonObject bundleTemplate = system.getBundleTemplate();
   if (!bundleTemplate.isEmpty()) {
     *m.mutable_bundle_template() = bundleTemplateOf(bundleTemplate);

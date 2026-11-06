@@ -39,7 +39,9 @@ namespace {
 oipb::Vec3 vec3Of(const Position& p) { return vec3(p.getVector()); }
 oipb::Vec3 vec3Of(const Direction& d) { return vec3(d.getVector()); }
 
-Position positionOf(const oipb::Vec3& v) { return Position(v.x(), v.y(), v.z()); }
+Position positionOf(const oipb::Vec3& v) {
+  return Position(v.x(), v.y(), v.z());
+}
 Direction directionOf(const oipb::Vec3& v) {
   return Direction(v.x(), v.y(), v.z());
 }
@@ -366,9 +368,9 @@ QPointer<Geometry> Access::decodeGeometry(const oipb::Geometry& m) {
       const auto& shape = m.point_cloud();
       const int count = shape.coordinates_size() / 3;
       for (int i = 0; i < count; ++i) {
-        auto* p = new Point_PC(shape.coordinates(3 * i),
-                               shape.coordinates(3 * i + 1),
-                               shape.coordinates(3 * i + 2));
+        auto* p =
+            new Point_PC(shape.coordinates(3 * i), shape.coordinates(3 * i + 1),
+                         shape.coordinates(3 * i + 2));
         p->isUsed = i < shape.used_size() ? shape.used(i) : true;
         cloud->points.append(p);
       }
@@ -421,8 +423,8 @@ QPointer<Geometry> Access::decodeGeometry(const oipb::Geometry& m) {
       return restoreBase<Sphere>(m);
     case oipb::Geometry::kTorus: {
       auto geometry = restoreBase<Torus>(m);
-      static_cast<Torus*>(geometry.data())->radiusB.setRadius(
-          m.torus().radius_b());
+      static_cast<Torus*>(geometry.data())
+          ->radiusB.setRadius(m.torus().radius_b());
       return geometry;
     }
     case oipb::Geometry::SHAPE_NOT_SET:

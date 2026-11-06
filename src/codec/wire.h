@@ -8,10 +8,12 @@
 
 #include <chrono>
 
+#include "convert.h"
 #include "feature.h"
 #include "featurewrapper.h"
 #include "measurementconfig.h"
 #include "openindy/project.pb.h"
+#include "pluginmetadata.h"
 #include "sensortype.h"
 
 namespace oi::codec {
@@ -47,12 +49,19 @@ inline OiVec toVec(const oipb::Vec3& v) {
 inline int idOf(const Feature* f) { return f != nullptr ? f->getId() : 0; }
 
 inline void appendIds(const QList<QPointer<FeatureWrapper>>& wrappers,
-               google::protobuf::RepeatedField<int32_t>* out) {
+                      google::protobuf::RepeatedField<int32_t>* out) {
   for (const auto& wrapper : wrappers) {
     if (!wrapper.isNull() && !wrapper->getFeature().isNull()) {
       out->Add(wrapper->getFeature()->getId());
     }
   }
+}
+
+inline oipb::PluginObjectRef pluginRef(const PluginMetaData& meta) {
+  oipb::PluginObjectRef ref;
+  ref.set_name(meta.name.toStdString());
+  ref.set_plugin(meta.pluginName.toStdString());
+  return ref;
 }
 
 inline oipb::FeatureCommon commonOf(const Feature& f) {
@@ -65,6 +74,11 @@ inline oipb::FeatureCommon commonOf(const Feature& f) {
   c.set_active(f.getIsActiveFeature());
   appendIds(f.getUsedFor(), c.mutable_used_for());
   appendIds(f.getPreviouslyNeeded(), c.mutable_previously_needed());
+  for (const auto& function : f.getFunctions()) {
+    if (!function.isNull()) {
+      *c.add_functions() = toProto(*function);
+    }
+  }
   return c;
 }
 
@@ -86,7 +100,6 @@ inline std::chrono::system_clock::time_point fromTimestamp(
          duration_cast<system_clock::duration>(nanoseconds{ts.nanos()});
 }
 
-
 /*! How a geometry or reading names its measurement config. The config type
  *  (project, user, standard) is not stored: the linking pass finds the config
  *  by name and sensor type. */
@@ -102,8 +115,9 @@ inline oipb::MeasurementConfigRef configRefOf(const MeasurementConfigKey& key) {
 inline MeasurementConfigKey configKeyOf(const oipb::MeasurementConfigRef& ref) {
   SensorType sensorType;
   if (ref.has_sensor_type()) {
-    sensorType = SensorTypeRegistry::byId(QString::fromStdString(ref.sensor_type()))
-                     .value_or(SensorType());
+    sensorType =
+        SensorTypeRegistry::byId(QString::fromStdString(ref.sensor_type()))
+            .value_or(SensorType());
   }
   return MeasurementConfigKey(QString::fromStdString(ref.name()),
                               ConfigTypes::eUndefinded, sensorType);
