@@ -10,7 +10,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Widgets Xml SerialPort Svg Network)
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets Xml SerialPort)
 
 # --- version, derived from git describe (mirrors the old version.pri logic) ---
 
@@ -251,8 +251,6 @@ target_link_libraries(OpenIndyCore
         Qt6::Widgets
         Qt6::Xml
         Qt6::SerialPort
-        Qt6::Svg
-        Qt6::Network
         OpenIndyMath
 )
 
