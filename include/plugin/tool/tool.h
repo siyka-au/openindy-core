@@ -14,6 +14,7 @@ namespace oi {
 
 class OI_CORE_EXPORT Tool : public QWidget {
   Q_OBJECT
+  Q_DISABLE_COPY_MOVE(Tool)
 
  public:
   explicit Tool(QWidget* parent = nullptr);

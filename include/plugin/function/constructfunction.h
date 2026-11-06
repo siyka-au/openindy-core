@@ -11,6 +11,7 @@ namespace oi {
  */
 class OI_CORE_EXPORT ConstructFunction : public Function {
   Q_OBJECT
+  Q_DISABLE_COPY_MOVE(ConstructFunction)
 
  public:
   explicit ConstructFunction(QObject* parent = nullptr) : Function(parent) {}

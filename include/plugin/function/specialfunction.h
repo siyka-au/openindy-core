@@ -11,6 +11,7 @@ namespace oi {
  */
 class OI_CORE_EXPORT SpecialFunction : public Function {
   Q_OBJECT
+  Q_DISABLE_COPY_MOVE(SpecialFunction)
 
  public:
   explicit SpecialFunction(QObject* parent = nullptr) : Function(parent) {}

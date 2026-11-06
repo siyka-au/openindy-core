@@ -15,6 +15,7 @@ namespace oi {
 class OI_CORE_EXPORT SystemTransformation : public Function {
   friend class ::FeatureUpdater;
   Q_OBJECT
+  Q_DISABLE_COPY_MOVE(SystemTransformation)
 
  public:
   explicit SystemTransformation(QObject* parent = nullptr) : Function(parent) {

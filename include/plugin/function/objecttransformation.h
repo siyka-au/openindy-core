@@ -11,6 +11,7 @@ namespace oi {
  */
 class OI_CORE_EXPORT ObjectTransformation : public Function {
   Q_OBJECT
+  Q_DISABLE_COPY_MOVE(ObjectTransformation)
 
  public:
   explicit ObjectTransformation(QObject* parent = nullptr) : Function(parent) {}

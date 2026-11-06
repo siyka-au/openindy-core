@@ -12,6 +12,7 @@ namespace oi {
  */
 class OI_CORE_EXPORT ExchangeDefinedFormat : public ExchangeInterface {
   Q_OBJECT
+  Q_DISABLE_COPY_MOVE(ExchangeDefinedFormat)
 
  public:
   explicit ExchangeDefinedFormat(QObject* parent = nullptr);

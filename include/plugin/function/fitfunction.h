@@ -60,6 +60,7 @@ enum class ApproximationTypes {
  */
 class OI_CORE_EXPORT FitFunction : public Function {
   Q_OBJECT
+  Q_DISABLE_COPY_MOVE(FitFunction)
 
   friend class BestFitCircleUtil;
   friend class BestFitCylinderUtil;

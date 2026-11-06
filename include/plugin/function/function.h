@@ -220,6 +220,7 @@ class OI_CORE_EXPORT Function : public QObject {
   friend class BestFitPlaneUtil;
 
   Q_OBJECT
+  Q_DISABLE_COPY_MOVE(Function)
 
  public:
   explicit Function(QObject* parent = nullptr);

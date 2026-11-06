@@ -16,6 +16,7 @@ namespace oi {
  */
 class OI_CORE_EXPORT ExchangeSimpleAscii : public ExchangeInterface {
   Q_OBJECT
+  Q_DISABLE_COPY_MOVE(ExchangeSimpleAscii)
 
  public:
   explicit ExchangeSimpleAscii(QObject* parent = nullptr);

@@ -10,6 +10,7 @@ namespace oi {
  */
 class OI_CORE_EXPORT TotalStation : public Sensor {
   Q_OBJECT
+  Q_DISABLE_COPY_MOVE(TotalStation)
 
  public:
   explicit TotalStation(QObject* parent = nullptr) : Sensor(parent) {}

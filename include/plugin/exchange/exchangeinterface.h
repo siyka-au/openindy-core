@@ -18,6 +18,7 @@ namespace oi {
  */
 class OI_CORE_EXPORT ExchangeInterface : public QObject {
   Q_OBJECT
+  Q_DISABLE_COPY_MOVE(ExchangeInterface)
 
  public:
   explicit ExchangeInterface(QObject* parent = nullptr);

@@ -107,6 +107,7 @@ class BundleStation {
  */
 class OI_CORE_EXPORT BundleAdjustment : public QObject {
   Q_OBJECT
+  Q_DISABLE_COPY_MOVE(BundleAdjustment)
 
  public:
   explicit BundleAdjustment(QObject* parent = nullptr);

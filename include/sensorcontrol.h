@@ -24,6 +24,7 @@ class Station;
  */
 class OI_CORE_EXPORT SensorControl : public QObject {
   Q_OBJECT
+  Q_DISABLE_COPY_MOVE(SensorControl)
 
  public:
   explicit SensorControl(QPointer<Station>& station, QObject* parent = nullptr);

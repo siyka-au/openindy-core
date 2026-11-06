@@ -148,6 +148,7 @@ class OI_CORE_EXPORT SimulationConfiguration {
  */
 class OI_CORE_EXPORT SimulationModel : public QObject {
   Q_OBJECT
+  Q_DISABLE_COPY_MOVE(SimulationModel)
 
  public:
   explicit SimulationModel(QObject* parent = nullptr);

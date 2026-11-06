@@ -19,6 +19,7 @@ namespace oi {
  */
 class OI_CORE_EXPORT SensorWorker : public QObject {
   Q_OBJECT
+  Q_DISABLE_COPY_MOVE(SensorWorker)
 
  public:
   explicit SensorWorker(QObject* parent = nullptr);
