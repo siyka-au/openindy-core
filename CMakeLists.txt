@@ -130,7 +130,6 @@ add_library(OpenIndyCore SHARED
     src/observation.cpp
     src/oijob.cpp
     src/position.cpp
-    src/radius.cpp
     src/reading.cpp
     src/sensorconfiguration.cpp
     src/sensortype.cpp
@@ -280,6 +279,14 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_compile_options(tst_progress PRIVATE -Wall -Wextra -Wpedantic)
 endif()
 add_test(NAME progress COMMAND tst_progress)
+
+# Plain-assert test for the value types; no Qt::Test, only the library itself.
+add_executable(tst_valuetypes test/valuetypes/tst_valuetypes.cpp)
+target_link_libraries(tst_valuetypes PRIVATE OpenIndyCore OpenIndyMath)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(tst_valuetypes PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+add_test(NAME valuetypes COMMAND tst_valuetypes)
 
 add_executable(tst_measurementconfig test/measurementconfig/tst_measurementconfig.cpp)
 target_compile_definitions(tst_measurementconfig PRIVATE SRCDIR="${CMAKE_CURRENT_SOURCE_DIR}/test/measurementconfig")

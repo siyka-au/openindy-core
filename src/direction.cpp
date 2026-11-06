@@ -3,22 +3,9 @@
 using namespace oi;
 using namespace oi::math;
 
-/*!
- * \brief Direction::Direction
- * \param parent
- */
-Direction::Direction(QObject* parent) : Element(parent) {
-  this->ijk = OiVec(3);
-  this->ijkH = OiVec(3);
-  this->ijkH.add(1.0);
-}
+Direction::Direction() : ijk(3), ijkH(3) { this->ijkH.add(1.0); }
 
-/*!
- * \brief Direction::Direction
- * \param v
- * \param parent
- */
-Direction::Direction(const OiVec& v, QObject* parent) : Element(parent) {
+Direction::Direction(const OiVec& v) {
   if (v.getSize() == 3) {
     this->ijk = v;
     this->ijkH = v;
@@ -35,16 +22,7 @@ Direction::Direction(const OiVec& v, QObject* parent) : Element(parent) {
   }
 }
 
-/*!
- * \brief Direction::Direction
- * \param x
- * \param y
- * \param z
- * \param parent
- */
-Direction::Direction(const double& x, const double& y, const double& z,
-                     const double& h, QObject* parent)
-    : Element(parent) {
+Direction::Direction(double x, double y, double z, double h) {
   this->ijk.add(x / h);
   this->ijk.add(y / h);
   this->ijk.add(z / h);
@@ -54,39 +32,7 @@ Direction::Direction(const double& x, const double& y, const double& z,
   this->ijkH.add(h);
 }
 
-/*!
- * \brief Direction::Direction
- * \param copy
- * \param parent
- */
-Direction::Direction(const Direction& copy, QObject* parent)
-    : Element(copy, parent), ijk(copy.ijk), ijkH(copy.ijkH) {}
-
-/*!
- * \brief Direction::operator =
- * \param copy
- * \return
- */
-Direction& Direction::operator=(const Direction& copy) {
-  this->ijk = copy.ijk;
-  this->ijkH = copy.ijkH;
-
-  return *this;
-}
-
-/*!
- * \brief Direction::~Direction
- */
-Direction::~Direction() {}
-
-/*!
- * \brief Direction::setVector
- * \param x
- * \param y
- * \param z
- */
-void Direction::setVector(const double& x, const double& y, const double& z,
-                          const double& h) {
+void Direction::setVector(double x, double y, double z, double h) {
   this->ijk.setAt(0, x / h);
   this->ijk.setAt(1, y / h);
   this->ijk.setAt(2, z / h);
@@ -96,10 +42,6 @@ void Direction::setVector(const double& x, const double& y, const double& z,
   this->ijkH.setAt(3, h);
 }
 
-/*!
- * \brief Direction::setVector
- * \param v
- */
 void Direction::setVector(const OiVec& v) {
   if (v.getSize() == 3) {
     this->ijk = v;
@@ -115,14 +57,6 @@ void Direction::setVector(const OiVec& v) {
   }
 }
 
-/*!
- * \brief Direction::getVector
- * \return
- */
 const OiVec& Direction::getVector() const { return ijk; }
 
-/*!
- * \brief Direction::getVectorH
- * \return
- */
 const OiVec& Direction::getVectorH() const { return ijkH; }

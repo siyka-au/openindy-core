@@ -1,10 +1,7 @@
 #ifndef POSITION_H
 #define POSITION_H
 
-#include <QObject>
-
 #include "core_export.h"
-#include "element.h"
 #include "oivec.h"
 
 namespace oi {
@@ -12,40 +9,38 @@ namespace oi {
 using namespace math;
 
 /*!
- * \brief The Position class
+ * \brief A point in space (x, y, z) with its homogeneous form (x, y, z, h).
+ *
+ * A plain value type: copyable, movable, no identity, no Qt. (It used to be a
+ * QObject through Element, which gave it a parent, an id and signals that
+ * nothing used.)
  */
-class OI_CORE_EXPORT Position : public Element {
-  Q_OBJECT
-
+class OI_CORE_EXPORT Position {
  public:
-  explicit Position(QObject* parent = nullptr);
-  explicit Position(bool isNullObject, QObject* parent = nullptr);
-  explicit Position(const OiVec& v, QObject* parent = nullptr);
-  explicit Position(const double& x, const double& y, const double& z,
-                    const double& h = 1.0, QObject* parent = nullptr);
-
-  Position(const Position& copy, QObject* parent = nullptr);
-
-  Position& operator=(const Position& copy);
-
-  ~Position() override;
+  Position();
+  explicit Position(bool isNullObject);
+  explicit Position(const OiVec& v);
+  explicit Position(double x, double y, double z, double h = 1.0);
 
   // ##########################
   // get or set position vector
   // ##########################
 
   void setVector(const OiVec& v);
-  void setVector(const double& x, const double& y, const double& z,
-                 const double& h = 1.0);
+  void setVector(double x, double y, double z, double h = 1.0);
 
   [[nodiscard]] const OiVec& getVector() const;
   [[nodiscard]] const OiVec& getVectorH() const;
 
-  const static Position NullObject;
+  /*! True for the NullObject placeholder (no position set). */
+  [[nodiscard]] bool isNull() const noexcept { return isNullObject; }
 
- protected:
+  static const Position NullObject;
+
+ private:
   OiVec xyz;   // vector of size 3 (x, y, z)
   OiVec xyzH;  // homogeneous vector of size 4 (x, y, z, h)
+  bool isNullObject{false};
 };
 
 }  // namespace oi

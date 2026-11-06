@@ -1,39 +1,24 @@
 #ifndef RADIUS_H
 #define RADIUS_H
 
-#include <QObject>
-
 #include "core_export.h"
-#include "element.h"
 
 namespace oi {
 
 /*!
- * \brief The Radius class
+ * \brief A radius. A plain value type: copyable, movable, no identity, no Qt.
  */
-class OI_CORE_EXPORT Radius : public Element {
-  Q_OBJECT
-
+class OI_CORE_EXPORT Radius {
  public:
-  explicit Radius(QObject* parent = nullptr);
-  explicit Radius(const double& r, QObject* parent = nullptr);
+  Radius() = default;
+  explicit Radius(double r) : radius(r) {}
 
-  Radius(const Radius& copy, QObject* parent = nullptr);
+  void setRadius(double r) { radius = r; }
 
-  Radius& operator=(const Radius& copy);
+  [[nodiscard]] const double& getRadius() const { return radius; }
 
-  ~Radius() override;
-
-  // #################
-  // get or set radius
-  // #################
-
-  void setRadius(const double& r);
-
-  [[nodiscard]] const double& getRadius() const;
-
- protected:
-  double radius;
+ private:
+  double radius{0.0};
 };
 
 }  // namespace oi

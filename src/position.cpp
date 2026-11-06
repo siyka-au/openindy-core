@@ -3,29 +3,14 @@
 using namespace oi;
 using namespace oi::math;
 
-/*!
- * \brief Position::Position
- * \param parent
- */
-Position::Position(QObject* parent) : Element(parent) {
-  this->xyz = OiVec(3);
-  this->xyzH = OiVec(3);
-  this->xyzH.add(1.0);
-}
+Position::Position() : xyz(3), xyzH(3) { this->xyzH.add(1.0); }
 
-Position::Position(bool isNullObject, QObject* parent) : Element(parent) {
-  this->xyz = OiVec(3);
-  this->xyzH = OiVec(3);
+Position::Position(bool isNullObject) : xyz(3), xyzH(3) {
   this->xyzH.add(1.0);
   this->isNullObject = isNullObject;
 }
 
-/*!
- * \brief Position::Position
- * \param v
- * \param parent
- */
-Position::Position(const OiVec& v, QObject* parent) : Element(parent) {
+Position::Position(const OiVec& v) {
   if (v.getSize() == 3) {
     this->xyz = v;
     this->xyzH = v;
@@ -42,16 +27,7 @@ Position::Position(const OiVec& v, QObject* parent) : Element(parent) {
   }
 }
 
-/*!
- * \brief Position::Position
- * \param x
- * \param y
- * \param z
- * \param parent
- */
-Position::Position(const double& x, const double& y, const double& z,
-                   const double& h, QObject* parent)
-    : Element(parent) {
+Position::Position(double x, double y, double z, double h) {
   this->xyz.add(x / h);
   this->xyz.add(y / h);
   this->xyz.add(z / h);
@@ -61,37 +37,6 @@ Position::Position(const double& x, const double& y, const double& z,
   this->xyzH.add(h);
 }
 
-/*!
- * \brief Position::Position
- * \param copy
- * \param parent
- */
-Position::Position(const Position& copy, QObject* parent)
-    : Element(copy, parent), xyz(copy.xyz), xyzH(copy.xyzH) {}
-
-/*!
- * \brief Position::operator =
- * \param copy
- * \return
- */
-Position& Position::operator=(const Position& copy) {
-  Element::operator=(copy);
-
-  this->xyz = copy.xyz;
-  this->xyzH = copy.xyzH;
-
-  return *this;
-}
-
-/*!
- * \brief Position::~Position
- */
-Position::~Position() {}
-
-/*!
- * \brief Position::setVector
- * \param v
- */
 void Position::setVector(const OiVec& v) {
   if (v.getSize() == 3) {
     this->xyz = v;
@@ -107,15 +52,7 @@ void Position::setVector(const OiVec& v) {
   }
 }
 
-/*!
- * \brief Position::setVector
- * \param x
- * \param y
- * \param z
- * \param h
- */
-void Position::setVector(const double& x, const double& y, const double& z,
-                         const double& h) {
+void Position::setVector(double x, double y, double z, double h) {
   this->xyz.setAt(0, x / h);
   this->xyz.setAt(1, y / h);
   this->xyz.setAt(2, z / h);
@@ -125,16 +62,8 @@ void Position::setVector(const double& x, const double& y, const double& z,
   this->xyzH.setAt(3, h);
 }
 
-/*!
- * \brief Position::getVector
- * \return
- */
 const OiVec& Position::getVector() const { return this->xyz; }
 
-/*!
- * \brief Position::getVectorH
- * \return
- */
 const OiVec& Position::getVectorH() const { return this->xyzH; }
 
 const Position Position::NullObject = Position(true);
