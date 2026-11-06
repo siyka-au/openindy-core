@@ -56,7 +56,8 @@ Feature& Feature::operator=(const Feature& copy) {
   // this->functionList = copy.functionList;
   // this->previouslyNeeded = copy.previouslyNeeded;
 
-  this->selfFeature = new FeatureWrapper();
+  // keep the existing selfFeature wrapper: assignment must not change the
+  // object's identity, and replacing it here leaked the old wrapper
 
   return *this;
 }
@@ -91,7 +92,7 @@ Feature::~Feature() {
     foreach (const QPointer<FeatureWrapper>& feature,
              this->previouslyNeededList) {
       // remove this feature from usedFor list
-      if (this->selfFeature.isNull() && !feature.isNull() &&
+      if (!this->selfFeature.isNull() && !feature.isNull() &&
           !feature->getFeature().isNull()) {
         feature->getFeature()->usedForList.removeOne(this->selfFeature);
       }
