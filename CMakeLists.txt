@@ -130,7 +130,6 @@ add_library(OpenIndyCore SHARED
     src/featurecontainer.cpp
     src/featurewrapper.cpp
     src/geometry.cpp
-    src/codec/convert.cpp
     src/measurementconfig.cpp
     src/observation.cpp
     src/oijob.cpp
@@ -237,21 +236,6 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_compile_options(OpenIndyCore PRIVATE -Wall -Wextra -Wpedantic)
 endif()
 
-# The .proto files are the project file / wire format. Their generated headers
-# are private to core: the codec's public interface is bytes in, bytes out.
-set(OI_PROTO_GENERATED_DIR ${CMAKE_CURRENT_BINARY_DIR}/generated)
-protobuf_generate(
-    TARGET OpenIndyCore
-    LANGUAGE cpp
-    PROTOS ${CMAKE_CURRENT_SOURCE_DIR}/proto/openindy/project.proto
-    IMPORT_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/proto
-    PROTOC_OUT_DIR ${OI_PROTO_GENERATED_DIR}
-)
-target_include_directories(OpenIndyCore PRIVATE
-    ${OI_PROTO_GENERATED_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/codec
-)
-
 target_include_directories(OpenIndyCore
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -274,9 +258,37 @@ target_link_libraries(OpenIndyCore
         Qt6::Xml
         Qt6::SerialPort
         OpenIndyMath
-    PRIVATE
-        protobuf::libprotobuf
 )
+
+# --- codec: project file / wire format (protobuf) ---
+#
+# A separate static library so that the core model carries no protobuf and so
+# that each final binary (the application, a command-line tool, a test) gets
+# exactly one copy of the protobuf runtime. Mixing a runtime inside a shared
+# library with another in the executable breaks reflection and descriptor
+# lookup. The converters reach the model's private state through the
+# codec::Access friend declared in the model classes.
+add_library(OpenIndyCodec STATIC
+    src/codec/convert.cpp
+    src/codec/entities.cpp
+)
+set_target_properties(OpenIndyCodec PROPERTIES POSITION_INDEPENDENT_CODE ON)
+set(OI_PROTO_GENERATED_DIR ${CMAKE_CURRENT_BINARY_DIR}/generated)
+protobuf_generate(
+    TARGET OpenIndyCodec
+    LANGUAGE cpp
+    PROTOS ${CMAKE_CURRENT_SOURCE_DIR}/proto/openindy/project.proto
+    IMPORT_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/proto
+    PROTOC_OUT_DIR ${OI_PROTO_GENERATED_DIR}
+)
+target_include_directories(OpenIndyCodec PUBLIC
+    $<BUILD_INTERFACE:${OI_PROTO_GENERATED_DIR}>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/codec>
+)
+target_link_libraries(OpenIndyCodec PUBLIC OpenIndyCore PUBLIC protobuf::libprotobuf)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(OpenIndyCodec PRIVATE -Wall -Wextra -Wpedantic)
+endif()
 
 # --- tests ---
 
@@ -314,12 +326,8 @@ add_test(NAME valuetypes COMMAND tst_valuetypes)
 # headers directly.
 find_package(Catch2 3 CONFIG REQUIRED)
 add_executable(tst_codec test/codec/tst_codec.cpp)
-target_include_directories(tst_codec PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/codec
-    ${OI_PROTO_GENERATED_DIR}
-)
 target_link_libraries(tst_codec PRIVATE
-    OpenIndyCore OpenIndyMath protobuf::libprotobuf Catch2::Catch2WithMain)
+    OpenIndyCodec OpenIndyCore OpenIndyMath Catch2::Catch2WithMain)
 add_test(NAME codec COMMAND tst_codec)
 
 add_executable(tst_measurementconfig test/measurementconfig/tst_measurementconfig.cpp)

@@ -12,11 +12,16 @@ namespace oi {
 
 class OiJob;
 
+namespace codec {
+struct Access;
+}  // namespace codec
+
 /*!
  * \brief The Element class
  */
 class OI_CORE_EXPORT Element : public QObject {
   friend class OiJob;
+  friend struct codec::Access;  // the protobuf codec (see src/codec)
   Q_OBJECT
 
  public:

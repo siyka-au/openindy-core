@@ -10,6 +10,47 @@ package openindy.v1;
 import "google/protobuf/timestamp.proto";
 
 // ---------------------------------------------------------------------------
+// Shared building blocks
+// ---------------------------------------------------------------------------
+
+message Vec3 {
+  double x = 1;
+  double y = 2;
+  double z = 3;
+}
+
+// How a feature or reading refers to a measurement config: the config is
+// found again by name (and sensor type) in the project's configs or the
+// application's standard configs.
+message MeasurementConfigRef {
+  string name = 1;
+  optional string sensor_type = 2;
+}
+
+// What every Feature (geometry, station, coordinate system, trafo param,
+// group) carries. References are ids in the global id space; 0 means none.
+message FeatureCommon {
+  int32 id = 1;
+  string name = 2;
+  string group = 3;
+  string comment = 4;
+  bool solved = 5;
+  bool active = 6;
+  // field 7 is reserved for the feature's functions (added with the function
+  // records)
+  repeated int32 used_for = 8;
+  repeated int32 previously_needed = 9;
+}
+
+// A plugin object (sensor, function, bundle adjustment) is identified by the
+// plugin it comes from and its name inside that plugin. The plugin file path
+// is not stored: it differs per machine.
+message PluginObjectRef {
+  string name = 1;
+  string plugin = 2;
+}
+
+// ---------------------------------------------------------------------------
 // Measurement configuration
 // ---------------------------------------------------------------------------
 
@@ -41,6 +82,165 @@ message MeasurementConfig {
   double distance_interval = 7;
   // Id of the sensor type this config is gated to. Absent: not gated.
   optional string sensor_type = 8;
+}
+
+// ---------------------------------------------------------------------------
+// Readings and observations
+// ---------------------------------------------------------------------------
+
+enum SensorFace {
+  SENSOR_FACE_UNDEFINED = 0;
+  SENSOR_FACE_FRONT = 1;
+  SENSOR_FACE_BACK = 2;
+}
+
+message PolarReading {
+  double azimuth = 1;
+  double zenith = 2;
+  double distance = 3;
+  double sigma_azimuth = 4;
+  double sigma_zenith = 5;
+  double sigma_distance = 6;
+}
+
+message DirectionReading {
+  double azimuth = 1;
+  double zenith = 2;
+  double sigma_azimuth = 3;
+  double sigma_zenith = 4;
+}
+
+message DistanceReading {
+  double distance = 1;
+  double sigma_distance = 2;
+}
+
+message CartesianReading {
+  Vec3 xyz = 1;
+  Vec3 sigma_xyz = 2;
+}
+
+message Cartesian6DReading {
+  Vec3 xyz = 1;
+  Vec3 ijk = 2;
+  Vec3 sigma_xyz = 3;
+}
+
+message TemperatureReading {
+  double temperature = 1;
+  double sigma_temperature = 2;
+}
+
+message LevelReading {
+  double i = 1;
+  double j = 2;
+  double k = 3;
+  double sigma_i = 4;
+  double sigma_j = 5;
+  double sigma_k = 6;
+}
+
+// A reading kind the core does not know; its values are kept by name.
+message UndefinedReading {
+  map<string, double> values = 1;
+  map<string, double> sigma_values = 2;
+}
+
+message Reading {
+  int32 id = 1;
+  google.protobuf.Timestamp measured_at = 2;
+  bool imported = 3;
+  SensorFace face = 4;
+  string sensor_config_name = 5;
+  optional MeasurementConfigRef measurement_config = 6;
+  // The reading's own measurement; which one is set is its type. Other
+  // representations (e.g. cartesian from polar) are derived on load.
+  oneof data {
+    PolarReading polar = 10;
+    CartesianReading cartesian = 11;
+    Cartesian6DReading cartesian_6d = 12;
+    DirectionReading direction = 13;
+    DistanceReading distance = 14;
+    TemperatureReading temperature = 15;
+    LevelReading level = 16;
+    UndefinedReading undefined = 17;
+  }
+}
+
+// An observation is the reading a station took, expressed in coordinates.
+// Both the current coordinates and the original ones (in the station system)
+// are stored.
+message Observation {
+  int32 id = 1;
+  bool valid = 2;
+  bool solved = 3;
+  bool dummy_point = 4;
+  bool has_direction = 5;
+  Vec3 xyz = 6;
+  Vec3 original_xyz = 7;
+  Vec3 sigma_xyz = 8;
+  Vec3 original_sigma_xyz = 9;
+  Vec3 ijk = 10;
+  Vec3 original_ijk = 11;
+  Vec3 sigma_ijk = 12;
+  Vec3 original_sigma_ijk = 13;
+  int32 station = 14;                 // station id, 0 = none
+  int32 measured_target_geometry = 15;  // geometry id, 0 = none
+  Reading reading = 16;               // owned by the observation
+}
+
+// ---------------------------------------------------------------------------
+// Stations, coordinate systems, transformations
+// ---------------------------------------------------------------------------
+
+message Station {
+  FeatureCommon feature = 1;
+  bool active_station = 2;
+  repeated PluginObjectRef used_sensors = 3;
+  optional PluginObjectRef active_sensor = 4;
+  int32 position = 5;           // id of the station's Point
+  int32 coordinate_system = 6;  // id of the station's own coordinate system
+}
+
+// The parameters the bundle adjustment was last configured with. Values stay
+// strings because the template is user-supplied JSON.
+message BundleTemplate {
+  string name = 1;
+  string level_station = 2;
+  string max_iterations = 3;
+  repeated string parameters = 4;
+  PluginObjectRef plugin = 5;
+}
+
+message CoordinateSystem {
+  FeatureCommon feature = 1;
+  bool active_system = 2;
+  bool bundle_system = 3;
+  Vec3 origin = 4;
+  Vec3 x_axis = 5;
+  Vec3 y_axis = 6;
+  Vec3 z_axis = 7;
+  Vec3 expansion_origin = 8;
+  optional BundleTemplate bundle_template = 9;
+  repeated int32 trafo_params = 10;
+  repeated int32 observations = 11;       // station systems
+  repeated int32 nominal_geometries = 12; // nominal systems
+  // field 13 is reserved for the attached bundle adjustment
+}
+
+message TrafoParam {
+  FeatureCommon feature = 1;
+  Vec3 translation = 2;
+  Vec3 rotation = 3;  // radians
+  Vec3 scale = 4;
+  // The 4x4 homogeneous matrix, row-major. Stored rather than recomputed from
+  // the parameters: the model has more than one way of building it, and the
+  // stored one is exactly what was in use when the project was saved.
+  repeated double homogen_matrix = 5;
+  bool datum_trafo = 6;
+  bool used = 7;
+  int32 from = 8;  // coordinate system ids
+  int32 to = 9;
 }
 
 // ---------------------------------------------------------------------------

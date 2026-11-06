@@ -57,6 +57,7 @@ class OI_CORE_EXPORT Observation : public Point {
   friend class Reading;
   friend class CoordinateSystem;
   friend class ::TrafoController;
+  friend struct codec::Access;  // the protobuf codec (see src/codec)
   Q_OBJECT
 
  public:

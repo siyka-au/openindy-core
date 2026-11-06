@@ -31,6 +31,7 @@ class OI_CORE_EXPORT CoordinateSystem : public Feature {
   friend class ::TrafoController;
   friend class ::ProjectExchanger;
   friend class Observation;
+  friend struct codec::Access;  // the protobuf codec (see src/codec)
   Q_OBJECT
 
  public:

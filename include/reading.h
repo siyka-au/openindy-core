@@ -153,6 +153,7 @@ class OI_CORE_EXPORT Reading : public Element {
   friend class CoordinateSystem;
   friend class Observation;
   friend class ProjectExchanger;
+  friend struct codec::Access;  // the protobuf codec (see src/codec)
   Q_OBJECT
 
  private:
