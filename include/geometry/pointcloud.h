@@ -5,6 +5,7 @@
 #include <QtXml>
 #include <array>
 
+#include "core_export.h"
 #include "geometry.h"
 #include "pointcollection.h"
 #include "position.h"

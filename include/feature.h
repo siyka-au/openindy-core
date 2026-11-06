@@ -8,6 +8,7 @@
 #include <QtXml>
 #include <optional>
 
+#include "core_export.h"
 #include "element.h"
 
 namespace oi {

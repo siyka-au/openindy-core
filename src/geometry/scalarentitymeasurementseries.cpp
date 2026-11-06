@@ -1,5 +1,7 @@
 #include "scalarentitymeasurementseries.h"
 
+#include <utility>
+
 #include "featurewrapper.h"
 
 using namespace oi;
@@ -120,7 +122,7 @@ void ScalarEntityMeasurementSeries::applyUnknownParameters(
 
   // update parameters
   QList<GeometryParameters> keys = parameters.keys();
-  foreach (const GeometryParameters& key, keys) {
+  for (const GeometryParameters& key : std::as_const(keys)) {
     switch (key) {
       case GeometryParameters::eUnknownMeasurementSeries:
         series =

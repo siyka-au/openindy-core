@@ -4,6 +4,7 @@
 #include "function.h"
 #include "geometry.h"
 #include "oijob.h"
+#include "snapshot.h"
 #include "station.h"
 
 #if defined(__GNUC__) && !defined(__clang__)
@@ -158,7 +159,8 @@ Observation::~Observation() {
   QList<QPointer<Geometry> > targetGeometries;
 
   // remove observation and reading from its target geometries
-  foreach (const QPointer<Geometry>& geom, this->getTargetGeometries()) {
+  for (const QPointer<Geometry>& geom :
+       oi::snapshot(this->getTargetGeometries())) {
     // check target geometry
     if (geom.isNull()) {
       continue;
@@ -166,7 +168,8 @@ Observation::~Observation() {
     targetGeometries.append(geom);
 
     // remove observation and reading from functions of the targte geometry
-    foreach (const QPointer<Function>& function, geom->getFunctions()) {
+    for (const QPointer<Function>& function :
+         oi::snapshot(geom->getFunctions())) {
       // check function and remove elements
       if (!function.isNull()) {
         function->blockSignals(true);
@@ -176,7 +179,7 @@ Observation::~Observation() {
       }
     }
   }
-  foreach (const QPointer<Geometry>& geom, targetGeometries) {
+  for (const QPointer<Geometry>& geom : oi::snapshot(targetGeometries)) {
     geom->blockSignals(true);
     this->removeTargetGeometry(geom->getId());
     geom->blockSignals(false);
@@ -361,7 +364,7 @@ QList<QPointer<Geometry> > Observation::getTargetGeometries() const {
     return result;
   }
 
-  foreach (const MeasurementIntent& intent, this->getIntents()) {
+  for (const MeasurementIntent& intent : oi::snapshot(this->getIntents())) {
     const QPointer<FeatureWrapper> feature =
         this->job->getFeatureById(intent.featureId);
     if (!feature.isNull() && !feature->getGeometry().isNull() &&
@@ -415,7 +418,7 @@ void Observation::removeTargetGeometry(
   }
 
   QList<MeasurementIntent> matching;
-  foreach (const MeasurementIntent& intent, this->getIntents()) {
+  for (const MeasurementIntent& intent : oi::snapshot(this->getIntents())) {
     if (intent.featureId == targetGeometry->getId()) {
       matching.append(intent);
     }
@@ -423,7 +426,7 @@ void Observation::removeTargetGeometry(
   if (matching.isEmpty()) {
     return;
   }
-  foreach (const MeasurementIntent& intent, matching) {
+  for (const MeasurementIntent& intent : oi::snapshot(matching)) {
     this->removeIntent(intent);
   }
 
@@ -552,7 +555,8 @@ QString Observation::getDisplayStation() const {
  */
 QString Observation::getDisplayTargetGeometries() const {
   QString result = "";
-  foreach (const QPointer<Geometry>& geometry, this->getTargetGeometries()) {
+  for (const QPointer<Geometry>& geometry :
+       oi::snapshot(this->getTargetGeometries())) {
     if (geometry.isNull()) {
       continue;
     }

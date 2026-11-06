@@ -8,6 +8,7 @@
 #include <QtXml>
 
 #include "connectionkind.h"
+#include "core_export.h"
 #include "oivec.h"
 #include "sensortype.h"
 #include "types.h"

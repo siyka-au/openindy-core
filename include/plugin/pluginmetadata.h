@@ -3,6 +3,7 @@
 
 #include <QJsonArray>
 
+#include "core_export.h"
 #include "types.h"
 
 namespace oi {

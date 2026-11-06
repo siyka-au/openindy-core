@@ -213,7 +213,9 @@ add_library(OpenIndyCore SHARED
     include/sensorworker.h
     include/sensorworkermessage.h
     include/station.h
+    include/core_export.h
     include/progress.h
+    include/snapshot.h
     include/statistic.h
     include/trafoparam.h
     include/plugin/networkAdjustment/bundleadjustment.h

@@ -8,6 +8,7 @@
 #include <QObject>
 #include <QString>
 
+#include "core_export.h"
 #include "oijob.h"
 #include "pluginmetadata.h"
 #include "types.h"

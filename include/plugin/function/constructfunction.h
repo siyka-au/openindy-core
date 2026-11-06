@@ -1,6 +1,7 @@
 #ifndef CONSTRUCTFUNCTION_H
 #define CONSTRUCTFUNCTION_H
 
+#include "core_export.h"
 #include "function.h"
 
 namespace oi {

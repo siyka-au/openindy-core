@@ -1,5 +1,9 @@
 #include "bundleadjustment.h"
 
+#include <utility>
+
+#include "snapshot.h"
+
 using namespace oi;
 
 /*!
@@ -72,7 +76,7 @@ const ScalarInputParams& BundleAdjustment::getScalarInputParams() {
     this->scalarInputParams.doubleParameter = this->doubleParameters;
     this->scalarInputParams.intParameter = this->integerParameters;
     QStringList keys = this->stringParameters.keys();
-    foreach (const QString& key, keys) {
+    for (const QString& key : std::as_const(keys)) {
       this->scalarInputParams.stringParameter.insert(
           key, this->stringParameters.value(key));
     }
@@ -224,7 +228,7 @@ QDomElement BundleAdjustment::toOpenIndyXML(QDomDocument& xmlDoc) const {
 
   // add bundle stations
   QDomElement bundleStations = xmlDoc.createElement("bundleStations");
-  foreach (const BundleStation& station, this->stations) {
+  for (const BundleStation& station : oi::snapshot(this->stations)) {
     QDomElement bundleStation = xmlDoc.createElement("bundleStation");
     bundleStation.setAttribute("id", station.id);
     bundleStation.setAttribute("tx", station.tx);
@@ -237,7 +241,7 @@ QDomElement BundleAdjustment::toOpenIndyXML(QDomDocument& xmlDoc) const {
 
     // add bundle geometries
     QDomElement bundleGeoms = xmlDoc.createElement("bundleGeometries");
-    foreach (BundleGeometry bundleGeom, station.geometries) {
+    for (BundleGeometry bundleGeom : oi::snapshot(station.geometries)) {
       QDomElement bundleGeomelem = xmlDoc.createElement("bundleGeometry");
       bundleGeomelem.setAttribute("id", bundleGeom.id);
       // add parameter list
@@ -256,7 +260,7 @@ QDomElement BundleAdjustment::toOpenIndyXML(QDomDocument& xmlDoc) const {
 
   // save geometries
   QDomElement bundleGeoemtries = xmlDoc.createElement("bundleGeometries");
-  foreach (BundleGeometry bGeom, this->geometries) {
+  for (BundleGeometry bGeom : oi::snapshot(this->geometries)) {
     QDomElement bundleGeom = xmlDoc.createElement("bundleGeom");
     bundleGeom.setAttribute("id", bGeom.id);
     QMapIterator<GeometryParameters, double> i(bGeom.parameters);
@@ -275,7 +279,7 @@ QDomElement BundleAdjustment::toOpenIndyXML(QDomDocument& xmlDoc) const {
 
   // save bundleTransformations
   QDomElement bundleTrafos = xmlDoc.createElement("bundleTransformations");
-  foreach (BundleTransformation bTrafo, this->transformations) {
+  for (BundleTransformation bTrafo : oi::snapshot(this->transformations)) {
     QDomElement bundleTrafo = xmlDoc.createElement("bundleTransformation");
     bundleTrafo.setAttribute("id", bTrafo.id);
     QMapIterator<TrafoParamParameters, double> i(bTrafo.parameters);

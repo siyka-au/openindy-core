@@ -10,6 +10,7 @@
 #include <QStringList>
 #include <QVariant>
 
+#include "core_export.h"
 #include "measurementconfig.h"
 #include "pluginmetadata.h"
 #include "reading.h"

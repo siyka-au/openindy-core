@@ -1,6 +1,7 @@
 #include "pointcloud.h"
 
 #include "featurewrapper.h"
+#include "snapshot.h"
 
 using namespace oi;
 using namespace oi::math;
@@ -71,8 +72,8 @@ bool PointCloud::addSegment(const QPointer<FeatureWrapper>& segment) {
   }
 
   // check if a segment with that name already exists
-  foreach (const QPointer<FeatureWrapper>& detectedSegment,
-           this->detectedSegments) {
+  for (const QPointer<FeatureWrapper>& detectedSegment :
+       oi::snapshot(this->detectedSegments)) {
     if (!detectedSegment.isNull() && !detectedSegment->getFeature().isNull() &&
         detectedSegment->getFeature()->getFeatureName().compare(
             segment->getGeometry()->getFeatureName()) == 0) {
@@ -131,7 +132,7 @@ QList<Position> PointCloud::collectionPoints() const {
   QList<Position> positions;
   positions.reserve(this->points.size());
 
-  foreach (Point_PC* point, this->points) {
+  for (Point_PC* point : oi::snapshot(this->points)) {
     // isUsed is the cloud's own inclusion flag - a point excluded by
     // segmentation or filtering is still stored, but is not part of the
     // collection a fit should see
@@ -153,7 +154,7 @@ int PointCloud::collectionPointCount() const {
   // counted without materialising positions - a real scan is millions of
   // points and this gets asked just to answer "is there enough data yet"
   int count = 0;
-  foreach (Point_PC* point, this->points) {
+  for (Point_PC* point : oi::snapshot(this->points)) {
     if (point != nullptr && point->isUsed) {
       ++count;
     }

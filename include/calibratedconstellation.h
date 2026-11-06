@@ -7,13 +7,8 @@
 #include <QString>
 #include <optional>
 
+#include "core_export.h"
 #include "oivec.h"
-
-#if defined(OI_CORE_LIB)
-#define OI_CORE_EXPORT Q_DECL_EXPORT
-#else
-#define OI_CORE_EXPORT Q_DECL_IMPORT
-#endif
 
 namespace oi {
 

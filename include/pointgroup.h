@@ -1,6 +1,7 @@
 #ifndef POINTGROUP_H
 #define POINTGROUP_H
 
+#include "core_export.h"
 #include "group.h"
 #include "pointcollection.h"
 

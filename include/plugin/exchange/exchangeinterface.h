@@ -7,6 +7,7 @@
 #include <QStringList>
 
 #include "coordinatesystem.h"
+#include "core_export.h"
 #include "featurewrapper.h"
 #include "pluginmetadata.h"
 

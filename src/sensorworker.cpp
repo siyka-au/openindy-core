@@ -932,7 +932,5 @@ void SensorWorker::asyncSensorStreamDataReceived(const QVariantMap& reading) {
 }
 
 void SensorWorker::finishMeasurement() {
-  qDebug() << "SensorWorker::finishMeasurement()";
-
   this->selfDefinedAction("stopMeasure");
 }

@@ -4,6 +4,7 @@
 #include <QPair>
 #include <QString>
 
+#include "core_export.h"
 #include "measurementconfig.h"
 #include "types.h"
 

@@ -1,6 +1,7 @@
 #ifndef GEODETICFUNCTION_H
 #define GEODETICFUNCTION_H
 
+#include "core_export.h"
 #include "function.h"
 
 namespace oi {

@@ -1,6 +1,7 @@
 #include "ellipsoid.h"
 
 #include "featurewrapper.h"
+#include "snapshot.h"
 
 using namespace oi;
 using namespace oi::math;
@@ -188,7 +189,7 @@ void Ellipsoid::applyUnknownParameters(
 
   // update parameters
   QList<GeometryParameters> keys = parameters.keys();
-  foreach (const GeometryParameters& key, keys) {
+  for (const GeometryParameters& key : oi::snapshot(keys)) {
     switch (key) {
       case GeometryParameters::eUnknownX:
         position.setAt(0, parameters.value(GeometryParameters::eUnknownX));

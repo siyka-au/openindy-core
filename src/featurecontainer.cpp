@@ -1,5 +1,7 @@
 #include "featurecontainer.h"
 
+#include "snapshot.h"
+
 using namespace oi;
 
 /*!
@@ -37,7 +39,7 @@ FeatureContainer::getCoordinateSystemsList() const {
 QList<QPointer<CoordinateSystem> > FeatureContainer::getStationSystemsList()
     const {
   QList<QPointer<CoordinateSystem> > stationSystems;
-  foreach (const QPointer<Station>& station, this->stationsList) {
+  for (const QPointer<Station>& station : oi::snapshot(this->stationsList)) {
     if (!station.isNull() && !station->getCoordinateSystem().isNull()) {
       stationSystems.append(station->getCoordinateSystem());
     }
@@ -51,9 +53,10 @@ QList<QPointer<CoordinateSystem> > FeatureContainer::getStationSystemsList()
  */
 /* // TODO OI-982 remove
 QList<QPointer<CoordinateSystem> > FeatureContainer::getBundleSystemList()
-const{ QList<QPointer<CoordinateSystem> > bundleSystems; foreach(const
-QPointer<CoordinateSystem> &system, this->coordSystems){ if(!system.isNull() &&
-system->getIsBundleSystem()){ bundleSystems.append(system);
+const{ QList<QPointer<CoordinateSystem> > bundleSystems; for (const
+QPointer<CoordinateSystem> &system : oi::snapshot(this->coordSystems)){
+if(!system.isNull() && system->getIsBundleSystem()){
+bundleSystems.append(system);
         }
     }
     return bundleSystems;
@@ -139,7 +142,8 @@ QList<QPointer<FeatureWrapper> > FeatureContainer::getFeaturesByName(
     const QString& name, const bool startWith) const {
   if (startWith) {
     QList<QPointer<FeatureWrapper> > result;
-    foreach (const QPointer<FeatureWrapper>& feature, this->featuresList) {
+    for (const QPointer<FeatureWrapper>& feature :
+         oi::snapshot(this->featuresList)) {
       if (!feature.isNull() && !feature->getFeature().isNull() &&
           feature->getFeature()->getFeatureName().startsWith(
               name, Qt::CaseInsensitive)) {
@@ -443,7 +447,8 @@ void FeatureContainer::checkAndClean(const int& featureId, const QString& name,
  */
 void FeatureContainer::removeAll() {
   // delete all features
-  foreach (const QPointer<FeatureWrapper>& feature, this->featuresList) {
+  for (const QPointer<FeatureWrapper>& feature :
+       oi::snapshot(this->featuresList)) {
     if (!feature.isNull()) {
       if (feature->getFeature().isNull()) {
         delete feature->getFeature().data();

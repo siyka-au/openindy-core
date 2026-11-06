@@ -1,7 +1,10 @@
 #include "trafoparam.h"
 
+#include <cmath>
+
 #include "featurewrapper.h"
 #include "oijob.h"
+#include "snapshot.h"
 
 using namespace oi;
 using namespace oi::math;
@@ -296,17 +299,25 @@ bool TrafoParam::setTransformationParameters(const OiVec& rotation,
     double ry = rotation.getAt(1);
     double rz = rotation.getAt(2);
     OiMat rMat(4, 4);
-    rMat.setAt(0, 0, qCos(ry) * qCos(rz));
-    rMat.setAt(0, 1, qCos(rx) * qSin(rz) + qSin(rx) * qSin(ry) * qCos(rz));
-    rMat.setAt(0, 2, qSin(rx) * qSin(rz) - qCos(rx) * qSin(ry) * qCos(rz));
+    rMat.setAt(0, 0, std::cos(ry) * std::cos(rz));
+    rMat.setAt(0, 1,
+               std::cos(rx) * std::sin(rz) +
+                   std::sin(rx) * std::sin(ry) * std::cos(rz));
+    rMat.setAt(0, 2,
+               std::sin(rx) * std::sin(rz) -
+                   std::cos(rx) * std::sin(ry) * std::cos(rz));
     rMat.setAt(0, 3, 0.0);
-    rMat.setAt(1, 0, -qCos(ry) * qSin(rz));
-    rMat.setAt(1, 1, qCos(rx) * qCos(rz) - qSin(rx) * qSin(ry) * qSin(rz));
-    rMat.setAt(1, 2, qSin(rx) * qCos(rz) + qCos(rx) * qSin(ry) * qSin(rz));
+    rMat.setAt(1, 0, -std::cos(ry) * std::sin(rz));
+    rMat.setAt(1, 1,
+               std::cos(rx) * std::cos(rz) -
+                   std::sin(rx) * std::sin(ry) * std::sin(rz));
+    rMat.setAt(1, 2,
+               std::sin(rx) * std::cos(rz) +
+                   std::cos(rx) * std::sin(ry) * std::sin(rz));
     rMat.setAt(1, 3, 0.0);
-    rMat.setAt(2, 0, qSin(ry));
-    rMat.setAt(2, 1, -qSin(rx) * qCos(ry));
-    rMat.setAt(2, 2, qCos(rx) * qCos(ry));
+    rMat.setAt(2, 0, std::sin(ry));
+    rMat.setAt(2, 1, -std::sin(rx) * std::cos(ry));
+    rMat.setAt(2, 2, std::cos(rx) * std::cos(ry));
     rMat.setAt(2, 3, 0.0);
     rMat.setAt(3, 0, 0.0);
     rMat.setAt(3, 1, 0.0);
@@ -348,11 +359,13 @@ bool TrafoParam::setTransformationParameters(const OiMat& rotation,
       s.setAt(i, scale.getAt(i, i));
     }
 
-    r.setAt(0, qAtan2(-rotation.getAt(2, 1), rotation.getAt(2, 2)));  // alpha
-    r.setAt(1, qAsin(rotation.getAt(2, 0)));                          // beta
-    r.setAt(2, qAtan2(-rotation.getAt(1, 0), rotation.getAt(0, 0)));  // gamma
-    if (qFabs(qCos(r.getAt(1)) * qCos(r.getAt(2))) -
-            qFabs(rotation.getAt(0, 0)) >
+    r.setAt(0,
+            std::atan2(-rotation.getAt(2, 1), rotation.getAt(2, 2)));  // alpha
+    r.setAt(1, std::asin(rotation.getAt(2, 0)));                       // beta
+    r.setAt(2,
+            std::atan2(-rotation.getAt(1, 0), rotation.getAt(0, 0)));  // gamma
+    if (std::fabs(std::cos(r.getAt(1)) * std::cos(r.getAt(2))) -
+            std::fabs(rotation.getAt(0, 0)) >
         0.01) {
       r.setAt(1, PI - r.getAt(1));
     }
@@ -450,7 +463,7 @@ void TrafoParam::setUnknownParameters(
 
   // update parameters
   QList<TrafoParamParameters> keys = parameters.keys();
-  foreach (const TrafoParamParameters& key, keys) {
+  for (const TrafoParamParameters& key : oi::snapshot(keys)) {
     switch (key) {
       case TrafoParamParameters::eUnknownTX:
         translation.setAt(0,
@@ -589,34 +602,42 @@ bool TrafoParam::fromOpenIndyXML(QDomElement& xmlElem) {
     tmpScale.setAt(3, 3, 1.0);
 
     tmpRotation.setAt(
-        0, 0, qCos(this->rotation.getAt(1)) * qCos(this->rotation.getAt(2)));
+        0, 0,
+        std::cos(this->rotation.getAt(1)) * std::cos(this->rotation.getAt(2)));
     tmpRotation.setAt(
         0, 1,
-        qCos(this->rotation.getAt(0)) * qSin(this->rotation.getAt(2)) +
-            qSin(this->rotation.getAt(0)) * qSin(this->rotation.getAt(1)) *
-                qCos(this->rotation.getAt(2)));
+        std::cos(this->rotation.getAt(0)) * std::sin(this->rotation.getAt(2)) +
+            std::sin(this->rotation.getAt(0)) *
+                std::sin(this->rotation.getAt(1)) *
+                std::cos(this->rotation.getAt(2)));
     tmpRotation.setAt(
         0, 2,
-        qSin(this->rotation.getAt(0)) * qSin(this->rotation.getAt(2)) -
-            qCos(this->rotation.getAt(0)) * qSin(this->rotation.getAt(1)) *
-                qCos(this->rotation.getAt(2)));
+        std::sin(this->rotation.getAt(0)) * std::sin(this->rotation.getAt(2)) -
+            std::cos(this->rotation.getAt(0)) *
+                std::sin(this->rotation.getAt(1)) *
+                std::cos(this->rotation.getAt(2)));
     tmpRotation.setAt(
-        1, 0, -qCos(this->rotation.getAt(1)) * qSin(this->rotation.getAt(2)));
+        1, 0,
+        -std::cos(this->rotation.getAt(1)) * std::sin(this->rotation.getAt(2)));
     tmpRotation.setAt(
         1, 1,
-        qCos(this->rotation.getAt(0)) * qCos(this->rotation.getAt(2)) -
-            qSin(this->rotation.getAt(0)) * qSin(this->rotation.getAt(1)) *
-                qSin(this->rotation.getAt(2)));
+        std::cos(this->rotation.getAt(0)) * std::cos(this->rotation.getAt(2)) -
+            std::sin(this->rotation.getAt(0)) *
+                std::sin(this->rotation.getAt(1)) *
+                std::sin(this->rotation.getAt(2)));
     tmpRotation.setAt(
         1, 2,
-        qSin(this->rotation.getAt(0)) * qCos(this->rotation.getAt(2)) +
-            qCos(this->rotation.getAt(0)) * qSin(this->rotation.getAt(1)) *
-                qSin(this->rotation.getAt(2)));
-    tmpRotation.setAt(2, 0, qSin(this->rotation.getAt(1)));
+        std::sin(this->rotation.getAt(0)) * std::cos(this->rotation.getAt(2)) +
+            std::cos(this->rotation.getAt(0)) *
+                std::sin(this->rotation.getAt(1)) *
+                std::sin(this->rotation.getAt(2)));
+    tmpRotation.setAt(2, 0, std::sin(this->rotation.getAt(1)));
     tmpRotation.setAt(
-        2, 1, -qSin(this->rotation.getAt(0)) * qCos(this->rotation.getAt(1)));
+        2, 1,
+        -std::sin(this->rotation.getAt(0)) * std::cos(this->rotation.getAt(1)));
     tmpRotation.setAt(
-        2, 2, qCos(this->rotation.getAt(0)) * qCos(this->rotation.getAt(1)));
+        2, 2,
+        std::cos(this->rotation.getAt(0)) * std::cos(this->rotation.getAt(1)));
     tmpRotation.setAt(3, 3, 1.0);
 
     this->homogenMatrix = tmpTranslation * tmpScale * tmpRotation;

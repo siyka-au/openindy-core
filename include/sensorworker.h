@@ -7,6 +7,7 @@
 #include <QTime>
 #include <QVariantMap>
 
+#include "core_export.h"
 #include "sensor.h"
 #include "sensorworkermessage.h"
 

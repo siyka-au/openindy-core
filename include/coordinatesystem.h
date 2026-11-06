@@ -6,6 +6,7 @@
 #include <QObject>
 #include <QPointer>
 
+#include "core_export.h"
 #include "direction.h"
 #include "feature.h"
 #include "position.h"

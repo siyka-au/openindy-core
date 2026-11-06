@@ -2,6 +2,7 @@
 
 #include "featurewrapper.h"
 #include "observation.h"
+#include "snapshot.h"
 
 using namespace oi;
 using namespace oi::math;
@@ -162,7 +163,7 @@ void Point::applyUnknownParameters(
 
   // update parameters
   QList<GeometryParameters> keys = parameters.keys();
-  foreach (const GeometryParameters& key, keys) {
+  for (const GeometryParameters& key : oi::snapshot(keys)) {
     switch (key) {
       case GeometryParameters::eUnknownX:
         position.setAt(0, parameters.value(GeometryParameters::eUnknownX));
@@ -208,7 +209,8 @@ void Point::recalc() {
     centroid.setAt(2, 0.0);
     int usableCount = 0;
 
-    foreach (const QPointer<Observation>& observation, this->observations) {
+    for (const QPointer<Observation>& observation :
+         oi::snapshot(this->observations)) {
       if (observation.isNull() || !observation->getIsSolved()) {
         continue;
       }
@@ -322,7 +324,7 @@ QDomElement Point::toOpenIndyXML(QDomDocument& xmlDoc) const {
   // see measurementintent.h)
   if (!this->intents.isEmpty()) {
     QDomElement intentsElem = xmlDoc.createElement("intents");
-    foreach (const MeasurementIntent& intent, this->intents) {
+    for (const MeasurementIntent& intent : oi::snapshot(this->intents)) {
       QDomElement intentElem = xmlDoc.createElement("intent");
       intentElem.setAttribute("featureId", intent.featureId);
       intentElem.setAttribute("roleName", intent.roleName);

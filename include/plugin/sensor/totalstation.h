@@ -1,6 +1,7 @@
 #ifndef TOTALSTATION_H
 #define TOTALSTATION_H
 
+#include "core_export.h"
 #include "sensor.h"
 
 namespace oi {

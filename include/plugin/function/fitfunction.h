@@ -4,9 +4,13 @@
 #include <math.h>
 
 #include <array>
+#include <cmath>
 #include <random>
+#include <utility>
 
+#include "core_export.h"
 #include "function.h"
+#include "snapshot.h"
 
 namespace oi {
 
@@ -32,19 +36,6 @@ class CylinderApproximation {
   double approxBeta{};
   double stdev{};
   QString comment;
-
-  explicit operator QString() const {
-    return QString(
-               "comment=%1, stdev=%2, approxXm=%3, approxYm=%4, "
-               "approxAlpha=%5, approxBeta=%6, approxRadius=%7")
-        .arg(comment)
-        .arg(stdev)
-        .arg(approxXm)
-        .arg(approxYm)
-        .arg(approxAlpha)
-        .arg(approxBeta)
-        .arg(approxRadius);
-  }
 };
 
 enum class ApproximationTypes {
@@ -156,7 +147,7 @@ class OI_CORE_EXPORT BestFitPlaneUtil : public BestFitUtil {
 
     // centroid
     OiVec mean(3);
-    foreach (const IdPoint point, points) {
+    for (const IdPoint point : oi::snapshot(points)) {
       OiVec xyz = point.xyz;
       if (xyz.getSize() == 4) {
         xyz.removeLast();
@@ -198,7 +189,7 @@ class OI_CORE_EXPORT BestFitPlaneUtil : public BestFitUtil {
     double largest = 0.0;
     double middle = 0.0;
     for (int i = 0; i < d.getSize(); i++) {
-      const double value = qAbs(d.getAt(i));
+      const double value = std::abs(d.getAt(i));
       if (value > largest) {
         middle = largest;
         largest = value;
@@ -225,7 +216,7 @@ class OI_CORE_EXPORT BestFitPlaneUtil : public BestFitUtil {
                           OiVec normal, double dist) {
     double distance = 0.0;
     OiVec v_plane(3);
-    foreach (const InputElement& element, elements) {
+    for (const InputElement& element : oi::snapshot(elements)) {
       if (!element.observation.isNull() && element.observation->getIsSolved() &&
           element.observation->getIsValid()) {  // calculating residuals even if
                                                 // observation not in use
@@ -253,7 +244,7 @@ class OI_CORE_EXPORT BestFitCircleUtil : public BestFitUtil {
                             QList<IdPoint> usablePoints) {
     // calculate centroid
     OiVec centroid(4);
-    foreach (const IdPoint& point, points) {
+    for (const IdPoint& point : std::as_const(points)) {
       centroid = centroid + point.xyz;
     }
     centroid = centroid / (double)points.size();
@@ -301,7 +292,7 @@ class OI_CORE_EXPORT BestFitCircleUtil : public BestFitUtil {
     }
     double angle = 0.0;  // angle between n and direction
     OiVec::dot(angle, n, direction);
-    angle = qAbs(qAcos(angle));
+    angle = std::abs(std::acos(angle));
     if (angle > (PI / 2.0)) {
       n = n * -1.0;
     }
@@ -315,7 +306,7 @@ class OI_CORE_EXPORT BestFitCircleUtil : public BestFitUtil {
     /*OiVec planeDistances;
     for(int i = 0; i < inputObservations.size(); i++){
 
-        double distance = qAbs(n.getAt(0) *
+        double distance = std::abs(n.getAt(0) *
     inputObservations.at(i)->getXYZ().getAt(0)
                                + n.getAt(1) *
     inputObservations.at(i)->getXYZ().getAt(1)
@@ -337,7 +328,7 @@ class OI_CORE_EXPORT BestFitCircleUtil : public BestFitUtil {
     QList<OiVec> centroidReducedCoordinates;
     QList<OiVec> allCentroidReducedCoordinates;
 
-    foreach (const IdPoint point, usablePoints) {
+    for (const IdPoint point : oi::snapshot(usablePoints)) {
       OiVec xyz(4);
       xyz = point.xyz;
       xyz.removeLast();  // remove the homogeneous item
@@ -379,14 +370,14 @@ class OI_CORE_EXPORT BestFitCircleUtil : public BestFitUtil {
     xm.setAt(1, (-1.0 * s.getAt(1) / 2.0) + centroid2D.getAt(1));
     xm.setAt(2, (t * centroid).getAt(2));
     double radius =
-        qSqrt(0.25 * (s.getAt(0) * s.getAt(0) + s.getAt(1) * s.getAt(1)) -
-              s.getAt(2));
+        std::sqrt(0.25 * (s.getAt(0) * s.getAt(0) + s.getAt(1) * s.getAt(1)) -
+                  s.getAt(2));
 
     // calculate distance of each observation from the 2D circle
     OiVec circleDistances;
     OiVec allCircleDistances;
     int i = 0;
-    foreach (const IdPoint& point, usablePoints) {
+    for (const IdPoint& point : oi::snapshot(usablePoints)) {
       OiVec reduced = allCentroidReducedCoordinates[i++];
       OiVec diff(2);
       diff.setAt(0, reduced.getAt(0) + centroid2D.getAt(0) - xm.getAt(0));
@@ -455,7 +446,7 @@ class OI_CORE_EXPORT BestFitCircleUtil : public BestFitUtil {
       double v_i = circleDistances.getAt(i);
       stdev += v_i * v_i;
     }
-    stdev = qSqrt(
+    stdev = std::sqrt(
         stdev / (static_cast<double>(centroidReducedCoordinates.size()) - 3.0));
     function->statistic.setIsValid(true);
     function->statistic.setStdev(stdev);
@@ -490,7 +481,7 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
 
     // calculate centroid of all observations
     OiVec centroid(4);
-    foreach (const IdPoint& point, points) {
+    for (const IdPoint& point : std::as_const(points)) {
       centroid = centroid + point.xyz;
     }
     centroid = centroid / (double)points.size();
@@ -498,7 +489,7 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
     // calculate centroid reduced observations
     QList<IdPoint> allReducedInputObservations;
     QList<IdPoint> reducedInputObservations;
-    foreach (const IdPoint& obs, usablePoints) {
+    for (const IdPoint& obs : std::as_const(usablePoints)) {
       IdPoint rObs;
       rObs.id = obs.id;
       rObs.xyz = obs.xyz - centroid;
@@ -522,30 +513,28 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
     // filter the best approximation
     CylinderApproximation bestApproximation;
     double bestStdev = numeric_limits<double>::max();
-    foreach (const CylinderApproximation& approximation, approximations) {
-      qDebug() << "approximation" << QString(approximation);
+    for (const CylinderApproximation& approximation :
+         std::as_const(approximations)) {
       if (approximation.stdev < bestStdev) {
         bestStdev = approximation.stdev;
         bestApproximation = approximation;
       }
     }
 
-    qDebug() << "bestApproximation" << QString(bestApproximation);
-
     OiMat Ralpha(4, 4);
     OiMat Rbeta(4, 4);
     OiMat Rall(4, 4);
 
     Ralpha.setAt(0, 0, 1.0);
-    Ralpha.setAt(1, 1, qCos(bestApproximation.approxAlpha));
-    Ralpha.setAt(1, 2, -qSin(bestApproximation.approxAlpha));
-    Ralpha.setAt(2, 1, qSin(bestApproximation.approxAlpha));
-    Ralpha.setAt(2, 2, qCos(bestApproximation.approxAlpha));
-    Rbeta.setAt(0, 0, qCos(bestApproximation.approxBeta));
-    Rbeta.setAt(0, 2, qSin(bestApproximation.approxBeta));
+    Ralpha.setAt(1, 1, std::cos(bestApproximation.approxAlpha));
+    Ralpha.setAt(1, 2, -std::sin(bestApproximation.approxAlpha));
+    Ralpha.setAt(2, 1, std::sin(bestApproximation.approxAlpha));
+    Ralpha.setAt(2, 2, std::cos(bestApproximation.approxAlpha));
+    Rbeta.setAt(0, 0, std::cos(bestApproximation.approxBeta));
+    Rbeta.setAt(0, 2, std::sin(bestApproximation.approxBeta));
     Rbeta.setAt(1, 1, 1.0);
-    Rbeta.setAt(2, 0, -qSin(bestApproximation.approxBeta));
-    Rbeta.setAt(2, 2, qCos(bestApproximation.approxBeta));
+    Rbeta.setAt(2, 0, -std::sin(bestApproximation.approxBeta));
+    Rbeta.setAt(2, 2, std::cos(bestApproximation.approxBeta));
 
     Rall = Rbeta * Ralpha;
     Rall.setAt(3, 3, 1.0);
@@ -596,7 +585,8 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
         break;
       }
       case ApproximationTypes::eDirection: {
-        foreach (const InputElement& element, function->getInputElements()[1]) {
+        for (const InputElement& element :
+             oi::snapshot(function->getInputElements()[1])) {
           if (!element.geometry.isNull() && element.geometry->getIsSolved() &&
               element.geometry->hasDirection()) {
             direction = element.geometry->getDirection().getVector();
@@ -612,8 +602,8 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
         // InputElement actually carries, same as
         // BestFitUtil::getDummyPoint already does for plane/circle.
         QList<OiVec> dummyPoints;
-        foreach (const InputElement& element,
-                 function->getInputElements()[dummyPointPosition(function)]) {
+        for (const InputElement& element : oi::snapshot(
+                 function->getInputElements()[dummyPointPosition(function)])) {
           if (!element.observation.isNull() &&
               element.observation->getIsSolved()) {
             dummyPoints.append(element.observation->getXYZ());
@@ -642,7 +632,7 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
     if (!(direction.getAt(0) == 0 && direction.getAt(1) == 0 &&
           direction.getAt(2) == 0)) {
       OiVec::dot(angle, axis, direction);
-      angle = qAbs(qAcos(angle));
+      angle = std::abs(std::acos(angle));
     }
 
     if (angle > (PI / 2.0)) {
@@ -679,7 +669,7 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
 
         // calculate centroid of all observations
         OiVec centroid3D(4);
-        foreach (const IdPoint& obs, inputObservations) {
+        for (const IdPoint& obs : std::as_const(inputObservations)) {
           centroid3D = centroid3D + obs.xyz;
         }
         centroid3D.removeLast();
@@ -735,7 +725,8 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
 
         Direction approxAxis;
         // find first direction
-        foreach (const InputElement& element, function->getInputElements()[1]) {
+        for (const InputElement& element :
+             oi::snapshot(function->getInputElements()[1])) {
           if (!element.geometry.isNull() && element.geometry->getIsSolved() &&
               element.geometry->hasDirection()) {
             approxAxis = element.geometry->getDirection();
@@ -757,8 +748,8 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
         // D12/Stage 7c-ii: see the identical fix in bestFitCylinder()
         // above - the dummyPoint role resolves to ePointElement now.
         QList<OiVec> dummyPoints;
-        foreach (const InputElement& element,
-                 function->getInputElements()[dummyPointPosition(function)]) {
+        for (const InputElement& element : oi::snapshot(
+                 function->getInputElements()[dummyPointPosition(function)])) {
           if (!element.observation.isNull() &&
               element.observation->getIsSolved()) {
             dummyPoints.append(element.observation->getXYZ());
@@ -844,11 +835,11 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
       a_alpha = 0;
       b_alpha = 0;
     } else {
-      a = qSqrt(1.0 / (1.0 + qPow(pn.getAt(2) / pn.getAt(1), 2)));
+      a = std::sqrt(1.0 / (1.0 + std::pow(pn.getAt(2) / pn.getAt(1), 2)));
       b = a * pn.getAt(2) / pn.getAt(1);
 
-      a_alpha = qAsin(a);
-      b_alpha = qAcos(b);
+      a_alpha = std::asin(a);
+      b_alpha = std::acos(b);
     }
 
     alpha = 0.0;
@@ -869,8 +860,8 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
     // transform eigenvector --> y-component should be 0 now
     _y = pn.getAt(1);
     _z = pn.getAt(2);
-    pn.setAt(1, _y * qCos(alpha) - _z * qSin(alpha));
-    pn.setAt(2, _y * qSin(alpha) + _z * qCos(alpha));
+    pn.setAt(1, _y * std::cos(alpha) - _z * std::sin(alpha));
+    pn.setAt(2, _y * std::sin(alpha) + _z * std::cos(alpha));
 
     if (pn.getAt(0) == 0 && pn.getAt(2) == 0) {
       a_beta = PI / 2;
@@ -879,11 +870,11 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
       a_beta = 0;
       b_beta = 0;
     } else {
-      a = qSqrt(1.0 / (1.0 + qPow(pn.getAt(2) / pn.getAt(0), 2)));
+      a = std::sqrt(1.0 / (1.0 + std::pow(pn.getAt(2) / pn.getAt(0), 2)));
       b = -1.0 * pn.getAt(2) * a / pn.getAt(0);
 
-      a_beta = qAsin(a);
-      b_beta = qAcos(b);
+      a_beta = std::asin(a);
+      b_beta = std::acos(b);
     }
 
     beta = 0.0;
@@ -901,15 +892,15 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
 
     // set up rotation matrices
     Ralpha.setAt(0, 0, 1.0);
-    Ralpha.setAt(1, 1, qCos(alpha));
-    Ralpha.setAt(1, 2, -qSin(alpha));
-    Ralpha.setAt(2, 1, qSin(alpha));
-    Ralpha.setAt(2, 2, qCos(alpha));
-    Rbeta.setAt(0, 0, qCos(beta));
-    Rbeta.setAt(0, 2, qSin(beta));
+    Ralpha.setAt(1, 1, std::cos(alpha));
+    Ralpha.setAt(1, 2, -std::sin(alpha));
+    Ralpha.setAt(2, 1, std::sin(alpha));
+    Ralpha.setAt(2, 2, std::cos(alpha));
+    Rbeta.setAt(0, 0, std::cos(beta));
+    Rbeta.setAt(0, 2, std::sin(beta));
     Rbeta.setAt(1, 1, 1.0);
-    Rbeta.setAt(2, 0, -qSin(beta));
-    Rbeta.setAt(2, 2, qCos(beta));
+    Rbeta.setAt(2, 0, -std::sin(beta));
+    Rbeta.setAt(2, 2, std::cos(beta));
 
     Rall = Rbeta * Ralpha;
 
@@ -983,13 +974,14 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
     // calculate midpoint + radius
     x_m = (-1.0 * s.getAt(0) / 2.0) + centroid2D.getAt(0);
     y_m = (-1.0 * s.getAt(1) / 2.0) + centroid2D.getAt(1);
-    radius = qSqrt(0.25 * (s.getAt(0) * s.getAt(0) + s.getAt(1) * s.getAt(1)) -
-                   s.getAt(2));
+    radius =
+        std::sqrt(0.25 * (s.getAt(0) * s.getAt(0) + s.getAt(1) * s.getAt(1)) -
+                  s.getAt(2));
 
     // calculate statistic
     v = -1.0 * A1 - A2 * s;
     OiVec::dot(sum_vv, v, v);
-    sum_vv = qSqrt(sum_vv / (numPoints - 3.0));
+    sum_vv = std::sqrt(sum_vv / (numPoints - 3.0));
 
     // add approximation
     CylinderApproximation approximation;
@@ -1081,15 +1073,15 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
 
       // build rotation matrices
       Ralpha.setAt(0, 0, 1.0);
-      Ralpha.setAt(1, 1, qCos(_alpha));
-      Ralpha.setAt(1, 2, -qSin(_alpha));
-      Ralpha.setAt(2, 1, qSin(_alpha));
-      Ralpha.setAt(2, 2, qCos(_alpha));
-      Rbeta.setAt(0, 0, qCos(_beta));
-      Rbeta.setAt(0, 2, qSin(_beta));
+      Ralpha.setAt(1, 1, std::cos(_alpha));
+      Ralpha.setAt(1, 2, -std::sin(_alpha));
+      Ralpha.setAt(2, 1, std::sin(_alpha));
+      Ralpha.setAt(2, 2, std::cos(_alpha));
+      Rbeta.setAt(0, 0, std::cos(_beta));
+      Rbeta.setAt(0, 2, std::sin(_beta));
       Rbeta.setAt(1, 1, 1.0);
-      Rbeta.setAt(2, 0, -qSin(_beta));
-      Rbeta.setAt(2, 2, qCos(_beta));
+      Rbeta.setAt(2, 0, -std::sin(_beta));
+      Rbeta.setAt(2, 2, std::cos(_beta));
 
       Rall = Rbeta * Ralpha;
 
@@ -1099,59 +1091,68 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
         _y = L0.getAt(i * 3 + 1);
         _z = L0.getAt(i * 3 + 2);
 
-        a1 = _X0 + _x * qCos(_beta) + _y * qSin(_alpha) * qSin(_beta) +
-             _z * qCos(_alpha) * qSin(_beta);
-        a2 = _Y0 + _y * qCos(_alpha) - _z * qSin(_alpha);
+        a1 = _X0 + _x * std::cos(_beta) +
+             _y * std::sin(_alpha) * std::sin(_beta) +
+             _z * std::cos(_alpha) * std::sin(_beta);
+        a2 = _Y0 + _y * std::cos(_alpha) - _z * std::sin(_alpha);
 
         // A
         N.setAt(i, numPoints, 1.0);
-        N.setAt(i, numPoints + 1, -1.0 * a1 / qSqrt(a1 * a1 + a2 * a2));
-        N.setAt(i, numPoints + 2, -1.0 * a2 / qSqrt(a1 * a1 + a2 * a2));
+        N.setAt(i, numPoints + 1, -1.0 * a1 / std::sqrt(a1 * a1 + a2 * a2));
+        N.setAt(i, numPoints + 2, -1.0 * a2 / std::sqrt(a1 * a1 + a2 * a2));
         N.setAt(i, numPoints + 3,
                 -1.0 *
-                    ((_y * qSin(_beta) * qCos(_alpha) -
-                      _z * qSin(_beta) * qSin(_alpha)) *
+                    ((_y * std::sin(_beta) * std::cos(_alpha) -
+                      _z * std::sin(_beta) * std::sin(_alpha)) *
                          a1 -
-                     (_y * qSin(_alpha) + _z * qCos(_alpha)) * a2) /
-                    qSqrt(a1 * a1 + a2 * a2));
+                     (_y * std::sin(_alpha) + _z * std::cos(_alpha)) * a2) /
+                    std::sqrt(a1 * a1 + a2 * a2));
         N.setAt(i, numPoints + 4,
                 -1.0 *
-                    (_y * qSin(_alpha) * qCos(_beta) - _x * qSin(_beta) +
-                     _z * qCos(_alpha) * qCos(_beta)) *
-                    a1 / qSqrt(a1 * a1 + a2 * a2));
+                    (_y * std::sin(_alpha) * std::cos(_beta) -
+                     _x * std::sin(_beta) +
+                     _z * std::cos(_alpha) * std::cos(_beta)) *
+                    a1 / std::sqrt(a1 * a1 + a2 * a2));
 
         // AT
         N.setAt(numPoints, i, 1.0);
-        N.setAt(numPoints + 1, i, -1.0 * a1 / qSqrt(a1 * a1 + a2 * a2));
-        N.setAt(numPoints + 2, i, -1.0 * a2 / qSqrt(a1 * a1 + a2 * a2));
+        N.setAt(numPoints + 1, i, -1.0 * a1 / std::sqrt(a1 * a1 + a2 * a2));
+        N.setAt(numPoints + 2, i, -1.0 * a2 / std::sqrt(a1 * a1 + a2 * a2));
         N.setAt(numPoints + 3, i,
                 -1.0 *
-                    ((_y * qSin(_beta) * qCos(_alpha) -
-                      _z * qSin(_beta) * qSin(_alpha)) *
+                    ((_y * std::sin(_beta) * std::cos(_alpha) -
+                      _z * std::sin(_beta) * std::sin(_alpha)) *
                          a1 -
-                     (_y * qSin(_alpha) + _z * qCos(_alpha)) * a2) /
-                    qSqrt(a1 * a1 + a2 * a2));
+                     (_y * std::sin(_alpha) + _z * std::cos(_alpha)) * a2) /
+                    std::sqrt(a1 * a1 + a2 * a2));
         N.setAt(numPoints + 4, i,
                 -1.0 *
-                    (_y * qSin(_alpha) * qCos(_beta) - _x * qSin(_beta) +
-                     _z * qCos(_alpha) * qCos(_beta)) *
-                    a1 / qSqrt(a1 * a1 + a2 * a2));
+                    (_y * std::sin(_alpha) * std::cos(_beta) -
+                     _x * std::sin(_beta) +
+                     _z * std::cos(_alpha) * std::cos(_beta)) *
+                    a1 / std::sqrt(a1 * a1 + a2 * a2));
 
         // BBT
-        N.setAt(
-            i, i,
-            (-1.0 * qCos(_beta) * a1 / qSqrt(a1 * a1 + a2 * a2)) *
-                    (-1.0 * qCos(_beta) * a1 / qSqrt(a1 * a1 + a2 * a2)) +
-                (-1.0 * (qSin(_alpha) * qSin(_beta) * a1 + qCos(_alpha) * a2) /
-                 qSqrt(a1 * a1 + a2 * a2)) *
+        N.setAt(i, i,
+                (-1.0 * std::cos(_beta) * a1 / std::sqrt(a1 * a1 + a2 * a2)) *
+                        (-1.0 * std::cos(_beta) * a1 /
+                         std::sqrt(a1 * a1 + a2 * a2)) +
                     (-1.0 *
-                     (qSin(_alpha) * qSin(_beta) * a1 + qCos(_alpha) * a2) /
-                     qSqrt(a1 * a1 + a2 * a2)) +
-                (-1.0 * (qCos(_alpha) * qSin(_beta) * a1 - qSin(_alpha) * a2) /
-                 qSqrt(a1 * a1 + a2 * a2)) *
+                     (std::sin(_alpha) * std::sin(_beta) * a1 +
+                      std::cos(_alpha) * a2) /
+                     std::sqrt(a1 * a1 + a2 * a2)) *
+                        (-1.0 *
+                         (std::sin(_alpha) * std::sin(_beta) * a1 +
+                          std::cos(_alpha) * a2) /
+                         std::sqrt(a1 * a1 + a2 * a2)) +
                     (-1.0 *
-                     (qCos(_alpha) * qSin(_beta) * a1 - qSin(_alpha) * a2) /
-                     qSqrt(a1 * a1 + a2 * a2)));
+                     (std::cos(_alpha) * std::sin(_beta) * a1 -
+                      std::sin(_alpha) * a2) /
+                     std::sqrt(a1 * a1 + a2 * a2)) *
+                        (-1.0 *
+                         (std::cos(_alpha) * std::sin(_beta) * a1 -
+                          std::sin(_alpha) * a2) /
+                         std::sqrt(a1 * a1 + a2 * a2)));
 
         _xr = Rall.getAt(0, 0) * _x + Rall.getAt(0, 1) * _y +
               Rall.getAt(0, 2) * _z + _X0;
@@ -1160,7 +1161,7 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
 
         // approximate radius of the cylinder minus distance of point i to the
         // z-axis is the contradiction
-        diff = _r - qSqrt(_xr * _xr + _yr * _yr);
+        diff = _r - std::sqrt(_xr * _xr + _yr * _yr);
 
         c.setAt(i, diff);
       }
@@ -1192,20 +1193,24 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
         _y = obs.xyz.getAt(1);
         _z = obs.xyz.getAt(2);
 
-        a1 = _X0 + _x * qCos(_beta) + _y * qSin(_alpha) * qSin(_beta) +
-             _z * qCos(_alpha) * qSin(_beta);
-        a2 = _Y0 + _y * qCos(_alpha) - _z * qSin(_alpha);
+        a1 = _X0 + _x * std::cos(_beta) +
+             _y * std::sin(_alpha) * std::sin(_beta) +
+             _z * std::cos(_alpha) * std::sin(_beta);
+        a2 = _Y0 + _y * std::cos(_alpha) - _z * std::sin(_alpha);
 
-        v.setAt(i * 3, (-1.0 * qCos(_beta) * a1 / qSqrt(a1 * a1 + a2 * a2)) *
-                           res.getAt(i));
-        v.setAt(i * 3 + 1,
-                (-1.0 * (qSin(_alpha) * qSin(_beta) * a1 + qCos(_alpha) * a2) /
-                 qSqrt(a1 * a1 + a2 * a2)) *
+        v.setAt(i * 3,
+                (-1.0 * std::cos(_beta) * a1 / std::sqrt(a1 * a1 + a2 * a2)) *
                     res.getAt(i));
-        v.setAt(i * 3 + 2,
-                (-1.0 * (qCos(_alpha) * qSin(_beta) * a1 - qSin(_alpha) * a2) /
-                 qSqrt(a1 * a1 + a2 * a2)) *
-                    res.getAt(i));
+        v.setAt(i * 3 + 1, (-1.0 *
+                            (std::sin(_alpha) * std::sin(_beta) * a1 +
+                             std::cos(_alpha) * a2) /
+                            std::sqrt(a1 * a1 + a2 * a2)) *
+                               res.getAt(i));
+        v.setAt(i * 3 + 2, (-1.0 *
+                            (std::cos(_alpha) * std::sin(_beta) * a1 -
+                             std::sin(_alpha) * a2) /
+                            std::sqrt(a1 * a1 + a2 * a2)) *
+                               res.getAt(i));
       }
 
       while (true) {
@@ -1227,30 +1232,34 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
           _z_armijo = L0.getAt(i * 3 + 2) + sigma * v.getAt(i * 3 + 2);
 
           a.setAt(
-              i,
-              _r_armijo -
-                  qSqrt((_X0_armijo + _x_armijo * qCos(_beta_armijo) +
-                         _y_armijo * qSin(_alpha_armijo) * qSin(_beta_armijo) +
-                         _z_armijo * qCos(_alpha_armijo) * qSin(_beta_armijo)) *
-                            (_X0_armijo + _x_armijo * qCos(_beta_armijo) +
-                             _y_armijo * qSin(_alpha_armijo) *
-                                 qSin(_beta_armijo) +
-                             _z_armijo * qCos(_alpha_armijo) *
-                                 qSin(_beta_armijo)) +
-                        (_Y0_armijo + _y_armijo * qCos(_alpha_armijo) -
-                         _z_armijo * qSin(_alpha_armijo)) *
-                            (_Y0_armijo + _y_armijo * qCos(_alpha_armijo) -
-                             _z_armijo * qSin(_alpha_armijo))));
+              i, _r_armijo -
+                     std::sqrt(
+                         (_X0_armijo + _x_armijo * std::cos(_beta_armijo) +
+                          _y_armijo * std::sin(_alpha_armijo) *
+                              std::sin(_beta_armijo) +
+                          _z_armijo * std::cos(_alpha_armijo) *
+                              std::sin(_beta_armijo)) *
+                             (_X0_armijo + _x_armijo * std::cos(_beta_armijo) +
+                              _y_armijo * std::sin(_alpha_armijo) *
+                                  std::sin(_beta_armijo) +
+                              _z_armijo * std::cos(_alpha_armijo) *
+                                  std::sin(_beta_armijo)) +
+                         (_Y0_armijo + _y_armijo * std::cos(_alpha_armijo) -
+                          _z_armijo * std::sin(_alpha_armijo)) *
+                             (_Y0_armijo + _y_armijo * std::cos(_alpha_armijo) -
+                              _z_armijo * std::sin(_alpha_armijo))));
 
-          b.setAt(
-              i, _r - qSqrt((_X0 + _x * qCos(_beta) +
-                             _y * qSin(_alpha) * qSin(_beta) +
-                             _z * qCos(_alpha) * qSin(_beta)) *
-                                (_X0 + _x * qCos(_beta) +
-                                 _y * qSin(_alpha) * qSin(_beta) +
-                                 _z * qCos(_alpha) * qSin(_beta)) +
-                            (_Y0 + _y * qCos(_alpha) - _z * qSin(_alpha)) *
-                                (_Y0 + _y * qCos(_alpha) - _z * qSin(_alpha))));
+          b.setAt(i,
+                  _r - std::sqrt((_X0 + _x * std::cos(_beta) +
+                                  _y * std::sin(_alpha) * std::sin(_beta) +
+                                  _z * std::cos(_alpha) * std::sin(_beta)) *
+                                     (_X0 + _x * std::cos(_beta) +
+                                      _y * std::sin(_alpha) * std::sin(_beta) +
+                                      _z * std::cos(_alpha) * std::sin(_beta)) +
+                                 (_Y0 + _y * std::cos(_alpha) -
+                                  _z * std::sin(_alpha)) *
+                                     (_Y0 + _y * std::cos(_alpha) -
+                                      _z * std::sin(_alpha))));
         }
 
         OiVec::dot(stopAA, a, a);
@@ -1292,15 +1301,15 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
 
     // calculate rotation matrices
     Ralpha.setAt(0, 0, 1.0);
-    Ralpha.setAt(1, 1, qCos(_alpha));
-    Ralpha.setAt(1, 2, -qSin(_alpha));
-    Ralpha.setAt(2, 1, qSin(_alpha));
-    Ralpha.setAt(2, 2, qCos(_alpha));
-    Rbeta.setAt(0, 0, qCos(_beta));
-    Rbeta.setAt(0, 2, qSin(_beta));
+    Ralpha.setAt(1, 1, std::cos(_alpha));
+    Ralpha.setAt(1, 2, -std::sin(_alpha));
+    Ralpha.setAt(2, 1, std::sin(_alpha));
+    Ralpha.setAt(2, 2, std::cos(_alpha));
+    Rbeta.setAt(0, 0, std::cos(_beta));
+    Rbeta.setAt(0, 2, std::sin(_beta));
     Rbeta.setAt(1, 1, 1.0);
-    Rbeta.setAt(2, 0, -qSin(_beta));
-    Rbeta.setAt(2, 2, qCos(_beta));
+    Rbeta.setAt(2, 0, -std::sin(_beta));
+    Rbeta.setAt(2, 2, std::cos(_beta));
 
     Rall = Rbeta * Ralpha;
 
@@ -1323,7 +1332,7 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
     double sumVV = 0.0;
     double vrMin = numeric_limits<double>::max();
     double vrMax = numeric_limits<double>::lowest();
-    foreach (const IdPoint& observation, allUsableObservations) {
+    for (const IdPoint& observation : oi::snapshot(allUsableObservations)) {
       OiVec v_obs(3);
       _x = observation.xyz.getAt(0);
       _y = observation.xyz.getAt(1);
@@ -1348,8 +1357,8 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
           0.0;  // smallest distance of point p to cylinder axis
 
       radiusActual =
-          qSqrt(n0CrossB[0] * n0CrossB[0] + n0CrossB[1] * n0CrossB[1] +
-                n0CrossB[2] * n0CrossB[2]);
+          std::sqrt(n0CrossB[0] * n0CrossB[0] + n0CrossB[1] * n0CrossB[1] +
+                    n0CrossB[2] * n0CrossB[2]);
 
       double distance = 0.0;
 
@@ -1369,10 +1378,10 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
 
       // set up display residuals
       if (false) {
-        function->addDisplayResidual(observation.id, v_obs.getAt(0),
-                                     v_obs.getAt(1), v_obs.getAt(2),
-                                     qSqrt(v_obs.getAt(0) * v_obs.getAt(0) +
-                                           v_obs.getAt(2) * v_obs.getAt(2)));
+        function->addDisplayResidual(
+            observation.id, v_obs.getAt(0), v_obs.getAt(1), v_obs.getAt(2),
+            std::sqrt(v_obs.getAt(0) * v_obs.getAt(0) +
+                      v_obs.getAt(2) * v_obs.getAt(2)));
       } else {
         function->addDisplayResidual(observation.id, distance);
       }
@@ -1390,7 +1399,7 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
     Position cylinderPosition(xyz);
     cylinder.setCylinder(cylinderPosition, cylinderDirection, cylinderRadius);
     function->statistic.setIsValid(true);
-    function->statistic.setStdev(qSqrt(sumVV / ((double)numPoints - 5.0)));
+    function->statistic.setStdev(std::sqrt(sumVV / ((double)numPoints - 5.0)));
     cylinder.setStatistic(function->statistic);
 
     return true;

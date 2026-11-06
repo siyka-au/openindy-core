@@ -1,11 +1,14 @@
 #include "station.h"
 
+#include <utility>
+
 #include "coordinatesystem.h"
 #include "featurewrapper.h"
 #include "oijob.h"
 #include "reading.h"
 #include "sensor.h"
 #include "sensorcontrol.h"
+#include "snapshot.h"
 
 using namespace oi;
 
@@ -315,30 +318,35 @@ QList<QPointer<Geometry> > Station::getTargetGeometries() const {
 
   // get a list of all readings
   QList<QPointer<Reading> > readings;
-  foreach (const QPointer<Reading>& reading, this->cartesianReadings) {
+  for (const QPointer<Reading>& reading :
+       oi::snapshot(this->cartesianReadings)) {
     readings.append(reading);
   }
-  foreach (const QPointer<Reading>& reading, this->directionReadings) {
+  for (const QPointer<Reading>& reading :
+       oi::snapshot(this->directionReadings)) {
     readings.append(reading);
   }
-  foreach (const QPointer<Reading>& reading, this->distanceReadings) {
+  for (const QPointer<Reading>& reading :
+       oi::snapshot(this->distanceReadings)) {
     readings.append(reading);
   }
-  foreach (const QPointer<Reading>& reading, this->polarReadings) {
+  for (const QPointer<Reading>& reading : oi::snapshot(this->polarReadings)) {
     readings.append(reading);
   }
-  foreach (const QPointer<Reading>& reading, this->levelReadings) {
+  for (const QPointer<Reading>& reading : oi::snapshot(this->levelReadings)) {
     readings.append(reading);
   }
-  foreach (const QPointer<Reading>& reading, this->temperatureRadings) {
+  for (const QPointer<Reading>& reading :
+       oi::snapshot(this->temperatureRadings)) {
     readings.append(reading);
   }
-  foreach (const QPointer<Reading>& reading, this->undefinedReadings) {
+  for (const QPointer<Reading>& reading :
+       oi::snapshot(this->undefinedReadings)) {
     readings.append(reading);
   }
 
   // get target geometries
-  foreach (const QPointer<Reading>& reading, readings) {
+  for (const QPointer<Reading>& reading : std::as_const(readings)) {
     // check reading
     if (reading.isNull() || reading->getObservation().isNull()) {
       continue;
@@ -347,7 +355,7 @@ QList<QPointer<Geometry> > Station::getTargetGeometries() const {
     // add target geometries of the observation
     const QList<QPointer<Geometry> >& targetGeometries =
         reading->getObservation()->getTargetGeometries();
-    foreach (const QPointer<Geometry>& geom, targetGeometries) {
+    for (const QPointer<Geometry>& geom : std::as_const(targetGeometries)) {
       if (!geom.isNull() && !geometries.contains(geom)) {
         geometries.append(geom);
       }
@@ -552,7 +560,8 @@ QDomElement Station::toOpenIndyXML(QDomDocument& xmlDoc) const {
   if (!this->sensorControl.isNull() &&
       this->sensorControl->getUsedSensors().size() > 0) {
     QDomElement usedSensors = xmlDoc.createElement("usedSensors");
-    foreach (const Sensor& s, this->sensorControl->getUsedSensors()) {
+    for (const Sensor& s :
+         oi::snapshot(this->sensorControl->getUsedSensors())) {
       QDomElement sensor = s.toOpenIndyXML(xmlDoc);
       if (!sensor.isNull()) {
         usedSensors.appendChild(sensor);
@@ -707,37 +716,42 @@ void Station::setUpFeatureId() {
   }
 
   // generate unique ids for station's readings
-  foreach (const QPointer<Reading>& reading, this->cartesianReadings) {
+  for (const QPointer<Reading>& reading :
+       oi::snapshot(this->cartesianReadings)) {
     if (!reading.isNull()) {
       reading->id = this->job->generateUniqueId();
     }
   }
-  foreach (const QPointer<Reading>& reading, this->polarReadings) {
+  for (const QPointer<Reading>& reading : oi::snapshot(this->polarReadings)) {
     if (!reading.isNull()) {
       reading->id = this->job->generateUniqueId();
     }
   }
-  foreach (const QPointer<Reading>& reading, this->directionReadings) {
+  for (const QPointer<Reading>& reading :
+       oi::snapshot(this->directionReadings)) {
     if (!reading.isNull()) {
       reading->id = this->job->generateUniqueId();
     }
   }
-  foreach (const QPointer<Reading>& reading, this->distanceReadings) {
+  for (const QPointer<Reading>& reading :
+       oi::snapshot(this->distanceReadings)) {
     if (!reading.isNull()) {
       reading->id = this->job->generateUniqueId();
     }
   }
-  foreach (const QPointer<Reading>& reading, this->temperatureRadings) {
+  for (const QPointer<Reading>& reading :
+       oi::snapshot(this->temperatureRadings)) {
     if (!reading.isNull()) {
       reading->id = this->job->generateUniqueId();
     }
   }
-  foreach (const QPointer<Reading>& reading, this->levelReadings) {
+  for (const QPointer<Reading>& reading : oi::snapshot(this->levelReadings)) {
     if (!reading.isNull()) {
       reading->id = this->job->generateUniqueId();
     }
   }
-  foreach (const QPointer<Reading>& reading, this->undefinedReadings) {
+  for (const QPointer<Reading>& reading :
+       oi::snapshot(this->undefinedReadings)) {
     if (!reading.isNull()) {
       reading->id = this->job->generateUniqueId();
     }
@@ -978,7 +992,7 @@ void Station::addReadings(const int& geomId,
   MeasurementConfigKey measurementConfig =
       this->job->getFeatureById(geomId)->getGeometry()->getMeasurementConfig();
 
-  foreach (const QPointer<Reading>& reading, readings) {
+  for (const QPointer<Reading>& reading : oi::snapshot(readings)) {
     // check reading
     if (reading.isNull()) {
       continue;

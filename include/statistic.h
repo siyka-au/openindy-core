@@ -3,6 +3,7 @@
 
 #include <QList>
 
+#include "core_export.h"
 #include "oimat.h"
 #include "oivec.h"
 #include "types.h"

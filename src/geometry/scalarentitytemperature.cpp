@@ -1,5 +1,7 @@
 #include "scalarentitytemperature.h"
 
+#include <utility>
+
 #include "featurewrapper.h"
 
 using namespace oi;
@@ -119,7 +121,7 @@ void ScalarEntityTemperature::applyUnknownParameters(
 
   // update parameters
   QList<GeometryParameters> keys = parameters.keys();
-  foreach (const GeometryParameters& key, keys) {
+  for (const GeometryParameters& key : std::as_const(keys)) {
     switch (key) {
       case GeometryParameters::eUnknownTemperature:
         temperature = parameters.value(GeometryParameters::eUnknownTemperature);

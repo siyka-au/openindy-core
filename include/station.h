@@ -5,6 +5,7 @@
 #include <QObject>
 #include <QPointer>
 
+#include "core_export.h"
 #include "feature.h"
 #include "point.h"
 #include "sensorcontrol.h"

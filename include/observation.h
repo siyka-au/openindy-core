@@ -8,6 +8,7 @@
 #include <QPointer>
 #include <optional>
 
+#include "core_export.h"
 #include "geometry/point.h"
 #include "oivec.h"
 #include "statistic.h"

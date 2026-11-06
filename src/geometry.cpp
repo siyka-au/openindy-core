@@ -1,10 +1,13 @@
 #include "geometry.h"
 
+#include <utility>
+
 #include "coordinatesystem.h"
 #include "fitfunction.h"
 #include "function.h"
 #include "observation.h"
 #include "oijob.h"
+#include "snapshot.h"
 #include "station.h"
 
 using namespace oi;
@@ -71,7 +74,8 @@ Geometry::~Geometry() {
 
   // delete this geometry from the target geometries list of any
   // observations that reference it
-  foreach (const QPointer<Observation>& observation, this->observations) {
+  for (const QPointer<Observation>& observation :
+       oi::snapshot(this->observations)) {
     if (!observation.isNull()) {
       observation->removeTargetGeometry(this->id);
     }
@@ -553,7 +557,8 @@ void Geometry::recalc() {
                               !(previousDirection == this->ijk.getVector()) ||
                               previousRadius != this->radius.getRadius();
     if (valueChanged) {
-      foreach (const QPointer<Geometry>& child, this->ownedSubGeometries) {
+      for (const QPointer<Geometry>& child :
+           oi::snapshot(this->ownedSubGeometries)) {
         if (!child.isNull()) {
           child->setIsUpdated(false);
         }
@@ -637,7 +642,7 @@ QDomElement Geometry::toOpenIndyXML(QDomDocument& xmlDoc) const {
   // nothing attaches observations to a nominal)
   if (this->observations.size() > 0) {
     QDomElement observations = xmlDoc.createElement("observations");
-    foreach (const QPointer<Observation>& obs, this->observations) {
+    for (const QPointer<Observation>& obs : oi::snapshot(this->observations)) {
       QDomElement observation = xmlDoc.createElement("observation");
       observation.setAttribute("ref", obs->getId());
       observations.appendChild(observation);
@@ -785,13 +790,13 @@ QString Geometry::getDisplayObservations() const {
     QMap<int, QList<InputElement> > inputElements =
         firstFunction->getInputElements();
     QList<int> keys = inputElements.keys();
-    foreach (const int& key, keys) {
+    for (const int& key : std::as_const(keys)) {
       // check if input alements at key are observations
       if (inputElements[key].size() > 0 &&
           inputElements[key][0].typeOfElement ==
               ElementTypes::eObservationElement) {
         // run through all observations and check their used state
-        foreach (const InputElement& element, inputElements[key]) {
+        for (const InputElement& element : oi::snapshot(inputElements[key])) {
           if (element.isUsed) {
             validObs++;
           }

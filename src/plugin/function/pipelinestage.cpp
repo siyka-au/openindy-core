@@ -1,5 +1,7 @@
 #include "pipelinestage.h"
 
+#include "snapshot.h"
+
 using namespace oi;
 
 /*!
@@ -64,7 +66,7 @@ QDomElement PipelineStage::toOpenIndyXML(QDomDocument& xmlDoc) const {
   switch (this->type) {
     case PipelineStageType::eExplicitListStage:
       stage.setAttribute("type", "explicitList");
-      foreach (int id, this->explicitIds) {
+      for (int id : oi::snapshot(this->explicitIds)) {
         QDomElement idElem = xmlDoc.createElement("id");
         idElem.setAttribute("ref", id);
         stage.appendChild(idElem);
@@ -72,7 +74,8 @@ QDomElement PipelineStage::toOpenIndyXML(QDomDocument& xmlDoc) const {
       break;
     case PipelineStageType::eExcludeStage:
       stage.setAttribute("type", "exclude");
-      foreach (const PipelineExclusion& excl, this->explicitExclusions) {
+      for (const PipelineExclusion& excl :
+           oi::snapshot(this->explicitExclusions)) {
         QDomElement exclElem = xmlDoc.createElement("excluded");
         exclElem.setAttribute("ref", excl.elementId);
         exclElem.setAttribute("reason", excl.reason);

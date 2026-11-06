@@ -1,6 +1,7 @@
 #ifndef LASERTRACKER_H
 #define LASERTRACKER_H
 
+#include "core_export.h"
 #include "sensor.h"
 
 namespace oi {

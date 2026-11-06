@@ -6,11 +6,7 @@
 #include <QString>
 #include <optional>
 
-#if defined(OI_CORE_LIB)
-#define OI_CORE_EXPORT Q_DECL_EXPORT
-#else
-#define OI_CORE_EXPORT Q_DECL_IMPORT
-#endif
+#include "core_export.h"
 
 namespace oi {
 

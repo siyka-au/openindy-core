@@ -1,6 +1,7 @@
 #ifndef GENERATEFEATUREFUNCTION_H
 #define GENERATEFEATUREFUNCTION_H
 
+#include "core_export.h"
 #include "function.h"
 
 namespace oi {

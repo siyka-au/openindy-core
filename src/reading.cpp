@@ -1,7 +1,10 @@
 #include "reading.h"
 
+#include <cmath>
+
 #include "observation.h"
 #include "sensor.h"
+#include "snapshot.h"
 
 using namespace oi;
 using namespace oi::math;
@@ -364,9 +367,9 @@ OiVec Reading::toCartesian(const double& azimuth, const double& zenith,
                            const double& distance) {
   OiVec xyz(3);
 
-  xyz.setAt(0, distance * qSin(zenith) * qCos(azimuth));
-  xyz.setAt(1, distance * qSin(zenith) * qSin(azimuth));
-  xyz.setAt(2, distance * qCos(zenith));
+  xyz.setAt(0, distance * std::sin(zenith) * std::cos(azimuth));
+  xyz.setAt(1, distance * std::sin(zenith) * std::sin(azimuth));
+  xyz.setAt(2, distance * std::cos(zenith));
 
   return xyz;
 }
@@ -383,8 +386,8 @@ OiVec Reading::toCartesian(const double& azimuth, const double& zenith,
 OiVec Reading::toPolar(const double& x, const double& y, const double& z) {
   OiVec polar(3);
 
-  double azimuth = qAtan2(y, x);
-  double s = qSqrt(x * x + y * y + z * z);
+  double azimuth = std::atan2(y, x);
+  double s = std::sqrt(x * x + y * y + z * z);
   double zenith = acos(z / s);
 
   polar.setAt(0, azimuth);
@@ -1109,7 +1112,7 @@ QDomElement Reading::toOpenIndyXML(QDomDocument& xmlDoc) const {
       if (this->rUndefined.isValid && this->rUndefined.values.size() ==
                                           this->rUndefined.sigmaValues.size()) {
         QList<QString> measurementTypes = this->rUndefined.values.keys();
-        foreach (QString type, measurementTypes) {
+        for (QString type : oi::snapshot(measurementTypes)) {
           if (this->rUndefined.sigmaValues.contains(type)) {
             QDomElement measurement = xmlDoc.createElement("measurement");
             measurement.setAttribute("type", type);
@@ -1277,13 +1280,13 @@ void Reading::toCartesian() {
 
   // transform polar to cartesian
   this->rCartesian.xyz.setAt(0, this->rPolar.distance *
-                                    qSin(this->rPolar.zenith) *
-                                    qCos(this->rPolar.azimuth));
+                                    std::sin(this->rPolar.zenith) *
+                                    std::cos(this->rPolar.azimuth));
   this->rCartesian.xyz.setAt(1, this->rPolar.distance *
-                                    qSin(this->rPolar.zenith) *
-                                    qSin(this->rPolar.azimuth));
-  this->rCartesian.xyz.setAt(2,
-                             this->rPolar.distance * qCos(this->rPolar.zenith));
+                                    std::sin(this->rPolar.zenith) *
+                                    std::sin(this->rPolar.azimuth));
+  this->rCartesian.xyz.setAt(
+      2, this->rPolar.distance * std::cos(this->rPolar.zenith));
   this->rCartesian.isValid = true;
 }
 
@@ -1300,8 +1303,8 @@ void Reading::toPolar() {
   double x = this->rCartesian.xyz.getAt(0);
   double y = this->rCartesian.xyz.getAt(1);
   double z = this->rCartesian.xyz.getAt(2);
-  this->rPolar.azimuth = qAtan2(y, x);
-  this->rPolar.distance = qSqrt(x * x + y * y + z * z);
+  this->rPolar.azimuth = std::atan2(y, x);
+  this->rPolar.distance = std::sqrt(x * x + y * y + z * z);
   this->rPolar.zenith = acos(z / this->rPolar.distance);
   this->rPolar.isValid = true;
 }
@@ -1319,23 +1322,23 @@ OiVec Reading::errorPropagationPolarToCartesian() {
   OiVec sigmaXyz;
 
   OiMat F(3, 3);
-  F.setAt(0, 0, qSin(this->rPolar.zenith) * qCos(this->rPolar.azimuth));
+  F.setAt(0, 0, std::sin(this->rPolar.zenith) * std::cos(this->rPolar.azimuth));
   F.setAt(0, 1,
-          this->rPolar.distance * qSin(this->rPolar.zenith) *
-              -qSin(this->rPolar.azimuth));
+          this->rPolar.distance * std::sin(this->rPolar.zenith) *
+              -std::sin(this->rPolar.azimuth));
   F.setAt(0, 2,
-          this->rPolar.distance * qCos(this->rPolar.zenith) *
-              qCos(this->rPolar.azimuth));
-  F.setAt(1, 0, qSin(this->rPolar.zenith) * qSin(this->rPolar.azimuth));
+          this->rPolar.distance * std::cos(this->rPolar.zenith) *
+              std::cos(this->rPolar.azimuth));
+  F.setAt(1, 0, std::sin(this->rPolar.zenith) * std::sin(this->rPolar.azimuth));
   F.setAt(1, 1,
-          this->rPolar.distance * qSin(this->rPolar.zenith) *
-              qCos(this->rPolar.azimuth));
+          this->rPolar.distance * std::sin(this->rPolar.zenith) *
+              std::cos(this->rPolar.azimuth));
   F.setAt(1, 2,
-          this->rPolar.distance * qCos(this->rPolar.zenith) *
-              qSin(this->rPolar.azimuth));
-  F.setAt(2, 0, qCos(this->rPolar.zenith));
+          this->rPolar.distance * std::cos(this->rPolar.zenith) *
+              std::sin(this->rPolar.azimuth));
+  F.setAt(2, 0, std::cos(this->rPolar.zenith));
   F.setAt(2, 1, 0.0);
-  F.setAt(2, 2, this->rPolar.distance * -qSin(this->rPolar.zenith));
+  F.setAt(2, 2, this->rPolar.distance * -std::sin(this->rPolar.zenith));
 
   OiMat Sll(3, 3);
   Sll.setAt(0, 0, this->rPolar.sigmaDistance * this->rPolar.sigmaDistance);
@@ -1344,9 +1347,9 @@ OiVec Reading::errorPropagationPolarToCartesian() {
 
   OiMat Qxx = F * Sll * F.t();
 
-  sigmaXyz.add(qSqrt(Qxx.getAt(0, 0)));
-  sigmaXyz.add(qSqrt(Qxx.getAt(1, 1)));
-  sigmaXyz.add(qSqrt(Qxx.getAt(2, 2)));
+  sigmaXyz.add(std::sqrt(Qxx.getAt(0, 0)));
+  sigmaXyz.add(std::sqrt(Qxx.getAt(1, 1)));
+  sigmaXyz.add(std::sqrt(Qxx.getAt(2, 2)));
 
   return sigmaXyz;
 }

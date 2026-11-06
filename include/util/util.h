@@ -5,6 +5,7 @@
 #include <QString>
 #include <QStringList>
 
+#include "core_export.h"
 #include "types.h"
 
 namespace oi {

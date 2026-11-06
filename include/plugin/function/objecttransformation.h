@@ -1,6 +1,7 @@
 #ifndef OBJECTTRANSFORMATION_H
 #define OBJECTTRANSFORMATION_H
 
+#include "core_export.h"
 #include "function.h"
 
 namespace oi {

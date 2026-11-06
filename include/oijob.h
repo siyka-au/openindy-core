@@ -12,6 +12,7 @@
 #include <QString>
 #include <QStringList>
 
+#include "core_export.h"
 #include "featureattributes.h"
 #include "featurecontainer.h"
 #include "function.h"

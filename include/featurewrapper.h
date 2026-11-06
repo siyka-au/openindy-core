@@ -7,6 +7,7 @@
 #include "circle.h"
 #include "cone.h"
 #include "coordinatesystem.h"
+#include "core_export.h"
 #include "cylinder.h"
 #include "ellipse.h"
 #include "ellipsoid.h"

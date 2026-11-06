@@ -6,6 +6,7 @@
 #include <QString>
 #include <QtXml>
 
+#include "core_export.h"
 #include "types.h"
 
 namespace oi {

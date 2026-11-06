@@ -6,6 +6,7 @@
 #include "featurewrapper.h"
 #include "function.h"
 #include "oijob.h"
+#include "snapshot.h"
 
 using namespace oi;
 
@@ -68,15 +69,16 @@ Feature& Feature::operator=(const Feature& copy) {
 Feature::~Feature() {
   // check and update features which need this feature to recalc
   if (this->usedForList.size() > 0 && !this->selfFeature.isNull()) {
-    foreach (const QPointer<FeatureWrapper>& feature, this->usedForList) {
+    for (const QPointer<FeatureWrapper>& feature :
+         oi::snapshot(this->usedForList)) {
       // check feature
       if (feature.isNull() || feature->getFeature().isNull()) {
         continue;
       }
 
       // delete the feature from all functions
-      foreach (const QPointer<Function> function,
-               feature->getFeature()->getFunctions()) {
+      for (const QPointer<Function> function :
+           oi::snapshot(feature->getFeature()->getFunctions())) {
         if (!function.isNull()) {
           function->removeInputElement(this->id);
         }
@@ -89,8 +91,8 @@ Feature::~Feature() {
 
   // check and update features which were needed to recalc this feature
   if (this->previouslyNeededList.size() > 0) {
-    foreach (const QPointer<FeatureWrapper>& feature,
-             this->previouslyNeededList) {
+    for (const QPointer<FeatureWrapper>& feature :
+         oi::snapshot(this->previouslyNeededList)) {
       // remove this feature from usedFor list
       if (!this->selfFeature.isNull() && !feature.isNull() &&
           !feature->getFeature().isNull()) {
@@ -103,7 +105,8 @@ Feature::~Feature() {
   if (this->producerFunction.has_value() && !this->producerFunction->isNull()) {
     delete this->producerFunction->data();
   }
-  foreach (const QPointer<Function>& function, this->transformFunctions) {
+  for (const QPointer<Function>& function :
+       oi::snapshot(this->transformFunctions)) {
     if (!function.isNull()) {
       delete function.data();
     }
@@ -612,7 +615,8 @@ void Feature::recalc() {
         this->producerFunction.value()->execChecked(this->selfFeature);
 
     if (result.has_value()) {
-      foreach (const QPointer<Function>& transform, this->transformFunctions) {
+      for (const QPointer<Function>& transform :
+           oi::snapshot(this->transformFunctions)) {
         if (transform.isNull()) {
           result = std::unexpected(
               QString("a transform function on \"%1\" is no longer valid")
@@ -669,7 +673,7 @@ QDomElement Feature::toOpenIndyXML(QDomDocument& xmlDoc) const {
   if (allFunctions.size() > 0) {
     QDomElement functions = xmlDoc.createElement("functions");
     int index = 0;
-    foreach (Function* f, allFunctions) {
+    for (Function* f : oi::snapshot(allFunctions)) {
       QDomElement function = f->toOpenIndyXML(xmlDoc);
       if (!function.isNull()) {
         function.setAttribute("executionIndex", index);
@@ -683,7 +687,7 @@ QDomElement Feature::toOpenIndyXML(QDomDocument& xmlDoc) const {
   // add usedFor features
   if (this->usedForList.size() > 0) {
     QDomElement usedForFeatures = xmlDoc.createElement("usedFor");
-    foreach (FeatureWrapper* f, this->usedForList) {
+    for (FeatureWrapper* f : oi::snapshot(this->usedForList)) {
       if (f != nullptr && f->getFeature() != nullptr) {
         QDomElement usedFor = xmlDoc.createElement("feature");
         usedFor.setAttribute("ref", f->getFeature()->getId());
@@ -697,7 +701,7 @@ QDomElement Feature::toOpenIndyXML(QDomDocument& xmlDoc) const {
   if (this->previouslyNeededList.size() > 0) {
     QDomElement previouslyNeededFeatures =
         xmlDoc.createElement("previouslyNeeded");
-    foreach (FeatureWrapper* f, this->previouslyNeededList) {
+    for (FeatureWrapper* f : oi::snapshot(this->previouslyNeededList)) {
       if (f != nullptr && f->getFeature() != nullptr) {
         QDomElement previouslyNeeded = xmlDoc.createElement("feature");
         previouslyNeeded.setAttribute("ref", f->getFeature()->getId());
@@ -1361,7 +1365,8 @@ void Feature::setUpFeatureId() {
   if (this->producerFunction.has_value() && !this->producerFunction->isNull()) {
     this->producerFunction.value()->id = this->job->generateUniqueId();
   }
-  foreach (const QPointer<Function>& function, this->transformFunctions) {
+  for (const QPointer<Function>& function :
+       oi::snapshot(this->transformFunctions)) {
     if (!function.isNull()) {
       function->id = this->job->generateUniqueId();
     }

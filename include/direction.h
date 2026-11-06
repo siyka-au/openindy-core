@@ -3,6 +3,7 @@
 
 #include <QObject>
 
+#include "core_export.h"
 #include "element.h"
 #include "oivec.h"
 

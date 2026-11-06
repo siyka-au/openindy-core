@@ -8,6 +8,7 @@
 #include <QPointer>
 #include <QtXml>
 
+#include "core_export.h"
 #include "element.h"
 #include "measurementconfig.h"
 #include "oimat.h"

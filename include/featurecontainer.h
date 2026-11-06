@@ -9,6 +9,7 @@
 #include <QStringList>
 
 #include "coordinatesystem.h"
+#include "core_export.h"
 #include "feature.h"
 #include "featurewrapper.h"
 #include "station.h"

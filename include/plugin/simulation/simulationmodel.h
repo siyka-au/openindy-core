@@ -7,6 +7,7 @@
 #include <QPointer>
 #include <QString>
 
+#include "core_export.h"
 #include "direction.h"
 #include "pluginmetadata.h"
 #include "position.h"

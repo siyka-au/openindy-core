@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QtXml>
 
+#include "core_export.h"
 #include "geometry.h"
 #include "measurementintent.h"
 #include "position.h"

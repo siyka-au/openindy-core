@@ -5,6 +5,7 @@
 #include <QString>
 #include <QtXml>
 
+#include "core_export.h"
 #include "sensortype.h"
 #include "types.h"
 #include "util.h"

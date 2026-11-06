@@ -3,6 +3,7 @@
 
 #include <QVariantList>
 
+#include "core_export.h"
 #include "exchangeinterface.h"
 #include "oijob.h"
 

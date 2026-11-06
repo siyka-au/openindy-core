@@ -1,5 +1,9 @@
 #include "function.h"
 
+#include <cmath>
+#include <utility>
+
+#include "snapshot.h"
 #include "specialfunction.h"
 
 using namespace oi;
@@ -517,7 +521,7 @@ const ScalarInputParams& Function::getScalarInputParams() {
     this->scalarInputParams.doubleParameter = this->doubleParameters;
     this->scalarInputParams.intParameter = this->integerParameters;
     QStringList keys = this->stringParameters.keys();
-    foreach (const QString& key, keys) {
+    for (const QString& key : std::as_const(keys)) {
       this->scalarInputParams.stringParameter.insert(
           key, this->stringParameters.value(key));
     }
@@ -607,8 +611,8 @@ const QMap<int, QList<InputElement> >& Function::getInputElements() const {
  */
 InputElement Function::getInputElement(const int& id) const {
   QList<int> keys = this->inputElements.keys();
-  foreach (const int& key, keys) {
-    foreach (const InputElement& element, this->inputElements[key]) {
+  for (const int& key : std::as_const(keys)) {
+    for (const InputElement& element : oi::snapshot(this->inputElements[key])) {
       if (element.id == id) {
         return element;
       }
@@ -627,7 +631,8 @@ InputElement Function::getInputElement(const int& id) const {
 InputElement Function::getInputElement(const int& id,
                                        const int& position) const {
   if (this->inputElements.contains(position)) {
-    foreach (const InputElement& element, this->inputElements[position]) {
+    for (const InputElement& element :
+         oi::snapshot(this->inputElements[position])) {
       if (element.id == id) {
         return element;
       }
@@ -644,8 +649,8 @@ InputElement Function::getInputElement(const int& id,
  */
 bool Function::hasInputElement(const int& id) const {
   QList<int> keys = this->inputElements.keys();
-  foreach (const int& key, keys) {
-    foreach (const InputElement& element, this->inputElements[key]) {
+  for (const int& key : std::as_const(keys)) {
+    for (const InputElement& element : oi::snapshot(this->inputElements[key])) {
       if (element.id == id) {
         return true;
       }
@@ -864,17 +869,18 @@ bool Function::applyDeterministicPipelineStages() {
     }
 
     QList<int> survivors;
-    foreach (const InputElement& element, this->inputElements.value(position)) {
+    for (const InputElement& element :
+         oi::snapshot(this->inputElements.value(position))) {
       survivors.append(element.id);
     }
 
     QList<PipelineExclusion> exclusions;
 
-    foreach (const PipelineStage& stage, stages) {
+    for (const PipelineStage& stage : oi::snapshot(stages)) {
       switch (stage.type) {
         case PipelineStageType::eExplicitListStage: {
           QList<int> next;
-          foreach (int id, survivors) {
+          for (int id : std::as_const(survivors)) {
             if (stage.explicitIds.contains(id)) {
               next.append(id);
             } else {
@@ -887,7 +893,8 @@ bool Function::applyDeterministicPipelineStages() {
         }
 
         case PipelineStageType::eExcludeStage: {
-          foreach (const PipelineExclusion& excl, stage.explicitExclusions) {
+          for (const PipelineExclusion& excl :
+               oi::snapshot(stage.explicitExclusions)) {
             if (survivors.removeOne(excl.elementId)) {
               exclusions.append(excl);
             }
@@ -937,7 +944,7 @@ bool Function::applyResidualPipelineStages() {
 
     bool hasResidualStage = false;
     double sigmaMultiplier = 3.0;
-    foreach (const PipelineStage& stage, stages) {
+    for (const PipelineStage& stage : std::as_const(stages)) {
       if (stage.type == PipelineStageType::eResidualOutlierRejectionStage) {
         hasResidualStage = true;
         sigmaMultiplier = stage.sigmaMultiplier;
@@ -971,7 +978,7 @@ bool Function::applyResidualPipelineStages() {
         continue;  // this fit type does not report a comparable residual
       }
 
-      if (qAbs(residual.value()) > threshold) {
+      if (std::abs(residual.value()) > threshold) {
         current[i].shouldBeUsed = false;
         exclusions.append(PipelineExclusion(
             current[i].id,
@@ -1044,7 +1051,7 @@ void Function::clearResults() {
 
   // set all elements to not have been used
   QList<int> keys = this->inputElements.keys();
-  foreach (const int& key, keys) {
+  for (const int& key : std::as_const(keys)) {
     for (int i = 0; i < this->inputElements[key].size(); ++i) {
       this->inputElements[key][i].isUsed = false;
     }
@@ -1073,7 +1080,7 @@ QDomElement Function::toOpenIndyXML(QDomDocument& xmlDoc) const {
       this->getInputElements());
   while (inputIterator.hasNext()) {
     inputIterator.next();
-    foreach (const InputElement& input, inputIterator.value()) {
+    for (const InputElement& input : oi::snapshot(inputIterator.value())) {
       QDomElement inputElement = xmlDoc.createElement("element");
       inputElement.setAttribute("index", inputIterator.key());
       inputElement.setAttribute("type", static_cast<int>(input.typeOfElement));
@@ -1116,7 +1123,7 @@ QDomElement Function::toOpenIndyXML(QDomDocument& xmlDoc) const {
     }
     QDomElement pipelineElem = xmlDoc.createElement("pipeline");
     pipelineElem.setAttribute("position", position);
-    foreach (const PipelineStage& stage, stages) {
+    for (const PipelineStage& stage : std::as_const(stages)) {
       QDomElement stageElem = stage.toOpenIndyXML(xmlDoc);
       if (!stageElem.isNull()) {
         pipelineElem.appendChild(stageElem);
@@ -1131,7 +1138,7 @@ QDomElement Function::toOpenIndyXML(QDomDocument& xmlDoc) const {
     params.doubleParameter = this->doubleParameters;
     params.intParameter = this->integerParameters;
     QStringList keys = this->stringParameters.keys();
-    foreach (const QString& key, keys) {
+    for (const QString& key : std::as_const(keys)) {
       params.stringParameter.insert(key, this->stringParameters.value(key));
     }
   } else {
@@ -1297,7 +1304,8 @@ void Function::setIsUsed(const int& position, const int& id,
 void Function::filterObservations(
     QList<QPointer<Observation> >& allUsableObservations,
     QList<QPointer<Observation> >& inputObservations) {
-  foreach (const InputElement& element, this->getInputElements()[0]) {
+  for (const InputElement& element :
+       oi::snapshot(this->getInputElements()[0])) {
     if (!element.observation.isNull() && element.observation->getIsSolved() &&
         element.observation->getIsValid()) {
       allUsableObservations.append(element.observation);

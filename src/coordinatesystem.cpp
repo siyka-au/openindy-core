@@ -5,6 +5,7 @@
 #include "geometry.h"
 #include "observation.h"
 #include "oijob.h"
+#include "snapshot.h"
 #include "trafoparam.h"
 
 using namespace oi;
@@ -122,21 +123,24 @@ CoordinateSystem& CoordinateSystem::operator=(const CoordinateSystem& copy) {
 CoordinateSystem::~CoordinateSystem() {
   // delete all observations made from this station coordinate system (only if
   // this is a station system)
-  foreach (const QPointer<Observation>& observation, this->observationsList) {
+  for (const QPointer<Observation>& observation :
+       oi::snapshot(this->observationsList)) {
     if (!observation.isNull()) {
       delete observation.data();
     }
   }
 
   // delete transformation parameter sets from this coordinate system
-  foreach (const QPointer<TrafoParam>& trafoParam, this->trafoParams) {
+  for (const QPointer<TrafoParam>& trafoParam :
+       oi::snapshot(this->trafoParams)) {
     if (!trafoParam.isNull()) {
       delete trafoParam.data();
     }
   }
 
   // delete nominals of this coordinate system
-  foreach (const QPointer<FeatureWrapper>& nominal, this->nominalsList) {
+  for (const QPointer<FeatureWrapper>& nominal :
+       oi::snapshot(this->nominalsList)) {
     if (!nominal.isNull()) {
       if (!nominal->getFeature().isNull()) {
         delete nominal->getFeature().data();
@@ -343,7 +347,7 @@ CoordinateSystem::getTransformationParameters(
 
   // run through all trafo params and select those whose destination system
   // equals "to"
-  foreach (const QPointer<TrafoParam>& trafo, this->trafoParams) {
+  for (const QPointer<TrafoParam>& trafo : oi::snapshot(this->trafoParams)) {
     if (!trafo.isNull() && !trafo->getDestinationSystem().isNull() &&
         !trafo->getStartSystem().isNull()) {
       if (trafo->getDestinationSystem() == to ||
@@ -469,7 +473,7 @@ bool CoordinateSystem::addNominals(
 
     // add all nominals without emitting the corresponding signals
     this->blockSignals(true);
-    foreach (const QPointer<FeatureWrapper>& geom, nominals) {
+    for (const QPointer<FeatureWrapper>& geom : oi::snapshot(nominals)) {
       this->addNominal(geom);
     }
     this->blockSignals(false);
@@ -622,7 +626,7 @@ QDomElement CoordinateSystem::toOpenIndyXML(QDomDocument& xmlDoc) const {
   // add trafo params
   if (this->trafoParams.size() > 0) {
     QDomElement trafoParams = xmlDoc.createElement("transformationParameters");
-    foreach (const QPointer<TrafoParam>& tp, this->trafoParams) {
+    for (const QPointer<TrafoParam>& tp : oi::snapshot(this->trafoParams)) {
       if (!tp.isNull()) {
         QDomElement trafoParam =
             xmlDoc.createElement("transformationParameter");
@@ -636,7 +640,8 @@ QDomElement CoordinateSystem::toOpenIndyXML(QDomDocument& xmlDoc) const {
   // add observations
   if (this->observationsList.size() > 0) {
     QDomElement observations = xmlDoc.createElement("observations");
-    foreach (const QPointer<Observation>& obs, this->observationsList) {
+    for (const QPointer<Observation>& obs :
+         oi::snapshot(this->observationsList)) {
       if (!obs.isNull()) {
         QDomElement observation = xmlDoc.createElement("observation");
         observation.setAttribute("ref", obs->getId());
@@ -649,7 +654,8 @@ QDomElement CoordinateSystem::toOpenIndyXML(QDomDocument& xmlDoc) const {
   // add nominals
   if (this->nominalsList.size() > 0) {
     QDomElement nominals = xmlDoc.createElement("nominalGeometries");
-    foreach (const QPointer<FeatureWrapper>& geom, this->nominalsList) {
+    for (const QPointer<FeatureWrapper>& geom :
+         oi::snapshot(this->nominalsList)) {
       if (!geom.isNull() && !geom->getGeometry().isNull()) {
         QDomElement nominal = xmlDoc.createElement("geometry");
         nominal.setAttribute("ref", geom->getGeometry()->getId());
@@ -819,7 +825,7 @@ QString CoordinateSystem::getDisplayX(const UnitType& type, const int& digits,
         convertFromDefault(this->origin.getVector().getAt(0), type), 'f',
         digits);
   }
-  foreach (QPointer<TrafoParam> trafoP, this->trafoParams) {
+  for (QPointer<TrafoParam> trafoP : oi::snapshot(this->trafoParams)) {
     if (trafoP->getIsUsed()) {
       return QString::number(
           convertFromDefault(this->origin.getVector().getAt(0), type), 'f',
@@ -843,7 +849,7 @@ QString CoordinateSystem::getDisplayY(const UnitType& type, const int& digits,
         convertFromDefault(this->origin.getVector().getAt(1), type), 'f',
         digits);
   }
-  foreach (QPointer<TrafoParam> trafoP, this->trafoParams) {
+  for (QPointer<TrafoParam> trafoP : oi::snapshot(this->trafoParams)) {
     if (trafoP->getIsUsed()) {
       return QString::number(
           convertFromDefault(this->origin.getVector().getAt(1), type), 'f',
@@ -867,7 +873,7 @@ QString CoordinateSystem::getDisplayZ(const UnitType& type, const int& digits,
         convertFromDefault(this->origin.getVector().getAt(2), type), 'f',
         digits);
   }
-  foreach (QPointer<TrafoParam> trafoP, this->trafoParams) {
+  for (QPointer<TrafoParam> trafoP : oi::snapshot(this->trafoParams)) {
     if (trafoP->getIsUsed()) {
       return QString::number(
           convertFromDefault(this->origin.getVector().getAt(2), type), 'f',
@@ -1040,7 +1046,8 @@ void CoordinateSystem::setUpFeatureId() {
   }
 
   // generate unique ids for observations
-  foreach (const QPointer<Observation>& obs, this->observationsList) {
+  for (const QPointer<Observation>& obs :
+       oi::snapshot(this->observationsList)) {
     if (!obs.isNull()) {
       obs->id = this->job->generateUniqueId();
     }

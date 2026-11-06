@@ -7,6 +7,7 @@
 #include <QThread>
 #include <QTime>
 
+#include "core_export.h"
 #include "measurementconfig.h"
 #include "sensor.h"
 #include "sensorworker.h"

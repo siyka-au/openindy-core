@@ -1,6 +1,7 @@
 #ifndef EXCHANGEDEFINEDFORMAT_H
 #define EXCHANGEDEFINEDFORMAT_H
 
+#include "core_export.h"
 #include "exchangeinterface.h"
 
 namespace oi {

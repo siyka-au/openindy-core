@@ -6,6 +6,7 @@
 #include <QtXml>
 #include <optional>
 
+#include "core_export.h"
 #include "feature.h"
 
 namespace oi {

@@ -1,5 +1,7 @@
 #include "util.h"
 
+#include <cmath>
+
 #include "featurewrapper.h"
 
 namespace oi {
@@ -1815,7 +1817,7 @@ UnitType getUnitTypeEnum(const QString& name) {
  */
 bool almostEqual(const double& a, const double& b, const int& digits) {
   // calculate difference
-  double diff = qAbs(a - b);
+  double diff = std::abs(a - b);
 
   // calculate epsilon
   double epsilon = 1.0;

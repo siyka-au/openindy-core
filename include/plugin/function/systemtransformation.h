@@ -1,6 +1,7 @@
 #ifndef SYSTEMTRANSFORMATION_H
 #define SYSTEMTRANSFORMATION_H
 
+#include "core_export.h"
 #include "function.h"
 
 class FeatureUpdater;

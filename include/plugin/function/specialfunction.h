@@ -1,6 +1,7 @@
 #ifndef SPECIALFUNCTION__H
 #define SPECIALFUNCTION__H
 
+#include "core_export.h"
 #include "function.h"
 
 namespace oi {

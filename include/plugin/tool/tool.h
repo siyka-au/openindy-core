@@ -5,6 +5,7 @@
 #include <QObject>
 #include <QWidget>
 
+#include "core_export.h"
 #include "oijob.h"
 #include "oirequestresponse.h"
 #include "pluginmetadata.h"

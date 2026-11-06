@@ -1,6 +1,7 @@
 #include "group.h"
 
 #include "featurewrapper.h"
+#include "snapshot.h"
 
 using namespace oi;
 
@@ -114,7 +115,7 @@ bool Group::containsMember(const QPointer<FeatureWrapper>& feature) const {
 
   const Feature* target = feature->getFeature().data();
 
-  foreach (const QPointer<FeatureWrapper>& member, this->members) {
+  for (const QPointer<FeatureWrapper>& member : oi::snapshot(this->members)) {
     if (member.isNull() || member->getFeature().isNull()) {
       continue;
     }
@@ -127,7 +128,7 @@ bool Group::containsMember(const QPointer<FeatureWrapper>& feature) const {
 }
 
 bool Group::containsMemberId(const int& featureId) const {
-  foreach (const QPointer<FeatureWrapper>& member, this->members) {
+  for (const QPointer<FeatureWrapper>& member : oi::snapshot(this->members)) {
     if (member.isNull() || member->getFeature().isNull()) {
       continue;
     }
@@ -141,7 +142,7 @@ bool Group::containsMemberId(const int& featureId) const {
 
 int Group::memberCount() const {
   int count = 0;
-  foreach (const QPointer<FeatureWrapper>& member, this->members) {
+  for (const QPointer<FeatureWrapper>& member : oi::snapshot(this->members)) {
     if (!member.isNull() && !member->getFeature().isNull()) {
       ++count;
     }
@@ -153,7 +154,7 @@ void Group::compact() {
   const int before = this->members.size();
 
   QList<QPointer<FeatureWrapper> > live;
-  foreach (const QPointer<FeatureWrapper>& member, this->members) {
+  for (const QPointer<FeatureWrapper>& member : oi::snapshot(this->members)) {
     if (!member.isNull() && !member->getFeature().isNull()) {
       live.append(member);
     }
@@ -192,7 +193,7 @@ QDomElement Group::toOpenIndyXML(QDomDocument& xmlDoc) const {
 
   // members are references - persist ids only, never nested copies
   QDomElement members = xmlDoc.createElement("members");
-  foreach (const QPointer<FeatureWrapper>& member, this->members) {
+  for (const QPointer<FeatureWrapper>& member : oi::snapshot(this->members)) {
     if (member.isNull() || member->getFeature().isNull()) {
       continue;
     }
@@ -238,7 +239,7 @@ bool Group::fromOpenIndyXML(QDomElement& xmlElem) {
 
 void Group::restoreMembers(
     const QMap<int, QPointer<FeatureWrapper> >& resolvedFeatures) {
-  foreach (const int& memberId, this->pendingMemberIds) {
+  for (const int& memberId : oi::snapshot(this->pendingMemberIds)) {
     if (resolvedFeatures.contains(memberId)) {
       this->addMember(resolvedFeatures.value(memberId));
     }

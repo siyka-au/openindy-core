@@ -5,6 +5,7 @@
 #include <QtMath>
 #include <QtXml>
 
+#include "core_export.h"
 #include "direction.h"
 #include "geometry.h"
 #include "position.h"
