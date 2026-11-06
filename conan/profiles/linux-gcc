@@ -1,0 +1,12 @@
+# Conan profile for the OpenIndy workspace on Linux with GCC.
+# Override on the command line when needed, e.g. -s compiler.version=15 or
+# -s build_type=Debug. The other repos reuse this file by sibling path:
+#   conan install . -pr:a ../openindy-core/conan/profiles/linux-gcc ...
+[settings]
+os=Linux
+arch=x86_64
+compiler=gcc
+compiler.version=16
+compiler.libcxx=libstdc++11
+compiler.cppstd=gnu23
+build_type=Release
