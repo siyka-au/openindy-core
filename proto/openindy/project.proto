@@ -1,0 +1,61 @@
+// OpenIndy project file and wire format.
+//
+// One global id space: every feature, observation and reading has a unique
+// int32 id, and cross-references are plain ids (0 is never a valid id).
+// Field numbers are part of the format; never reuse or renumber one.
+syntax = "proto3";
+
+package openindy.v1;
+
+import "google/protobuf/timestamp.proto";
+
+// ---------------------------------------------------------------------------
+// Measurement configuration
+// ---------------------------------------------------------------------------
+
+enum MeasurementMode {
+  MEASUREMENT_MODE_UNSPECIFIED = 0;
+  MEASUREMENT_MODE_FAST = 1;
+  MEASUREMENT_MODE_STANDARD = 2;
+  MEASUREMENT_MODE_PRECISE = 3;
+}
+
+enum MeasurementType {
+  MEASUREMENT_TYPE_UNSPECIFIED = 0;
+  MEASUREMENT_TYPE_SINGLE_POINT = 1;
+  MEASUREMENT_TYPE_SCAN_TIME_DEPENDENT = 2;
+  MEASUREMENT_TYPE_SCAN_DISTANCE_DEPENDENT = 3;
+  MEASUREMENT_TYPE_LEVEL = 4;
+  MEASUREMENT_TYPE_DIRECTION = 5;
+  MEASUREMENT_TYPE_DISTANCE = 6;
+  MEASUREMENT_TYPE_TEMPERATURE = 7;
+}
+
+message MeasurementConfig {
+  string name = 1;
+  MeasurementMode mode = 2;
+  MeasurementType type = 3;
+  bool measure_two_sides = 4;
+  int32 max_observations = 5;
+  double time_interval = 6;
+  double distance_interval = 7;
+  // Id of the sensor type this config is gated to. Absent: not gated.
+  optional string sensor_type = 8;
+}
+
+// ---------------------------------------------------------------------------
+// Project
+// ---------------------------------------------------------------------------
+
+message Project {
+  // Bumped when the schema changes in a way readers must know about.
+  uint32 format_version = 1;
+  string name = 2;
+  google.protobuf.Timestamp saved_at = 3;
+  // Version of the application that wrote the file (informational).
+  string app_version = 4;
+  // The next id the job will hand out, so reloading never reuses an id.
+  int32 next_id = 5;
+
+  repeated MeasurementConfig measurement_configs = 16;
+}

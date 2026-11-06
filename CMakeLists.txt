@@ -87,6 +87,10 @@ else()
 endif()
 FetchContent_MakeAvailable(OpenIndyMath)
 
+# --- third-party packages (provided by Conan, see conanfile.txt) ---
+
+find_package(Protobuf CONFIG REQUIRED)
+
 # --- library ---
 
 add_library(OpenIndyCore SHARED
@@ -126,6 +130,7 @@ add_library(OpenIndyCore SHARED
     src/featurecontainer.cpp
     src/featurewrapper.cpp
     src/geometry.cpp
+    src/codec/convert.cpp
     src/measurementconfig.cpp
     src/observation.cpp
     src/oijob.cpp
@@ -232,6 +237,21 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_compile_options(OpenIndyCore PRIVATE -Wall -Wextra -Wpedantic)
 endif()
 
+# The .proto files are the project file / wire format. Their generated headers
+# are private to core: the codec's public interface is bytes in, bytes out.
+set(OI_PROTO_GENERATED_DIR ${CMAKE_CURRENT_BINARY_DIR}/generated)
+protobuf_generate(
+    TARGET OpenIndyCore
+    LANGUAGE cpp
+    PROTOS ${CMAKE_CURRENT_SOURCE_DIR}/proto/openindy/project.proto
+    IMPORT_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/proto
+    PROTOC_OUT_DIR ${OI_PROTO_GENERATED_DIR}
+)
+target_include_directories(OpenIndyCore PRIVATE
+    ${OI_PROTO_GENERATED_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/codec
+)
+
 target_include_directories(OpenIndyCore
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -254,6 +274,8 @@ target_link_libraries(OpenIndyCore
         Qt6::Xml
         Qt6::SerialPort
         OpenIndyMath
+    PRIVATE
+        protobuf::libprotobuf
 )
 
 # --- tests ---
@@ -287,6 +309,18 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_compile_options(tst_valuetypes PRIVATE -Wall -Wextra -Wpedantic)
 endif()
 add_test(NAME valuetypes COMMAND tst_valuetypes)
+
+# Codec tests use Catch2 (from Conan). They reach the private conversion
+# headers directly.
+find_package(Catch2 3 CONFIG REQUIRED)
+add_executable(tst_codec test/codec/tst_codec.cpp)
+target_include_directories(tst_codec PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/codec
+    ${OI_PROTO_GENERATED_DIR}
+)
+target_link_libraries(tst_codec PRIVATE
+    OpenIndyCore OpenIndyMath protobuf::libprotobuf Catch2::Catch2WithMain)
+add_test(NAME codec COMMAND tst_codec)
 
 add_executable(tst_measurementconfig test/measurementconfig/tst_measurementconfig.cpp)
 target_compile_definitions(tst_measurementconfig PRIVATE SRCDIR="${CMAKE_CURRENT_SOURCE_DIR}/test/measurementconfig")
