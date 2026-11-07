@@ -148,16 +148,34 @@ void Function::init() {}
  * \return
  */
 std::expected<void, std::string> Function::execChecked(
-    const oi::Guarded<FeatureWrapper>& feature) {
-  this->applyDeterministicPipelineStages();
+    const oi::Guarded<FeatureWrapper>& feature, const OperationContext& ctx) {
+  // the context is visible to the function through operation() only while it
+  // runs, and is dropped on every way out
+  struct ContextScope {
+    OperationContext& slot;
+    ~ContextScope() { slot = OperationContext(); }
+  } scope{this->operationContext};
+  this->operationContext = ctx;
 
-  std::expected<void, std::string> result = this->execByFeatureType(feature);
+  try {
+    ctx.throwIfCancelled();
+    ctx.report(0.0, this->getMetaData().name);
+    this->applyDeterministicPipelineStages();
 
-  if (result.has_value() && this->applyResidualPipelineStages()) {
-    result = this->execByFeatureType(feature);
+    std::expected<void, std::string> result = this->execByFeatureType(feature);
+
+    if (result.has_value() && this->applyResidualPipelineStages()) {
+      ctx.throwIfCancelled();
+      result = this->execByFeatureType(feature);
+    }
+
+    if (result.has_value()) {
+      ctx.report(1.0, this->getMetaData().name);
+    }
+    return result;
+  } catch (const OperationCancelled&) {
+    return std::unexpected(std::string("operation cancelled"));
   }
-
-  return result;
 }
 
 /*!
@@ -168,8 +186,9 @@ std::expected<void, std::string> Function::execChecked(
  * \param feature
  * \return
  */
-bool Function::exec(const oi::Guarded<FeatureWrapper>& feature) {
-  return this->execChecked(feature).has_value();
+bool Function::exec(const oi::Guarded<FeatureWrapper>& feature,
+                    const OperationContext& ctx) {
+  return this->execChecked(feature, ctx).has_value();
 }
 
 /*!

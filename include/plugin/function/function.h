@@ -31,6 +31,7 @@
 #include "point.h"
 #include "pointcloud.h"
 #include "producertransform.h"
+#include "progress.h"
 #include "reading.h"
 #include "scalarentityangle.h"
 #include "scalarentitydistance.h"
@@ -244,9 +245,22 @@ class OI_CORE_EXPORT Function : public oi::Trackable {
   // every pre-7d caller (tests calling a function directly without going
   // through Feature::recalc(), cfvisitor.cpp, OiJob) - it is now a thin
   // wrapper over execChecked().
+  //
+  // `ctx` carries the host's progress sink and cancellation request. It is
+  // available to the running function through operation(); a function that
+  // can take a while reports through it and polls it. execChecked() returns an
+  // error ("operation cancelled") instead of throwing when the host cancels.
   virtual std::expected<void, std::string> execChecked(
-      const oi::Guarded<FeatureWrapper>& feature);
-  virtual bool exec(const oi::Guarded<FeatureWrapper>& feature);
+      const oi::Guarded<FeatureWrapper>& feature,
+      const OperationContext& ctx = {});
+  virtual bool exec(const oi::Guarded<FeatureWrapper>& feature,
+                    const OperationContext& ctx = {});
+
+  // The context of the exec currently running (reports nowhere and cannot be
+  // cancelled outside an exec). For use by subclasses.
+  [[nodiscard]] const OperationContext& operation() const {
+    return this->operationContext;
+  }
 
   // ###############################################################
   // Stage 7d/D21: attach-time capability check - does `function`
@@ -442,6 +456,7 @@ class OI_CORE_EXPORT Function : public oi::Trackable {
  private:
   MessageSink* messageSink = nullptr;            // non-owning
   FunctionObserver* functionObserver = nullptr;  // non-owning
+  OperationContext operationContext;             // set while exec runs
 
   void notifyInputElementsChanged() {
     if (this->functionObserver != nullptr) {

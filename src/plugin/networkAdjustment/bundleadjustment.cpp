@@ -28,7 +28,7 @@ void BundleAdjustment::init() {}
  * \brief BundleAdjustment::runBundle
  * \return
  */
-bool BundleAdjustment::runBundle() {
+bool BundleAdjustment::runBundle(const OperationContext& /*ctx*/) {
   this->sendMessage(
       "Bundle \"" + this->getMetaData().name + "\" not implemented",
       MessageTypes::eCriticalMessage, MessageDestinations::eMessageBoxMessage);

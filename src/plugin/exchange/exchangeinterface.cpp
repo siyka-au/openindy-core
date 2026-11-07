@@ -141,7 +141,7 @@ void ExchangeInterface::setUnit(const DimensionType& dimension,
 /*!
  * \brief ExchangeInterface::importOiData
  */
-void ExchangeInterface::importOiData() {
+void ExchangeInterface::importOiData(const OperationContext& /*ctx*/) {
   this->sendMessage(
       std::string(
           "Exchange Plugin not implemented correctly: import method missing"),
@@ -151,7 +151,7 @@ void ExchangeInterface::importOiData() {
 /*!
  * \brief ExchangeInterface::exportOiData
  */
-void ExchangeInterface::exportOiData() {
+void ExchangeInterface::exportOiData(const OperationContext& /*ctx*/) {
   this->sendMessage(
       std::string(
           "Exchange Plugin not implemented correctly: export method missing"),

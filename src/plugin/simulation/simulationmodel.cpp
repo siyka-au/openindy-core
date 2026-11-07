@@ -128,7 +128,8 @@ bool SimulationModel::distort(const oi::Guarded<Reading>& /*r*/,
  * \param d
  * \return
  */
-bool SimulationModel::analyseSimulationData(UncertaintyData& /*d*/) {
+bool SimulationModel::analyseSimulationData(UncertaintyData& /*d*/,
+                                            const OperationContext& /*ctx*/) {
   this->sendMessage(
       std::string(
           "Simulation Model not implemented correctly: analyse method missing"),

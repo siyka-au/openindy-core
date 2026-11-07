@@ -11,6 +11,7 @@
 #include "guarded.h"
 #include "messagesink.h"
 #include "pluginmetadata.h"
+#include "progress.h"
 
 namespace oi {
 
@@ -63,14 +64,17 @@ class OI_CORE_EXPORT ExchangeInterface : public oi::Trackable {
   // import and export methods
   // #########################
 
-  virtual void importOiData();
-  virtual void exportOiData();
+  // `ctx` carries the host's progress sink and cancellation request. Report
+  // through it (ctx.report(done, total, text)) and poll it per record.
+  virtual void importOiData(const OperationContext& ctx = {});
+  virtual void exportOiData(const OperationContext& ctx = {});
 
   // ################################################
   // report exchange issues to the host (formerly signals)
   // ################################################
 
-  // messages go to the sink, progress and completion to the observer; both
+  // messages go to the sink, completion to the observer (progress goes through
+  // the OperationContext given to importOiData/exportOiData); both
   // are optional, non-owning, and must outlive the exchange (or be removed
   // first). They are called synchronously on the thread the exchange runs
   // on, which is usually not the host's UI thread.
@@ -90,12 +94,6 @@ class OI_CORE_EXPORT ExchangeInterface : public oi::Trackable {
                        MessageDestinations::eConsoleMessage) {
     if (this->messageSink != nullptr) {
       this->messageSink->onMessage(msg, msgType, msgDest);
-    }
-  }
-  void updateProgress(const int& progress,
-                      const std::string& msg) {  // 0 <= progress <= 100
-    if (this->exchangeObserver != nullptr) {
-      this->exchangeObserver->onProgress(progress, msg);
     }
   }
   void importFinished(const bool& success) {

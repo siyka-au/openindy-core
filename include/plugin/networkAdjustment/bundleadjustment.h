@@ -7,6 +7,7 @@
 #include "core_export.h"
 #include "oijob.h"
 #include "pluginmetadata.h"
+#include "progress.h"
 #include "types.h"
 
 namespace oi {
@@ -119,7 +120,10 @@ class OI_CORE_EXPORT BundleAdjustment : public oi::Trackable {
   // calculates the bundle adjustment
   // ################################
 
-  virtual bool runBundle();
+  // `ctx`: progress and cancellation from the host; implementations report
+  // through it and poll it between iterations (throwing OperationCancelled is
+  // fine, runBundle()'s caller treats it as "cancelled by the user").
+  virtual bool runBundle(const OperationContext& ctx = {});
 
   // ###########################################################
   // methods to get or set further information to solve a bundle

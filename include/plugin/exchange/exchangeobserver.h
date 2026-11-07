@@ -8,10 +8,12 @@
 namespace oi {
 
 /*!
- * \brief Receiver of the progress and completion reports of an import/export
+ * \brief Receiver of the completion reports of an import/export
  * plugin (ExchangeInterface).
  *
- * Replaces the updateProgress, importFinished and exportFinished Qt signals.
+ * Replaces the importFinished and exportFinished Qt signals. Progress is not
+ * reported here: it goes through the oi::OperationContext given to
+ * importOiData/exportOiData (see progress.h).
  * The host sets it with ExchangeInterface::setObserver; every method does
  * nothing by default.
  *
@@ -29,8 +31,6 @@ class OI_CORE_EXPORT ExchangeObserver {
   ExchangeObserver(ExchangeObserver&&) = delete;
   ExchangeObserver& operator=(ExchangeObserver&&) = delete;
 
-  // 0 <= percent <= 100
-  virtual void onProgress(int /*percent*/, const std::string& /*message*/) {}
   virtual void onImportFinished(bool /*success*/) {}
   virtual void onExportFinished(bool /*success*/) {}
 };

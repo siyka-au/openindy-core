@@ -10,6 +10,7 @@
 #include "messagesink.h"
 #include "pluginmetadata.h"
 #include "position.h"
+#include "progress.h"
 #include "radius.h"
 #include "reading.h"
 
@@ -189,7 +190,9 @@ class OI_CORE_EXPORT SimulationModel : public oi::Trackable {
   virtual bool distort(const oi::Guarded<Reading>& r,
                        const OiMat& objectRelation,
                        const bool& newIterationStart);
-  virtual bool analyseSimulationData(UncertaintyData& d);
+  // may run many iterations: report and poll `ctx` between them
+  virtual bool analyseSimulationData(UncertaintyData& d,
+                                     const OperationContext& ctx = {});
   virtual double getCorrelationCoefficient(const std::vector<double>& x,
                                            const std::vector<double>& y);
 

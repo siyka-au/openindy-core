@@ -41,12 +41,19 @@ class RecordingFunctionObserver : public FunctionObserver {
   }
 };
 
+class RecordingProgress : public oi::ProgressSink {
+ public:
+  std::vector<std::string> events;
+  void onProgress(const oi::Progress& progress) override {
+    this->events.push_back(std::format(
+        "progress:{}:{}", static_cast<int>(progress.fraction * 100 + 0.5),
+        progress.message));
+  }
+};
+
 class RecordingExchangeObserver : public ExchangeObserver {
  public:
   std::vector<std::string> events;
-  void onProgress(int percent, const std::string& message) override {
-    this->events.push_back(std::format("progress:{}:{}", percent, message));
-  }
   void onImportFinished(bool success) override {
     this->events.push_back(std::format("import:{}", static_cast<int>(success)));
   }
@@ -76,12 +83,14 @@ class ChattyFunction : public ConstructFunction, public Producer<Point> {
 // a bare exchange that reports through every channel
 class ChattyExchange : public ExchangeInterface {
  public:
-  void importOiData() override {
+  void importOiData(const oi::OperationContext& ctx) override {
     emit this->sendMessage("importing", MessageTypes::eInformationMessage);
-    emit this->updateProgress(50, "half");
+    ctx.report(std::size_t{1}, std::size_t{2}, "half");
     emit this->importFinished(true);
   }
-  void exportOiData() override { emit this->exportFinished(false); }
+  void exportOiData(const oi::OperationContext&) override {
+    emit this->exportFinished(false);
+  }
 };
 
 }  // namespace
@@ -100,6 +109,7 @@ class MessageSinkTest : public QObject {
   void aBundleAdjustmentOutlivingItsJobIsDetached();
   void simulationModelReportsToItsSink();
   void exchangeReportsMessagesProgressAndCompletion();
+  void aFunctionSeesTheOperationContextOfItsExec();
   void functionObserverSeesInputElementAndParameterChanges();
   void functionObserverIsToldWhenTheFunctionIsDestroyed();
 
@@ -281,19 +291,49 @@ void MessageSinkTest::exchangeReportsMessagesProgressAndCompletion() {
   exchange.setMessageSink(&sink);
   exchange.setObserver(&observer);
 
-  exchange.importOiData();
+  RecordingProgress progress;
+  exchange.importOiData(oi::OperationContext(&progress));
   QCOMPARE(sink.messages, std::vector<std::string>{"importing"});
-  QCOMPARE(observer.events,
-           (std::vector<std::string>{"progress:50:half", "import:1"}));
+  QCOMPARE(observer.events, std::vector<std::string>{"import:1"});
+  QCOMPARE(progress.events, std::vector<std::string>{"progress:50:half"});
 
   observer.events.clear();
-  exchange.exportOiData();
+  exchange.exportOiData({});
   QCOMPARE(observer.events, std::vector<std::string>{"export:0"});
 
   // without an observer nothing happens (and nothing crashes)
   exchange.setObserver(nullptr);
-  exchange.importOiData();
+  exchange.importOiData({});
   QCOMPARE(observer.events, std::vector<std::string>{"export:0"});
+}
+
+void MessageSinkTest::aFunctionSeesTheOperationContextOfItsExec() {
+  OiJob job;
+  const Fixture f = addActivePoint(job);
+  oi::Guarded<ChattyFunction> function = new ChattyFunction();
+  job.addFunction(function);
+
+  // progress and the context visible to the function
+  RecordingProgress progress;
+  QVERIFY(function->execChecked(f.wrapper, oi::OperationContext(&progress))
+              .has_value());
+  QCOMPARE(progress.events,
+           (std::vector<std::string>{"progress:0:ChattyFunction",
+                                     "progress:100:ChattyFunction"}));
+
+  // a cancelled context stops before running and is an error, not a throw
+  std::stop_source stop;
+  stop.request_stop();
+  progress.events.clear();
+  const auto cancelled = function->execChecked(
+      f.wrapper, oi::OperationContext(&progress, stop.get_token()));
+  QVERIFY(!cancelled.has_value());
+  QCOMPARE(cancelled.error(), std::string("operation cancelled"));
+  QVERIFY(progress.events.empty());
+
+  // outside an exec the function has no context to report to
+  function->operation().report(0.5, "ignored");
+  QVERIFY(!function->operation().cancelRequested());
 }
 
 void MessageSinkTest::functionObserverSeesInputElementAndParameterChanges() {
