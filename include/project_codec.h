@@ -8,13 +8,13 @@
 // plugins live or which measurement configs the application ships, so the
 // host provides those through ProjectHost.
 
-#include <QPointer>
 #include <memory>
 #include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
 
+#include "guarded.h"
 #include "measurementconfig.h"
 
 namespace oi {
@@ -69,7 +69,7 @@ class ProjectHost {
 
 struct DecodeResult {
   /*! The loaded job, owned by the caller; null if the load failed. */
-  QPointer<OiJob> job;
+  oi::Guarded<OiJob> job;
   /*! Why the load failed. Empty on success. */
   std::string error;
   /*! "plugin/name" of every plugin object the project needs and the host

@@ -3,12 +3,11 @@
 
 #include <QMap>
 #include <QMultiMap>
-#include <QObject>
-#include <QPointer>
 #include <QString>
 
 #include "core_export.h"
 #include "direction.h"
+#include "guarded.h"
 #include "messagesink.h"
 #include "pluginmetadata.h"
 #include "position.h"
@@ -148,12 +147,9 @@ class OI_CORE_EXPORT SimulationConfiguration {
  * You can provide four major error influences (sensor, object, enviroment and
  * human).
  */
-class OI_CORE_EXPORT SimulationModel : public QObject {
-  Q_OBJECT
-  Q_DISABLE_COPY_MOVE(SimulationModel)
-
+class OI_CORE_EXPORT SimulationModel : public oi::Trackable {
  public:
-  explicit SimulationModel(QObject* parent = nullptr);
+  explicit SimulationModel();
 
   ~SimulationModel() override;
 
@@ -190,7 +186,8 @@ class OI_CORE_EXPORT SimulationModel : public QObject {
   [[nodiscard]] const QMap<QString, UncertaintyComponent>& getHumanInfluence()
       const;
 
-  virtual bool distort(const QPointer<Reading>& r, const OiMat& objectRelation,
+  virtual bool distort(const oi::Guarded<Reading>& r,
+                       const OiMat& objectRelation,
                        const bool& newIterationStart);
   virtual bool analyseSimulationData(UncertaintyData& d);
   virtual double getCorrelationCoefficient(const QList<double>& x,

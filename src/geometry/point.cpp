@@ -9,9 +9,8 @@ using namespace oi::math;
 
 /*!
  * \brief Point::Point
- * \param parent
  */
-Point::Point(QObject* parent) : Geometry(parent), distance(-1.) {
+Point::Point() : Geometry(), distance(-1.) {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setPoint(this);
@@ -21,10 +20,8 @@ Point::Point(QObject* parent) : Geometry(parent), distance(-1.) {
 /*!
  * \brief Point::Point
  * \param xyz
- * \param parent
  */
-Point::Point(const Position& xyz, QObject* parent)
-    : Geometry(parent), distance(-1.) {
+Point::Point(const Position& xyz) : Geometry(), distance(-1.) {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setPoint(this);
@@ -33,8 +30,7 @@ Point::Point(const Position& xyz, QObject* parent)
   this->setPoint(xyz);
 }
 
-Point::Point(int id, const Position& xyz, QObject* parent)
-    : Geometry(parent), distance(-1.) {
+Point::Point(int id, const Position& xyz) : Geometry(), distance(-1.) {
   this->id = id;
 
   // set up feature wrapper
@@ -48,9 +44,8 @@ Point::Point(int id, const Position& xyz, QObject* parent)
 /*!
  * \brief Point::Point
  * \param copy
- * \param parent
  */
-Point::Point(const Point& copy, QObject* parent) : Geometry(copy, parent) {
+Point::Point(const Point& copy) : Geometry(copy) {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setPoint(this);
@@ -209,7 +204,7 @@ void Point::recalc() {
     centroid.setAt(2, 0.0);
     int usableCount = 0;
 
-    for (const QPointer<Observation>& observation :
+    for (const oi::Guarded<Observation>& observation :
          oi::snapshot(this->observations)) {
       if (observation.isNull() || !observation->getIsSolved()) {
         continue;
@@ -256,7 +251,7 @@ void Point::recalc() {
  */
 std::optional<QString> Point::getOwnerDescription() const {
   if (!this->producerFunction.has_value() && !this->observations.isEmpty()) {
-    const QPointer<Observation> firstObs = this->observations.constFirst();
+    const oi::Guarded<Observation> firstObs = this->observations.constFirst();
     if (!firstObs.isNull() && !firstObs->getStation().isNull()) {
       return QString("its station \"%1\"")
           .arg(firstObs->getStation()->getFeatureName());

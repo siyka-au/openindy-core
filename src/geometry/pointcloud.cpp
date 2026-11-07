@@ -8,9 +8,8 @@ using namespace oi::math;
 
 /*!
  * \brief PointCloud::PointCloud
- * \param parent
  */
-PointCloud::PointCloud(QObject* parent) : Geometry(parent) {
+PointCloud::PointCloud() : Geometry() {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setPointCloud(this);
@@ -21,8 +20,7 @@ PointCloud::PointCloud(QObject* parent) : Geometry(parent) {
  * \brief PointCloud::PointCloud
  * \param copy
  */
-PointCloud::PointCloud(const PointCloud& copy, QObject* parent)
-    : Geometry(copy, parent) {
+PointCloud::PointCloud(const PointCloud& copy) : Geometry(copy) {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setPointCloud(this);
@@ -65,14 +63,14 @@ unsigned long PointCloud::getPointCount() const { return this->points.size(); }
  * \param segment
  * \return
  */
-bool PointCloud::addSegment(const QPointer<FeatureWrapper>& segment) {
+bool PointCloud::addSegment(const oi::Guarded<FeatureWrapper>& segment) {
   // check segment
   if (segment.isNull() || segment->getGeometry().isNull()) {
     return false;
   }
 
   // check if a segment with that name already exists
-  for (const QPointer<FeatureWrapper>& detectedSegment :
+  for (const oi::Guarded<FeatureWrapper>& detectedSegment :
        oi::snapshot(this->detectedSegments)) {
     if (!detectedSegment.isNull() && !detectedSegment->getFeature().isNull() &&
         detectedSegment->getFeature()->getFeatureName().compare(

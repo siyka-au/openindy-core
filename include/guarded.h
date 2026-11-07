@@ -63,7 +63,7 @@ class Trackable {
 
 /*!
  * \brief Non-owning pointer to a Trackable-derived T that becomes null when
- * the target is destroyed. Behaves like QPointer<T>.
+ * the target is destroyed. Behaves like oi::Guarded<T>.
  */
 template <class T>
 class Guarded {
@@ -80,6 +80,11 @@ class Guarded {
   Guarded& operator=(Guarded&&) noexcept = default;
   Guarded& operator=(T* p) {
     assign(p);
+    return *this;
+  }
+  template <class U, class = std::enable_if_t<std::is_convertible_v<U*, T*>>>
+  Guarded& operator=(const Guarded<U>& other) {
+    control_ = other.control_;
     return *this;
   }
   Guarded& operator=(std::nullptr_t) {

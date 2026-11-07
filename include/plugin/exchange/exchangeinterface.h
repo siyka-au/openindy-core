@@ -2,14 +2,13 @@
 #define EXCHANGEINTERFACE_H
 
 #include <QIODevice>
-#include <QObject>
-#include <QPointer>
 #include <QStringList>
 
 #include "coordinatesystem.h"
 #include "core_export.h"
 #include "exchangeobserver.h"
 #include "featurewrapper.h"
+#include "guarded.h"
 #include "messagesink.h"
 #include "pluginmetadata.h"
 
@@ -19,12 +18,9 @@ namespace oi {
  * \brief The OiExchangeInterface class
  * Base class for implementing import/export plugins
  */
-class OI_CORE_EXPORT ExchangeInterface : public QObject {
-  Q_OBJECT
-  Q_DISABLE_COPY_MOVE(ExchangeInterface)
-
+class OI_CORE_EXPORT ExchangeInterface : public oi::Trackable {
  public:
-  explicit ExchangeInterface(QObject* parent = nullptr);
+  explicit ExchangeInterface();
 
   ~ExchangeInterface() override;
 
@@ -44,8 +40,8 @@ class OI_CORE_EXPORT ExchangeInterface : public QObject {
   [[nodiscard]] const QPointer<QIODevice>& getDevice() const;
   void setDevice(const QPointer<QIODevice>& device);
 
-  [[nodiscard]] const QList<QPointer<FeatureWrapper>>& getFeatures() const;
-  void setFeatures(const QList<QPointer<FeatureWrapper>>& features);
+  [[nodiscard]] const QList<oi::Guarded<FeatureWrapper>>& getFeatures() const;
+  void setFeatures(const QList<oi::Guarded<FeatureWrapper>>& features);
 
   [[nodiscard]] const bool& getExportObservations() const;
   void setExportObservations(const bool& exportObservations);
@@ -53,14 +49,13 @@ class OI_CORE_EXPORT ExchangeInterface : public QObject {
   [[nodiscard]] const QString& getGroupName() const;
   void setGroupName(const QString& groupName);
 
-  [[nodiscard]] const QPointer<CoordinateSystem>& getNominalSystem() const;
-  void setNominalSystem(const QPointer<CoordinateSystem>& nominalSystem);
+  [[nodiscard]] const oi::Guarded<CoordinateSystem>& getNominalSystem() const;
+  void setNominalSystem(const oi::Guarded<CoordinateSystem>& nominalSystem);
 
   [[nodiscard]] const QMap<DimensionType, UnitType>& getUnits() const;
   void setUnit(const DimensionType& dimension, const UnitType& unit);
 
- public slots:
-
+ public:
   // #########################
   // import and export methods
   // #########################
@@ -121,13 +116,13 @@ class OI_CORE_EXPORT ExchangeInterface : public QObject {
   bool exportObservations{};  // true if only the observations of the selected
                               // geometries shall be exported
   QString groupName;  // group that the imported nominals shall be added to
-  QPointer<CoordinateSystem>
+  oi::Guarded<CoordinateSystem>
       nominalSystem;  // nominal coordinate system the imported geometries are
                       // referenced to
 
   QPointer<QIODevice>
       device;  // the device used for the im- or export (e.g. a file)
-  QList<QPointer<FeatureWrapper>>
+  QList<oi::Guarded<FeatureWrapper>>
       features;  // the features that shall be exported or were imported
 
   PluginMetaData metaData;

@@ -8,9 +8,8 @@ using namespace oi::math;
 
 /*!
  * \brief Sphere::Sphere
- * \param parent
  */
-Sphere::Sphere(QObject* parent) : Geometry(parent) {
+Sphere::Sphere() : Geometry() {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setSphere(this);
@@ -21,10 +20,8 @@ Sphere::Sphere(QObject* parent) : Geometry(parent) {
  * \brief Sphere::Sphere
  * \param center
  * \param radius
- * \param parent
  */
-Sphere::Sphere(const Position& center, const Radius& radius, QObject* parent)
-    : Geometry(parent) {
+Sphere::Sphere(const Position& center, const Radius& radius) : Geometry() {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setSphere(this);
@@ -36,9 +33,8 @@ Sphere::Sphere(const Position& center, const Radius& radius, QObject* parent)
 /*!
  * \brief Sphere::Sphere
  * \param copy
- * \param parent
  */
-Sphere::Sphere(const Sphere& copy, QObject* parent) : Geometry(copy, parent) {
+Sphere::Sphere(const Sphere& copy) : Geometry(copy) {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setSphere(this);

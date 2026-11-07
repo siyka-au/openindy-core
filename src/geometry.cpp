@@ -15,17 +15,15 @@ using namespace oi::math;
 
 /*!
  * \brief Geometry::Geometry
- * \param parent
  */
-Geometry::Geometry(QObject* parent) : Feature(parent) {}
+Geometry::Geometry() : Feature() {}
 
 /*!
  * \brief Geometry::Geometry
  * \param copy
- * \param parent
  */
-Geometry::Geometry(const Geometry& copy, QObject* parent)
-    : Feature(copy, parent),
+Geometry::Geometry(const Geometry& copy)
+    : Feature(copy),
       activeMeasurementConfig(copy.activeMeasurementConfig),
       ijk(copy.ijk),
       isCommon(copy.isCommon),
@@ -74,7 +72,7 @@ Geometry::~Geometry() {
 
   // delete this geometry from the target geometries list of any
   // observations that reference it
-  for (const QPointer<Observation>& observation :
+  for (const oi::Guarded<Observation>& observation :
        oi::snapshot(this->observations)) {
     if (!observation.isNull()) {
       observation->removeTargetGeometry(this->id);
@@ -89,7 +87,7 @@ Geometry::~Geometry() {
   // even if an owned geometry is ever destroyed some other way.
   if (this->ownerFeature.has_value() && !this->ownerFeature->isNull()) {
     this->ownerFeature.value()->ownedSubGeometries.removeAll(
-        QPointer<Geometry>(this));
+        oi::Guarded<Geometry>(this));
   }
 }
 
@@ -145,7 +143,7 @@ std::optional<QString> Geometry::getOwnerDescription() const {
     return std::nullopt;
   }
 
-  const QPointer<Function> producer = this->producerFunction.value();
+  const oi::Guarded<Function> producer = this->producerFunction.value();
   if (producer.isNull() ||
       dynamic_cast<FitFunction*>(producer.data()) == nullptr) {
     return std::nullopt;
@@ -158,7 +156,7 @@ std::optional<QString> Geometry::getOwnerDescription() const {
  * \brief Geometry::getRealises
  * \return
  */
-const std::optional<QPointer<Geometry> >& Geometry::getRealises() const {
+const std::optional<oi::Guarded<Geometry> >& Geometry::getRealises() const {
   return this->realises;
 }
 
@@ -171,7 +169,7 @@ const std::optional<QPointer<Geometry> >& Geometry::getRealises() const {
  * \param nominal
  * \return
  */
-bool Geometry::setRealises(const QPointer<Geometry>& nominal) {
+bool Geometry::setRealises(const oi::Guarded<Geometry>& nominal) {
   if (nominal.isNull()) {
     return false;
   }
@@ -191,7 +189,7 @@ bool Geometry::setRealises(const QPointer<Geometry>& nominal) {
 
   // check if the nominal is in the same job
   if (!this->job.isNull()) {
-    QPointer<FeatureWrapper> jobNominal =
+    oi::Guarded<FeatureWrapper> jobNominal =
         this->job->getFeatureById(nominal->getId());
     if (jobNominal.isNull() || jobNominal->getGeometry().isNull() ||
         jobNominal->getGeometry() != nominal) {
@@ -219,7 +217,7 @@ void Geometry::clearRealises() {
  * \brief Geometry::getOwnerFeature
  * \return
  */
-const std::optional<QPointer<Geometry> >& Geometry::getOwnerFeature() const {
+const std::optional<oi::Guarded<Geometry> >& Geometry::getOwnerFeature() const {
   return this->ownerFeature;
 }
 
@@ -235,14 +233,14 @@ const std::optional<QPointer<Geometry> >& Geometry::getOwnerFeature() const {
  * \param owner
  * \return
  */
-bool Geometry::setOwnerFeature(const QPointer<Geometry>& owner) {
+bool Geometry::setOwnerFeature(const oi::Guarded<Geometry>& owner) {
   if (owner.isNull() || owner.data() == this) {
     return false;
   }
 
   this->ownerFeature = owner;
 
-  QPointer<Geometry> self(this);
+  oi::Guarded<Geometry> self(this);
   if (!owner->ownedSubGeometries.contains(self)) {
     owner->ownedSubGeometries.append(self);
   }
@@ -256,7 +254,7 @@ bool Geometry::setOwnerFeature(const QPointer<Geometry>& owner) {
  * \brief Geometry::getOwnedSubGeometries
  * \return
  */
-const QList<QPointer<Geometry> >& Geometry::getOwnedSubGeometries() const {
+const QList<oi::Guarded<Geometry> >& Geometry::getOwnedSubGeometries() const {
   return this->ownedSubGeometries;
 }
 
@@ -264,7 +262,7 @@ const QList<QPointer<Geometry> >& Geometry::getOwnedSubGeometries() const {
  * \brief Geometry::getObservations
  * \return
  */
-const QList<QPointer<Observation> >& Geometry::getObservations() const {
+const QList<oi::Guarded<Observation> >& Geometry::getObservations() const {
   return this->observations;
 }
 
@@ -272,7 +270,7 @@ const QList<QPointer<Observation> >& Geometry::getObservations() const {
  * \brief Geometry::addObservation
  * \param obs
  */
-void Geometry::addObservation(const QPointer<Observation>& obs) {
+void Geometry::addObservation(const oi::Guarded<Observation>& obs) {
   // this is the acquisition path writing to whatever it is measuring
   // into (an actual), not a user edit, so it is not gated by D19
   if (!obs.isNull()) {
@@ -303,7 +301,7 @@ void Geometry::addObservation(const QPointer<Observation>& obs) {
  * \brief Geometry::removeObservation
  * \param obs
  */
-void Geometry::removeObservation(const QPointer<Observation>& obs) {
+void Geometry::removeObservation(const oi::Guarded<Observation>& obs) {
   // check if obs is valid
   if (obs.isNull()) {
     return;
@@ -331,7 +329,7 @@ void Geometry::removeObservation(const QPointer<Observation>& obs) {
  * \brief Geometry::getNominalSystem
  * \return
  */
-const QPointer<CoordinateSystem>& Geometry::getNominalSystem() const {
+const oi::Guarded<CoordinateSystem>& Geometry::getNominalSystem() const {
   return this->nominalSystem;
 }
 
@@ -340,14 +338,14 @@ const QPointer<CoordinateSystem>& Geometry::getNominalSystem() const {
  * \param nomSys
  * \return
  */
-bool Geometry::setNominalSystem(const QPointer<CoordinateSystem>& nomSys) {
+bool Geometry::setNominalSystem(const oi::Guarded<CoordinateSystem>& nomSys) {
   // only a user-owned geometry (a nominal) is defined in a nominal
   // system; a fit-owned actual is not (D19)
   if (!nomSys.isNull() && !this->getOwnerDescription().has_value() &&
       this->nominalSystem != nomSys) {
     // check if nomSys is in the same job
     if (!this->job.isNull()) {
-      QPointer<FeatureWrapper> jobSystem =
+      oi::Guarded<FeatureWrapper> jobSystem =
           this->job->getFeatureById(nomSys->getId());
       if (jobSystem.isNull() || jobSystem->getCoordinateSystem().isNull() ||
           jobSystem->getCoordinateSystem() != nomSys) {
@@ -558,7 +556,7 @@ void Geometry::recalc() {
                               !(previousDirection == this->ijk.getVector()) ||
                               previousRadius != this->radius.getRadius();
     if (valueChanged) {
-      for (const QPointer<Geometry>& child :
+      for (const oi::Guarded<Geometry>& child :
            oi::snapshot(this->ownedSubGeometries)) {
         if (!child.isNull()) {
           child->setIsUpdated(false);
@@ -630,7 +628,7 @@ QString Geometry::getDisplayObservations() const {
   // geometry
   if (totalObs > 0 && this->producerFunction.has_value()) {
     // get and check function pointer
-    QPointer<Function> firstFunction = this->producerFunction.value();
+    oi::Guarded<Function> firstFunction = this->producerFunction.value();
     if (firstFunction.isNull()) {
       return QString("0/%1").arg(totalObs);
     }

@@ -2,15 +2,14 @@
 #define PLUGIN_H
 
 #include <QList>
-#include <QPointer>
 
 #include "bundleadjustment.h"
 #include "exchangedefinedformat.h"
 #include "exchangesimpleascii.h"
 #include "function.h"
+#include "guarded.h"
 #include "sensor.h"
 #include "simulationmodel.h"
-#include "tool.h"
 
 namespace oi {
 
@@ -25,29 +24,28 @@ class Plugin {
   // create instances of all available plugin types in a plugin
   // ##########################################################
 
-  virtual QList<QPointer<Sensor> > createSensors() = 0;
-  virtual QList<QPointer<Function> > createFunctions() = 0;
-  virtual QList<QPointer<BundleAdjustment> > createBundleAdjustments() = 0;
-  virtual QList<QPointer<SimulationModel> > createSimulations() = 0;
-  virtual QList<QPointer<Tool> > createTools() = 0;
-  virtual QList<QPointer<ExchangeSimpleAscii> >
+  virtual QList<oi::Guarded<Sensor> > createSensors() = 0;
+  virtual QList<oi::Guarded<Function> > createFunctions() = 0;
+  virtual QList<oi::Guarded<BundleAdjustment> > createBundleAdjustments() = 0;
+  virtual QList<oi::Guarded<SimulationModel> > createSimulations() = 0;
+  virtual QList<oi::Guarded<ExchangeSimpleAscii> >
   createSimpleAsciiExchanges() = 0;
-  virtual QList<QPointer<ExchangeDefinedFormat> >
+  virtual QList<oi::Guarded<ExchangeDefinedFormat> >
   createDefinedFormatExchanges() = 0;
 
   // ###################################################
   // create instances of a plugin type with a given name
   // ###################################################
 
-  virtual QPointer<Sensor> createSensor(const QString& name) = 0;
-  virtual QPointer<Function> createFunction(const QString& name) = 0;
-  virtual QPointer<BundleAdjustment> createBundleAdjustment(
+  virtual oi::Guarded<Sensor> createSensor(const QString& name) = 0;
+  virtual oi::Guarded<Function> createFunction(const QString& name) = 0;
+  virtual oi::Guarded<BundleAdjustment> createBundleAdjustment(
       const QString& name) = 0;
-  virtual QPointer<SimulationModel> createSimulation(const QString& name) = 0;
-  virtual QPointer<Tool> createTool(const QString& name) = 0;
-  virtual QPointer<ExchangeSimpleAscii> createSimpleAsciiExchange(
+  virtual oi::Guarded<SimulationModel> createSimulation(
       const QString& name) = 0;
-  virtual QPointer<ExchangeDefinedFormat> createDefinedFormatExchange(
+  virtual oi::Guarded<ExchangeSimpleAscii> createSimpleAsciiExchange(
+      const QString& name) = 0;
+  virtual oi::Guarded<ExchangeDefinedFormat> createDefinedFormatExchange(
       const QString& name) = 0;
 };
 

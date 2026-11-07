@@ -1,7 +1,6 @@
 #ifndef PLANE_H
 #define PLANE_H
 
-#include <QObject>
 #include <QtCore>
 
 #include "core_export.h"
@@ -16,15 +15,13 @@ namespace oi {
  */
 class OI_CORE_EXPORT Plane : public Geometry {
   friend struct codec::Access;  // the protobuf codec (see src/codec)
-  Q_OBJECT
 
  public:
-  explicit Plane(QObject* parent = nullptr);
-  Plane(const Position& xyz, const Direction& normal,
-        QObject* parent = nullptr);
-  Plane(const Direction& normal, const double& d, QObject* parent = nullptr);
+  explicit Plane();
+  Plane(const Position& xyz, const Direction& normal);
+  Plane(const Direction& normal, const double& d);
 
-  Plane(const Plane& copy, QObject* parent = nullptr);
+  Plane(const Plane& copy);
 
   Plane& operator=(const Plane& copy);
 

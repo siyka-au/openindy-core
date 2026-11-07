@@ -9,6 +9,7 @@
 #include "group.h"
 #include "oijob.h"
 #include "point.h"
+#include "queuedexecutor.h"
 #include "recordingjobobserver.h"
 #include "station.h"
 #include "trafoparam.h"
@@ -19,11 +20,8 @@ namespace {
 
 // A function a Point accepts as its producer (see tst_ownership)
 class FakeFit : public FitFunction, public Producer<Point> {
-  Q_OBJECT
  public:
-  explicit FakeFit(QObject* parent = nullptr) : FitFunction(parent) {
-    this->metaData.name = "FakeFit";
-  }
+  explicit FakeFit() : FitFunction() { this->metaData.name = "FakeFit"; }
   std::expected<Point, QString> exec() override { return Point(); }
 };
 
@@ -205,7 +203,7 @@ void FeatureObserverTest::groupMemberAdded() {
 void FeatureObserverTest::stationSystemObservationAdded() {
   OiJob job;
   Station* station = new Station("S1");
-  QPointer<FeatureWrapper> wrapper = station->getFeatureWrapper();
+  oi::Guarded<FeatureWrapper> wrapper = station->getFeatureWrapper();
   QVERIFY(job.addFeature(wrapper));
 
   RecordingJobObserver spy;
@@ -213,8 +211,8 @@ void FeatureObserverTest::stationSystemObservationAdded() {
 
   ReadingCartesian r;
   r.isValid = true;
-  QPointer<Reading> reading = new Reading(r);
-  QPointer<Observation> obs = new Observation();
+  oi::Guarded<Reading> reading = new Reading(r);
+  oi::Guarded<Observation> obs = new Observation();
   reading->setObservation(obs);
   QVERIFY(station->getCoordinateSystem()->addObservation(obs));
   QCOMPARE(spy.count("systemObservationsChanged"), 1);
@@ -272,7 +270,7 @@ void FeatureObserverTest::observerIsClearedWhenFeatureIsRemovedFromJob() {
   OiJob job;
   Point* point = new Point();
   point->setFeatureName("P1");
-  QPointer<Point> guard(point);
+  oi::Guarded<Point> guard(point);
   QVERIFY(job.addFeature(point->getFeatureWrapper()));
   QCOMPARE(point->getObserver(), static_cast<FeatureObserver*>(&job));
   QCOMPARE(job.getFeatureCount(), 1);
@@ -288,7 +286,7 @@ void FeatureObserverTest::observerIsClearedWhenFeatureIsRemovedFromJob() {
 void FeatureObserverTest::observerIsClearedWhenJobIsDestroyed() {
   Point* point = new Point();
   point->setFeatureName("P1");
-  QPointer<Point> guard(point);
+  oi::Guarded<Point> guard(point);
   RecordingObserver rec;
 
   {
@@ -317,8 +315,8 @@ void FeatureObserverTest::observerIsClearedWhenJobIsDestroyed() {
 
 void FeatureObserverTest::stationSystemObserverIsClearedWhenJobIsDestroyed() {
   Station* station = new Station("S1");
-  QPointer<Station> guard(station);
-  QPointer<CoordinateSystem> system = station->getCoordinateSystem();
+  oi::Guarded<Station> guard(station);
+  oi::Guarded<CoordinateSystem> system = station->getCoordinateSystem();
   QVERIFY(!system.isNull());
   {
     OiJob job;
@@ -356,7 +354,9 @@ void FeatureObserverTest::jobRelaysIntoItsOwnSignals() {
 }
 
 void FeatureObserverTest::jobDeliversIsSolvedDeferred() {
+  QueuedExecutor executor;
   OiJob job;
+  job.setExecutor(&executor);
   Point point;
   point.setFeatureName("P1");
   QVERIFY(job.addFeature(point.getFeatureWrapper()));
@@ -365,7 +365,7 @@ void FeatureObserverTest::jobDeliversIsSolvedDeferred() {
   spy.attach(&job);
   point.setIsSolved(true);
   QCOMPARE(spy.count("featureIsSolvedChanged"), 0);  // queued, not delivered
-  QCoreApplication::processEvents();
+  executor.flush();
   QCOMPARE(spy.count("featureIsSolvedChanged"), 1);
   QVERIFY(spy.calls.contains(
       QString("featureIsSolvedChanged:%1").arg(point.getId())));

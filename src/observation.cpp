@@ -17,10 +17,9 @@ using namespace oi::math;
 
 /*!
  * \brief Observation::Observation
- * \param parent
  */
-Observation::Observation(QObject* parent)
-    : Point(parent),
+Observation::Observation()
+    : Point(),
       isValid(false),
       isSolved(false),
       hasDirection(false),
@@ -37,10 +36,9 @@ Observation::Observation(QObject* parent)
 /*!
  * \brief Observation::Observation
  * \param copy
- * \param parent
  */
-Observation::Observation(const Observation& copy, QObject* parent)
-    : Point(copy, parent),
+Observation::Observation(const Observation& copy)
+    : Point(copy),
       hasDirection(copy.hasDirection),
       ijk(copy.ijk),
       isDummyPoint(copy.isDummyPoint),
@@ -66,10 +64,9 @@ Observation::Observation(const Observation& copy, QObject* parent)
  * \brief Observation::Observation
  * \param xyz
  * \param isValid
- * \param parent
  */
-Observation::Observation(const OiVec& xyz, bool isValid, QObject* parent)
-    : Point(parent),
+Observation::Observation(const OiVec& xyz, bool isValid)
+    : Point(),
       isValid(isValid),
       isSolved(false),
       hasDirection(false),
@@ -94,11 +91,9 @@ Observation::Observation(const OiVec& xyz, bool isValid, QObject* parent)
  * \param xyz
  * \param observation id
  * \param isValid
- * \param parent
  */
-Observation::Observation(const OiVec& xyz, int id, bool isValid,
-                         QObject* parent)
-    : Point(parent),
+Observation::Observation(const OiVec& xyz, int id, bool isValid)
+    : Point(),
       isValid(isValid),
       isSolved(false),
       hasDirection(false),
@@ -156,10 +151,10 @@ Observation::~Observation() {
     return;
   }
 
-  QList<QPointer<Geometry> > targetGeometries;
+  QList<oi::Guarded<Geometry> > targetGeometries;
 
   // remove observation and reading from its target geometries
-  for (const QPointer<Geometry>& geom :
+  for (const oi::Guarded<Geometry>& geom :
        oi::snapshot(this->getTargetGeometries())) {
     // check target geometry
     if (geom.isNull()) {
@@ -168,18 +163,16 @@ Observation::~Observation() {
     targetGeometries.append(geom);
 
     // remove observation and reading from functions of the targte geometry
-    for (const QPointer<Function>& function :
+    for (const oi::Guarded<Function>& function :
          oi::snapshot(geom->getFunctions())) {
       // check function and remove elements
       if (!function.isNull()) {
-        function->blockSignals(true);
         function->removeInputElement(this->getId());
         function->removeInputElement(this->getReading()->getId());
-        function->blockSignals(false);
       }
     }
   }
-  for (const QPointer<Geometry>& geom : oi::snapshot(targetGeometries)) {
+  for (const oi::Guarded<Geometry>& geom : oi::snapshot(targetGeometries)) {
     geom->blockSignals(true);
     this->removeTargetGeometry(geom->getId());
     geom->blockSignals(false);
@@ -332,7 +325,7 @@ const OiVec& Observation::getOriginalSigmaIjk() const {
  * \brief Observation::getStation
  * \return
  */
-const QPointer<Station>& Observation::getStation() const {
+const oi::Guarded<Station>& Observation::getStation() const {
   return this->station;
 }
 
@@ -340,7 +333,7 @@ const QPointer<Station>& Observation::getStation() const {
  * \brief Observation::setStation
  * \param station
  */
-void Observation::setStation(const QPointer<Station>& station) {
+void Observation::setStation(const oi::Guarded<Station>& station) {
   if (this->station.isNull() && !station.isNull()) {
     this->station = station;
   }
@@ -351,21 +344,21 @@ void Observation::setStation(const QPointer<Station>& station) {
  * Resolves the inherited Point::intents (D12) back into live Geometry
  * pointers via this observation's job, for the pre-existing callers that
  * want "what geometry is this for" rather than a bare feature id. Returned
- * by value (rather than the old by-reference QList<QPointer<Geometry>>&)
+ * by value (rather than the old by-reference QList<oi::Guarded<Geometry>>&)
  * since there is no single stored list left to bind a reference to - a
  * const& binding a caller takes to the returned temporary is still safe
  * (lifetime extension), so this did not require touching call sites.
  * \return
  */
-QList<QPointer<Geometry> > Observation::getTargetGeometries() const {
-  QList<QPointer<Geometry> > result;
+QList<oi::Guarded<Geometry> > Observation::getTargetGeometries() const {
+  QList<oi::Guarded<Geometry> > result;
 
   if (this->job.isNull()) {
     return result;
   }
 
   for (const MeasurementIntent& intent : oi::snapshot(this->getIntents())) {
-    const QPointer<FeatureWrapper> feature =
+    const oi::Guarded<FeatureWrapper> feature =
         this->job->getFeatureById(intent.featureId);
     if (!feature.isNull() && !feature->getGeometry().isNull() &&
         !result.contains(feature->getGeometry())) {
@@ -383,7 +376,8 @@ QList<QPointer<Geometry> > Observation::getTargetGeometries() const {
  * so an empty role preserves their behaviour exactly.
  * \param targetGeometry
  */
-void Observation::addTargetGeometry(const QPointer<Geometry>& targetGeometry) {
+void Observation::addTargetGeometry(
+    const oi::Guarded<Geometry>& targetGeometry) {
   if (!targetGeometry.isNull()) {
     const MeasurementIntent intent(targetGeometry->getId(), QString());
 
@@ -412,7 +406,7 @@ void Observation::addTargetGeometry(const QPointer<Geometry>& targetGeometry) {
  * \param targetGeometry
  */
 void Observation::removeTargetGeometry(
-    const QPointer<Geometry>& targetGeometry) {
+    const oi::Guarded<Geometry>& targetGeometry) {
   if (targetGeometry.isNull()) {
     return;
   }
@@ -439,13 +433,14 @@ void Observation::removeTargetGeometry(
  */
 void Observation::removeTargetGeometry(const int& geomId) {
   if (!this->job.isNull()) {
-    const QPointer<FeatureWrapper> feature = this->job->getFeatureById(geomId);
+    const oi::Guarded<FeatureWrapper> feature =
+        this->job->getFeatureById(geomId);
     if (!feature.isNull() && !feature->getGeometry().isNull()) {
       this->removeTargetGeometry(feature->getGeometry());
     }
   }
 
-  const QList<QPointer<Geometry> > remaining = this->getTargetGeometries();
+  const QList<oi::Guarded<Geometry> > remaining = this->getTargetGeometries();
   if (this->measuredTargetGeometry.isNull() && remaining.size() == 1) {
     this->measuredTargetGeometry = remaining.at(0);
   }
@@ -455,7 +450,7 @@ void Observation::removeTargetGeometry(const int& geomId) {
  * \brief Observation::getMeasuredTargetGeometry
  * \return
  */
-const QPointer<Geometry>& Observation::getMeasuredTargetGeometry() const {
+const oi::Guarded<Geometry>& Observation::getMeasuredTargetGeometry() const {
   return this->measuredTargetGeometry;
 }
 
@@ -464,7 +459,7 @@ const QPointer<Geometry>& Observation::getMeasuredTargetGeometry() const {
  * \param measuredTargetGeom
  */
 void Observation::setMeasuredTargetGeometry(
-    const QPointer<Geometry>& measuredTargetGeom) {
+    const oi::Guarded<Geometry>& measuredTargetGeom) {
   if (!measuredTargetGeom.isNull()) {
     this->measuredTargetGeometry = measuredTargetGeom;
   }
@@ -474,7 +469,7 @@ void Observation::setMeasuredTargetGeometry(
  * \brief Observation::getReading
  * \return
  */
-const QPointer<Reading>& Observation::getReading() const {
+const oi::Guarded<Reading>& Observation::getReading() const {
   return this->reading;
 }
 
@@ -482,7 +477,7 @@ const QPointer<Reading>& Observation::getReading() const {
  * \brief Observation::setReading
  * \param reading
  */
-/*void Observation::setReading(const QPointer<Reading> &reading){
+/*void Observation::setReading(const oi::Guarded<Reading> &reading){
     if(!reading.isNull()){
         this->reading = reading;
     }
@@ -555,7 +550,7 @@ QString Observation::getDisplayStation() const {
  */
 QString Observation::getDisplayTargetGeometries() const {
   QString result = "";
-  for (const QPointer<Geometry>& geometry :
+  for (const oi::Guarded<Geometry>& geometry :
        oi::snapshot(this->getTargetGeometries())) {
     if (geometry.isNull()) {
       continue;

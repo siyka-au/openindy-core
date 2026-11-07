@@ -8,9 +8,8 @@ using namespace oi::math;
 
 /*!
  * \brief Ellipse::Ellipse
- * \param parent
  */
-Ellipse::Ellipse(QObject* parent) : Geometry(parent) {
+Ellipse::Ellipse() : Geometry() {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setEllipse(this);
@@ -24,12 +23,11 @@ Ellipse::Ellipse(QObject* parent) : Geometry(parent) {
  * \param a
  * \param b
  * \param semiMajorAxis
- * \param parent
  */
 Ellipse::Ellipse(const Position& center, const Direction& normal,
                  const double& a, const double& b,
-                 const Direction& semiMajorAxis, QObject* parent)
-    : Geometry(parent) {
+                 const Direction& semiMajorAxis)
+    : Geometry() {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setEllipse(this);
@@ -41,10 +39,8 @@ Ellipse::Ellipse(const Position& center, const Direction& normal,
 /*!
  * \brief Ellipse::Ellipse
  * \param copy
- * \param parent
  */
-Ellipse::Ellipse(const Ellipse& copy, QObject* parent)
-    : Geometry(copy, parent) {
+Ellipse::Ellipse(const Ellipse& copy) : Geometry(copy) {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setEllipse(this);

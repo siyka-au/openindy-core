@@ -2,8 +2,6 @@
 #define FEATURE_H
 
 #include <QList>
-#include <QObject>
-#include <QPointer>
 #include <QString>
 #include <QtCore>
 #include <optional>
@@ -12,6 +10,7 @@
 #include "core_export.h"
 #include "element.h"
 #include "featureobserver.h"
+#include "guarded.h"
 
 namespace oi {
 
@@ -24,12 +23,11 @@ class Function;
 class OI_CORE_EXPORT Feature : public Element {
   friend class OiJob;
   friend struct codec::Access;  // the protobuf codec (see src/codec)
-  Q_OBJECT
 
  public:
-  explicit Feature(QObject* parent = nullptr);
+  explicit Feature();
 
-  Feature(const Feature& copy, QObject* parent = nullptr);
+  Feature(const Feature& copy);
 
   Feature& operator=(const Feature& copy);
 
@@ -39,7 +37,7 @@ class OI_CORE_EXPORT Feature : public Element {
   // get the feature wrapped by a feature wrapper
   // ############################################
 
-  [[nodiscard]] const QPointer<FeatureWrapper>& getFeatureWrapper() const;
+  [[nodiscard]] const oi::Guarded<FeatureWrapper>& getFeatureWrapper() const;
 
   // #############################
   // get or set feature attributes
@@ -72,24 +70,25 @@ class OI_CORE_EXPORT Feature : public Element {
   // cares about the distinction.
   // ###############################################################
 
-  [[nodiscard]] QList<QPointer<Function>> getFunctions() const;
-  [[nodiscard]] const std::optional<QPointer<Function>>& getProducerFunction()
+  [[nodiscard]] QList<oi::Guarded<Function>> getFunctions() const;
+  [[nodiscard]] const std::optional<oi::Guarded<Function>>&
+  getProducerFunction() const;
+  [[nodiscard]] const QList<oi::Guarded<Function>>& getTransformFunctions()
       const;
-  [[nodiscard]] const QList<QPointer<Function>>& getTransformFunctions() const;
-  void addFunction(const QPointer<Function>& function);
+  void addFunction(const oi::Guarded<Function>& function);
   void removeFunction(const int& index);
 
   [[nodiscard]] const bool& getIsActiveFeature() const;
   void setActiveFeatureState(const bool& isActiveFeature);
 
-  [[nodiscard]] const QList<QPointer<FeatureWrapper>>& getUsedFor() const;
-  bool addUsedFor(const QPointer<FeatureWrapper>& feature);
-  bool removeUsedFor(const QPointer<FeatureWrapper>& feature);
+  [[nodiscard]] const QList<oi::Guarded<FeatureWrapper>>& getUsedFor() const;
+  bool addUsedFor(const oi::Guarded<FeatureWrapper>& feature);
+  bool removeUsedFor(const oi::Guarded<FeatureWrapper>& feature);
 
-  [[nodiscard]] const QList<QPointer<FeatureWrapper>>& getPreviouslyNeeded()
+  [[nodiscard]] const QList<oi::Guarded<FeatureWrapper>>& getPreviouslyNeeded()
       const;
-  bool addPreviouslyNeeded(const QPointer<FeatureWrapper>& feature);
-  bool removePreviouslyNeeded(const QPointer<FeatureWrapper>& feature);
+  bool addPreviouslyNeeded(const oi::Guarded<FeatureWrapper>& feature);
+  bool removePreviouslyNeeded(const oi::Guarded<FeatureWrapper>& feature);
 
   // ###############################################################
   // ownership determines editability and origin (D19, domain-model
@@ -237,6 +236,17 @@ class OI_CORE_EXPORT Feature : public Element {
   void setObserver(FeatureObserver* observer) { this->observer = observer; }
   [[nodiscard]] FeatureObserver* getObserver() const { return this->observer; }
 
+  // suppress the notifications to the observer while true (returns the
+  // previous state)
+  bool blockSignals(bool block) {
+    const bool previous = this->notificationsBlocked;
+    this->notificationsBlocked = block;
+    return previous;
+  }
+  [[nodiscard]] bool signalsBlocked() const {
+    return this->notificationsBlocked;
+  }
+
  protected:
   // called (unless signals are blocked) after the name changed, before the
   // observer is told - lets a subclass react to its own rename
@@ -274,6 +284,7 @@ class OI_CORE_EXPORT Feature : public Element {
   // ##################
 
   FeatureObserver* observer{nullptr};  // not owned, never copied
+  bool notificationsBlocked{false};    // see blockSignals
 
   QString name;
   QString group;
@@ -294,29 +305,29 @@ class OI_CORE_EXPORT Feature : public Element {
   // validated-and-rejected input: it is a shape addFunction() will not
   // construct (see Function::canActAsProducer/canActAsTransform, the
   // runtime dynamic_cast check at the attach call site).
-  std::optional<QPointer<Function>> producerFunction;
-  QList<QPointer<Function>> transformFunctions;
+  std::optional<oi::Guarded<Function>> producerFunction;
+  QList<oi::Guarded<Function>> transformFunctions;
 
-  QList<QPointer<FeatureWrapper>>
+  QList<oi::Guarded<FeatureWrapper>>
       usedForList;  // features which need this feature to recalc
-  QMap<int, QPointer<FeatureWrapper>> usedForMap;
-  QList<QPointer<FeatureWrapper>>
+  QMap<int, oi::Guarded<FeatureWrapper>> usedForMap;
+  QList<oi::Guarded<FeatureWrapper>>
       previouslyNeededList;  // features which are needed to recalc this feature
-  QMap<int, QPointer<FeatureWrapper>> previouslyNeededMap;
+  QMap<int, oi::Guarded<FeatureWrapper>> previouslyNeededMap;
 
   // ######################################
   // this pointer wrapped by FeatureWrapper
   // ######################################
 
-  QPointer<FeatureWrapper> selfFeature;
+  oi::Guarded<FeatureWrapper> selfFeature;
 
   // #############################################
   // pointer to OiJob that this feature belongs to
   // #############################################
 
-  virtual void setJob(const QPointer<OiJob>& job);
+  virtual void setJob(const oi::Guarded<OiJob>& job);
 
-  QPointer<OiJob> job;
+  oi::Guarded<OiJob> job;
 };
 
 }  // namespace oi

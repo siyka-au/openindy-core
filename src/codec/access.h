@@ -6,12 +6,12 @@
 // directly, the way the classes' own fromOpenIndyXML used to.
 
 #include <QJsonObject>
-#include <QPointer>
 
 #include "convert.h"
 #include "featurewrapper.h"
 #include "geometry/point.h"
 #include "geometry/pointcloud.h"
+#include "guarded.h"
 #include "oijob.h"
 #include "wire.h"
 
@@ -103,7 +103,7 @@ struct Access {
     set4(o.originalSigmaIjk, m.original_sigma_ijk());
   }
 
-  static void setReading(Observation& o, const QPointer<Reading>& reading) {
+  static void setReading(Observation& o, const oi::Guarded<Reading>& reading) {
     o.reading = reading;
   }
 
@@ -111,13 +111,13 @@ struct Access {
 
   // ---- Reading ----
   static void encodeReading(const Reading& r, oipb::Reading* m);
-  static QPointer<Reading> decodeReading(const oipb::Reading& m);
+  static oi::Guarded<Reading> decodeReading(const oipb::Reading& m);
 
   // ---- Geometry (geometry.cpp) ----
   template <class T>
-  static QPointer<Geometry> restoreBase(const oipb::Geometry& m);
+  static oi::Guarded<Geometry> restoreBase(const oipb::Geometry& m);
   static void encodeGeometry(const Geometry& g, oipb::Geometry* m);
-  static QPointer<Geometry> decodeGeometry(const oipb::Geometry& m);
+  static oi::Guarded<Geometry> decodeGeometry(const oipb::Geometry& m);
 
   // ---- Function (functions.cpp) ----
   static void encodeFunction(const Function& f, oipb::FunctionRecord* m);
@@ -136,14 +136,14 @@ struct Access {
 
   // The station comes with a default position and station system; the saved
   // ones replace them.
-  static void setStationPosition(Station& s, const QPointer<Point>& point) {
+  static void setStationPosition(Station& s, const oi::Guarded<Point>& point) {
     if (s.position != point) {
       delete s.position.data();
     }
     s.position = point;
   }
   static void setStationSystem(Station& s,
-                               const QPointer<CoordinateSystem>& system) {
+                               const oi::Guarded<CoordinateSystem>& system) {
     if (s.stationSystem != system) {
       delete s.stationSystem.data();
     }
@@ -154,7 +154,8 @@ struct Access {
   static void setUsedSensors(Station& s, const QList<Sensor>& sensors) {
     s.setUsedSensors(sensors);
   }
-  static void addStationReading(Station& s, const QPointer<Reading>& reading) {
+  static void addStationReading(Station& s,
+                                const oi::Guarded<Reading>& reading) {
     switch (reading->getTypeOfReading()) {
       case ReadingTypes::eCartesianReading:
         s.cartesianReadings.append(reading);
@@ -178,31 +179,31 @@ struct Access {
         break;
     }
   }
-  static void addSystemObservation(CoordinateSystem& system,
-                                   const QPointer<Observation>& observation) {
+  static void addSystemObservation(
+      CoordinateSystem& system, const oi::Guarded<Observation>& observation) {
     system.observationsList.append(observation);
     system.observationsMap.insert(observation->getId(), observation);
   }
   static void addSystemNominal(CoordinateSystem& system,
-                               const QPointer<FeatureWrapper>& nominal) {
+                               const oi::Guarded<FeatureWrapper>& nominal) {
     system.nominalsList.append(nominal);
     system.nominalsMap.insert(nominal->getFeature()->getId(), nominal);
   }
 
   static void addSegment(PointCloud& cloud,
-                         const QPointer<FeatureWrapper>& segment) {
+                         const oi::Guarded<FeatureWrapper>& segment) {
     cloud.detectedSegments.append(segment);
   }
 
   static int nextId(const OiJob& job) { return job.nextId; }
   static void setNextId(OiJob& job, int next) { job.nextId = next; }
-  static void adopt(OiJob& job, const QList<QPointer<FeatureWrapper>>& f) {
+  static void adopt(OiJob& job, const QList<oi::Guarded<FeatureWrapper>>& f) {
     job.addFeaturesFromXml(f);
   }
 
   // ---- Group (geometry.cpp) ----
   static void encodeGroup(const Group& g, oipb::Group* m);
-  static QPointer<Group> decodeGroup(const oipb::Group& m);
+  static oi::Guarded<Group> decodeGroup(const oipb::Group& m);
 };
 
 }  // namespace oi::codec

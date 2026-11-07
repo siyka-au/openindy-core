@@ -4,12 +4,11 @@
 #include <math.h>
 
 #include <QList>
-#include <QObject>
-#include <QPointer>
 #include <optional>
 
 #include "core_export.h"
 #include "geometry/point.h"
+#include "guarded.h"
 #include "oivec.h"
 #include "statistic.h"
 
@@ -58,15 +57,13 @@ class OI_CORE_EXPORT Observation : public Point {
   friend class CoordinateSystem;
   friend class ::TrafoController;
   friend struct codec::Access;  // the protobuf codec (see src/codec)
-  Q_OBJECT
 
  public:
-  explicit Observation(QObject* parent = nullptr);
+  explicit Observation();
 
-  Observation(const Observation& copy, QObject* parent = nullptr);
-  Observation(const OiVec& xyz, bool isValid, QObject* parent = nullptr);
-  Observation(const OiVec& xyz, int id, bool isValid,
-              QObject* parent = nullptr);
+  Observation(const Observation& copy);
+  Observation(const OiVec& xyz, bool isValid);
+  Observation(const OiVec& xyz, int id, bool isValid);
 
   Observation& operator=(const Observation& copy);
 
@@ -100,23 +97,24 @@ class OI_CORE_EXPORT Observation : public Point {
   // get and set station, reading and target geometries
   // ##################################################
 
-  const QPointer<Station>& getStation() const;
-  void setStation(const QPointer<Station>& station);
+  const oi::Guarded<Station>& getStation() const;
+  void setStation(const oi::Guarded<Station>& station);
 
   // D12: backed by the inherited Point::intents (MeasurementIntent) list
   // rather than a second, Observation-only membership list - see
-  // point.h/measurementintent.h. Kept as QPointer<Geometry> convenience
+  // point.h/measurementintent.h. Kept as oi::Guarded<Geometry> convenience
   // accessors (resolved via job) so existing call sites did not all need
   // to move to raw ids; roleName is not exposed here, only feature
   // identity, since none of the pre-existing callers distinguished roles.
-  QList<QPointer<Geometry> > getTargetGeometries() const;
-  void addTargetGeometry(const QPointer<Geometry>& targetGeometry);
-  void removeTargetGeometry(const QPointer<Geometry>& targetGeometry);
+  QList<oi::Guarded<Geometry> > getTargetGeometries() const;
+  void addTargetGeometry(const oi::Guarded<Geometry>& targetGeometry);
+  void removeTargetGeometry(const oi::Guarded<Geometry>& targetGeometry);
   void removeTargetGeometry(const int& geomId);
-  const QPointer<Geometry>& getMeasuredTargetGeometry() const;
-  void setMeasuredTargetGeometry(const QPointer<Geometry>& measuredTargetGeom);
+  const oi::Guarded<Geometry>& getMeasuredTargetGeometry() const;
+  void setMeasuredTargetGeometry(
+      const oi::Guarded<Geometry>& measuredTargetGeom);
 
-  const QPointer<Reading>& getReading() const;
+  const oi::Guarded<Reading>& getReading() const;
 
   // D19/D20: always station-owned, always read-only - see observation.cpp
   std::optional<QString> getOwnerDescription() const override;
@@ -175,15 +173,15 @@ class OI_CORE_EXPORT Observation : public Point {
   // references to station, reading and target geometries
   // ####################################################
 
-  QPointer<Station> station;
+  oi::Guarded<Station> station;
 
-  QPointer<Geometry> measuredTargetGeometry;
+  oi::Guarded<Geometry> measuredTargetGeometry;
 
   // backing store for the getPosition() override, computed from xyz on
   // each call - see observation.cpp
   mutable Position positionCache;
 
-  QPointer<Reading> reading;
+  oi::Guarded<Reading> reading;
 
   // ###################################################
   // booleans that indicate the state of the observation

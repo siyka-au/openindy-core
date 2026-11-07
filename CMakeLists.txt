@@ -121,7 +121,6 @@ add_library(OpenIndyCore SHARED
     src/plugin/networkAdjustment/bundleadjustment.cpp
     src/plugin/sensor/sensor.cpp
     src/plugin/simulation/simulationmodel.cpp
-    src/plugin/tool/tool.cpp
     src/util/util.cpp
     src/coordinatesystem.cpp
     src/direction.cpp
@@ -190,7 +189,6 @@ add_library(OpenIndyCore SHARED
     include/plugin/sensor/sensorsink.h
     include/plugin/sensor/totalstation.h
     include/plugin/simulation/simulationmodel.h
-    include/plugin/tool/tool.h
     include/util/types.h
     include/util/util.h
     include/coordinatesystem.h
@@ -257,7 +255,6 @@ target_include_directories(OpenIndyCore
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/plugin/networkAdjustment>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/plugin/sensor>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/plugin/simulation>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/plugin/tool>
         $<INSTALL_INTERFACE:include>
 )
 

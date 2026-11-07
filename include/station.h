@@ -2,14 +2,13 @@
 #define STATION_H
 
 #include <QList>
-#include <QObject>
-#include <QPointer>
 #include <atomic>
 #include <memory>
 
 #include "core_export.h"
 #include "executor.h"
 #include "feature.h"
+#include "guarded.h"
 #include "point.h"
 #include "sensorcontrol.h"
 #include "stationobserver.h"
@@ -30,13 +29,12 @@ class OI_CORE_EXPORT Station : public Feature {
   friend class ::ProjectExchanger;
   friend class Observation;
   friend struct codec::Access;  // the protobuf codec (see src/codec)
-  Q_OBJECT
 
  public:
-  explicit Station(QObject* parent = nullptr);
-  explicit Station(const QString& name, QObject* parent = nullptr);
+  explicit Station();
+  explicit Station(const QString& name);
 
-  Station(const Station& copy, QObject* parent = nullptr);
+  Station(const Station& copy);
 
   Station& operator=(const Station& copy);
 
@@ -51,7 +49,7 @@ class OI_CORE_EXPORT Station : public Feature {
   void setActiveStationState(const bool& isActiveStation);
 
   // position
-  [[nodiscard]] const QPointer<Point>& getPosition() const;
+  [[nodiscard]] const oi::Guarded<Point>& getPosition() const;
   [[nodiscard]] const Direction& getXAxis() const;
   [[nodiscard]] const Direction& getYAxis() const;
   [[nodiscard]] const Direction& getZAxis() const;
@@ -59,10 +57,11 @@ class OI_CORE_EXPORT Station : public Feature {
                            const Direction& yAxis, const Direction& zAxis);
 
   // coordinate system
-  [[nodiscard]] const QPointer<CoordinateSystem>& getCoordinateSystem() const;
-  void setEstimatedCoordinateSystem(QPointer<CoordinateSystem> cs);
-  [[nodiscard]] const QPointer<CoordinateSystem>& getEstimatedCoordinateSystem()
+  [[nodiscard]] const oi::Guarded<CoordinateSystem>& getCoordinateSystem()
       const;
+  void setEstimatedCoordinateSystem(oi::Guarded<CoordinateSystem> cs);
+  [[nodiscard]] const oi::Guarded<CoordinateSystem>&
+  getEstimatedCoordinateSystem() const;
 
   // get or set sensor configuration
   SensorConfiguration getSensorConfiguration();
@@ -70,15 +69,15 @@ class OI_CORE_EXPORT Station : public Feature {
 
   // get or set sensor
   [[nodiscard]] Sensor getSensor() const;
-  void setSensor(const QPointer<Sensor>& sensor);
-  QPointer<Sensor> takeSensor();
+  void setSensor(const oi::Guarded<Sensor>& sensor);
+  oi::Guarded<Sensor> takeSensor();
   void resetSensor();
 
   // previously used sensors
   [[nodiscard]] const QList<Sensor> getUsedSensors() const;
 
   // get geometries measured from this station
-  [[nodiscard]] QList<QPointer<Geometry>> getTargetGeometries() const;
+  [[nodiscard]] QList<oi::Guarded<Geometry>> getTargetGeometries() const;
 
   // ####################################################
   // get information about the currently connected sensor
@@ -211,7 +210,7 @@ class OI_CORE_EXPORT Station : public Feature {
   bool isActiveStation;
 
   // the position of the station
-  QPointer<Point> position;
+  oi::Guarded<Point> position;
   Direction xAxis;  // x axis of the coordinate system in the current display
                     // coordinate system
   Direction yAxis;  // y axis of the coordinate system in the current display
@@ -226,27 +225,26 @@ class OI_CORE_EXPORT Station : public Feature {
   std::atomic<StationObserver*> stationObserver{nullptr};
 
   // the corresponding coordinate system
-  QPointer<CoordinateSystem> stationSystem;
-  QPointer<CoordinateSystem> estimatedStationSystem;
+  oi::Guarded<CoordinateSystem> stationSystem;
+  oi::Guarded<CoordinateSystem> estimatedStationSystem;
 
   // #############################
   // readings made by this station
   // #############################
 
-  QList<QPointer<Reading>> cartesianReadings;
-  QList<QPointer<Reading>> directionReadings;
-  QList<QPointer<Reading>> distanceReadings;
-  QList<QPointer<Reading>> polarReadings;
-  QList<QPointer<Reading>> levelReadings;
-  QList<QPointer<Reading>> temperatureRadings;
-  QList<QPointer<Reading>> undefinedReadings;
+  QList<oi::Guarded<Reading>> cartesianReadings;
+  QList<oi::Guarded<Reading>> directionReadings;
+  QList<oi::Guarded<Reading>> distanceReadings;
+  QList<oi::Guarded<Reading>> polarReadings;
+  QList<oi::Guarded<Reading>> levelReadings;
+  QList<oi::Guarded<Reading>> temperatureRadings;
+  QList<oi::Guarded<Reading>> undefinedReadings;
 
  protected:
   // keep the station system's name in step with the station's
   void nameWasChanged(const QString& oldName) override;
 
- private slots:
-
+ private:
   // ##############
   // helper methods
   // ##############
@@ -259,8 +257,9 @@ class OI_CORE_EXPORT Station : public Feature {
   void createSensorControl();
 
   // add or remove readings
-  void addReadings(const int& geomId, const QList<QPointer<Reading>>& readings);
-  void removeReading(const QPointer<Reading>& reading);
+  void addReadings(const int& geomId,
+                   const QList<oi::Guarded<Reading>>& readings);
+  void removeReading(const oi::Guarded<Reading>& reading);
 
   // set previously used sensors
   void setUsedSensors(const QList<Sensor>& sensors);
@@ -270,7 +269,7 @@ class OI_CORE_EXPORT Station : public Feature {
   // pointer to OiJob that this feature belongs to
   // #############################################
 
-  void setJob(const QPointer<OiJob>& job) override;
+  void setJob(const oi::Guarded<OiJob>& job) override;
 };
 
 }  // namespace oi

@@ -224,7 +224,6 @@ void PluginAbiTest::everyInterfaceIidCarriesTheAbiVersion() {
       {"GenerateFeatureFunction", GenerateFeatureFunction_iidd},
       {"Simulation", Simulation_iidd},
       {"BundleAdjustment", BundleAdjustment_iidd},
-      {"Tool", Tool_iidd},
       {"Exchange", Exchange_iidd},
       {"ExchangeSimpleAscii", ExchangeSimpleAscii_iidd},
       {"ExchangeDefinedFormat", ExchangeDefinedFormat_iidd}};

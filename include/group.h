@@ -2,12 +2,12 @@
 #define GROUP_H
 
 #include <QList>
-#include <QPointer>
 #include <QtCore>
 #include <optional>
 
 #include "core_export.h"
 #include "feature.h"
+#include "guarded.h"
 
 namespace oi {
 
@@ -38,17 +38,15 @@ class FeatureWrapper;
 class OI_CORE_EXPORT Group : public Feature {
   friend class OiJob;
   friend struct codec::Access;  // the protobuf codec (see src/codec)
-  Q_OBJECT
 
  public:
-  explicit Group(QObject* parent = nullptr);
-  explicit Group(const QString& name, QObject* parent = nullptr);
+  explicit Group();
+  explicit Group(const QString& name);
 
   //! a group that will only accept members of one feature type
-  Group(const QString& name, const FeatureTypes& constraint,
-        QObject* parent = nullptr);
+  Group(const QString& name, const FeatureTypes& constraint);
 
-  Group(const Group& copy, QObject* parent = nullptr);
+  Group(const Group& copy);
   Group& operator=(const Group& copy);
 
   ~Group() override;
@@ -62,26 +60,26 @@ class OI_CORE_EXPORT Group : public Feature {
 
   //! true if the feature may be added: either the group is unconstrained,
   //! or the feature's type matches the constraint
-  [[nodiscard]] bool accepts(const QPointer<FeatureWrapper>& feature) const;
+  [[nodiscard]] bool accepts(const oi::Guarded<FeatureWrapper>& feature) const;
 
   // ##########
   // membership
   // ##########
 
-  [[nodiscard]] const QList<QPointer<FeatureWrapper>>& getMembers() const;
+  [[nodiscard]] const QList<oi::Guarded<FeatureWrapper>>& getMembers() const;
 
   //! adds a reference. Rejects a null feature, a duplicate, a feature
   //! whose type the constraint forbids, and the group itself.
-  bool addMember(const QPointer<FeatureWrapper>& feature);
+  bool addMember(const oi::Guarded<FeatureWrapper>& feature);
 
-  bool removeMember(const QPointer<FeatureWrapper>& feature);
+  bool removeMember(const oi::Guarded<FeatureWrapper>& feature);
   bool removeMemberById(const int& featureId);
 
   //! identity is the underlying Feature, not its id: a feature that has
   //! not been added to a job yet still carries the default id of -1, so
   //! id comparison would collapse every unmanaged feature into one member
   [[nodiscard]] bool containsMember(
-      const QPointer<FeatureWrapper>& feature) const;
+      const oi::Guarded<FeatureWrapper>& feature) const;
 
   //! only meaningful for job-managed features, which are the only ones
   //! guaranteed to have been assigned a real id
@@ -110,7 +108,7 @@ class OI_CORE_EXPORT Group : public Feature {
   [[nodiscard]] QString getDisplayType() const override;
 
  protected:
-  QList<QPointer<FeatureWrapper>> members;
+  QList<oi::Guarded<FeatureWrapper>> members;
   std::optional<FeatureTypes> constraint;
 };
 

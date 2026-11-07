@@ -3,11 +3,9 @@
 
 #include <QtCore/qmath.h>
 
-#include <QObject>
-#include <QPointer>
-
 #include "core_export.h"
 #include "feature.h"
+#include "guarded.h"
 #include "oimat.h"
 #include "oivec.h"
 #include "statistic.h"
@@ -24,12 +22,11 @@ class CoordinateSystem;
 class OI_CORE_EXPORT TrafoParam : public Feature {
   friend class OiJob;
   friend struct codec::Access;  // the protobuf codec (see src/codec)
-  Q_OBJECT
 
  public:
-  explicit TrafoParam(QObject* parent = nullptr);
+  explicit TrafoParam();
 
-  TrafoParam(const TrafoParam& copy, QObject* parent = nullptr);
+  TrafoParam(const TrafoParam& copy);
 
   TrafoParam& operator=(const TrafoParam& copy);
 
@@ -44,10 +41,11 @@ class OI_CORE_EXPORT TrafoParam : public Feature {
   void setIsUsed(const bool& isUsed);
 
   // coordinate systems
-  [[nodiscard]] const QPointer<CoordinateSystem>& getStartSystem() const;
-  [[nodiscard]] const QPointer<CoordinateSystem>& getDestinationSystem() const;
-  bool setCoordinateSystems(const QPointer<CoordinateSystem>& from,
-                            const QPointer<CoordinateSystem>& to);
+  [[nodiscard]] const oi::Guarded<CoordinateSystem>& getStartSystem() const;
+  [[nodiscard]] const oi::Guarded<CoordinateSystem>& getDestinationSystem()
+      const;
+  bool setCoordinateSystems(const oi::Guarded<CoordinateSystem>& from,
+                            const oi::Guarded<CoordinateSystem>& to);
 
   // bundle
   [[nodiscard]] bool getIsBundle() const;
@@ -129,8 +127,8 @@ class OI_CORE_EXPORT TrafoParam : public Feature {
   // ##############################
 
   // coordinate systems
-  QPointer<CoordinateSystem> from;
-  QPointer<CoordinateSystem> to;
+  oi::Guarded<CoordinateSystem> from;
+  oi::Guarded<CoordinateSystem> to;
 
   // statistic
   Statistic statistic;

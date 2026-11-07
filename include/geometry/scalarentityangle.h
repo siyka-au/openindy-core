@@ -1,7 +1,6 @@
 #ifndef SCALARENTITYANGLE_H
 #define SCALARENTITYANGLE_H
 
-#include <QObject>
 #include <QtCore>
 
 #include "core_export.h"
@@ -14,13 +13,12 @@ namespace oi {
  */
 class OI_CORE_EXPORT ScalarEntityAngle : public Geometry {
   friend struct codec::Access;  // the protobuf codec (see src/codec)
-  Q_OBJECT
 
  public:
-  explicit ScalarEntityAngle(QObject* parent = nullptr);
-  explicit ScalarEntityAngle(const double& angle, QObject* parent = nullptr);
+  explicit ScalarEntityAngle();
+  explicit ScalarEntityAngle(const double& angle);
 
-  ScalarEntityAngle(const ScalarEntityAngle& copy, QObject* parent = nullptr);
+  ScalarEntityAngle(const ScalarEntityAngle& copy);
 
   ScalarEntityAngle& operator=(const ScalarEntityAngle& copy);
 

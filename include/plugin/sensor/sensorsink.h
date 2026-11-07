@@ -3,11 +3,11 @@
 
 #include <QJsonObject>
 #include <QList>
-#include <QPointer>
 #include <QString>
 #include <QVariantMap>
 
 #include "core_export.h"
+#include "guarded.h"
 #include "types.h"
 
 namespace oi {
@@ -48,7 +48,7 @@ class OI_CORE_EXPORT SensorSink {
   virtual void onAsyncSensorResponse(const QJsonObject& response,
                                      SensorAction sensorAction) = 0;
   virtual void onAsyncMeasurementResult(
-      const int& geomId, const QList<QPointer<Reading>>& measurements,
+      const int& geomId, const QList<oi::Guarded<Reading>>& measurements,
       SensorAction sensorAction) = 0;
   virtual void onAsyncStreamResult(const QVariantMap& reading) = 0;
   virtual void onAsyncSensorNotification(const QJsonObject& response) = 0;

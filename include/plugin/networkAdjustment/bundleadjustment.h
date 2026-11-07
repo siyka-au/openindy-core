@@ -3,7 +3,6 @@
 
 #include <QMap>
 #include <QMultiMap>
-#include <QObject>
 #include <QString>
 
 #include "core_export.h"
@@ -104,13 +103,11 @@ class BundleStation {
  * \brief The BundleAdjustment class
  * Interface for implementing bundle adjustment plugins.
  */
-class OI_CORE_EXPORT BundleAdjustment : public QObject {
+class OI_CORE_EXPORT BundleAdjustment : public oi::Trackable {
   friend struct codec::Access;  // the protobuf codec (see src/codec)
-  Q_OBJECT
-  Q_DISABLE_COPY_MOVE(BundleAdjustment)
 
  public:
-  explicit BundleAdjustment(QObject* parent = nullptr);
+  explicit BundleAdjustment();
   ~BundleAdjustment() override;
 
   // ############################
@@ -148,12 +145,12 @@ class OI_CORE_EXPORT BundleAdjustment : public QObject {
   void setBaseStation(const BundleStation& station);
 
   // bundle coordinate system
-  [[nodiscard]] const QPointer<CoordinateSystem>& getBundleSystem() const;
-  void setBundleSystem(const QPointer<CoordinateSystem>& system);
+  [[nodiscard]] const oi::Guarded<CoordinateSystem>& getBundleSystem() const;
+  void setBundleSystem(const oi::Guarded<CoordinateSystem>& system);
 
   // OpenIndy job
-  [[nodiscard]] const QPointer<OiJob>& getCurrentJob() const;
-  void setCurrentJob(const QPointer<OiJob>& job);
+  [[nodiscard]] const oi::Guarded<OiJob>& getCurrentJob() const;
+  void setCurrentJob(const oi::Guarded<OiJob>& job);
 
   // ###############
   // general getters
@@ -229,10 +226,10 @@ class OI_CORE_EXPORT BundleAdjustment : public QObject {
   QList<BundleTransformation> transformations;
 
   // bundle coordinate system
-  QPointer<CoordinateSystem> bundleSystem;
+  oi::Guarded<CoordinateSystem> bundleSystem;
 
   // OpenIndy job
-  QPointer<OiJob> currentJob;
+  oi::Guarded<OiJob> currentJob;
 
   // ##################
   // general attributes

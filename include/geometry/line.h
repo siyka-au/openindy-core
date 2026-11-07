@@ -1,7 +1,6 @@
 #ifndef LINE_H
 #define LINE_H
 
-#include <QObject>
 #include <QtCore>
 
 #include "core_export.h"
@@ -15,12 +14,11 @@ namespace oi {
  * \brief The Line class
  */
 class OI_CORE_EXPORT Line : public Geometry {
-  Q_OBJECT
  public:
-  explicit Line(QObject* parent = nullptr);
-  Line(const Position& xyz, const Direction& axis, QObject* parent = nullptr);
+  explicit Line();
+  Line(const Position& xyz, const Direction& axis);
 
-  Line(const Line& copy, QObject* parent = nullptr);
+  Line(const Line& copy);
 
   Line& operator=(const Line& copy);
 

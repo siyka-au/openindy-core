@@ -8,9 +8,8 @@ using namespace oi;
 
 /*!
  * \brief ScalarEntityAngle::ScalarEntityAngle
- * \param parent
  */
-ScalarEntityAngle::ScalarEntityAngle(QObject* parent) : Geometry(parent) {
+ScalarEntityAngle::ScalarEntityAngle() : Geometry() {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setScalarEntityAngle(this);
@@ -20,10 +19,8 @@ ScalarEntityAngle::ScalarEntityAngle(QObject* parent) : Geometry(parent) {
 /*!
  * \brief ScalarEntityAngle::ScalarEntityAngle
  * \param angle
- * \param parent
  */
-ScalarEntityAngle::ScalarEntityAngle(const double& angle, QObject* parent)
-    : Geometry(parent) {
+ScalarEntityAngle::ScalarEntityAngle(const double& angle) : Geometry() {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setScalarEntityAngle(this);
@@ -35,11 +32,9 @@ ScalarEntityAngle::ScalarEntityAngle(const double& angle, QObject* parent)
 /*!
  * \brief ScalarEntityAngle::ScalarEntityAngle
  * \param copy
- * \param parent
  */
-ScalarEntityAngle::ScalarEntityAngle(const ScalarEntityAngle& copy,
-                                     QObject* parent)
-    : Geometry(copy, parent) {
+ScalarEntityAngle::ScalarEntityAngle(const ScalarEntityAngle& copy)
+    : Geometry(copy) {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setScalarEntityAngle(this);

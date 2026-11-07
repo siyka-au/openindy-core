@@ -8,9 +8,8 @@ using namespace oi::math;
 
 /*!
  * \brief Paraboloid::Paraboloid
- * \param parent
  */
-Paraboloid::Paraboloid(QObject* parent) : Geometry(parent) {
+Paraboloid::Paraboloid() : Geometry() {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setParaboloid(this);
@@ -22,11 +21,10 @@ Paraboloid::Paraboloid(QObject* parent) : Geometry(parent) {
  * \param apex
  * \param axis
  * \param a
- * \param parent
  */
 Paraboloid::Paraboloid(const Position& apex, const Direction& axis,
-                       const double& a, QObject* parent)
-    : Geometry(parent) {
+                       const double& a)
+    : Geometry() {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setParaboloid(this);
@@ -38,10 +36,8 @@ Paraboloid::Paraboloid(const Position& apex, const Direction& axis,
 /*!
  * \brief Paraboloid::Paraboloid
  * \param copy
- * \param parent
  */
-Paraboloid::Paraboloid(const Paraboloid& copy, QObject* parent)
-    : Geometry(copy, parent) {
+Paraboloid::Paraboloid(const Paraboloid& copy) : Geometry(copy) {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setParaboloid(this);

@@ -16,19 +16,14 @@ using namespace oi;
 // slot's required mixin, a fake with no real exec() would simply be
 // rejected at attach time and never become this Point's producer at all.
 class FakeFit : public FitFunction, public Producer<Point> {
-  Q_OBJECT
  public:
-  explicit FakeFit(QObject* parent = nullptr) : FitFunction(parent) {
-    this->metaData.name = "FakeFit";
-  }
+  explicit FakeFit() : FitFunction() { this->metaData.name = "FakeFit"; }
   std::expected<Point, QString> exec() override { return Point(); }
 };
 
 class FakeConstruct : public ConstructFunction, public Producer<Point> {
-  Q_OBJECT
  public:
-  explicit FakeConstruct(QObject* parent = nullptr)
-      : ConstructFunction(parent) {
+  explicit FakeConstruct() : ConstructFunction() {
     this->metaData.name = "FakeConstruct";
   }
   std::expected<Point, QString> exec() override { return Point(); }
@@ -73,14 +68,14 @@ void OwnershipTest::freshGeometryIsUserOwnedAndEditable() {
 
 void OwnershipTest::constructFunctionProducerLeavesGeometryEditable() {
   Point point;
-  QPointer<FakeConstruct> construct = new FakeConstruct();
+  oi::Guarded<FakeConstruct> construct = new FakeConstruct();
   point.addFunction(construct);
   QVERIFY(!point.getOwnerDescription().has_value());
 }
 
 void OwnershipTest::fitFunctionProducerMakesGeometryReadOnly() {
   Point point;
-  QPointer<FakeFit> fit = new FakeFit();
+  oi::Guarded<FakeFit> fit = new FakeFit();
   point.addFunction(fit);
   const std::optional<QString> owner = point.getOwnerDescription();
   QVERIFY(owner.has_value());
@@ -91,7 +86,7 @@ void OwnershipTest::readOnlyGeometryRejectsDirectParameterEdits() {
   Point point;
   point.setPoint(Position(1.0, 2.0, 3.0));
 
-  QPointer<FakeFit> fit = new FakeFit();
+  oi::Guarded<FakeFit> fit = new FakeFit();
   point.addFunction(fit);
   QVERIFY(point.getOwnerDescription().has_value());
 
@@ -171,7 +166,7 @@ void OwnershipTest::ownedSubGeometryIsReadOnlyAndNamesItsOwner() {
   owner.setFeatureName("Plane1");
 
   Point child;
-  QPointer<FakeConstruct> construct = new FakeConstruct();
+  oi::Guarded<FakeConstruct> construct = new FakeConstruct();
   child.addFunction(construct);
 
   // still editable before ownership is recorded - the same construct

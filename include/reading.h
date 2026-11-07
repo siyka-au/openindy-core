@@ -3,13 +3,12 @@
 
 #include <QtCore/qmath.h>
 
-#include <QObject>
-#include <QPointer>
 #include <QtCore>
 #include <chrono>
 
 #include "core_export.h"
 #include "element.h"
+#include "guarded.h"
 #include "measurementconfig.h"
 #include "oimat.h"
 #include "oivec.h"
@@ -154,24 +153,21 @@ class OI_CORE_EXPORT Reading : public Element {
   friend class Observation;
   friend class ProjectExchanger;
   friend struct codec::Access;  // the protobuf codec (see src/codec)
-  Q_OBJECT
 
  private:
-  explicit Reading(QObject* parent = nullptr);
+  explicit Reading();
 
  public:
-  explicit Reading(const ReadingPolar& reading, QObject* parent = nullptr);
-  explicit Reading(const ReadingCartesian& reading, QObject* parent = nullptr);
-  explicit Reading(const ReadingCartesian6D& reading,
-                   QObject* parent = nullptr);
-  explicit Reading(const ReadingDirection& reading, QObject* parent = nullptr);
-  explicit Reading(const ReadingDistance& reading, QObject* parent = nullptr);
-  explicit Reading(const ReadingTemperature& reading,
-                   QObject* parent = nullptr);
-  explicit Reading(const ReadingLevel& reading, QObject* parent = nullptr);
-  explicit Reading(const ReadingUndefined& reading, QObject* parent = nullptr);
+  explicit Reading(const ReadingPolar& reading);
+  explicit Reading(const ReadingCartesian& reading);
+  explicit Reading(const ReadingCartesian6D& reading);
+  explicit Reading(const ReadingDirection& reading);
+  explicit Reading(const ReadingDistance& reading);
+  explicit Reading(const ReadingTemperature& reading);
+  explicit Reading(const ReadingLevel& reading);
+  explicit Reading(const ReadingUndefined& reading);
 
-  Reading(const Reading& copy, QObject* parent = nullptr);
+  Reading(const Reading& copy);
 
   Reading& operator=(const Reading& copy);
 
@@ -236,8 +232,8 @@ class OI_CORE_EXPORT Reading : public Element {
   [[nodiscard]] const SensorConfiguration& getSensorConfiguration() const;
   void setSensorConfiguration(const SensorConfiguration& sConfig);
 
-  [[nodiscard]] const QPointer<Observation>& getObservation() const;
-  void setObservation(const QPointer<Observation>& observation);
+  [[nodiscard]] const oi::Guarded<Observation>& getObservation() const;
+  void setObservation(const oi::Guarded<Observation>& observation);
 
   // ###############
   // display methods
@@ -328,7 +324,7 @@ class OI_CORE_EXPORT Reading : public Element {
 
   SensorConfiguration sConfig;
   QString sensorConfigName;
-  QPointer<Observation> observation;
+  oi::Guarded<Observation> observation;
 
   // ################
   // helper variables

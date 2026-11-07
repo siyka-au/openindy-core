@@ -14,9 +14,8 @@ using namespace oi;
 
 /*!
  * \brief Station::Station
- * \param parent
  */
-Station::Station(QObject* parent) : Feature(parent), isActiveStation(false) {
+Station::Station() : Feature(), isActiveStation(false) {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setStation(this);
@@ -26,7 +25,7 @@ Station::Station(QObject* parent) : Feature(parent), isActiveStation(false) {
   this->position = new Point();
 
   // create a coordinate system object as the station's coordinate system
-  this->stationSystem = new CoordinateSystem(QPointer<Station>(this));
+  this->stationSystem = new CoordinateSystem(oi::Guarded<Station>(this));
 
   // create the sensor control object
   this->createSensorControl();
@@ -35,10 +34,8 @@ Station::Station(QObject* parent) : Feature(parent), isActiveStation(false) {
 /*!
  * \brief Station::Station
  * \param name
- * \param parent
  */
-Station::Station(const QString& name, QObject* parent)
-    : Feature(parent), isActiveStation(false) {
+Station::Station(const QString& name) : Feature(), isActiveStation(false) {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setStation(this);
@@ -51,7 +48,7 @@ Station::Station(const QString& name, QObject* parent)
   this->position->setFeatureName(name);
 
   // create a coordinate system object as the station's coordinate system
-  this->stationSystem = new CoordinateSystem(QPointer<Station>(this));
+  this->stationSystem = new CoordinateSystem(oi::Guarded<Station>(this));
   this->stationSystem->setFeatureName(this->name);
 
   // create the sensor control object
@@ -61,9 +58,8 @@ Station::Station(const QString& name, QObject* parent)
 /*!
  * \brief Station::Station
  * \param copy
- * \param parent
  */
-Station::Station(const Station& copy, QObject* parent) : Feature(copy, parent) {
+Station::Station(const Station& copy) : Feature(copy) {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setStation(this);
@@ -145,7 +141,9 @@ void Station::setActiveStationState(const bool& isActiveStation) {
  * \brief Station::getPosition
  * \return
  */
-const QPointer<Point>& Station::getPosition() const { return this->position; }
+const oi::Guarded<Point>& Station::getPosition() const {
+  return this->position;
+}
 
 /*!
  * \brief Station::getXAxis
@@ -182,10 +180,10 @@ void Station::setCoordinateSystem(const Position& origin,
   this->zAxis = zAxis;
 }
 
-void Station::setEstimatedCoordinateSystem(QPointer<CoordinateSystem> cs) {
+void Station::setEstimatedCoordinateSystem(oi::Guarded<CoordinateSystem> cs) {
   this->estimatedStationSystem = cs;
 }
-const QPointer<CoordinateSystem>& Station::getEstimatedCoordinateSystem()
+const oi::Guarded<CoordinateSystem>& Station::getEstimatedCoordinateSystem()
     const {
   return this->estimatedStationSystem;
 }
@@ -194,7 +192,7 @@ const QPointer<CoordinateSystem>& Station::getEstimatedCoordinateSystem()
  * \brief Station::getCoordinateSystem
  * \return
  */
-const QPointer<CoordinateSystem>& Station::getCoordinateSystem() const {
+const oi::Guarded<CoordinateSystem>& Station::getCoordinateSystem() const {
   return this->stationSystem;
 }
 
@@ -241,7 +239,7 @@ Sensor Station::getSensor() const {
  * \brief Station::setSensor
  * \param sensor
  */
-void Station::setSensor(const QPointer<Sensor>& sensor) {
+void Station::setSensor(const oi::Guarded<Sensor>& sensor) {
   // check active station state
   if (!this->isActiveStation) {
     return;
@@ -265,13 +263,13 @@ void Station::setSensor(const QPointer<Sensor>& sensor) {
  * \brief Station::takeSensor
  * \return
  */
-QPointer<Sensor> Station::takeSensor() {
+oi::Guarded<Sensor> Station::takeSensor() {
   // check sensor control
   if (!this->sensorControl) {
-    return QPointer<Sensor>(nullptr);
+    return oi::Guarded<Sensor>(nullptr);
   }
 
-  QPointer<Sensor> sensor = this->sensorControl->takeSensor();
+  oi::Guarded<Sensor> sensor = this->sensorControl->takeSensor();
 
   this->notify(&FeatureObserver::onSensorChanged, this->id);
 
@@ -308,49 +306,51 @@ const QList<Sensor> Station::getUsedSensors() const {
  * \brief Station::getTargetGeometries
  * \return
  */
-QList<QPointer<Geometry>> Station::getTargetGeometries() const {
-  QList<QPointer<Geometry>> geometries;
+QList<oi::Guarded<Geometry>> Station::getTargetGeometries() const {
+  QList<oi::Guarded<Geometry>> geometries;
 
   // get a list of all readings
-  QList<QPointer<Reading>> readings;
-  for (const QPointer<Reading>& reading :
+  QList<oi::Guarded<Reading>> readings;
+  for (const oi::Guarded<Reading>& reading :
        oi::snapshot(this->cartesianReadings)) {
     readings.append(reading);
   }
-  for (const QPointer<Reading>& reading :
+  for (const oi::Guarded<Reading>& reading :
        oi::snapshot(this->directionReadings)) {
     readings.append(reading);
   }
-  for (const QPointer<Reading>& reading :
+  for (const oi::Guarded<Reading>& reading :
        oi::snapshot(this->distanceReadings)) {
     readings.append(reading);
   }
-  for (const QPointer<Reading>& reading : oi::snapshot(this->polarReadings)) {
+  for (const oi::Guarded<Reading>& reading :
+       oi::snapshot(this->polarReadings)) {
     readings.append(reading);
   }
-  for (const QPointer<Reading>& reading : oi::snapshot(this->levelReadings)) {
+  for (const oi::Guarded<Reading>& reading :
+       oi::snapshot(this->levelReadings)) {
     readings.append(reading);
   }
-  for (const QPointer<Reading>& reading :
+  for (const oi::Guarded<Reading>& reading :
        oi::snapshot(this->temperatureRadings)) {
     readings.append(reading);
   }
-  for (const QPointer<Reading>& reading :
+  for (const oi::Guarded<Reading>& reading :
        oi::snapshot(this->undefinedReadings)) {
     readings.append(reading);
   }
 
   // get target geometries
-  for (const QPointer<Reading>& reading : std::as_const(readings)) {
+  for (const oi::Guarded<Reading>& reading : std::as_const(readings)) {
     // check reading
     if (reading.isNull() || reading->getObservation().isNull()) {
       continue;
     }
 
     // add target geometries of the observation
-    const QList<QPointer<Geometry>>& targetGeometries =
+    const QList<oi::Guarded<Geometry>>& targetGeometries =
         reading->getObservation()->getTargetGeometries();
-    for (const QPointer<Geometry>& geom : std::as_const(targetGeometries)) {
+    for (const oi::Guarded<Geometry>& geom : std::as_const(targetGeometries)) {
       if (!geom.isNull() && !geometries.contains(geom)) {
         geometries.append(geom);
       }
@@ -633,41 +633,43 @@ void Station::setUpFeatureId() {
   }
 
   // generate unique ids for station's readings
-  for (const QPointer<Reading>& reading :
+  for (const oi::Guarded<Reading>& reading :
        oi::snapshot(this->cartesianReadings)) {
     if (!reading.isNull()) {
       reading->id = this->job->generateUniqueId();
     }
   }
-  for (const QPointer<Reading>& reading : oi::snapshot(this->polarReadings)) {
+  for (const oi::Guarded<Reading>& reading :
+       oi::snapshot(this->polarReadings)) {
     if (!reading.isNull()) {
       reading->id = this->job->generateUniqueId();
     }
   }
-  for (const QPointer<Reading>& reading :
+  for (const oi::Guarded<Reading>& reading :
        oi::snapshot(this->directionReadings)) {
     if (!reading.isNull()) {
       reading->id = this->job->generateUniqueId();
     }
   }
-  for (const QPointer<Reading>& reading :
+  for (const oi::Guarded<Reading>& reading :
        oi::snapshot(this->distanceReadings)) {
     if (!reading.isNull()) {
       reading->id = this->job->generateUniqueId();
     }
   }
-  for (const QPointer<Reading>& reading :
+  for (const oi::Guarded<Reading>& reading :
        oi::snapshot(this->temperatureRadings)) {
     if (!reading.isNull()) {
       reading->id = this->job->generateUniqueId();
     }
   }
-  for (const QPointer<Reading>& reading : oi::snapshot(this->levelReadings)) {
+  for (const oi::Guarded<Reading>& reading :
+       oi::snapshot(this->levelReadings)) {
     if (!reading.isNull()) {
       reading->id = this->job->generateUniqueId();
     }
   }
-  for (const QPointer<Reading>& reading :
+  for (const oi::Guarded<Reading>& reading :
        oi::snapshot(this->undefinedReadings)) {
     if (!reading.isNull()) {
       reading->id = this->job->generateUniqueId();
@@ -706,16 +708,17 @@ void Station::nameWasChanged(const QString& oldName) {
  * \param readings
  */
 void Station::addReadings(const int& geomId,
-                          const QList<QPointer<Reading>>& readings) {
+                          const QList<oi::Guarded<Reading>>& readings) {
   MeasurementConfigKey measurementConfig;
   if (!this->job.isNull()) {
-    const QPointer<FeatureWrapper> feature = this->job->getFeatureById(geomId);
+    const oi::Guarded<FeatureWrapper> feature =
+        this->job->getFeatureById(geomId);
     if (!feature.isNull() && !feature->getGeometry().isNull()) {
       measurementConfig = feature->getGeometry()->getMeasurementConfig();
     }
   }
 
-  for (const QPointer<Reading>& reading : oi::snapshot(readings)) {
+  for (const oi::Guarded<Reading>& reading : oi::snapshot(readings)) {
     // check reading
     if (reading.isNull()) {
       continue;
@@ -754,7 +757,7 @@ void Station::addReadings(const int& geomId,
  * \brief Station::removeReading
  * \param reading
  */
-void Station::removeReading(const QPointer<Reading>& reading) {
+void Station::removeReading(const oi::Guarded<Reading>& reading) {
   this->cartesianReadings.removeOne(reading);
   this->directionReadings.removeOne(reading);
   this->distanceReadings.removeOne(reading);
@@ -768,7 +771,7 @@ void Station::removeReading(const QPointer<Reading>& reading) {
  * \brief Station::setJob
  * \param job
  */
-void Station::setJob(const QPointer<OiJob>& job) {
+void Station::setJob(const oi::Guarded<OiJob>& job) {
   // check and set job
   if (job.isNull()) {
     return;
@@ -840,7 +843,7 @@ class Station::SensorResults final : public StationObserver {
     }
   }
   void onMeasurementFinished(
-      int geomId, const QList<QPointer<Reading>>& readings) override {
+      int geomId, const QList<oi::Guarded<Reading>>& readings) override {
     // the readings belong to the station before anybody hears about them
     this->station.addReadings(geomId, readings);
     if (auto* o = this->observer()) {

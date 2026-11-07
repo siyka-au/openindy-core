@@ -13,10 +13,9 @@ using namespace oi::math;
 
 /*!
  * \brief CoordinateSystem::CoordinateSystem
- * \param parent
  */
-CoordinateSystem::CoordinateSystem(QObject* parent)
-    : Feature(parent),
+CoordinateSystem::CoordinateSystem()
+    : Feature(),
       isStationSystem(false),
       isBundleSystem(false),
       isActiveCoordinateSystem(false) {
@@ -29,10 +28,9 @@ CoordinateSystem::CoordinateSystem(QObject* parent)
 /*!
  * \brief CoordinateSystem::CoordinateSystem
  * \param isBundleSystem
- * \param parent
  */
-CoordinateSystem::CoordinateSystem(bool isBundleSystem, QObject* parent)
-    : Feature(parent),
+CoordinateSystem::CoordinateSystem(bool isBundleSystem)
+    : Feature(),
       isStationSystem(false),
       isBundleSystem(isBundleSystem),
       isActiveCoordinateSystem(false) {
@@ -45,11 +43,9 @@ CoordinateSystem::CoordinateSystem(bool isBundleSystem, QObject* parent)
 /*!
  * \brief CoordinateSystem::CoordinateSystem
  * \param station
- * \param parent
  */
-CoordinateSystem::CoordinateSystem(const QPointer<Station>& station,
-                                   QObject* parent)
-    : Feature(parent),
+CoordinateSystem::CoordinateSystem(const oi::Guarded<Station>& station)
+    : Feature(),
       isStationSystem(false),
       isBundleSystem(false),
       isActiveCoordinateSystem(false) {
@@ -68,11 +64,8 @@ CoordinateSystem::CoordinateSystem(const QPointer<Station>& station,
 /*!
  * \brief CoordinateSystem::CoordinateSystem
  * \param copy
- * \param parent
  */
-CoordinateSystem::CoordinateSystem(const CoordinateSystem& copy,
-                                   QObject* parent)
-    : Feature(parent) {
+CoordinateSystem::CoordinateSystem(const CoordinateSystem& copy) : Feature() {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setCoordinateSystem(this);
@@ -123,7 +116,7 @@ CoordinateSystem& CoordinateSystem::operator=(const CoordinateSystem& copy) {
 CoordinateSystem::~CoordinateSystem() {
   // delete all observations made from this station coordinate system (only if
   // this is a station system)
-  for (const QPointer<Observation>& observation :
+  for (const oi::Guarded<Observation>& observation :
        oi::snapshot(this->observationsList)) {
     if (!observation.isNull()) {
       delete observation.data();
@@ -131,7 +124,7 @@ CoordinateSystem::~CoordinateSystem() {
   }
 
   // delete transformation parameter sets from this coordinate system
-  for (const QPointer<TrafoParam>& trafoParam :
+  for (const oi::Guarded<TrafoParam>& trafoParam :
        oi::snapshot(this->trafoParams)) {
     if (!trafoParam.isNull()) {
       delete trafoParam.data();
@@ -139,7 +132,7 @@ CoordinateSystem::~CoordinateSystem() {
   }
 
   // delete nominals of this coordinate system
-  for (const QPointer<FeatureWrapper>& nominal :
+  for (const oi::Guarded<FeatureWrapper>& nominal :
        oi::snapshot(this->nominalsList)) {
     if (!nominal.isNull()) {
       if (!nominal->getFeature().isNull()) {
@@ -187,7 +180,7 @@ const bool& CoordinateSystem::getIsStationSystem() const {
  * \brief CoordinateSystem::getStation
  * \return
  */
-const QPointer<Station>& CoordinateSystem::getStation() const {
+const oi::Guarded<Station>& CoordinateSystem::getStation() const {
   return this->station;
 }
 
@@ -264,7 +257,8 @@ void CoordinateSystem::setExpansionOrigin(const Position& expansionOrigin) {
  * \brief CoordinateSystem::getObservations
  * \return
  */
-const QList<QPointer<Observation> >& CoordinateSystem::getObservations() const {
+const QList<oi::Guarded<Observation> >& CoordinateSystem::getObservations()
+    const {
   return this->observationsList;
 }
 
@@ -273,9 +267,9 @@ const QList<QPointer<Observation> >& CoordinateSystem::getObservations() const {
  * \param observationId
  * \return
  */
-QPointer<Observation> CoordinateSystem::getObservation(
+oi::Guarded<Observation> CoordinateSystem::getObservation(
     const int& observationId) const {
-  return this->observationsMap.value(observationId, QPointer<Observation>());
+  return this->observationsMap.value(observationId, oi::Guarded<Observation>());
 }
 
 /*!
@@ -284,7 +278,7 @@ QPointer<Observation> CoordinateSystem::getObservation(
  * \return
  */
 bool CoordinateSystem::addObservation(
-    const QPointer<Observation>& observation) {
+    const oi::Guarded<Observation>& observation) {
   // check if this is a station system
   if (!this->isStationSystem || this->station.isNull()) {
     return false;
@@ -326,7 +320,7 @@ bool CoordinateSystem::addObservation(
  * \brief CoordinateSystem::getTransformationParameters
  * \return
  */
-const QList<QPointer<TrafoParam> >&
+const QList<oi::Guarded<TrafoParam> >&
 CoordinateSystem::getTransformationParameters() const {
   return this->trafoParams;
 }
@@ -336,10 +330,10 @@ CoordinateSystem::getTransformationParameters() const {
  * \param to
  * \return
  */
-const QList<QPointer<TrafoParam> >
+const QList<oi::Guarded<TrafoParam> >
 CoordinateSystem::getTransformationParameters(
-    const QPointer<CoordinateSystem>& to) const {
-  QList<QPointer<TrafoParam> > result;
+    const oi::Guarded<CoordinateSystem>& to) const {
+  QList<oi::Guarded<TrafoParam> > result;
 
   // check the destination system
   if (to.isNull()) {
@@ -348,7 +342,7 @@ CoordinateSystem::getTransformationParameters(
 
   // run through all trafo params and select those whose destination system
   // equals "to"
-  for (const QPointer<TrafoParam>& trafo : oi::snapshot(this->trafoParams)) {
+  for (const oi::Guarded<TrafoParam>& trafo : oi::snapshot(this->trafoParams)) {
     if (!trafo.isNull() && !trafo->getDestinationSystem().isNull() &&
         !trafo->getStartSystem().isNull()) {
       if (trafo->getDestinationSystem() == to ||
@@ -367,7 +361,7 @@ CoordinateSystem::getTransformationParameters(
  * \return
  */
 bool CoordinateSystem::addTransformationParameter(
-    const QPointer<TrafoParam>& trafoParam) {
+    const oi::Guarded<TrafoParam>& trafoParam) {
   if (!trafoParam.isNull() && !trafoParam->getStartSystem().isNull() &&
       !trafoParam->getDestinationSystem().isNull()) {
     // check if the trafo param is already contained
@@ -403,7 +397,7 @@ bool CoordinateSystem::addTransformationParameter(
  * \return
  */
 bool CoordinateSystem::removeTransformationParameter(
-    const QPointer<TrafoParam>& trafoParam) {
+    const oi::Guarded<TrafoParam>& trafoParam) {
   if (!trafoParam.isNull()) {
     bool result = this->trafoParams.removeOne(trafoParam);
     this->notify(&FeatureObserver::onTransformationParametersChanged, this->id);
@@ -416,7 +410,8 @@ bool CoordinateSystem::removeTransformationParameter(
  * \brief CoordinateSystem::getNominals
  * \return
  */
-const QList<QPointer<FeatureWrapper> >& CoordinateSystem::getNominals() const {
+const QList<oi::Guarded<FeatureWrapper> >& CoordinateSystem::getNominals()
+    const {
   return this->nominalsList;
 }
 
@@ -425,7 +420,7 @@ const QList<QPointer<FeatureWrapper> >& CoordinateSystem::getNominals() const {
  * \param nominal
  * \return
  */
-bool CoordinateSystem::addNominal(const QPointer<FeatureWrapper>& nominal) {
+bool CoordinateSystem::addNominal(const oi::Guarded<FeatureWrapper>& nominal) {
   // check if this is a nominal system
   if (this->isStationSystem) {
     return false;
@@ -442,7 +437,7 @@ bool CoordinateSystem::addNominal(const QPointer<FeatureWrapper>& nominal) {
 
     // check if the nominal is in the same job
     if (!this->job.isNull()) {
-      QPointer<FeatureWrapper> jobFeature =
+      oi::Guarded<FeatureWrapper> jobFeature =
           this->job->getFeatureById(nominal->getGeometry()->getId());
       if (jobFeature.isNull() || jobFeature->getGeometry().isNull() ||
           jobFeature->getGeometry() != nominal->getGeometry()) {
@@ -468,13 +463,13 @@ bool CoordinateSystem::addNominal(const QPointer<FeatureWrapper>& nominal) {
  * \return
  */
 bool CoordinateSystem::addNominals(
-    const QList<QPointer<FeatureWrapper> >& nominals) {
+    const QList<oi::Guarded<FeatureWrapper> >& nominals) {
   if (nominals.size() > 0) {
     int oldSize = this->nominalsList.size();
 
     // add all nominals without emitting the corresponding signals
     this->blockSignals(true);
-    for (const QPointer<FeatureWrapper>& geom : oi::snapshot(nominals)) {
+    for (const oi::Guarded<FeatureWrapper>& geom : oi::snapshot(nominals)) {
       this->addNominal(geom);
     }
     this->blockSignals(false);
@@ -493,10 +488,11 @@ bool CoordinateSystem::addNominals(
  * \param nominal
  * \return
  */
-bool CoordinateSystem::removeNominal(const QPointer<FeatureWrapper>& nominal) {
+bool CoordinateSystem::removeNominal(
+    const oi::Guarded<FeatureWrapper>& nominal) {
   if (!nominal.isNull() && !nominal->getGeometry().isNull()) {
     // get nominal pointer to remove
-    QPointer<FeatureWrapper> removeNominal = nominal;
+    oi::Guarded<FeatureWrapper> removeNominal = nominal;
     if (this->nominalsMap.contains(nominal->getGeometry()->getId())) {
       removeNominal = this->nominalsMap[nominal->getGeometry()->getId()];
     }
@@ -517,8 +513,8 @@ bool CoordinateSystem::removeNominal(const QPointer<FeatureWrapper>& nominal) {
  * \return
  */
 bool CoordinateSystem::removeNominal(const int& featureId) {
-  QPointer<FeatureWrapper> nominal =
-      this->nominalsMap.value(featureId, QPointer<FeatureWrapper>());
+  oi::Guarded<FeatureWrapper> nominal =
+      this->nominalsMap.value(featureId, oi::Guarded<FeatureWrapper>());
 
   if (!nominal.isNull()) {
     this->nominalsMap.remove(featureId);
@@ -550,7 +546,7 @@ void CoordinateSystem::setBundleTemplate(const QJsonObject& bundleTemplate) {
  * \brief CoordinateSystem::getBundlePlugin
  * \return
  */
-const QPointer<BundleAdjustment>& CoordinateSystem::getBundlePlugin() const {
+const oi::Guarded<BundleAdjustment>& CoordinateSystem::getBundlePlugin() const {
   return this->bundlePlugin;
 }
 
@@ -559,7 +555,7 @@ const QPointer<BundleAdjustment>& CoordinateSystem::getBundlePlugin() const {
  * \param bundle
  */
 void CoordinateSystem::setBundlePlugin(
-    const QPointer<BundleAdjustment>& bundle) {
+    const oi::Guarded<BundleAdjustment>& bundle) {
   // check if the system is a bundle system
   if (!this->isBundleSystem) {
     return;
@@ -598,7 +594,7 @@ QString CoordinateSystem::getDisplayX(const UnitType& type, const int& digits,
         convertFromDefault(this->origin.getVector().getAt(0), type), 'f',
         digits);
   }
-  for (QPointer<TrafoParam> trafoP : oi::snapshot(this->trafoParams)) {
+  for (oi::Guarded<TrafoParam> trafoP : oi::snapshot(this->trafoParams)) {
     if (trafoP->getIsUsed()) {
       return QString::number(
           convertFromDefault(this->origin.getVector().getAt(0), type), 'f',
@@ -622,7 +618,7 @@ QString CoordinateSystem::getDisplayY(const UnitType& type, const int& digits,
         convertFromDefault(this->origin.getVector().getAt(1), type), 'f',
         digits);
   }
-  for (QPointer<TrafoParam> trafoP : oi::snapshot(this->trafoParams)) {
+  for (oi::Guarded<TrafoParam> trafoP : oi::snapshot(this->trafoParams)) {
     if (trafoP->getIsUsed()) {
       return QString::number(
           convertFromDefault(this->origin.getVector().getAt(1), type), 'f',
@@ -646,7 +642,7 @@ QString CoordinateSystem::getDisplayZ(const UnitType& type, const int& digits,
         convertFromDefault(this->origin.getVector().getAt(2), type), 'f',
         digits);
   }
-  for (QPointer<TrafoParam> trafoP : oi::snapshot(this->trafoParams)) {
+  for (oi::Guarded<TrafoParam> trafoP : oi::snapshot(this->trafoParams)) {
     if (trafoP->getIsUsed()) {
       return QString::number(
           convertFromDefault(this->origin.getVector().getAt(2), type), 'f',
@@ -819,7 +815,7 @@ void CoordinateSystem::setUpFeatureId() {
   }
 
   // generate unique ids for observations
-  for (const QPointer<Observation>& obs :
+  for (const oi::Guarded<Observation>& obs :
        oi::snapshot(this->observationsList)) {
     if (!obs.isNull()) {
       obs->id = this->job->generateUniqueId();
@@ -834,7 +830,7 @@ void CoordinateSystem::setUpFeatureId() {
  * \brief CoordinateSystem::removeObservation
  * \param obs
  */
-void CoordinateSystem::removeObservation(const QPointer<Observation>& obs) {
+void CoordinateSystem::removeObservation(const oi::Guarded<Observation>& obs) {
   // check observation
   if (obs.isNull()) {
     return;

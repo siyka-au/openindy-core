@@ -1,7 +1,6 @@
 #ifndef POINTCLOUD_H
 #define POINTCLOUD_H
 
-#include <QObject>
 #include <QtCore>
 #include <array>
 
@@ -46,12 +45,11 @@ class OI_CORE_EXPORT BoundingBox_PC {
  */
 class OI_CORE_EXPORT PointCloud : public Geometry, public PointCollection {
   friend struct codec::Access;  // the protobuf codec (see src/codec)
-  Q_OBJECT
 
  public:
-  explicit PointCloud(QObject* parent = nullptr);
+  explicit PointCloud();
 
-  PointCloud(const PointCloud& copy, QObject* parent = nullptr);
+  PointCloud(const PointCloud& copy);
 
   PointCloud& operator=(const PointCloud& copy);
 
@@ -63,7 +61,7 @@ class OI_CORE_EXPORT PointCloud : public Geometry, public PointCollection {
 
   [[nodiscard]] unsigned long getPointCount() const;
 
-  bool addSegment(const QPointer<FeatureWrapper>& segment);
+  bool addSegment(const oi::Guarded<FeatureWrapper>& segment);
   void clearSegmentation();
 
   // ###################################################################
@@ -107,7 +105,7 @@ class OI_CORE_EXPORT PointCloud : public Geometry, public PointCollection {
   QList<Point_PC*> points;  // all points of the pointcloud (owned)
   BoundingBox_PC bbox;      // bounding box of the pointcloud
 
-  QList<QPointer<FeatureWrapper> >
+  QList<oi::Guarded<FeatureWrapper> >
       detectedSegments;  // geometry-segments that were detected in the
                          // pointcloud
 };

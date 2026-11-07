@@ -8,9 +8,8 @@ using namespace oi::math;
 
 /*!
  * \brief Cone::Cone
- * \param parent
  */
-Cone::Cone(QObject* parent) : Geometry(parent) {
+Cone::Cone() : Geometry() {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setCone(this);
@@ -22,11 +21,9 @@ Cone::Cone(QObject* parent) : Geometry(parent) {
  * \param apex
  * \param axis
  * \param aperture
- * \param parent
  */
-Cone::Cone(const Position& apex, const Direction& axis, const double& aperture,
-           QObject* parent)
-    : Geometry(parent) {
+Cone::Cone(const Position& apex, const Direction& axis, const double& aperture)
+    : Geometry() {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setCone(this);
@@ -38,9 +35,8 @@ Cone::Cone(const Position& apex, const Direction& axis, const double& aperture,
 /*!
  * \brief Cone::Cone
  * \param copy
- * \param parent
  */
-Cone::Cone(const Cone& copy, QObject* parent) : Geometry(copy, parent) {
+Cone::Cone(const Cone& copy) : Geometry(copy) {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setCone(this);

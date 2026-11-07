@@ -24,11 +24,9 @@ namespace {
 // Feature::addFunction() actually attaches it - a fake with no real exec()
 // would otherwise be rejected at attach time.
 class FakeConsumer : public ConstructFunction, public Producer<Point> {
-  Q_OBJECT
  public:
-  explicit FakeConsumer(const QString& roleName = "default",
-                        QObject* parent = nullptr)
-      : ConstructFunction(parent) {
+  explicit FakeConsumer(const QString& roleName = "default")
+      : ConstructFunction() {
     this->metaData.name = "FakeConsumer";
     NeededElement param;
     param.typeOfElement = ElementTypes::ePointElement;
@@ -72,20 +70,20 @@ class MeasurementIntentTest : public QObject {
   void unresolvableTargetIsRejectedWithAMessage();
 
  private:
-  QPointer<OiJob> makeJobWithActiveStation(QPointer<Station>& outStation);
-  QPointer<Reading> makeCartesianReading(double x, double y, double z);
+  oi::Guarded<OiJob> makeJobWithActiveStation(oi::Guarded<Station>& outStation);
+  oi::Guarded<Reading> makeCartesianReading(double x, double y, double z);
 };
 
 void MeasurementIntentTest::initTestCase() {
   ChooseLALib::setLinearAlgebra(ChooseLALib::LinearAlgebraLibrary::Armadillo);
 }
 
-QPointer<OiJob> MeasurementIntentTest::makeJobWithActiveStation(
-    QPointer<Station>& outStation) {
-  QPointer<OiJob> job = new OiJob();
+oi::Guarded<OiJob> MeasurementIntentTest::makeJobWithActiveStation(
+    oi::Guarded<Station>& outStation) {
+  oi::Guarded<OiJob> job = new OiJob();
 
-  QPointer<Station> station = new Station("S1");
-  QPointer<FeatureWrapper> stationFeature = new FeatureWrapper();
+  oi::Guarded<Station> station = new Station("S1");
+  oi::Guarded<FeatureWrapper> stationFeature = new FeatureWrapper();
   stationFeature->setStation(station);
   job->addFeature(stationFeature);
 
@@ -98,9 +96,9 @@ QPointer<OiJob> MeasurementIntentTest::makeJobWithActiveStation(
   return job;
 }
 
-QPointer<Reading> MeasurementIntentTest::makeCartesianReading(double x,
-                                                              double y,
-                                                              double z) {
+oi::Guarded<Reading> MeasurementIntentTest::makeCartesianReading(double x,
+                                                                 double y,
+                                                                 double z) {
   ReadingCartesian r;
   r.isValid = true;
   r.xyz.setAt(0, x);
@@ -110,7 +108,7 @@ QPointer<Reading> MeasurementIntentTest::makeCartesianReading(double x,
 }
 
 void MeasurementIntentTest::pointWithObservationsAndNoFunctionAveragesThem() {
-  QPointer<Point> point = new Point();
+  oi::Guarded<Point> point = new Point();
 
   // stand in for "TrafoController already transformed these" (core has
   // no TrafoController - see point.cpp's Point::recalc() comment)
@@ -119,7 +117,7 @@ void MeasurementIntentTest::pointWithObservationsAndNoFunctionAveragesThem() {
   xyzA.setAt(1, 0.0);
   xyzA.setAt(2, 0.0);
   xyzA.setAt(3, 1.0);
-  QPointer<Observation> obsA = new Observation();
+  oi::Guarded<Observation> obsA = new Observation();
   obsA->setXYZ(xyzA);
   obsA->setIsSolved(true);
 
@@ -128,7 +126,7 @@ void MeasurementIntentTest::pointWithObservationsAndNoFunctionAveragesThem() {
   xyzB.setAt(1, 0.0);
   xyzB.setAt(2, 0.0);
   xyzB.setAt(3, 1.0);
-  QPointer<Observation> obsB = new Observation();
+  oi::Guarded<Observation> obsB = new Observation();
   obsB->setXYZ(xyzB);
   obsB->setIsSolved(true);
 
@@ -148,10 +146,10 @@ void MeasurementIntentTest::pointWithObservationsAndNoFunctionAveragesThem() {
 }
 
 void MeasurementIntentTest::pointWithObservationsIsStationOwned() {
-  QPointer<Station> station = new Station("S1");
-  QPointer<Point> point = new Point();
+  oi::Guarded<Station> station = new Station("S1");
+  oi::Guarded<Point> point = new Point();
 
-  QPointer<Observation> obs = new Observation();
+  oi::Guarded<Observation> obs = new Observation();
   obs->setStation(station);
   point->addObservation(obs);
 
@@ -171,11 +169,11 @@ void MeasurementIntentTest::pointWithNoObservationsIsUnaffected() {
 }
 
 void MeasurementIntentTest::measuringAlwaysCreatesExactlyOneNewPoint() {
-  QPointer<Station> station;
-  QPointer<OiJob> job = makeJobWithActiveStation(station);
+  oi::Guarded<Station> station;
+  oi::Guarded<OiJob> job = makeJobWithActiveStation(station);
 
-  QPointer<Point> targetPoint = new Point();
-  QPointer<FeatureWrapper> targetFeature = new FeatureWrapper();
+  oi::Guarded<Point> targetPoint = new Point();
+  oi::Guarded<FeatureWrapper> targetFeature = new FeatureWrapper();
   targetFeature->setPoint(targetPoint);
   targetFeature->getFeature()->setFeatureName("target");
   job->addFeature(targetFeature);
@@ -184,7 +182,7 @@ void MeasurementIntentTest::measuringAlwaysCreatesExactlyOneNewPoint() {
 
   // D15a: a MeasurementConfig count of 10 yields one Point with ten
   // readings, not ten Points
-  QList<QPointer<Reading> > readings;
+  QList<oi::Guarded<Reading> > readings;
   readings << makeCartesianReading(1.0, 2.0, 3.0)
            << makeCartesianReading(1.01, 2.0, 3.0)
            << makeCartesianReading(0.99, 2.0, 3.0);
@@ -195,24 +193,24 @@ void MeasurementIntentTest::measuringAlwaysCreatesExactlyOneNewPoint() {
 }
 
 void MeasurementIntentTest::measuredPointHasObservationsDerivedPointDoesNot() {
-  QPointer<Station> station;
-  QPointer<OiJob> job = makeJobWithActiveStation(station);
+  oi::Guarded<Station> station;
+  oi::Guarded<OiJob> job = makeJobWithActiveStation(station);
 
-  QPointer<Point> targetPoint = new Point();
-  QPointer<FeatureWrapper> targetFeature = new FeatureWrapper();
+  oi::Guarded<Point> targetPoint = new Point();
+  oi::Guarded<FeatureWrapper> targetFeature = new FeatureWrapper();
   targetFeature->setPoint(targetPoint);
   targetFeature->getFeature()->setFeatureName("target");
   job->addFeature(targetFeature);
 
-  QList<QPointer<Reading> > readings;
+  QList<oi::Guarded<Reading> > readings;
   readings << makeCartesianReading(1.0, 2.0, 3.0)
            << makeCartesianReading(1.0, 2.0, 3.0);
   job->addMeasurementResults(targetFeature->getFeature()->getId(), readings);
 
   // find the newly created point - the only ePointFeature besides the
   // target itself
-  QPointer<Point> measured;
-  foreach (const QPointer<FeatureWrapper>& fw, job->getFeaturesList()) {
+  oi::Guarded<Point> measured;
+  foreach (const oi::Guarded<FeatureWrapper>& fw, job->getFeaturesList()) {
     if (!fw.isNull() && !fw->getPoint().isNull() &&
         fw->getPoint() != targetPoint) {
       measured = fw->getPoint();
@@ -234,22 +232,22 @@ void MeasurementIntentTest::measuredPointHasObservationsDerivedPointDoesNot() {
 
 void MeasurementIntentTest::
     tagResolutionFeedsAMatchingFunctionWithNoBindingStep() {
-  QPointer<Station> station;
-  QPointer<OiJob> job = makeJobWithActiveStation(station);
+  oi::Guarded<Station> station;
+  oi::Guarded<OiJob> job = makeJobWithActiveStation(station);
 
-  QPointer<Point> targetPoint = new Point();
-  QPointer<FeatureWrapper> targetFeature = new FeatureWrapper();
+  oi::Guarded<Point> targetPoint = new Point();
+  oi::Guarded<FeatureWrapper> targetFeature = new FeatureWrapper();
   targetFeature->setPoint(targetPoint);
   targetFeature->getFeature()->setFeatureName("target");
   job->addFeature(targetFeature);
 
-  QPointer<FakeConsumer> consumer = new FakeConsumer("default");
+  oi::Guarded<FakeConsumer> consumer = new FakeConsumer("default");
   targetPoint->addFunction(consumer);
 
   QVERIFY2(consumer->getInputElements().value(0).isEmpty(),
            "nothing tagged yet");
 
-  QList<QPointer<Reading> > readings;
+  QList<oi::Guarded<Reading> > readings;
   readings << makeCartesianReading(5.0, 5.0, 5.0);
   job->addMeasurementResults(targetFeature->getFeature()->getId(), readings);
 
@@ -259,35 +257,35 @@ void MeasurementIntentTest::
 }
 
 void MeasurementIntentTest::aPointCarryingTwoTagsIsFoundByBothConsumers() {
-  QPointer<Station> station;
-  QPointer<OiJob> job = makeJobWithActiveStation(station);
+  oi::Guarded<Station> station;
+  oi::Guarded<OiJob> job = makeJobWithActiveStation(station);
 
-  QPointer<Point> featureA = new Point();
-  QPointer<FeatureWrapper> wrapperA = new FeatureWrapper();
+  oi::Guarded<Point> featureA = new Point();
+  oi::Guarded<FeatureWrapper> wrapperA = new FeatureWrapper();
   wrapperA->setPoint(featureA);
   wrapperA->getFeature()->setFeatureName("A");
   job->addFeature(wrapperA);
 
-  QPointer<Point> featureB = new Point();
-  QPointer<FeatureWrapper> wrapperB = new FeatureWrapper();
+  oi::Guarded<Point> featureB = new Point();
+  oi::Guarded<FeatureWrapper> wrapperB = new FeatureWrapper();
   wrapperB->setPoint(featureB);
   wrapperB->getFeature()->setFeatureName("B");
   job->addFeature(wrapperB);
 
-  QPointer<FakeConsumer> consumerA = new FakeConsumer("default");
+  oi::Guarded<FakeConsumer> consumerA = new FakeConsumer("default");
   featureA->addFunction(consumerA);
-  QPointer<FakeConsumer> consumerB = new FakeConsumer("default");
+  oi::Guarded<FakeConsumer> consumerB = new FakeConsumer("default");
   featureB->addFunction(consumerB);
 
-  QList<QPointer<Reading> > readings;
+  QList<oi::Guarded<Reading> > readings;
   readings << makeCartesianReading(1.0, 1.0, 1.0);
   job->addMeasurementResults(wrapperA->getFeature()->getId(), readings);
 
   // find the point that was just created and tag it for B as well - the
   // retroactive hand-allocation path (domain-model.md S3: "hand-allocation
   // and field acquisition are the same operation")
-  QPointer<Point> measured;
-  foreach (const QPointer<FeatureWrapper>& fw, job->getFeaturesList()) {
+  oi::Guarded<Point> measured;
+  foreach (const oi::Guarded<FeatureWrapper>& fw, job->getFeaturesList()) {
     if (!fw.isNull() && !fw->getPoint().isNull() &&
         fw->getPoint() != featureA && fw->getPoint() != featureB) {
       measured = fw->getPoint();
@@ -303,23 +301,23 @@ void MeasurementIntentTest::aPointCarryingTwoTagsIsFoundByBothConsumers() {
 }
 
 void MeasurementIntentTest::renamingTheFeatureDoesNotOrphanTags() {
-  QPointer<Station> station;
-  QPointer<OiJob> job = makeJobWithActiveStation(station);
+  oi::Guarded<Station> station;
+  oi::Guarded<OiJob> job = makeJobWithActiveStation(station);
 
-  QPointer<Point> targetPoint = new Point();
-  QPointer<FeatureWrapper> targetFeature = new FeatureWrapper();
+  oi::Guarded<Point> targetPoint = new Point();
+  oi::Guarded<FeatureWrapper> targetFeature = new FeatureWrapper();
   targetFeature->setPoint(targetPoint);
   targetFeature->getFeature()->setFeatureName("target");
   job->addFeature(targetFeature);
 
-  QPointer<FakeConsumer> consumer = new FakeConsumer("default");
+  oi::Guarded<FakeConsumer> consumer = new FakeConsumer("default");
   targetPoint->addFunction(consumer);
 
   // rename *before* measuring - tags anchor to id (MeasurementIntent,
   // measurementintent.h), never to the name in effect at tag time
   targetFeature->getFeature()->setFeatureName("renamed-wall-01");
 
-  QList<QPointer<Reading> > readings;
+  QList<oi::Guarded<Reading> > readings;
   readings << makeCartesianReading(3.0, 3.0, 3.0);
   job->addMeasurementResults(targetFeature->getFeature()->getId(), readings);
 
@@ -327,15 +325,15 @@ void MeasurementIntentTest::renamingTheFeatureDoesNotOrphanTags() {
 }
 
 void MeasurementIntentTest::unresolvableTargetIsRejectedWithAMessage() {
-  QPointer<Station> station;
-  QPointer<OiJob> job = makeJobWithActiveStation(station);
+  oi::Guarded<Station> station;
+  oi::Guarded<OiJob> job = makeJobWithActiveStation(station);
 
   RecordingJobObserver spy;
   spy.attach(job.data());
 
   const int featureCountBefore = job->getFeaturesList().size();
 
-  QList<QPointer<Reading> > readings;
+  QList<oi::Guarded<Reading> > readings;
   readings << makeCartesianReading(1.0, 1.0, 1.0);
   job->addMeasurementResults(999999, readings);
 

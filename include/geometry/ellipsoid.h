@@ -1,7 +1,6 @@
 #ifndef ELLIPSOID_H
 #define ELLIPSOID_H
 
-#include <QObject>
 #include <QtCore>
 
 #include "core_export.h"
@@ -17,14 +16,13 @@ namespace oi {
  */
 class OI_CORE_EXPORT Ellipsoid : public Geometry {
   friend struct codec::Access;  // the protobuf codec (see src/codec)
-  Q_OBJECT
 
  public:
-  explicit Ellipsoid(QObject* parent = nullptr);
+  explicit Ellipsoid();
   Ellipsoid(const Position& center, const Direction& majorAxis, const double& a,
-            const double& b, QObject* parent = nullptr);
+            const double& b);
 
-  Ellipsoid(const Ellipsoid& copy, QObject* parent = nullptr);
+  Ellipsoid(const Ellipsoid& copy);
 
   Ellipsoid& operator=(const Ellipsoid& copy);
 

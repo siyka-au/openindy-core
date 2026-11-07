@@ -1,7 +1,6 @@
 #ifndef SLOTTEDHOLE_H
 #define SLOTTEDHOLE_H
 
-#include <QObject>
 #include <QtCore>
 #include <QtMath>
 
@@ -19,18 +18,16 @@ namespace oi {
  */
 class OI_CORE_EXPORT SlottedHole : public Geometry {
   friend struct codec::Access;  // the protobuf codec (see src/codec)
-  Q_OBJECT
 
  public:
-  explicit SlottedHole(QObject* parent = nullptr);
+  explicit SlottedHole();
   SlottedHole(const Position& center, const Direction& normal,
               const Radius& radius, const double& length,
-              const Direction& holeAxis, QObject* parent = nullptr);
+              const Direction& holeAxis);
   SlottedHole(const Position& circleCenterA, const Position& circleCenterB,
-              const Direction& normal, const Radius& radius,
-              QObject* parent = nullptr);
+              const Direction& normal, const Radius& radius);
 
-  SlottedHole(const SlottedHole& copy, QObject* parent = nullptr);
+  SlottedHole(const SlottedHole& copy);
 
   SlottedHole& operator=(const SlottedHole& copy);
 

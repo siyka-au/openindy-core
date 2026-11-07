@@ -3,11 +3,11 @@
 
 #include <QList>
 #include <QMap>
-#include <QPointer>
 #include <memory>
 
 #include "core_export.h"
 #include "executor.h"
+#include "guarded.h"
 #include "measurementconfig.h"
 #include "sensor.h"
 #include "sensorworker.h"
@@ -56,8 +56,8 @@ class OI_CORE_EXPORT SensorControl final {
 
   // get or set sensor
   Sensor getSensor();
-  void setSensor(const QPointer<Sensor>& sensor);
-  QPointer<Sensor> takeSensor();
+  void setSensor(const oi::Guarded<Sensor>& sensor);
+  oi::Guarded<Sensor> takeSensor();
   void resetSensor();
 
   // previously used sensors

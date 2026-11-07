@@ -8,9 +8,8 @@ using namespace oi::math;
 
 /*!
  * \brief SlottedHole::SlottedHole
- * \param parent
  */
-SlottedHole::SlottedHole(QObject* parent) : Geometry(parent) {
+SlottedHole::SlottedHole() : Geometry() {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setSlottedHole(this);
@@ -24,12 +23,11 @@ SlottedHole::SlottedHole(QObject* parent) : Geometry(parent) {
  * \param radius
  * \param length
  * \param holeAxis
- * \param parent
  */
 SlottedHole::SlottedHole(const Position& center, const Direction& normal,
                          const Radius& radius, const double& length,
-                         const Direction& holeAxis, QObject* parent)
-    : Geometry(parent) {
+                         const Direction& holeAxis)
+    : Geometry() {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setSlottedHole(this);
@@ -44,12 +42,11 @@ SlottedHole::SlottedHole(const Position& center, const Direction& normal,
  * \param circleCenterB
  * \param normal
  * \param radius
- * \param parent
  */
 SlottedHole::SlottedHole(const Position& circleCenterA,
                          const Position& circleCenterB, const Direction& normal,
-                         const Radius& radius, QObject* parent)
-    : Geometry(parent) {
+                         const Radius& radius)
+    : Geometry() {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setSlottedHole(this);
@@ -61,10 +58,8 @@ SlottedHole::SlottedHole(const Position& circleCenterA,
 /*!
  * \brief SlottedHole::SlottedHole
  * \param copy
- * \param parent
  */
-SlottedHole::SlottedHole(const SlottedHole& copy, QObject* parent)
-    : Geometry(copy, parent) {
+SlottedHole::SlottedHole(const SlottedHole& copy) : Geometry(copy) {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setSlottedHole(this);

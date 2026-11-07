@@ -56,10 +56,8 @@ class RecordingExchangeObserver : public ExchangeObserver {
 
 // a real function that talks, like a plugin function does
 class ChattyFunction : public ConstructFunction, public Producer<Point> {
-  Q_OBJECT
  public:
-  explicit ChattyFunction(QObject* parent = nullptr)
-      : ConstructFunction(parent) {
+  explicit ChattyFunction() : ConstructFunction() {
     this->metaData.name = "ChattyFunction";
     NeededElement param;
     param.typeOfElement = ElementTypes::ePointElement;
@@ -76,7 +74,6 @@ class ChattyFunction : public ConstructFunction, public Producer<Point> {
 
 // a bare exchange that reports through every channel
 class ChattyExchange : public ExchangeInterface {
-  Q_OBJECT
  public:
   void importOiData() override {
     emit this->sendMessage("importing", MessageTypes::eInformationMessage);
@@ -107,8 +104,8 @@ class MessageSinkTest : public QObject {
 
  private:
   struct Fixture {
-    QPointer<FeatureWrapper> wrapper;
-    QPointer<Point> point;
+    oi::Guarded<FeatureWrapper> wrapper;
+    oi::Guarded<Point> point;
   };
   static Fixture addActivePoint(OiJob& job);
 };
@@ -137,7 +134,7 @@ void MessageSinkTest::
   rec.attach(&job);
   const Fixture f = addActivePoint(job);
 
-  QPointer<ChattyFunction> function = new ChattyFunction();
+  oi::Guarded<ChattyFunction> function = new ChattyFunction();
   job.addFunction(function);
   QCOMPARE(function->getMessageSink(), static_cast<MessageSink*>(&job));
 
@@ -161,7 +158,7 @@ void MessageSinkTest::removingAFunctionFromTheJobStopsItReportingToTheJob() {
   rec.attach(&job);
   const Fixture f = addActivePoint(job);
 
-  QPointer<ChattyFunction> function = new ChattyFunction();
+  oi::Guarded<ChattyFunction> function = new ChattyFunction();
   job.addFunction(function);
   QCOMPARE(function->getMessageSink(), static_cast<MessageSink*>(&job));
 
@@ -177,14 +174,14 @@ void MessageSinkTest::removingAFunctionFromTheJobStopsItReportingToTheJob() {
   // removing just the function deletes it: nothing left that could dangle
   OiJob job2;
   const Fixture g = addActivePoint(job2);
-  QPointer<ChattyFunction> second = new ChattyFunction();
+  oi::Guarded<ChattyFunction> second = new ChattyFunction();
   job2.addFunction(second);
   job2.removeFunction(0);
   QVERIFY(second.isNull());
 }
 
 void MessageSinkTest::aFunctionOutlivingItsJobDoesNotReportToADeadJob() {
-  QPointer<ChattyFunction> function = new ChattyFunction();
+  oi::Guarded<ChattyFunction> function = new ChattyFunction();
   RecordingSink after;
   {
     OiJob job;
@@ -240,13 +237,13 @@ void MessageSinkTest::aBundleAdjustmentReportsToItsJob() {
 
 void MessageSinkTest::aBundleAdjustmentOutlivingItsJobIsDetached() {
   // destroying the job must not leave its bundle plugin pointing at it
-  QPointer<BundleAdjustment> bundle = new BundleAdjustment();
+  oi::Guarded<BundleAdjustment> bundle = new BundleAdjustment();
   {
     OiJob job;
-    QPointer<CoordinateSystem> system = new CoordinateSystem(true);
+    oi::Guarded<CoordinateSystem> system = new CoordinateSystem(true);
     system->setFeatureName("Bundle01");
     system->setBundlePlugin(bundle);
-    QPointer<FeatureWrapper> wrapper = new FeatureWrapper();
+    oi::Guarded<FeatureWrapper> wrapper = new FeatureWrapper();
     wrapper->setCoordinateSystem(system);
     QVERIFY(job.addFeature(wrapper));
     bundle->setCurrentJob(&job);

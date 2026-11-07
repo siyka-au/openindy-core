@@ -5,23 +5,17 @@
 
 using namespace oi;
 
-Group::Group(QObject* parent) : Feature(parent) {}
+Group::Group() : Feature() {}
 
-Group::Group(const QString& name, QObject* parent) : Feature(parent) {
-  this->name = name;
-}
+Group::Group(const QString& name) : Feature() { this->name = name; }
 
-Group::Group(const QString& name, const FeatureTypes& constraint,
-             QObject* parent)
-    : Feature(parent) {
+Group::Group(const QString& name, const FeatureTypes& constraint) : Feature() {
   this->name = name;
   this->constraint = constraint;
 }
 
-Group::Group(const Group& copy, QObject* parent)
-    : Feature(copy, parent),
-      constraint(copy.constraint),
-      members(copy.members) {
+Group::Group(const Group& copy)
+    : Feature(copy), constraint(copy.constraint), members(copy.members) {
   // members are references, so a copied group references the same
   // features - it does not clone them. That is the whole contract.
 }
@@ -45,7 +39,7 @@ const std::optional<FeatureTypes>& Group::getConstraint() const {
   return this->constraint;
 }
 
-bool Group::accepts(const QPointer<FeatureWrapper>& feature) const {
+bool Group::accepts(const oi::Guarded<FeatureWrapper>& feature) const {
   if (feature.isNull() || feature->getFeature().isNull()) {
     return false;
   }
@@ -57,11 +51,11 @@ bool Group::accepts(const QPointer<FeatureWrapper>& feature) const {
   return feature->getFeatureTypeEnum() == this->constraint.value();
 }
 
-const QList<QPointer<FeatureWrapper> >& Group::getMembers() const {
+const QList<oi::Guarded<FeatureWrapper> >& Group::getMembers() const {
   return this->members;
 }
 
-bool Group::addMember(const QPointer<FeatureWrapper>& feature) {
+bool Group::addMember(const oi::Guarded<FeatureWrapper>& feature) {
   if (!this->accepts(feature)) {
     return false;
   }
@@ -83,7 +77,7 @@ bool Group::addMember(const QPointer<FeatureWrapper>& feature) {
   return true;
 }
 
-bool Group::removeMember(const QPointer<FeatureWrapper>& feature) {
+bool Group::removeMember(const oi::Guarded<FeatureWrapper>& feature) {
   if (feature.isNull() || feature->getFeature().isNull()) {
     return false;
   }
@@ -93,7 +87,7 @@ bool Group::removeMember(const QPointer<FeatureWrapper>& feature) {
 
 bool Group::removeMemberById(const int& featureId) {
   for (int i = 0; i < this->members.size(); ++i) {
-    const QPointer<FeatureWrapper>& member = this->members.at(i);
+    const oi::Guarded<FeatureWrapper>& member = this->members.at(i);
     if (member.isNull() || member->getFeature().isNull()) {
       continue;
     }
@@ -108,14 +102,15 @@ bool Group::removeMemberById(const int& featureId) {
   return false;
 }
 
-bool Group::containsMember(const QPointer<FeatureWrapper>& feature) const {
+bool Group::containsMember(const oi::Guarded<FeatureWrapper>& feature) const {
   if (feature.isNull() || feature->getFeature().isNull()) {
     return false;
   }
 
   const Feature* target = feature->getFeature().data();
 
-  for (const QPointer<FeatureWrapper>& member : oi::snapshot(this->members)) {
+  for (const oi::Guarded<FeatureWrapper>& member :
+       oi::snapshot(this->members)) {
     if (member.isNull() || member->getFeature().isNull()) {
       continue;
     }
@@ -128,7 +123,8 @@ bool Group::containsMember(const QPointer<FeatureWrapper>& feature) const {
 }
 
 bool Group::containsMemberId(const int& featureId) const {
-  for (const QPointer<FeatureWrapper>& member : oi::snapshot(this->members)) {
+  for (const oi::Guarded<FeatureWrapper>& member :
+       oi::snapshot(this->members)) {
     if (member.isNull() || member->getFeature().isNull()) {
       continue;
     }
@@ -142,7 +138,8 @@ bool Group::containsMemberId(const int& featureId) const {
 
 int Group::memberCount() const {
   int count = 0;
-  for (const QPointer<FeatureWrapper>& member : oi::snapshot(this->members)) {
+  for (const oi::Guarded<FeatureWrapper>& member :
+       oi::snapshot(this->members)) {
     if (!member.isNull() && !member->getFeature().isNull()) {
       ++count;
     }
@@ -153,8 +150,9 @@ int Group::memberCount() const {
 void Group::compact() {
   const int before = this->members.size();
 
-  QList<QPointer<FeatureWrapper> > live;
-  for (const QPointer<FeatureWrapper>& member : oi::snapshot(this->members)) {
+  QList<oi::Guarded<FeatureWrapper> > live;
+  for (const oi::Guarded<FeatureWrapper>& member :
+       oi::snapshot(this->members)) {
     if (!member.isNull() && !member->getFeature().isNull()) {
       live.append(member);
     }

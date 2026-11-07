@@ -4,9 +4,8 @@ using namespace oi;
 
 /*!
  * \brief SimulationModel::SimulationModel
- * \param parent
  */
-SimulationModel::SimulationModel(QObject* parent) : QObject(parent) {}
+SimulationModel::SimulationModel() {}
 
 /*!
  * \brief SimulationModel::~SimulationModel
@@ -108,10 +107,10 @@ const QMap<QString, UncertaintyComponent>& SimulationModel::getHumanInfluence()
  * \param newIterationStart
  * \return
  */
-bool SimulationModel::distort(const QPointer<Reading>& /*r*/,
+bool SimulationModel::distort(const oi::Guarded<Reading>& /*r*/,
                               const OiMat& /*objectRelation*/,
                               const bool& /*newIterationStart*/) {
-  emit this->sendMessage(
+  this->sendMessage(
       QString(
           "Simulation Model not implemented correctly: distort method missing"),
       MessageTypes::eCriticalMessage, MessageDestinations::eMessageBoxMessage);
@@ -125,7 +124,7 @@ bool SimulationModel::distort(const QPointer<Reading>& /*r*/,
  * \return
  */
 bool SimulationModel::analyseSimulationData(UncertaintyData& /*d*/) {
-  emit this->sendMessage(
+  this->sendMessage(
       QString(
           "Simulation Model not implemented correctly: analyse method missing"),
       MessageTypes::eCriticalMessage, MessageDestinations::eMessageBoxMessage);
@@ -141,10 +140,10 @@ bool SimulationModel::analyseSimulationData(UncertaintyData& /*d*/) {
  */
 double SimulationModel::getCorrelationCoefficient(const QList<double>& /*x*/,
                                                   const QList<double>& /*y*/) {
-  emit this->sendMessage(QString("Simulation Model not implemented correctly: "
-                                 "correlation method missing"),
-                         MessageTypes::eCriticalMessage,
-                         MessageDestinations::eMessageBoxMessage);
+  this->sendMessage(QString("Simulation Model not implemented correctly: "
+                            "correlation method missing"),
+                    MessageTypes::eCriticalMessage,
+                    MessageDestinations::eMessageBoxMessage);
   return 0.0;
 }
 

@@ -1,7 +1,6 @@
 #ifndef PARABOLOID_H
 #define PARABOLOID_H
 
-#include <QObject>
 #include <QtCore>
 
 #include "core_export.h"
@@ -18,14 +17,12 @@ namespace oi {
  */
 class OI_CORE_EXPORT Paraboloid : public Geometry {
   friend struct codec::Access;  // the protobuf codec (see src/codec)
-  Q_OBJECT
 
  public:
-  explicit Paraboloid(QObject* parent = nullptr);
-  Paraboloid(const Position& apex, const Direction& axis, const double& a,
-             QObject* parent = nullptr);
+  explicit Paraboloid();
+  Paraboloid(const Position& apex, const Direction& axis, const double& a);
 
-  Paraboloid(const Paraboloid& copy, QObject* parent = nullptr);
+  Paraboloid(const Paraboloid& copy);
 
   Paraboloid& operator=(const Paraboloid& copy);
 

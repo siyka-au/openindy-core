@@ -186,8 +186,8 @@ void decodeStatistic(const oipb::GeometryStatistic& m, Statistic* s) {
 
 // Builds a geometry of type T and restores the state every geometry shares.
 template <class T>
-QPointer<Geometry> Access::restoreBase(const oipb::Geometry& m) {
-  QPointer<T> created = new T();
+oi::Guarded<Geometry> Access::restoreBase(const oipb::Geometry& m) {
+  oi::Guarded<T> created = new T();
   // Address the shared members through Geometry: SlottedHole declares its own
   // `radius`, which would otherwise hide the base one.
   Geometry& geometry = *created;
@@ -309,7 +309,7 @@ void Access::encodeGeometry(const Geometry& g, oipb::Geometry* m) {
   }
 }
 
-QPointer<Geometry> Access::decodeGeometry(const oipb::Geometry& m) {
+oi::Guarded<Geometry> Access::decodeGeometry(const oipb::Geometry& m) {
   switch (m.shape_case()) {
     case oipb::Geometry::kCircle:
       return restoreBase<Circle>(m);
@@ -446,8 +446,8 @@ void Access::encodeGroup(const Group& g, oipb::Group* m) {
   m->set_point_group(dynamic_cast<const PointGroup*>(&g) != nullptr);
 }
 
-QPointer<Group> Access::decodeGroup(const oipb::Group& m) {
-  QPointer<Group> group;
+oi::Guarded<Group> Access::decodeGroup(const oipb::Group& m) {
+  oi::Guarded<Group> group;
   if (m.point_group()) {
     group = new PointGroup();
   } else {
@@ -466,7 +466,7 @@ oipb::Geometry toProto(const Geometry& geometry) {
   return m;
 }
 
-QPointer<Geometry> createGeometry(const oipb::Geometry& message) {
+oi::Guarded<Geometry> createGeometry(const oipb::Geometry& message) {
   return Access::decodeGeometry(message);
 }
 
@@ -476,7 +476,7 @@ oipb::Group toProto(const Group& group) {
   return m;
 }
 
-QPointer<Group> createGroup(const oipb::Group& message) {
+oi::Guarded<Group> createGroup(const oipb::Group& message) {
   return Access::decodeGroup(message);
 }
 

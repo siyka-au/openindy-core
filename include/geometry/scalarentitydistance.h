@@ -1,7 +1,6 @@
 #ifndef SCALARENTITYDISTANCE_H
 #define SCALARENTITYDISTANCE_H
 
-#include <QObject>
 #include <QtCore>
 
 #include "core_export.h"
@@ -14,15 +13,12 @@ namespace oi {
  */
 class OI_CORE_EXPORT ScalarEntityDistance : public Geometry {
   friend struct codec::Access;  // the protobuf codec (see src/codec)
-  Q_OBJECT
 
  public:
-  explicit ScalarEntityDistance(QObject* parent = nullptr);
-  explicit ScalarEntityDistance(const double& distance,
-                                QObject* parent = nullptr);
+  explicit ScalarEntityDistance();
+  explicit ScalarEntityDistance(const double& distance);
 
-  ScalarEntityDistance(const ScalarEntityDistance& copy,
-                       QObject* parent = nullptr);
+  ScalarEntityDistance(const ScalarEntityDistance& copy);
 
   ScalarEntityDistance& operator=(const ScalarEntityDistance& copy);
 

@@ -4,9 +4,8 @@ using namespace oi;
 
 /*!
  * \brief ExchangeInterface::ExchangeInterface
- * \param parent
  */
-ExchangeInterface::ExchangeInterface(QObject* parent) : QObject(parent) {
+ExchangeInterface::ExchangeInterface() {
   // init units
   this->units.insert(DimensionType::eMetric, UnitType::eUnitMeter);
   this->units.insert(DimensionType::eAngular, UnitType::eUnitDecimalDegree);
@@ -59,7 +58,8 @@ void ExchangeInterface::setDevice(const QPointer<QIODevice>& device) {
  * \brief ExchangeInterface::getFeatures
  * \return
  */
-const QList<QPointer<FeatureWrapper> >& ExchangeInterface::getFeatures() const {
+const QList<oi::Guarded<FeatureWrapper> >& ExchangeInterface::getFeatures()
+    const {
   return this->features;
 }
 
@@ -68,7 +68,7 @@ const QList<QPointer<FeatureWrapper> >& ExchangeInterface::getFeatures() const {
  * \param features
  */
 void ExchangeInterface::setFeatures(
-    const QList<QPointer<FeatureWrapper> >& features) {
+    const QList<oi::Guarded<FeatureWrapper> >& features) {
   this->features = features;
 }
 
@@ -108,7 +108,8 @@ void ExchangeInterface::setGroupName(const QString& groupName) {
  * \brief ExchangeInterface::getNominalSystem
  * \return
  */
-const QPointer<CoordinateSystem>& ExchangeInterface::getNominalSystem() const {
+const oi::Guarded<CoordinateSystem>& ExchangeInterface::getNominalSystem()
+    const {
   return this->nominalSystem;
 }
 
@@ -117,7 +118,7 @@ const QPointer<CoordinateSystem>& ExchangeInterface::getNominalSystem() const {
  * \param nominalSystem
  */
 void ExchangeInterface::setNominalSystem(
-    const QPointer<CoordinateSystem>& nominalSystem) {
+    const oi::Guarded<CoordinateSystem>& nominalSystem) {
   this->nominalSystem = nominalSystem;
 }
 
@@ -143,7 +144,7 @@ void ExchangeInterface::setUnit(const DimensionType& dimension,
  * \brief ExchangeInterface::importOiData
  */
 void ExchangeInterface::importOiData() {
-  emit this->sendMessage(
+  this->sendMessage(
       QString(
           "Exchange Plugin not implemented correctly: import method missing"),
       MessageTypes::eCriticalMessage, MessageDestinations::eMessageBoxMessage);
@@ -153,7 +154,7 @@ void ExchangeInterface::importOiData() {
  * \brief ExchangeInterface::exportOiData
  */
 void ExchangeInterface::exportOiData() {
-  emit this->sendMessage(
+  this->sendMessage(
       QString(
           "Exchange Plugin not implemented correctly: export method missing"),
       MessageTypes::eCriticalMessage, MessageDestinations::eMessageBoxMessage);

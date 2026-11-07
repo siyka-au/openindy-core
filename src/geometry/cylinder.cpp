@@ -8,9 +8,8 @@ using namespace oi::math;
 
 /*!
  * \brief Cylinder::Cylinder
- * \param parent
  */
-Cylinder::Cylinder(QObject* parent) : Geometry(parent) {
+Cylinder::Cylinder() : Geometry() {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setCylinder(this);
@@ -22,11 +21,10 @@ Cylinder::Cylinder(QObject* parent) : Geometry(parent) {
  * \param axisPoint
  * \param axis
  * \param radius
- * \param parent
  */
 Cylinder::Cylinder(const Position& axisPoint, const Direction& axis,
-                   const Radius& radius, QObject* parent)
-    : Geometry(parent) {
+                   const Radius& radius)
+    : Geometry() {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setCylinder(this);
@@ -38,10 +36,8 @@ Cylinder::Cylinder(const Position& axisPoint, const Direction& axis,
 /*!
  * \brief Cylinder::Cylinder
  * \param copy
- * \param parent
  */
-Cylinder::Cylinder(const Cylinder& copy, QObject* parent)
-    : Geometry(copy, parent) {
+Cylinder::Cylinder(const Cylinder& copy) : Geometry(copy) {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setCylinder(this);

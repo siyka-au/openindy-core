@@ -8,10 +8,8 @@ using namespace oi;
 
 /*!
  * \brief ScalarEntityTemperature::ScalarEntityTemperature
- * \param parent
  */
-ScalarEntityTemperature::ScalarEntityTemperature(QObject* parent)
-    : Geometry(parent) {
+ScalarEntityTemperature::ScalarEntityTemperature() : Geometry() {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setScalarEntityTemperature(this);
@@ -21,11 +19,9 @@ ScalarEntityTemperature::ScalarEntityTemperature(QObject* parent)
 /*!
  * \brief ScalarEntityTemperature::ScalarEntityTemperature
  * \param temperature
- * \param parent
  */
-ScalarEntityTemperature::ScalarEntityTemperature(const double& temperature,
-                                                 QObject* parent)
-    : Geometry(parent) {
+ScalarEntityTemperature::ScalarEntityTemperature(const double& temperature)
+    : Geometry() {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setScalarEntityTemperature(this);
@@ -37,11 +33,10 @@ ScalarEntityTemperature::ScalarEntityTemperature(const double& temperature,
 /*!
  * \brief ScalarEntityTemperature::ScalarEntityTemperature
  * \param copy
- * \param parent
  */
 ScalarEntityTemperature::ScalarEntityTemperature(
-    const ScalarEntityTemperature& copy, QObject* parent)
-    : Geometry(copy, parent) {
+    const ScalarEntityTemperature& copy)
+    : Geometry(copy) {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setScalarEntityTemperature(this);

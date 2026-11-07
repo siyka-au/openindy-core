@@ -33,13 +33,12 @@ class Point;
  */
 class OI_CORE_EXPORT PointGroup : public Group, public PointCollection {
   friend class OiJob;
-  Q_OBJECT
 
  public:
-  explicit PointGroup(QObject* parent = nullptr);
-  explicit PointGroup(const QString& name, QObject* parent = nullptr);
+  explicit PointGroup();
+  explicit PointGroup(const QString& name);
 
-  PointGroup(const PointGroup& copy, QObject* parent = nullptr);
+  PointGroup(const PointGroup& copy);
   PointGroup& operator=(const PointGroup& copy);
 
   ~PointGroup() override;
@@ -59,7 +58,7 @@ class OI_CORE_EXPORT PointGroup : public Group, public PointCollection {
   //! Use this rather than collectionPoints() when per-point pedigree
   //! (observations, sigma, solved state) matters - that information is
   //! exactly what a PointGroup has and a PointCloud does not.
-  [[nodiscard]] QList<QPointer<Point>> getPoints() const;
+  [[nodiscard]] QList<oi::Guarded<Point>> getPoints() const;
 
   // ###############
   // display methods

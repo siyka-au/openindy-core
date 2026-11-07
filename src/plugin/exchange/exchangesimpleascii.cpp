@@ -4,10 +4,8 @@ using namespace oi;
 
 /*!
  * \brief ExchangeSimpleAscii::ExchangeSimpleAscii
- * \param parent
  */
-ExchangeSimpleAscii::ExchangeSimpleAscii(QObject* parent)
-    : ExchangeInterface(parent) {
+ExchangeSimpleAscii::ExchangeSimpleAscii() : ExchangeInterface() {
   this->distanceDigits = 2;
   this->angleDigits = 6;
   this->temperatureDigits = 1;
@@ -143,7 +141,7 @@ void ExchangeSimpleAscii::setDelimiter(const QString& usedDelimiter) {
  * \brief ExchangeSimpleAscii::setCurrentJob
  * \param job
  */
-void ExchangeSimpleAscii::setCurrentJob(QPointer<OiJob> job) {
+void ExchangeSimpleAscii::setCurrentJob(oi::Guarded<OiJob> job) {
   this->currentJob = job;
 }
 
@@ -151,7 +149,7 @@ void ExchangeSimpleAscii::setCurrentJob(QPointer<OiJob> job) {
  * \brief ExchangeSimpleAscii::getCurrentJob
  * \return
  */
-QPointer<OiJob> ExchangeSimpleAscii::getCurrentJob() {
+oi::Guarded<OiJob> ExchangeSimpleAscii::getCurrentJob() {
   return this->currentJob;
 }
 

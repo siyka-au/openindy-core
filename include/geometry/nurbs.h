@@ -1,7 +1,6 @@
 #ifndef NURBS_H
 #define NURBS_H
 
-#include <QObject>
 #include <QtCore>
 
 #include "core_export.h"
@@ -13,12 +12,10 @@ namespace oi {
  * \brief The Nurbs class
  */
 class OI_CORE_EXPORT Nurbs : public Geometry {
-  Q_OBJECT
-
  public:
-  explicit Nurbs(QObject* parent = nullptr);
+  explicit Nurbs();
 
-  Nurbs(const Nurbs& copy, QObject* parent = nullptr);
+  Nurbs(const Nurbs& copy);
 
   Nurbs& operator=(const Nurbs& copy);
 

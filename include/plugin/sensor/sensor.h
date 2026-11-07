@@ -3,8 +3,6 @@
 
 #include <QJsonObject>
 #include <QMap>
-#include <QObject>
-#include <QPointer>
 #include <QString>
 #include <QStringList>
 #include <QVariant>
@@ -12,6 +10,7 @@
 #include <utility>
 
 #include "core_export.h"
+#include "guarded.h"
 #include "measurementconfig.h"
 #include "pluginmetadata.h"
 #include "reading.h"
@@ -37,11 +36,9 @@ class OI_CORE_EXPORT SensorAttributes {
   QString action;
 };
 
-class OI_CORE_EXPORT SensorInterface : public QObject {
-  Q_OBJECT
-
+class OI_CORE_EXPORT SensorInterface : public oi::Trackable {
  public:
-  explicit SensorInterface(QObject* parent = nullptr);
+  explicit SensorInterface();
   // ############################
   // sensor initialization method
   // ############################
@@ -58,7 +55,7 @@ class OI_CORE_EXPORT SensorInterface : public QObject {
 
   virtual void setMeasurementConfig(const MeasurementConfig& mConfig) = 0;
 
-  [[nodiscard]] virtual const std::pair<ReadingTypes, QPointer<Reading>>&
+  [[nodiscard]] virtual const std::pair<ReadingTypes, oi::Guarded<Reading>>&
   getLastReading() const = 0;
 
   [[nodiscard]] virtual bool isSensorAsync() const = 0;
@@ -125,7 +122,7 @@ class OI_CORE_EXPORT SensorInterface : public QObject {
   virtual bool disconnectSensor() = 0;
 
   // measurements
-  virtual QList<QPointer<Reading>> measure(
+  virtual QList<oi::Guarded<Reading>> measure(
       const MeasurementConfig& mConfig) = 0;
   virtual QVariantMap readingStream(const ReadingTypes& streamFormat) = 0;
 
@@ -146,7 +143,7 @@ class OI_CORE_EXPORT SensorInterface : public QObject {
   // ##############################################################
   // reporting to OpenIndy: replaces the former Qt signals of this
   // class. The names, parameters and default arguments are unchanged,
-  // so a driver keeps writing `emit this->sensorMessage(...)`; each
+  // so a driver keeps writing `this->sensorMessage(...)`; each
   // call is forwarded to the sink, or dropped if there is none. They
   // may be called from any thread the driver owns.
   // ##############################################################
@@ -165,7 +162,7 @@ class OI_CORE_EXPORT SensorInterface : public QObject {
       const QJsonObject& response,
       const SensorAction sensorAction = SensorAction::eSensorActionUndefind);
   void asyncMeasurementResult(
-      const int& geomId, const QList<QPointer<Reading>>& measurements,
+      const int& geomId, const QList<oi::Guarded<Reading>>& measurements,
       const SensorAction sensorAction = SensorAction::eSensorActionUndefind);
   void asyncStreamResult(const QVariantMap& reading);
   void asyncSensorNotification(const QJsonObject& response);
@@ -182,9 +179,9 @@ class OI_CORE_EXPORT SensorInterface : public QObject {
  */
 class OI_CORE_EXPORT Sensor : public SensorInterface {
  public:
-  explicit Sensor(QObject* parent = nullptr);
+  explicit Sensor();
 
-  Sensor(const Sensor& copy, QObject* parent = nullptr);
+  Sensor(const Sensor& copy);
 
   Sensor& operator=(const Sensor& copy);
 
@@ -208,7 +205,7 @@ class OI_CORE_EXPORT Sensor : public SensorInterface {
 
   void setMeasurementConfig(const MeasurementConfig& mConfig) override;
 
-  [[nodiscard]] const std::pair<ReadingTypes, QPointer<Reading>>&
+  [[nodiscard]] const std::pair<ReadingTypes, oi::Guarded<Reading>>&
   getLastReading() const override;
 
   [[nodiscard]] bool isSensorAsync() const override;
@@ -266,7 +263,8 @@ class OI_CORE_EXPORT Sensor : public SensorInterface {
   bool disconnectSensor() override;
 
   // measurements
-  QList<QPointer<Reading>> measure(const MeasurementConfig& mConfig) override;
+  QList<oi::Guarded<Reading>> measure(
+      const MeasurementConfig& mConfig) override;
   QVariantMap readingStream(const ReadingTypes& streamFormat) override;
 
   // status information
@@ -291,7 +289,7 @@ class OI_CORE_EXPORT Sensor : public SensorInterface {
   SensorConfiguration sensorConfiguration;
   MeasurementConfig actualMeasurementConfig;
 
-  std::pair<ReadingTypes, QPointer<Reading>>
+  std::pair<ReadingTypes, oi::Guarded<Reading>>
       lastReading;  // the last reading produced by this sensor
 
   // ###########################

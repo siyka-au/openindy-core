@@ -8,9 +8,8 @@ using namespace oi::math;
 
 /*!
  * \brief Circle::Circle
- * \param parent
  */
-Circle::Circle(QObject* parent) : Geometry(parent) {
+Circle::Circle() : Geometry() {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setCircle(this);
@@ -22,11 +21,10 @@ Circle::Circle(QObject* parent) : Geometry(parent) {
  * \param center
  * \param normal
  * \param radius
- * \param parent
  */
 Circle::Circle(const Position& center, const Direction& normal,
-               const Radius& radius, QObject* parent)
-    : Geometry(parent) {
+               const Radius& radius)
+    : Geometry() {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setCircle(this);
@@ -38,9 +36,8 @@ Circle::Circle(const Position& center, const Direction& normal,
 /*!
  * \brief Circle::Circle
  * \param copy
- * \param parent
  */
-Circle::Circle(const Circle& copy, QObject* parent) : Geometry(copy, parent) {
+Circle::Circle(const Circle& copy) : Geometry(copy) {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setCircle(this);

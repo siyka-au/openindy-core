@@ -8,10 +8,8 @@ using namespace oi;
 
 /*!
  * \brief ScalarEntityMeasurementSeries::ScalarEntityMeasurementSeries
- * \param parent
  */
-ScalarEntityMeasurementSeries::ScalarEntityMeasurementSeries(QObject* parent)
-    : Geometry(parent) {
+ScalarEntityMeasurementSeries::ScalarEntityMeasurementSeries() : Geometry() {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setScalarEntityMeasurementSeries(this);
@@ -21,11 +19,10 @@ ScalarEntityMeasurementSeries::ScalarEntityMeasurementSeries(QObject* parent)
 /*!
  * \brief ScalarEntityMeasurementSeries::ScalarEntityMeasurementSeries
  * \param seriesValue
- * \param parent
  */
 ScalarEntityMeasurementSeries::ScalarEntityMeasurementSeries(
-    const double& seriesValue, QObject* parent)
-    : Geometry(parent) {
+    const double& seriesValue)
+    : Geometry() {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setScalarEntityMeasurementSeries(this);
@@ -37,11 +34,10 @@ ScalarEntityMeasurementSeries::ScalarEntityMeasurementSeries(
 /*!
  * \brief ScalarEntityMeasurementSeries::ScalarEntityMeasurementSeries
  * \param copy
- * \param parent
  */
 ScalarEntityMeasurementSeries::ScalarEntityMeasurementSeries(
-    const ScalarEntityMeasurementSeries& copy, QObject* parent)
-    : Geometry(copy, parent) {
+    const ScalarEntityMeasurementSeries& copy)
+    : Geometry(copy) {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setScalarEntityMeasurementSeries(this);

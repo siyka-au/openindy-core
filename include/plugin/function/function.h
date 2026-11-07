@@ -5,8 +5,6 @@
 
 #include <QMap>
 #include <QMultiMap>
-#include <QObject>
-#include <QPointer>
 #include <QStringList>
 #include <QtCore>
 #include <cmath>
@@ -22,6 +20,7 @@
 #include "ellipsoid.h"
 #include "featurewrapper.h"
 #include "functionobserver.h"
+#include "guarded.h"
 #include "hyperboloid.h"
 #include "line.h"
 #include "messagesink.h"
@@ -123,40 +122,40 @@ class InputElement {
                 // specified)
 
   // element pointers (only valid for the specified element type)
-  QPointer<Station> station;
-  QPointer<CoordinateSystem> coordSystem;
-  QPointer<TrafoParam> trafoParam;
+  oi::Guarded<Station> station;
+  oi::Guarded<CoordinateSystem> coordSystem;
+  oi::Guarded<TrafoParam> trafoParam;
 
-  QPointer<Circle> circle;
-  QPointer<Cone> cone;
-  QPointer<Cylinder> cylinder;
-  QPointer<Ellipse> ellipse;
-  QPointer<Ellipsoid> ellipsoid;
-  QPointer<Hyperboloid> hyperboloid;
-  QPointer<Line> line;
-  QPointer<Nurbs> nurbs;
-  QPointer<Paraboloid> paraboloid;
-  QPointer<Plane> plane;
-  QPointer<Point> point;
-  QPointer<PointCloud> pointCloud;
-  QPointer<ScalarEntityAngle> scalarEntityAngle;
-  QPointer<ScalarEntityDistance> scalarEntityDistance;
-  QPointer<ScalarEntityMeasurementSeries> scalarEntityMeasurementSeries;
-  QPointer<ScalarEntityTemperature> scalarEntityTemperature;
-  QPointer<SlottedHole> slottedHole;
-  QPointer<Sphere> sphere;
-  QPointer<Torus> torus;
+  oi::Guarded<Circle> circle;
+  oi::Guarded<Cone> cone;
+  oi::Guarded<Cylinder> cylinder;
+  oi::Guarded<Ellipse> ellipse;
+  oi::Guarded<Ellipsoid> ellipsoid;
+  oi::Guarded<Hyperboloid> hyperboloid;
+  oi::Guarded<Line> line;
+  oi::Guarded<Nurbs> nurbs;
+  oi::Guarded<Paraboloid> paraboloid;
+  oi::Guarded<Plane> plane;
+  oi::Guarded<Point> point;
+  oi::Guarded<PointCloud> pointCloud;
+  oi::Guarded<ScalarEntityAngle> scalarEntityAngle;
+  oi::Guarded<ScalarEntityDistance> scalarEntityDistance;
+  oi::Guarded<ScalarEntityMeasurementSeries> scalarEntityMeasurementSeries;
+  oi::Guarded<ScalarEntityTemperature> scalarEntityTemperature;
+  oi::Guarded<SlottedHole> slottedHole;
+  oi::Guarded<Sphere> sphere;
+  oi::Guarded<Torus> torus;
 
-  QPointer<Geometry> geometry;
+  oi::Guarded<Geometry> geometry;
 
-  QPointer<Observation> observation;
-  QPointer<Reading> polarReading;
-  QPointer<Reading> directionReading;
-  QPointer<Reading> distanceReading;
-  QPointer<Reading> cartesianReading;
-  QPointer<Reading> temperatureReading;
-  QPointer<Reading> levelReading;
-  QPointer<Reading> undefinedReading;
+  oi::Guarded<Observation> observation;
+  oi::Guarded<Reading> polarReading;
+  oi::Guarded<Reading> directionReading;
+  oi::Guarded<Reading> distanceReading;
+  oi::Guarded<Reading> cartesianReading;
+  oi::Guarded<Reading> temperatureReading;
+  oi::Guarded<Reading> levelReading;
+  oi::Guarded<Reading> undefinedReading;
 };
 
 /*!
@@ -219,16 +218,14 @@ class OI_CORE_EXPORT FunctionUtil {
 /*!
  * \brief The Function class
  */
-class OI_CORE_EXPORT Function : public QObject {
+class OI_CORE_EXPORT Function : public oi::Trackable {
   friend class Feature;
   friend class BestFitPlaneUtil;
 
   friend struct codec::Access;  // the protobuf codec (see src/codec)
-  Q_OBJECT
-  Q_DISABLE_COPY_MOVE(Function)
 
  public:
-  explicit Function(QObject* parent = nullptr);
+  explicit Function();
 
   ~Function() override;
 
@@ -250,8 +247,8 @@ class OI_CORE_EXPORT Function : public QObject {
   // through Feature::recalc(), cfvisitor.cpp, OiJob) - it is now a thin
   // wrapper over execChecked().
   virtual std::expected<void, QString> execChecked(
-      const QPointer<FeatureWrapper>& feature);
-  virtual bool exec(const QPointer<FeatureWrapper>& feature);
+      const oi::Guarded<FeatureWrapper>& feature);
+  virtual bool exec(const oi::Guarded<FeatureWrapper>& feature);
 
   // ###############################################################
   // Stage 7d/D21: attach-time capability check - does `function`
@@ -432,8 +429,9 @@ class OI_CORE_EXPORT Function : public QObject {
   // like isUsed).
   QMap<int, QList<PipelineExclusion>> pipelineExclusions;
 
-  void filterObservations(QList<QPointer<Observation>>& allUsableObservations,
-                          QList<QPointer<Observation>>& inputObservations);
+  void filterObservations(
+      QList<oi::Guarded<Observation>>& allUsableObservations,
+      QList<oi::Guarded<Observation>>& inputObservations);
   void addDisplayResidual(int elementId, double vr);
   void addDisplayResidual(int elementId, double vx, double vy, double vz,
                           double v);
@@ -459,7 +457,7 @@ class OI_CORE_EXPORT Function : public QObject {
   // validation step required here (attach-time validation is a distinct,
   // additional check - see canActAsProducer/canActAsTransform above).
   std::expected<void, QString> execByFeatureType(
-      const QPointer<FeatureWrapper>& feature);
+      const oi::Guarded<FeatureWrapper>& feature);
 
   // deterministic pipeline stages (ExplicitList, Exclude) - need no fit
   // result, so they run before the first execByFeatureType() pass.

@@ -167,8 +167,8 @@ void Access::encodeReading(const Reading& r, oipb::Reading* m) {
   }
 }
 
-QPointer<Reading> Access::decodeReading(const oipb::Reading& m) {
-  QPointer<Reading> reading;
+oi::Guarded<Reading> Access::decodeReading(const oipb::Reading& m) {
+  oi::Guarded<Reading> reading;
   switch (m.data_case()) {
     case oipb::Reading::kPolar: {
       ReadingPolar v;
@@ -271,7 +271,7 @@ oipb::Reading toProto(const Reading& reading) {
   return m;
 }
 
-QPointer<Reading> createReading(const oipb::Reading& message) {
+oi::Guarded<Reading> createReading(const oipb::Reading& message) {
   return Access::decodeReading(message);
 }
 
@@ -306,15 +306,15 @@ oipb::Observation toProto(const Observation& observation) {
   return m;
 }
 
-QPointer<Observation> createObservation(const oipb::Observation& message) {
+oi::Guarded<Observation> createObservation(const oipb::Observation& message) {
   if (!message.has_reading()) {
     return {};  // an observation without its reading is not usable
   }
-  QPointer<Reading> reading = createReading(message.reading());
+  oi::Guarded<Reading> reading = createReading(message.reading());
   if (reading.isNull()) {
     return {};
   }
-  QPointer<Observation> observation = new Observation();
+  oi::Guarded<Observation> observation = new Observation();
   Access::restoreObservation(*observation, message);
   Access::setReading(*observation, reading);
   reading->setObservation(observation);
@@ -346,8 +346,8 @@ oipb::TrafoParam toProto(const TrafoParam& trafo) {
   return m;
 }
 
-QPointer<TrafoParam> createTrafoParam(const oipb::TrafoParam& message) {
-  QPointer<TrafoParam> trafo = new TrafoParam();
+oi::Guarded<TrafoParam> createTrafoParam(const oipb::TrafoParam& message) {
+  oi::Guarded<TrafoParam> trafo = new TrafoParam();
   Access::restoreCommon(*trafo, message.feature());
   Access::restoreTrafo(*trafo, message);
   return trafo;
@@ -392,9 +392,9 @@ oipb::CoordinateSystem toProto(const CoordinateSystem& system) {
   return m;
 }
 
-QPointer<CoordinateSystem> createCoordinateSystem(
+oi::Guarded<CoordinateSystem> createCoordinateSystem(
     const oipb::CoordinateSystem& message) {
-  QPointer<CoordinateSystem> system = new CoordinateSystem();
+  oi::Guarded<CoordinateSystem> system = new CoordinateSystem();
   Access::restoreCommon(*system, message.feature());
   Access::restoreSystem(*system, message);
   if (message.has_bundle_template()) {
@@ -424,8 +424,8 @@ oipb::Station toProto(const Station& station) {
   return m;
 }
 
-QPointer<Station> createStation(const oipb::Station& message) {
-  QPointer<Station> station = new Station();
+oi::Guarded<Station> createStation(const oipb::Station& message) {
+  oi::Guarded<Station> station = new Station();
   Access::restoreCommon(*station, message.feature());
   Access::restoreStation(*station, message);
   return station;

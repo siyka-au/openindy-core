@@ -1,7 +1,6 @@
 #ifndef HYPERBOLOID_H
 #define HYPERBOLOID_H
 
-#include <QObject>
 #include <QtCore>
 
 #include "core_export.h"
@@ -18,14 +17,13 @@ namespace oi {
  */
 class OI_CORE_EXPORT Hyperboloid : public Geometry {
   friend struct codec::Access;  // the protobuf codec (see src/codec)
-  Q_OBJECT
 
  public:
-  explicit Hyperboloid(QObject* parent = nullptr);
+  explicit Hyperboloid();
   Hyperboloid(const Position& center, const Direction& axis, const double& a,
-              const double& c, QObject* parent = nullptr);
+              const double& c);
 
-  Hyperboloid(const Hyperboloid& copy, QObject* parent = nullptr);
+  Hyperboloid(const Hyperboloid& copy);
 
   Hyperboloid& operator=(const Hyperboloid& copy);
 

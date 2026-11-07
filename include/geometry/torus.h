@@ -1,7 +1,6 @@
 #ifndef TORUS_H
 #define TORUS_H
 
-#include <QObject>
 #include <QtCore>
 
 #include "core_export.h"
@@ -18,14 +17,13 @@ namespace oi {
  */
 class OI_CORE_EXPORT Torus : public Geometry {
   friend struct codec::Access;  // the protobuf codec (see src/codec)
-  Q_OBJECT
 
  public:
-  explicit Torus(QObject* parent = nullptr);
+  explicit Torus();
   Torus(const Position& center, const Direction& normal, const Radius& radiusA,
-        const Radius& radiusB, QObject* parent = nullptr);
+        const Radius& radiusB);
 
-  Torus(const Torus& copy, QObject* parent = nullptr);
+  Torus(const Torus& copy);
 
   Torus& operator=(const Torus& copy);
 

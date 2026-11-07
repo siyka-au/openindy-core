@@ -8,9 +8,8 @@ using namespace oi::math;
 
 /*!
  * \brief Torus::Torus
- * \param parent
  */
-Torus::Torus(QObject* parent) : Geometry(parent) {
+Torus::Torus() : Geometry() {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setTorus(this);
@@ -23,11 +22,10 @@ Torus::Torus(QObject* parent) : Geometry(parent) {
  * \param normal
  * \param radiusA
  * \param radiusB
- * \param parent
  */
 Torus::Torus(const Position& center, const Direction& normal,
-             const Radius& radiusA, const Radius& radiusB, QObject* parent)
-    : Geometry(parent) {
+             const Radius& radiusA, const Radius& radiusB)
+    : Geometry() {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setTorus(this);
@@ -39,9 +37,8 @@ Torus::Torus(const Position& center, const Direction& normal,
 /*!
  * \brief Torus::Torus
  * \param copy
- * \param parent
  */
-Torus::Torus(const Torus& copy, QObject* parent) : Geometry(copy, parent) {
+Torus::Torus(const Torus& copy) : Geometry(copy) {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setTorus(this);

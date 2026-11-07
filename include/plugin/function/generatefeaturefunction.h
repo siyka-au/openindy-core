@@ -11,12 +11,8 @@ namespace oi {
  * Function that uses its input elements to generate one or more new feature
  */
 class OI_CORE_EXPORT GenerateFeatureFunction : public Function {
-  Q_OBJECT
-  Q_DISABLE_COPY_MOVE(GenerateFeatureFunction)
-
  public:
-  explicit GenerateFeatureFunction(QObject* parent = nullptr)
-      : Function(parent) {}
+  explicit GenerateFeatureFunction() : Function() {}
 
   ~GenerateFeatureFunction() override {}
 };

@@ -4,10 +4,8 @@ using namespace oi;
 
 /*!
  * \brief ExchangeDefinedFormat::ExchangeDefinedFormat
- * \param parent
  */
-ExchangeDefinedFormat::ExchangeDefinedFormat(QObject* parent)
-    : ExchangeInterface(parent) {}
+ExchangeDefinedFormat::ExchangeDefinedFormat() : ExchangeInterface() {}
 
 /*!
  * \brief ExchangeDefinedFormat::~ExchangeDefinedFormat

@@ -168,7 +168,8 @@ class RecordingJobObserver : public oi::JobObserver {
                        .arg(static_cast<int>(msgType))
                        .arg(static_cast<int>(msgDest));
   }
-  void onRecalcFeatureRequested(const QPointer<oi::Feature>& feature) override {
+  void onRecalcFeatureRequested(
+      const oi::Guarded<oi::Feature>& feature) override {
     this->calls << QString("recalcFeature:%1").arg(feature->getId());
   }
   void onRecalcFeatureSetRequested() override {

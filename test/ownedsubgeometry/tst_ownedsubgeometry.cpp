@@ -18,10 +18,8 @@ namespace {
  * are mutable so a test can simulate the owner moving between recalcs.
  */
 class FixedPositionFunction : public ConstructFunction, public Producer<Point> {
-  Q_OBJECT
  public:
-  explicit FixedPositionFunction(QObject* parent = nullptr)
-      : ConstructFunction(parent) {
+  explicit FixedPositionFunction() : ConstructFunction() {
     this->metaData.name = "FixedPositionFunction";
     this->applicableFor.append(FeatureTypes::ePointFeature);
   }
@@ -43,10 +41,8 @@ class FixedPositionFunction : public ConstructFunction, public Producer<Point> {
  * also go through.
  */
 class CopyPointFunction : public ConstructFunction, public Producer<Point> {
-  Q_OBJECT
  public:
-  explicit CopyPointFunction(QObject* parent = nullptr)
-      : ConstructFunction(parent) {
+  explicit CopyPointFunction() : ConstructFunction() {
     this->metaData.name = "CopyPointFunction";
     NeededElement param;
     param.typeOfElement = ElementTypes::ePointElement;
@@ -95,32 +91,32 @@ class OwnedSubGeometryTest : public QObject {
   void removingTheOwnerCascadesToItsOwnedChild();
 
  private:
-  QPointer<OiJob> makeJob();
+  oi::Guarded<OiJob> makeJob();
 };
 
 void OwnedSubGeometryTest::initTestCase() {
   ChooseLALib::setLinearAlgebra(ChooseLALib::LinearAlgebraLibrary::Armadillo);
 }
 
-QPointer<OiJob> OwnedSubGeometryTest::makeJob() { return new OiJob(); }
+oi::Guarded<OiJob> OwnedSubGeometryTest::makeJob() { return new OiJob(); }
 
 void OwnedSubGeometryTest::
     generatingAnOwnedAccessorAttachesFunctionBindsInputAndMarksOwnership() {
-  QPointer<OiJob> job = this->makeJob();
+  oi::Guarded<OiJob> job = this->makeJob();
 
-  QPointer<Point> owner = new Point();
-  QPointer<FeatureWrapper> ownerWrapper = new FeatureWrapper();
+  oi::Guarded<Point> owner = new Point();
+  oi::Guarded<FeatureWrapper> ownerWrapper = new FeatureWrapper();
   ownerWrapper->setPoint(owner);
   owner->setFeatureName("Owner1");
   QVERIFY(job->addFeature(ownerWrapper));
 
-  QPointer<Point> child = new Point();
-  QPointer<FeatureWrapper> childWrapper = new FeatureWrapper();
+  oi::Guarded<Point> child = new Point();
+  oi::Guarded<FeatureWrapper> childWrapper = new FeatureWrapper();
   childWrapper->setPoint(child);
   child->setFeatureName("Child1");
   QVERIFY(job->addFeature(childWrapper));
 
-  QPointer<CopyPointFunction> function = new CopyPointFunction();
+  oi::Guarded<CopyPointFunction> function = new CopyPointFunction();
   QVERIFY(job->addOwnedSubGeometry(ownerWrapper, childWrapper, function, 0));
 
   // the function got attached, and the owner got bound as its input -
@@ -142,7 +138,7 @@ void OwnedSubGeometryTest::
   // the ordinary dependency graph is wired too (previouslyNeeded/usedFor) -
   // this is what lets FeatureUpdater's existing DAG walk find and
   // recalculate the child, with no second recalculation path. Checked by
-  // id rather than QPointer<FeatureWrapper> identity: a Feature's own
+  // id rather than oi::Guarded<FeatureWrapper> identity: a Feature's own
   // selfFeature (auto-created in its constructor) is a different
   // FeatureWrapper object than whatever external wrapper a caller
   // registers it under (see OiJob::createFeatureWrapper, which does the
@@ -153,7 +149,7 @@ void OwnedSubGeometryTest::
   // previouslyNeededMap already do internally.
   QVERIFY(child->getPreviouslyNeeded().contains(ownerWrapper));
   bool ownerUsedForContainsChild = false;
-  foreach (const QPointer<FeatureWrapper>& usedFor, owner->getUsedFor()) {
+  foreach (const oi::Guarded<FeatureWrapper>& usedFor, owner->getUsedFor()) {
     if (!usedFor.isNull() && !usedFor->getFeature().isNull() &&
         usedFor->getFeature()->getId() == child->getId()) {
       ownerUsedForContainsChild = true;
@@ -164,22 +160,22 @@ void OwnedSubGeometryTest::
 
 void OwnedSubGeometryTest::
     ownerRecalcOnlyDirtiesOwnedChildWhenItsValueActuallyChanges() {
-  QPointer<OiJob> job = this->makeJob();
+  oi::Guarded<OiJob> job = this->makeJob();
 
-  QPointer<Point> owner = new Point();
-  QPointer<FeatureWrapper> ownerWrapper = new FeatureWrapper();
+  oi::Guarded<Point> owner = new Point();
+  oi::Guarded<FeatureWrapper> ownerWrapper = new FeatureWrapper();
   ownerWrapper->setPoint(owner);
   owner->setFeatureName("Owner2");
   QVERIFY(job->addFeature(ownerWrapper));
 
-  QPointer<FixedPositionFunction> ownerFn = new FixedPositionFunction();
+  oi::Guarded<FixedPositionFunction> ownerFn = new FixedPositionFunction();
   ownerFn->x = 1.0;
   ownerFn->y = 2.0;
   ownerFn->z = 3.0;
   owner->addFunction(ownerFn);
 
-  QPointer<Point> child = new Point();
-  QPointer<FeatureWrapper> childWrapper = new FeatureWrapper();
+  oi::Guarded<Point> child = new Point();
+  oi::Guarded<FeatureWrapper> childWrapper = new FeatureWrapper();
   childWrapper->setPoint(child);
   child->setFeatureName("Child2");
   QVERIFY(job->addFeature(childWrapper));
@@ -220,16 +216,16 @@ void OwnedSubGeometryTest::
 }
 
 void OwnedSubGeometryTest::aSecondFeatureCanReferenceTheOwnedChildAsInput() {
-  QPointer<OiJob> job = this->makeJob();
+  oi::Guarded<OiJob> job = this->makeJob();
 
-  QPointer<Point> owner = new Point();
-  QPointer<FeatureWrapper> ownerWrapper = new FeatureWrapper();
+  oi::Guarded<Point> owner = new Point();
+  oi::Guarded<FeatureWrapper> ownerWrapper = new FeatureWrapper();
   ownerWrapper->setPoint(owner);
   owner->setFeatureName("Owner3");
   QVERIFY(job->addFeature(ownerWrapper));
 
-  QPointer<Point> child = new Point();
-  QPointer<FeatureWrapper> childWrapper = new FeatureWrapper();
+  oi::Guarded<Point> child = new Point();
+  oi::Guarded<FeatureWrapper> childWrapper = new FeatureWrapper();
   childWrapper->setPoint(child);
   child->setFeatureName("Child3");
   QVERIFY(job->addFeature(childWrapper));
@@ -241,13 +237,13 @@ void OwnedSubGeometryTest::aSecondFeatureCanReferenceTheOwnedChildAsInput() {
   // an owned accessor is just an ordinary feature to the input
   // machinery, no special-casing needed (domain-model.md S6: "no new
   // addressing syntax")
-  QPointer<Point> consumer = new Point();
-  QPointer<FeatureWrapper> consumerWrapper = new FeatureWrapper();
+  oi::Guarded<Point> consumer = new Point();
+  oi::Guarded<FeatureWrapper> consumerWrapper = new FeatureWrapper();
   consumerWrapper->setPoint(consumer);
   consumer->setFeatureName("Consumer3");
   QVERIFY(job->addFeature(consumerWrapper));
 
-  QPointer<CopyPointFunction> consumerFn = new CopyPointFunction();
+  oi::Guarded<CopyPointFunction> consumerFn = new CopyPointFunction();
   consumer->addFunction(consumerFn);
   job->addInputFeature(consumerWrapper, 0, 0, childWrapper);
 
@@ -257,16 +253,16 @@ void OwnedSubGeometryTest::aSecondFeatureCanReferenceTheOwnedChildAsInput() {
 }
 
 void OwnedSubGeometryTest::removingTheOwnerCascadesToItsOwnedChild() {
-  QPointer<OiJob> job = this->makeJob();
+  oi::Guarded<OiJob> job = this->makeJob();
 
-  QPointer<Point> owner = new Point();
-  QPointer<FeatureWrapper> ownerWrapper = new FeatureWrapper();
+  oi::Guarded<Point> owner = new Point();
+  oi::Guarded<FeatureWrapper> ownerWrapper = new FeatureWrapper();
   ownerWrapper->setPoint(owner);
   owner->setFeatureName("Owner4");
   QVERIFY(job->addFeature(ownerWrapper));
 
-  QPointer<Point> child = new Point();
-  QPointer<FeatureWrapper> childWrapper = new FeatureWrapper();
+  oi::Guarded<Point> child = new Point();
+  oi::Guarded<FeatureWrapper> childWrapper = new FeatureWrapper();
   childWrapper->setPoint(child);
   child->setFeatureName("Child4");
   QVERIFY(job->addFeature(childWrapper));

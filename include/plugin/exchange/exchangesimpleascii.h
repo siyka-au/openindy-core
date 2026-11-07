@@ -16,11 +16,8 @@ namespace oi {
  * own.
  */
 class OI_CORE_EXPORT ExchangeSimpleAscii : public ExchangeInterface {
-  Q_OBJECT
-  Q_DISABLE_COPY_MOVE(ExchangeSimpleAscii)
-
  public:
-  explicit ExchangeSimpleAscii(QObject* parent = nullptr);
+  explicit ExchangeSimpleAscii();
 
   ~ExchangeSimpleAscii() override;
 
@@ -84,8 +81,8 @@ class OI_CORE_EXPORT ExchangeSimpleAscii : public ExchangeInterface {
   [[nodiscard]] const QString& getUsedDelimiter() const;
   void setDelimiter(const QString& usedDelimiter);
 
-  void setCurrentJob(QPointer<OiJob> job);
-  QPointer<OiJob> getCurrentJob();
+  void setCurrentJob(oi::Guarded<OiJob> job);
+  oi::Guarded<OiJob> getCurrentJob();
 
   void setDistanceDigits(int value);
   int getDistanceDigits();
@@ -114,7 +111,7 @@ class OI_CORE_EXPORT ExchangeSimpleAscii : public ExchangeInterface {
 
   QStringList supportedDelimiters;
 
-  QPointer<OiJob> currentJob;
+  oi::Guarded<OiJob> currentJob;
 
   int distanceDigits;
   int angleDigits;

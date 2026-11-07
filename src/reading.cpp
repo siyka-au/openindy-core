@@ -14,10 +14,9 @@ using namespace oi::math;
 
 /*!
  * \brief Reading::Reading
- * \param parent
  */
-Reading::Reading(QObject* parent)
-    : Element(parent),
+Reading::Reading()
+    : Element(),
       face(SensorFaces::eUndefinedSide),
       imported(false),
       hasBackup(false) {
@@ -28,10 +27,9 @@ Reading::Reading(QObject* parent)
 /*!
  * \brief Reading::Reading
  * \param reading
- * \param parent
  */
-Reading::Reading(const ReadingPolar& reading, QObject* parent)
-    : Element(parent),
+Reading::Reading(const ReadingPolar& reading)
+    : Element(),
       face(SensorFaces::eUndefinedSide),
       imported(false),
       rPolar(reading),
@@ -49,10 +47,9 @@ Reading::Reading(const ReadingPolar& reading, QObject* parent)
 /*!
  * \brief Reading::Reading
  * \param reading
- * \param parent
  */
-Reading::Reading(const ReadingCartesian& reading, QObject* parent)
-    : Element(parent), hasBackup(false) {
+Reading::Reading(const ReadingCartesian& reading)
+    : Element(), hasBackup(false) {
   if (reading.xyz.getSize() != 3 || reading.sigmaXyz.getSize() != 3) {
     this->typeOfReading = ReadingTypes::eCartesianReading;
     return;
@@ -68,8 +65,8 @@ Reading::Reading(const ReadingCartesian& reading, QObject* parent)
   this->face = SensorFaces::eUndefinedSide;
   this->imported = false;
 }
-Reading::Reading(const ReadingCartesian6D& reading, QObject* parent)
-    : Element(parent), hasBackup(false) {
+Reading::Reading(const ReadingCartesian6D& reading)
+    : Element(), hasBackup(false) {
   if (reading.xyz.getSize() != 3 || reading.ijk.getSize() != 3 ||
       reading.sigmaXyz.getSize() != 3) {
     this->typeOfReading = ReadingTypes::eCartesianReading6D;
@@ -89,10 +86,9 @@ Reading::Reading(const ReadingCartesian6D& reading, QObject* parent)
 /*!
  * \brief Reading::Reading
  * \param reading
- * \param parent
  */
-Reading::Reading(const ReadingDirection& reading, QObject* parent)
-    : Element(parent),
+Reading::Reading(const ReadingDirection& reading)
+    : Element(),
       face(SensorFaces::eUndefinedSide),
       imported(false),
       rDirection(reading),
@@ -107,10 +103,9 @@ Reading::Reading(const ReadingDirection& reading, QObject* parent)
 /*!
  * \brief Reading::Reading
  * \param reading
- * \param parent
  */
-Reading::Reading(const ReadingDistance& reading, QObject* parent)
-    : Element(parent),
+Reading::Reading(const ReadingDistance& reading)
+    : Element(),
       face(SensorFaces::eUndefinedSide),
       imported(false),
       rDistance(reading),
@@ -125,10 +120,9 @@ Reading::Reading(const ReadingDistance& reading, QObject* parent)
 /*!
  * \brief Reading::Reading
  * \param reading
- * \param parent
  */
-Reading::Reading(const ReadingTemperature& reading, QObject* parent)
-    : Element(parent),
+Reading::Reading(const ReadingTemperature& reading)
+    : Element(),
       face(SensorFaces::eUndefinedSide),
       imported(false),
       rTemperature(reading),
@@ -143,10 +137,9 @@ Reading::Reading(const ReadingTemperature& reading, QObject* parent)
 /*!
  * \brief Reading::Reading
  * \param reading
- * \param parent
  */
-Reading::Reading(const ReadingLevel& reading, QObject* parent)
-    : Element(parent),
+Reading::Reading(const ReadingLevel& reading)
+    : Element(),
       face(SensorFaces::eUndefinedSide),
       imported(false),
       rLevel(reading),
@@ -161,10 +154,9 @@ Reading::Reading(const ReadingLevel& reading, QObject* parent)
 /*!
  * \brief Reading::Reading
  * \param reading
- * \param parent
  */
-Reading::Reading(const ReadingUndefined& reading, QObject* parent)
-    : Element(parent),
+Reading::Reading(const ReadingUndefined& reading)
+    : Element(),
       face(SensorFaces::eUndefinedSide),
       imported(false),
       rUndefined(reading),
@@ -179,10 +171,9 @@ Reading::Reading(const ReadingUndefined& reading, QObject* parent)
 /*!
  * \brief Reading::Reading
  * \param copy
- * \param parent
  */
-Reading::Reading(const Reading& copy, QObject* parent)
-    : Element(copy, parent),
+Reading::Reading(const Reading& copy)
+    : Element(copy),
       backupCartesian(copy.backupCartesian),
       backupDirection(copy.backupDirection),
       backupDistance(copy.backupDistance),
@@ -477,7 +468,7 @@ void Reading::setSensorConfiguration(const SensorConfiguration& sConfig) {
  * \brief Reading::getObservation
  * \return
  */
-const QPointer<Observation>& Reading::getObservation() const {
+const oi::Guarded<Observation>& Reading::getObservation() const {
   return this->observation;
 }
 
@@ -485,7 +476,7 @@ const QPointer<Observation>& Reading::getObservation() const {
  * \brief Reading::setObservation
  * \param observation
  */
-void Reading::setObservation(const QPointer<Observation>& observation) {
+void Reading::setObservation(const oi::Guarded<Observation>& observation) {
   // check observation
   if (observation.isNull()) {
     return;
@@ -511,11 +502,6 @@ void Reading::setObservation(const QPointer<Observation>& observation) {
     observation->originalIjk.setAt(2, 0.0);
     observation->originalIjk.setAt(3, 1.0);
 
-    if (this->property("isDummyPoint")
-            .isValid()) {  // set only if property is available
-      observation->isDummyPoint = this->property("isDummyPoint").toBool();
-    }
-
     // set observation to valid
     observation->isValid = true;
 
@@ -540,11 +526,6 @@ void Reading::setObservation(const QPointer<Observation>& observation) {
     observation->originalIjk.setAt(1, this->rCartesian6D.ijk.getAt(1));
     observation->originalIjk.setAt(2, this->rCartesian6D.ijk.getAt(2));
     observation->originalIjk.setAt(3, 1.0);
-
-    if (this->property("isDummyPoint")
-            .isValid()) {  // set only if property is available
-      observation->isDummyPoint = this->property("isDummyPoint").toBool();
-    }
 
     // set observation to valid
     observation->isValid = true;

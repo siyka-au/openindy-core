@@ -10,11 +10,8 @@ namespace oi {
  * \brief The LaserTracker class
  */
 class OI_CORE_EXPORT LaserTracker : public Sensor {
-  Q_OBJECT
-  Q_DISABLE_COPY_MOVE(LaserTracker)
-
  public:
-  explicit LaserTracker(QObject* parent = nullptr) : Sensor(parent) {}
+  explicit LaserTracker() : Sensor() {}
 
   ~LaserTracker() override {}
 
@@ -58,10 +55,10 @@ class OI_CORE_EXPORT LaserTracker : public Sensor {
    * \return
    */
   virtual bool initialize() {
-    emit this->sensorMessage(QString("Laser Tracker not implemented correctly: "
-                                     "initialization method missing"),
-                             MessageTypes::eCriticalMessage,
-                             MessageDestinations::eMessageBoxMessage);
+    this->sensorMessage(QString("Laser Tracker not implemented correctly: "
+                                "initialization method missing"),
+                        MessageTypes::eCriticalMessage,
+                        MessageDestinations::eMessageBoxMessage);
     return false;
   }
 
@@ -75,7 +72,7 @@ class OI_CORE_EXPORT LaserTracker : public Sensor {
    */
   virtual bool move(const double& /*azimuth*/, const double& /*zenith*/,
                     const double& /*distance*/, const bool& /*isRelative*/) {
-    emit this->sensorMessage(
+    this->sensorMessage(
         QString("Laser Tracker not implemented correctly: move method missing"),
         MessageTypes::eCriticalMessage,
         MessageDestinations::eMessageBoxMessage);
@@ -91,7 +88,7 @@ class OI_CORE_EXPORT LaserTracker : public Sensor {
    */
   virtual bool move(const double& /*x*/, const double& /*y*/,
                     const double& /*z*/) {
-    emit this->sensorMessage(
+    this->sensorMessage(
         QString("Laser Tracker not implemented correctly: move method missing"),
         MessageTypes::eCriticalMessage,
         MessageDestinations::eMessageBoxMessage);
@@ -103,7 +100,7 @@ class OI_CORE_EXPORT LaserTracker : public Sensor {
    * \return
    */
   virtual bool home() {
-    emit this->sensorMessage(
+    this->sensorMessage(
         QString("Laser Tracker not implemented correctly: home method missing"),
         MessageTypes::eCriticalMessage,
         MessageDestinations::eMessageBoxMessage);
@@ -115,10 +112,10 @@ class OI_CORE_EXPORT LaserTracker : public Sensor {
    * \return
    */
   virtual bool changeMotorState() {
-    emit this->sensorMessage(QString("Laser Tracker not implemented correctly: "
-                                     "motor state method missing"),
-                             MessageTypes::eCriticalMessage,
-                             MessageDestinations::eMessageBoxMessage);
+    this->sensorMessage(QString("Laser Tracker not implemented correctly: "
+                                "motor state method missing"),
+                        MessageTypes::eCriticalMessage,
+                        MessageDestinations::eMessageBoxMessage);
     return false;
   }
 
@@ -127,10 +124,10 @@ class OI_CORE_EXPORT LaserTracker : public Sensor {
    * \return
    */
   virtual bool toggleSightOrientation() {
-    emit this->sensorMessage(QString("Laser Tracker not implemented correctly: "
-                                     "toggle sight method missing"),
-                             MessageTypes::eCriticalMessage,
-                             MessageDestinations::eMessageBoxMessage);
+    this->sensorMessage(QString("Laser Tracker not implemented correctly: "
+                                "toggle sight method missing"),
+                        MessageTypes::eCriticalMessage,
+                        MessageDestinations::eMessageBoxMessage);
     return false;
   }
 
@@ -139,15 +136,15 @@ class OI_CORE_EXPORT LaserTracker : public Sensor {
    * \return
    */
   virtual bool compensation() {
-    emit this->sensorMessage(QString("Laser Tracker not implemented correctly: "
-                                     "compensation method missing"),
-                             MessageTypes::eCriticalMessage,
-                             MessageDestinations::eMessageBoxMessage);
+    this->sensorMessage(QString("Laser Tracker not implemented correctly: "
+                                "compensation method missing"),
+                        MessageTypes::eCriticalMessage,
+                        MessageDestinations::eMessageBoxMessage);
     return false;
   }
 
   bool search() override {
-    emit this->sensorMessage(
+    this->sensorMessage(
         QString(
             "Laser Tracker not implemented correctly: search method missing"),
         MessageTypes::eCriticalMessage,

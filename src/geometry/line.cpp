@@ -8,9 +8,8 @@ using namespace oi::math;
 
 /*!
  * \brief Line::Line
- * \param parent
  */
-Line::Line(QObject* parent) : Geometry(parent) {
+Line::Line() : Geometry() {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setLine(this);
@@ -21,10 +20,8 @@ Line::Line(QObject* parent) : Geometry(parent) {
  * \brief Line::Line
  * \param xyz
  * \param axis
- * \param parent
  */
-Line::Line(const Position& xyz, const Direction& axis, QObject* parent)
-    : Geometry(parent) {
+Line::Line(const Position& xyz, const Direction& axis) : Geometry() {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setLine(this);
@@ -36,9 +33,8 @@ Line::Line(const Position& xyz, const Direction& axis, QObject* parent)
 /*!
  * \brief Line::Line
  * \param copy
- * \param parent
  */
-Line::Line(const Line& copy, QObject* parent) : Geometry(copy, parent) {
+Line::Line(const Line& copy) : Geometry(copy) {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setLine(this);

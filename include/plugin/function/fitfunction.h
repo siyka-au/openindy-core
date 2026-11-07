@@ -50,14 +50,11 @@ enum class ApproximationTypes {
  * Function that solves geometries by fitting them using observations
  */
 class OI_CORE_EXPORT FitFunction : public Function {
-  Q_OBJECT
-  Q_DISABLE_COPY_MOVE(FitFunction)
-
   friend class BestFitCircleUtil;
   friend class BestFitCylinderUtil;
 
  public:
-  explicit FitFunction(QObject* parent = nullptr) : Function(parent) {
+  explicit FitFunction() : Function() {
     // needed elements are only observations
     NeededElement element;
     element.typeOfElement = ElementTypes::eObservationElement;
@@ -360,7 +357,7 @@ class OI_CORE_EXPORT BestFitCircleUtil : public BestFitUtil {
         return false;
       }
     } catch (const exception& e) {
-      emit function->sendMessage(e.what(), MessageTypes::eErrorMessage);
+      function->sendMessage(e.what(), MessageTypes::eErrorMessage);
       return false;
     }
 
@@ -502,7 +499,7 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
     // approximate cylinder by 2D circle fit
     if (!this->approximateCylinder(function, cylinder, reducedInputObservations,
                                    approximationType)) {
-      emit function->sendMessage(
+      function->sendMessage(
           QString("Error while generating approximations for cylinder "
                   "parameters of cylinder %1")
               .arg(cylinder.getFeatureName()),
@@ -553,7 +550,7 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
 
     if (!this->fitCylinder(function, cylinder, reducedInputObservations,
                            allReducedInputObservations, bestApproximation)) {
-      emit function->sendMessage(
+      function->sendMessage(
           QString("Error while fitting cylinder %1 with solution: %2")
               .arg(cylinder.getFeatureName())
               .arg(bestApproximation.comment),
@@ -561,10 +558,10 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
       return false;
     }
 
-    emit function->sendMessage(QString("cylinder (%1) best solution: %2")
-                                   .arg(cylinder.getFeatureName())
-                                   .arg(bestApproximation.comment),
-                               MessageTypes::eInformationMessage);
+    function->sendMessage(QString("cylinder (%1) best solution: %2")
+                              .arg(cylinder.getFeatureName())
+                              .arg(bestApproximation.comment),
+                          MessageTypes::eInformationMessage);
 
     // transform cylinder position (centroid + rotation)
     Position cylinderPosition = cylinder.getPosition();
@@ -697,7 +694,7 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
         try {
           H.svd(U, d, V);
         } catch (const exception& e) {
-          emit function->sendMessage(
+          function->sendMessage(
               QString("SVD error cylinder minimum solution: %1").arg(e.what()),
               MessageTypes::eErrorMessage);
           return false;
@@ -960,12 +957,12 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
     // solve equation system to get circle parameters
     try {
       if (!OiMat::solve(s, A2.t() * A2, -1.0 * A2.t() * A1)) {
-        emit function->sendMessage("can not solve cylinder parameters",
-                                   MessageTypes::eErrorMessage);
+        function->sendMessage("can not solve cylinder parameters",
+                              MessageTypes::eErrorMessage);
         return false;
       }
     } catch (const exception& e) {
-      emit function->sendMessage(
+      function->sendMessage(
           QString("inv error cylinder minimum solution: %1").arg(e.what()),
           MessageTypes::eErrorMessage);
       return false;
@@ -1169,12 +1166,12 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
       // solve the normal equation system
       try {
         if (!OiMat::solve(res, N, -1.0 * c)) {
-          emit function->sendMessage(QString("solve error cylinder fit"),
-                                     MessageTypes::eErrorMessage);
+          function->sendMessage(QString("solve error cylinder fit"),
+                                MessageTypes::eErrorMessage);
           return false;
         }
       } catch (const exception& e) {
-        emit function->sendMessage(
+        function->sendMessage(
             QString("solve error cylinder fit: %1").arg(e.what()),
             MessageTypes::eErrorMessage);
         return false;
@@ -1286,7 +1283,7 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
     }
 
     if (numIterations >= 1000) {
-      emit function->sendMessage(
+      function->sendMessage(
           QString("to many iterations: %1").arg(numIterations),
           MessageTypes::eWarningMessage);
       return false;

@@ -2,10 +2,10 @@
 
 using namespace oi;
 
-Element::Element(QObject* parent) : QObject(parent) {}
+Element::Element() {}
 
-Element::Element(const Element& copy, QObject* parent)
-    : QObject(parent), id(copy.id), isNullObject(copy.isNullObject) {}
+Element::Element(const Element& copy)
+    : id(copy.id), isNullObject(copy.isNullObject) {}
 
 Element& Element::operator=(const Element& copy) {
   this->id = copy.id;
@@ -27,7 +27,7 @@ int Element::getId() const { return this->id; }
  */
 /*bool Element::setId(const int &id){
     this->id = id;
-    emit this->elementIdChanged();
+    this->elementIdChanged();
     return true;
 }*/
 

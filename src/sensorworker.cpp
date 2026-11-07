@@ -14,7 +14,7 @@ SensorWorker::SensorWorker(StationObserver& results)
 SensorWorker::~SensorWorker() {
   // no more reports from the driver once we are going away; waits for a report
   // that is being delivered right now
-  const QPointer<Sensor> current = this->currentSensor();
+  const oi::Guarded<Sensor> current = this->currentSensor();
   if (!current.isNull()) {
     current->setSensorSink(nullptr);
   }
@@ -98,14 +98,14 @@ void SensorWorker::command(std::function<void()> task) {
 // the sensor and its snapshot
 // ####################################################################
 
-QPointer<Sensor> SensorWorker::currentSensor() const {
+oi::Guarded<Sensor> SensorWorker::currentSensor() const {
   const std::scoped_lock lock(this->stateMutex);
   return this->sensor;
 }
 
 // copies the static properties of the sensor; the caller guarantees nobody
 // else is using the sensor (driver lock held, or the sensor not yet shared)
-void SensorWorker::storeSnapshot(const QPointer<Sensor>& sensor) {
+void SensorWorker::storeSnapshot(const oi::Guarded<Sensor>& sensor) {
   std::unique_ptr<Sensor> copy;
   if (!sensor.isNull()) {
     copy = std::make_unique<Sensor>(*sensor.data());
@@ -116,7 +116,7 @@ void SensorWorker::storeSnapshot(const QPointer<Sensor>& sensor) {
 
 void SensorWorker::refreshSnapshot() {
   const std::scoped_lock driver(this->driverMutex);
-  const QPointer<Sensor> current = this->currentSensor();
+  const oi::Guarded<Sensor> current = this->currentSensor();
   this->storeSnapshot(current);
   this->lastKnownConnected = !current.isNull() && current->getConnectionState();
 }
@@ -129,12 +129,12 @@ Sensor SensorWorker::getSensor() const {
   return Sensor(*this->snapshot);
 }
 
-void SensorWorker::setSensor(const QPointer<Sensor>& newSensor) {
+void SensorWorker::setSensor(const oi::Guarded<Sensor>& newSensor) {
   if (newSensor.isNull()) {
     return;
   }
 
-  QPointer<Sensor> old;
+  oi::Guarded<Sensor> old;
   {
     const std::scoped_lock lock(this->stateMutex);
     old = this->sensor;
@@ -152,20 +152,20 @@ void SensorWorker::setSensor(const QPointer<Sensor>& newSensor) {
   this->lastKnownConnected = newSensor->getConnectionState();
 }
 
-QPointer<Sensor> SensorWorker::takeSensor() {
+oi::Guarded<Sensor> SensorWorker::takeSensor() {
   // the sensor must not be in use by a command while someone else gets it
   const std::scoped_lock driver(this->driverMutex);
 
-  QPointer<Sensor> taken;
+  oi::Guarded<Sensor> taken;
   {
     const std::scoped_lock lock(this->stateMutex);
     taken = this->sensor;
-    this->sensor = QPointer<Sensor>(nullptr);
+    this->sensor = oi::Guarded<Sensor>(nullptr);
   }
   if (!taken.isNull()) {
     taken->setSensorSink(nullptr);
   }
-  this->storeSnapshot(QPointer<Sensor>(nullptr));
+  this->storeSnapshot(oi::Guarded<Sensor>(nullptr));
   this->lastKnownConnected = false;
   return taken;
 }
@@ -175,7 +175,7 @@ void SensorWorker::resetSensor() {
 }
 
 void SensorWorker::runResetSensor() {
-  const QPointer<Sensor> current = this->currentSensor();
+  const oi::Guarded<Sensor> current = this->currentSensor();
   if (current.isNull()) {
     return;
   }
@@ -187,7 +187,7 @@ void SensorWorker::runResetSensor() {
   current->setSensorSink(nullptr);
   {
     const std::scoped_lock lock(this->stateMutex);
-    this->sensor = QPointer<Sensor>(nullptr);
+    this->sensor = oi::Guarded<Sensor>(nullptr);
   }
 
   // delete sensor
@@ -203,7 +203,7 @@ bool SensorWorker::getIsSensorConnected() {
   if (!driver.owns_lock()) {
     return this->lastKnownConnected;  // a command is running: last known state
   }
-  const QPointer<Sensor> current = this->currentSensor();
+  const oi::Guarded<Sensor> current = this->currentSensor();
   if (current.isNull()) {
     return false;
   }
@@ -216,7 +216,7 @@ bool SensorWorker::getIsReadyForMeasurement() {
   if (!driver.owns_lock()) {
     return false;  // busy executing a command
   }
-  const QPointer<Sensor> current = this->currentSensor();
+  const oi::Guarded<Sensor> current = this->currentSensor();
   if (current.isNull() || !current->getConnectionState()) {
     return false;
   }
@@ -228,7 +228,7 @@ bool SensorWorker::getIsBusy() {
   if (!driver.owns_lock()) {
     return true;  // executing a command
   }
-  const QPointer<Sensor> current = this->currentSensor();
+  const oi::Guarded<Sensor> current = this->currentSensor();
   if (current.isNull() || !current->getConnectionState()) {
     return false;
   }
@@ -240,7 +240,7 @@ QMap<QString, QString> SensorWorker::getSensorStatus() {
   if (!driver.owns_lock()) {
     return QMap<QString, QString>();
   }
-  const QPointer<Sensor> current = this->currentSensor();
+  const oi::Guarded<Sensor> current = this->currentSensor();
   if (current.isNull() || !current->getConnectionState()) {
     return QMap<QString, QString>();
   }
@@ -300,7 +300,7 @@ void SensorWorker::setSensorConfiguration(const SensorConfiguration& sConfig) {
     }
   }
   this->command([this, sConfig] {
-    const QPointer<Sensor> current = this->currentSensor();
+    const oi::Guarded<Sensor> current = this->currentSensor();
     if (!current.isNull()) {
       current->setSensorConfiguration(sConfig);
     }
@@ -319,7 +319,7 @@ void SensorWorker::finished(bool success, const QString& msg,
 // measurementDone is reported after commandFinished and measurementFinished
 void SensorWorker::finishedMeasurement(
     bool success, const QString& msg, SensorAction action, int geomId,
-    const QList<QPointer<Reading>>& readings) {
+    const QList<oi::Guarded<Reading>>& readings) {
   this->finished(success, msg, action);
   if (success) {
     this->out.onMeasurementFinished(geomId, readings);
@@ -386,7 +386,7 @@ void SensorWorker::finishMeasurement() {
 // ####################################################################
 
 void SensorWorker::runSearch() {
-  const QPointer<Sensor> sensor = this->currentSensor();
+  const oi::Guarded<Sensor> sensor = this->currentSensor();
   if (sensor.isNull()) {
     return;
   }
@@ -398,7 +398,7 @@ void SensorWorker::runSearch() {
 }
 
 void SensorWorker::runConnectSensor() {
-  const QPointer<Sensor> sensor = this->currentSensor();
+  const oi::Guarded<Sensor> sensor = this->currentSensor();
   // check sensor
   if (sensor.isNull()) {
     this->finished(false, SensorWorkerMessage::NO_SENSOR_INSTANCE);
@@ -433,7 +433,7 @@ void SensorWorker::runConnectSensor() {
 }
 
 void SensorWorker::runDisconnectSensor() {
-  const QPointer<Sensor> sensor = this->currentSensor();
+  const oi::Guarded<Sensor> sensor = this->currentSensor();
   // check sensor
   if (sensor.isNull()) {
     this->finished(false, SensorWorkerMessage::NO_SENSOR_INSTANCE);
@@ -469,7 +469,7 @@ void SensorWorker::runDisconnectSensor() {
 }
 
 void SensorWorker::runMeasure(int geomId, const MeasurementConfig& mConfig) {
-  const QPointer<Sensor> sensor = this->currentSensor();
+  const oi::Guarded<Sensor> sensor = this->currentSensor();
   // check sensor
   if (sensor.isNull()) {
     this->finished(false, SensorWorkerMessage::NO_SENSOR_INSTANCE);
@@ -479,7 +479,7 @@ void SensorWorker::runMeasure(int geomId, const MeasurementConfig& mConfig) {
   // check wether the sensor is already connected
   QString msg = SensorWorkerMessage::FAILED_TO_MEASURE;
   bool success = false;
-  QList<QPointer<Reading>> readings;
+  QList<oi::Guarded<Reading>> readings;
 
   if (!sensor->isSensorAsync()) {
     if (!sensor->getConnectionState()) {
@@ -513,7 +513,7 @@ void SensorWorker::runMeasure(int geomId, const MeasurementConfig& mConfig) {
 void SensorWorker::runMovePolar(double azimuth, double zenith, double distance,
                                 bool isRelative, bool measure, int geomId,
                                 const MeasurementConfig& mConfig) {
-  const QPointer<Sensor> sensor = this->currentSensor();
+  const oi::Guarded<Sensor> sensor = this->currentSensor();
   // check sensor
   if (sensor.isNull()) {
     this->finished(false, SensorWorkerMessage::NO_SENSOR_INSTANCE,
@@ -524,7 +524,7 @@ void SensorWorker::runMovePolar(double azimuth, double zenith, double distance,
   // check wether the sensor is already connected
   QString msg = SensorWorkerMessage::FAILED_TO_MOVE_SENSOR;
   bool success = false;
-  QList<QPointer<Reading>> readings;
+  QList<oi::Guarded<Reading>> readings;
   if (!sensor->getConnectionState()) {
     msg = SensorWorkerMessage::SENSOR_IS_NOT_CONNECTED;
   } else {
@@ -563,7 +563,7 @@ void SensorWorker::runMovePolar(double azimuth, double zenith, double distance,
 void SensorWorker::runMoveCartesian(double x, double y, double z, bool measure,
                                     int geomId,
                                     const MeasurementConfig& mConfig) {
-  const QPointer<Sensor> sensor = this->currentSensor();
+  const oi::Guarded<Sensor> sensor = this->currentSensor();
   // check sensor
   if (sensor.isNull()) {
     this->finished(false, SensorWorkerMessage::NO_SENSOR_INSTANCE,
@@ -575,7 +575,7 @@ void SensorWorker::runMoveCartesian(double x, double y, double z, bool measure,
     // check wether the sensor is already connected
     QString msg = SensorWorkerMessage::FAILED_TO_MOVE_SENSOR;
     bool success = false;
-    QList<QPointer<Reading>> readings;
+    QList<oi::Guarded<Reading>> readings;
     if (!sensor->getConnectionState()) {
       msg = SensorWorkerMessage::SENSOR_IS_NOT_CONNECTED;
     } else {
@@ -625,7 +625,7 @@ void SensorWorker::runMoveCartesian(double x, double y, double z, bool measure,
 }
 
 void SensorWorker::runInitialize() {
-  const QPointer<Sensor> sensor = this->currentSensor();
+  const oi::Guarded<Sensor> sensor = this->currentSensor();
   // check sensor
   if (sensor.isNull()) {
     this->finished(false, SensorWorkerMessage::NO_SENSOR_INSTANCE);
@@ -659,7 +659,7 @@ void SensorWorker::runInitialize() {
 }
 
 void SensorWorker::runMotorState() {
-  const QPointer<Sensor> sensor = this->currentSensor();
+  const oi::Guarded<Sensor> sensor = this->currentSensor();
   // check sensor
   if (sensor.isNull()) {
     this->finished(false, SensorWorkerMessage::NO_SENSOR_INSTANCE);
@@ -683,7 +683,7 @@ void SensorWorker::runMotorState() {
 }
 
 void SensorWorker::runHome() {
-  const QPointer<Sensor> sensor = this->currentSensor();
+  const oi::Guarded<Sensor> sensor = this->currentSensor();
   // check sensor
   if (sensor.isNull()) {
     this->finished(false, SensorWorkerMessage::NO_SENSOR_INSTANCE);
@@ -707,7 +707,7 @@ void SensorWorker::runHome() {
 }
 
 void SensorWorker::runToggleSight() {
-  const QPointer<Sensor> sensor = this->currentSensor();
+  const oi::Guarded<Sensor> sensor = this->currentSensor();
   // check sensor
   if (sensor.isNull()) {
     this->finished(false, SensorWorkerMessage::NO_SENSOR_INSTANCE);
@@ -742,7 +742,7 @@ void SensorWorker::runToggleSight() {
 }
 
 void SensorWorker::runCompensation() {
-  const QPointer<Sensor> sensor = this->currentSensor();
+  const oi::Guarded<Sensor> sensor = this->currentSensor();
   // check sensor
   if (sensor.isNull()) {
     this->finished(false, SensorWorkerMessage::NO_SENSOR_INSTANCE);
@@ -767,7 +767,7 @@ void SensorWorker::runCompensation() {
 }
 
 void SensorWorker::runSelfDefinedAction(const QString& action) {
-  const QPointer<Sensor> sensor = this->currentSensor();
+  const oi::Guarded<Sensor> sensor = this->currentSensor();
   // check sensor
   if (sensor.isNull()) {
     this->finished(false, SensorWorkerMessage::NO_SENSOR_INSTANCE);
@@ -892,7 +892,7 @@ void SensorWorker::streamReading(std::uint64_t generation) {
   }
 
   const std::scoped_lock driver(this->driverMutex);
-  const QPointer<Sensor> sensor = this->currentSensor();
+  const oi::Guarded<Sensor> sensor = this->currentSensor();
   if (sensor.isNull()) {
     this->isReadingStreamStarted = false;
     return;
@@ -923,7 +923,7 @@ void SensorWorker::monitorConnectionStatus(std::uint64_t generation) {
   }
 
   const std::scoped_lock driver(this->driverMutex);
-  const QPointer<Sensor> sensor = this->currentSensor();
+  const oi::Guarded<Sensor> sensor = this->currentSensor();
   if (sensor.isNull()) {
     this->isConnectionStreamStarted = false;
     return;
@@ -948,7 +948,7 @@ void SensorWorker::streamStatus(std::uint64_t generation) {
   }
 
   const std::scoped_lock driver(this->driverMutex);
-  const QPointer<Sensor> sensor = this->currentSensor();
+  const oi::Guarded<Sensor> sensor = this->currentSensor();
   if (sensor.isNull()) {
     this->isStatusStreamStarted = false;
     return;
@@ -990,7 +990,7 @@ void SensorWorker::onAsyncSensorResponse(const QJsonObject& response,
 }
 
 void SensorWorker::onAsyncMeasurementResult(
-    const int& geomId, const QList<QPointer<Reading>>& measurements,
+    const int& geomId, const QList<oi::Guarded<Reading>>& measurements,
     SensorAction sensorAction) {
   this->dispatch([this, geomId, measurements, sensorAction] {
     // same logic like SensorWorker::runMeasure

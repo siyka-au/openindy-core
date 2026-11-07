@@ -25,9 +25,8 @@ namespace {
  * any fit function's own body, so a fake average is a faithful proxy.
  */
 class FakeAverageFit : public FitFunction, public Producer<Point> {
-  Q_OBJECT
  public:
-  explicit FakeAverageFit(QObject* parent = nullptr) : FitFunction(parent) {
+  explicit FakeAverageFit() : FitFunction() {
     this->metaData.name = "FakeAverageFit";
     this->neededElements.clear();
     NeededElement param;
@@ -116,25 +115,26 @@ class PipelineTest : public QObject {
   void addingANewOutlierLaterReTriggersTheFilterOnRecalc();
 
  private:
-  QPointer<FeatureWrapper> makeTargetPoint(const QString& name);
-  QPointer<Point> makeCandidate(double x, QPointer<OiJob> job);
+  oi::Guarded<FeatureWrapper> makeTargetPoint(const QString& name);
+  oi::Guarded<Point> makeCandidate(double x, oi::Guarded<OiJob> job);
 };
 
 void PipelineTest::initTestCase() {
   ChooseLALib::setLinearAlgebra(ChooseLALib::LinearAlgebraLibrary::Armadillo);
 }
 
-QPointer<FeatureWrapper> PipelineTest::makeTargetPoint(const QString& name) {
-  QPointer<Point> point = new Point();
+oi::Guarded<FeatureWrapper> PipelineTest::makeTargetPoint(const QString& name) {
+  oi::Guarded<Point> point = new Point();
   point->setFeatureName(name);
-  QPointer<FeatureWrapper> wrapper = new FeatureWrapper();
+  oi::Guarded<FeatureWrapper> wrapper = new FeatureWrapper();
   wrapper->setPoint(point);
   return wrapper;
 }
 
-QPointer<Point> PipelineTest::makeCandidate(double x, QPointer<OiJob> job) {
-  QPointer<Point> point = new Point();
-  QPointer<FeatureWrapper> wrapper = new FeatureWrapper();
+oi::Guarded<Point> PipelineTest::makeCandidate(double x,
+                                               oi::Guarded<OiJob> job) {
+  oi::Guarded<Point> point = new Point();
+  oi::Guarded<FeatureWrapper> wrapper = new FeatureWrapper();
   wrapper->setPoint(point);
   job->addFeature(wrapper);
   point->setPoint(Position(x, 0.0, 0.0));
@@ -149,15 +149,15 @@ QPointer<Point> PipelineTest::makeCandidate(double x, QPointer<OiJob> job) {
  * asked for.
  */
 void PipelineTest::undeclaredPipelineLeavesShouldBeUsedUntouched() {
-  QPointer<OiJob> job = new OiJob();
-  QPointer<FeatureWrapper> target = this->makeTargetPoint("Target1");
+  oi::Guarded<OiJob> job = new OiJob();
+  oi::Guarded<FeatureWrapper> target = this->makeTargetPoint("Target1");
   QVERIFY(job->addFeature(target));
 
-  QPointer<FakeAverageFit> function = new FakeAverageFit();
+  oi::Guarded<FakeAverageFit> function = new FakeAverageFit();
   target->getPoint()->addFunction(function);
 
-  QPointer<Point> p1 = this->makeCandidate(0.0, job);
-  QPointer<Point> p2 = this->makeCandidate(10.0, job);
+  oi::Guarded<Point> p1 = this->makeCandidate(0.0, job);
+  oi::Guarded<Point> p2 = this->makeCandidate(10.0, job);
   InputElement e1(p1->getId());
   e1.typeOfElement = ElementTypes::ePointElement;
   e1.point = p1;
@@ -181,18 +181,18 @@ void PipelineTest::undeclaredPipelineLeavesShouldBeUsedUntouched() {
 }
 
 void PipelineTest::explicitListStageKeepsOnlyListedIdsAndRecordsReasons() {
-  QPointer<OiJob> job = new OiJob();
-  QPointer<FeatureWrapper> target = this->makeTargetPoint("Target2");
+  oi::Guarded<OiJob> job = new OiJob();
+  oi::Guarded<FeatureWrapper> target = this->makeTargetPoint("Target2");
   QVERIFY(job->addFeature(target));
 
-  QPointer<FakeAverageFit> function = new FakeAverageFit();
+  oi::Guarded<FakeAverageFit> function = new FakeAverageFit();
   target->getPoint()->addFunction(function);
 
-  QPointer<Point> p1 = this->makeCandidate(0.0, job);
-  QPointer<Point> p2 = this->makeCandidate(10.0, job);
-  QPointer<Point> p3 = this->makeCandidate(100.0, job);
-  foreach (const QPointer<Point>& p,
-           (QList<QPointer<Point> >() << p1 << p2 << p3)) {
+  oi::Guarded<Point> p1 = this->makeCandidate(0.0, job);
+  oi::Guarded<Point> p2 = this->makeCandidate(10.0, job);
+  oi::Guarded<Point> p3 = this->makeCandidate(100.0, job);
+  foreach (const oi::Guarded<Point>& p,
+           (QList<oi::Guarded<Point> >() << p1 << p2 << p3)) {
     InputElement e(p->getId());
     e.typeOfElement = ElementTypes::ePointElement;
     e.point = p;
@@ -219,16 +219,17 @@ void PipelineTest::explicitListStageKeepsOnlyListedIdsAndRecordsReasons() {
 }
 
 void PipelineTest::excludeStageDropsSpecificIdWithReason() {
-  QPointer<OiJob> job = new OiJob();
-  QPointer<FeatureWrapper> target = this->makeTargetPoint("Target3");
+  oi::Guarded<OiJob> job = new OiJob();
+  oi::Guarded<FeatureWrapper> target = this->makeTargetPoint("Target3");
   QVERIFY(job->addFeature(target));
 
-  QPointer<FakeAverageFit> function = new FakeAverageFit();
+  oi::Guarded<FakeAverageFit> function = new FakeAverageFit();
   target->getPoint()->addFunction(function);
 
-  QPointer<Point> p1 = this->makeCandidate(0.0, job);
-  QPointer<Point> p2 = this->makeCandidate(10.0, job);
-  foreach (const QPointer<Point>& p, (QList<QPointer<Point> >() << p1 << p2)) {
+  oi::Guarded<Point> p1 = this->makeCandidate(0.0, job);
+  oi::Guarded<Point> p2 = this->makeCandidate(10.0, job);
+  foreach (const oi::Guarded<Point>& p,
+           (QList<oi::Guarded<Point> >() << p1 << p2)) {
     InputElement e(p->getId());
     e.typeOfElement = ElementTypes::ePointElement;
     e.point = p;
@@ -262,11 +263,11 @@ void PipelineTest::excludeStageDropsSpecificIdWithReason() {
  * reportable with a reason (traceability requirement).
  */
 void PipelineTest::residualOutlierRejectionExcludesTheOutlierAndConverges() {
-  QPointer<OiJob> job = new OiJob();
-  QPointer<FeatureWrapper> target = this->makeTargetPoint("Target4");
+  oi::Guarded<OiJob> job = new OiJob();
+  oi::Guarded<FeatureWrapper> target = this->makeTargetPoint("Target4");
   QVERIFY(job->addFeature(target));
 
-  QPointer<FakeAverageFit> function = new FakeAverageFit();
+  oi::Guarded<FakeAverageFit> function = new FakeAverageFit();
   target->getPoint()->addFunction(function);
 
   // 20 good points plus one deliberate gross outlier. A small sample
@@ -284,11 +285,11 @@ void PipelineTest::residualOutlierRejectionExcludesTheOutlierAndConverges() {
     xs.append(0.0);
   }
   xs.append(1000.0);  // the deliberate outlier
-  QList<QPointer<Point> > candidates;
+  QList<oi::Guarded<Point> > candidates;
   foreach (double x, xs) {
     candidates.append(this->makeCandidate(x, job));
   }
-  foreach (const QPointer<Point>& p, candidates) {
+  foreach (const oi::Guarded<Point>& p, candidates) {
     InputElement e(p->getId());
     e.typeOfElement = ElementTypes::ePointElement;
     e.point = p;
@@ -330,11 +331,11 @@ void PipelineTest::residualOutlierRejectionExcludesTheOutlierAndConverges() {
  * to actually change the result, not just be inert scaffolding.
  */
 void PipelineTest::omittingTheFilterLeavesTheResultSkewedByTheOutlier() {
-  QPointer<OiJob> job = new OiJob();
-  QPointer<FeatureWrapper> target = this->makeTargetPoint("Target5");
+  oi::Guarded<OiJob> job = new OiJob();
+  oi::Guarded<FeatureWrapper> target = this->makeTargetPoint("Target5");
   QVERIFY(job->addFeature(target));
 
-  QPointer<FakeAverageFit> function = new FakeAverageFit();
+  oi::Guarded<FakeAverageFit> function = new FakeAverageFit();
   target->getPoint()->addFunction(function);
 
   QList<double> xs;
@@ -343,7 +344,7 @@ void PipelineTest::omittingTheFilterLeavesTheResultSkewedByTheOutlier() {
   }
   xs.append(1000.0);  // the deliberate outlier
   foreach (double x, xs) {
-    QPointer<Point> p = this->makeCandidate(x, job);
+    oi::Guarded<Point> p = this->makeCandidate(x, job);
     InputElement e(p->getId());
     e.typeOfElement = ElementTypes::ePointElement;
     e.point = p;
@@ -367,19 +368,19 @@ void PipelineTest::omittingTheFilterLeavesTheResultSkewedByTheOutlier() {
  * ordinary recalc, not just the recalc immediately after it was declared.
  */
 void PipelineTest::addingANewOutlierLaterReTriggersTheFilterOnRecalc() {
-  QPointer<OiJob> job = new OiJob();
-  QPointer<FeatureWrapper> target = this->makeTargetPoint("Target6");
+  oi::Guarded<OiJob> job = new OiJob();
+  oi::Guarded<FeatureWrapper> target = this->makeTargetPoint("Target6");
   QVERIFY(job->addFeature(target));
 
-  QPointer<FakeAverageFit> function = new FakeAverageFit();
+  oi::Guarded<FakeAverageFit> function = new FakeAverageFit();
   target->getPoint()->addFunction(function);
 
   // 20 good points, same reasoning as
   // residualOutlierRejectionExcludesTheOutlierAndConverges() re: sample
   // size and the sigma-clipping masking effect
-  QList<QPointer<Point> > candidates;
+  QList<oi::Guarded<Point> > candidates;
   for (int i = 0; i < 20; i++) {
-    QPointer<Point> p = this->makeCandidate(0.0, job);
+    oi::Guarded<Point> p = this->makeCandidate(0.0, job);
     candidates.append(p);
     InputElement e(p->getId());
     e.typeOfElement = ElementTypes::ePointElement;
@@ -395,7 +396,7 @@ void PipelineTest::addingANewOutlierLaterReTriggersTheFilterOnRecalc() {
   QCOMPARE(target->getPoint()->getPosition().getVector().getAt(0), 0.0);
 
   // a new outlier arrives later - no pipeline redeclaration, just new data
-  QPointer<Point> outlier = this->makeCandidate(1000.0, job);
+  oi::Guarded<Point> outlier = this->makeCandidate(1000.0, job);
   InputElement e(outlier->getId());
   e.typeOfElement = ElementTypes::ePointElement;
   e.point = outlier;

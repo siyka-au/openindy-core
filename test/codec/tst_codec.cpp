@@ -180,7 +180,7 @@ oipb::Reading readingBase(int id) {
 }
 
 void requireReadingRoundTrip(const oipb::Reading& in) {
-  const QPointer<Reading> reading = codec::createReading(in);
+  const oi::Guarded<Reading> reading = codec::createReading(in);
   REQUIRE_FALSE(reading.isNull());
   const oipb::Reading out = codec::toProto(*reading);
   INFO(in.ShortDebugString());
@@ -250,7 +250,7 @@ TEST_CASE("a reading keeps its time to the nanosecond and its face") {
   useArmadillo();
   oipb::Reading m = readingBase(21);
   m.mutable_distance()->set_distance(1.0);
-  const QPointer<Reading> reading = codec::createReading(m);
+  const oi::Guarded<Reading> reading = codec::createReading(m);
   REQUIRE_FALSE(reading.isNull());
   CHECK(reading->getFace() == SensorFaces::eBackSide);
   CHECK(reading->isImported());
@@ -285,7 +285,7 @@ TEST_CASE("an observation round trips, including the original coordinates") {
   in.mutable_reading()->mutable_distance()->set_distance(3.0);
   // station / measured_target_geometry are references, resolved by the linker
 
-  const QPointer<Observation> observation = codec::createObservation(in);
+  const oi::Guarded<Observation> observation = codec::createObservation(in);
   REQUIRE_FALSE(observation.isNull());
   CHECK(MessageDifferencer::Equals(in, codec::toProto(*observation)));
   REQUIRE_FALSE(observation->getReading().isNull());
@@ -320,7 +320,7 @@ TEST_CASE("transformation parameters round trip, matrix included") {
   in.set_used(true);
   // from/to are references, resolved by the linker
 
-  const QPointer<TrafoParam> trafo = codec::createTrafoParam(in);
+  const oi::Guarded<TrafoParam> trafo = codec::createTrafoParam(in);
   REQUIRE_FALSE(trafo.isNull());
   CHECK(MessageDifferencer::Equals(in, codec::toProto(*trafo)));
   delete trafo.data();
@@ -350,7 +350,8 @@ TEST_CASE("a coordinate system round trips, bundle template included") {
   bt->mutable_plugin()->set_plugin("OpenIndy Default Plugin");
   // trafo_params / observations / nominal_geometries are references
 
-  const QPointer<CoordinateSystem> system = codec::createCoordinateSystem(in);
+  const oi::Guarded<CoordinateSystem> system =
+      codec::createCoordinateSystem(in);
   REQUIRE_FALSE(system.isNull());
   CHECK(MessageDifferencer::Equals(in, codec::toProto(*system)));
   delete system.data();
@@ -366,7 +367,7 @@ TEST_CASE("a station round trips its own state") {
   f->set_active(true);
   in.set_active_station(true);
 
-  const QPointer<Station> station = codec::createStation(in);
+  const oi::Guarded<Station> station = codec::createStation(in);
   REQUIRE_FALSE(station.isNull());
   const oipb::Station out = codec::toProto(*station);
   CHECK(MessageDifferencer::Equals(in.feature(), out.feature()));
@@ -489,7 +490,7 @@ TEST_CASE("every geometry type round trips, with its type-specific state") {
     oipb::Geometry in = geometryBase(id++);
     fill(in);
 
-    const QPointer<Geometry> geometry = codec::createGeometry(in);
+    const oi::Guarded<Geometry> geometry = codec::createGeometry(in);
     REQUIRE_FALSE(geometry.isNull());
     std::string differences;
     MessageDifferencer differencer;
@@ -515,7 +516,7 @@ TEST_CASE("a geometry's references are not applied at creation") {
   in.set_realises(6);
   in.set_owner_feature(8);
 
-  const QPointer<Geometry> geometry = codec::createGeometry(in);
+  const oi::Guarded<Geometry> geometry = codec::createGeometry(in);
   REQUIRE_FALSE(geometry.isNull());
   const oipb::Geometry out = codec::toProto(*geometry);
   // left for the linking pass, which reads them from the message
@@ -535,7 +536,7 @@ TEST_CASE("groups round trip, constraint and kind included") {
   plain.set_constraint(oipb::FEATURE_KIND_PLANE);
   plain.add_members(1);  // references are left for the linking pass
 
-  QPointer<Group> group = codec::createGroup(plain);
+  oi::Guarded<Group> group = codec::createGroup(plain);
   REQUIRE_FALSE(group.isNull());
   CHECK(dynamic_cast<PointGroup*>(group.data()) == nullptr);
   CHECK(group->getConstraint() == FeatureTypes::ePlaneFeature);
@@ -840,35 +841,35 @@ class TestHost : public codec::ProjectHost {
 };
 
 struct World {
-  QPointer<OiJob> job;
-  QPointer<Station> station;
-  QPointer<CoordinateSystem> part;
-  QPointer<Point> a;
-  QPointer<Point> b;
-  QPointer<Point> c;
-  QPointer<Plane> plane;
-  QPointer<Group> group;
-  QPointer<TrafoParam> trafo;
+  oi::Guarded<OiJob> job;
+  oi::Guarded<Station> station;
+  oi::Guarded<CoordinateSystem> part;
+  oi::Guarded<Point> a;
+  oi::Guarded<Point> b;
+  oi::Guarded<Point> c;
+  oi::Guarded<Plane> plane;
+  oi::Guarded<Group> group;
+  oi::Guarded<TrafoParam> trafo;
 };
 
 // The job holds its features through wrappers the caller creates.
 template <class T>
-bool addToJob(OiJob& job, const QPointer<T>& feature,
-              void (FeatureWrapper::*set)(const QPointer<T>&)) {
-  QPointer<FeatureWrapper> wrapper = new FeatureWrapper();
+bool addToJob(OiJob& job, const oi::Guarded<T>& feature,
+              void (FeatureWrapper::*set)(const oi::Guarded<T>&)) {
+  oi::Guarded<FeatureWrapper> wrapper = new FeatureWrapper();
   (wrapper.data()->*set)(feature);
   return job.addFeature(wrapper);
 }
 
-QPointer<Point> addPoint(OiJob& job, const QString& name, double x) {
-  QPointer<Point> point = new Point(Position(x, 2.0, 3.0));
+oi::Guarded<Point> addPoint(OiJob& job, const QString& name, double x) {
+  oi::Guarded<Point> point = new Point(Position(x, 2.0, 3.0));
   point->setFeatureName(name);
   point->setIsSolved(true);
   REQUIRE(addToJob<Point>(job, point, &FeatureWrapper::setPoint));
   return point;
 }
 
-QPointer<FeatureWrapper> wrapperOf(OiJob& job, int id) {
+oi::Guarded<FeatureWrapper> wrapperOf(OiJob& job, int id) {
   for (const auto& wrapper : job.getFeaturesList()) {
     if (!wrapper.isNull() && wrapper->getFeature()->getId() == id) {
       return wrapper;
@@ -892,7 +893,7 @@ World buildWorld() {
   w.station->setActiveStationState(true);
   w.station->getCoordinateSystem()->setActiveCoordinateSystemState(true);
 
-  QPointer<CoordinateSystem> bundle = new CoordinateSystem(true);
+  oi::Guarded<CoordinateSystem> bundle = new CoordinateSystem(true);
   bundle->setFeatureName("Bundle01");
   bundle->setBundlePlugin(new TestBundle());
   REQUIRE(addToJob<CoordinateSystem>(*w.job, bundle,
@@ -987,7 +988,7 @@ TEST_CASE("loading links the references the file only holds as ids") {
   OiJob& job = *loaded.job;
 
   CHECK(job.getStationsList().size() == 1);
-  const QPointer<Station> station = job.getActiveStation();
+  const oi::Guarded<Station> station = job.getActiveStation();
   REQUIRE_FALSE(station.isNull());
   CHECK(station->getFeatureName() == "STATION01");
   CHECK_FALSE(station->getPosition().isNull());

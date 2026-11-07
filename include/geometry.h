@@ -2,14 +2,13 @@
 #define GEOMETRY_H
 
 #include <QList>
-#include <QObject>
-#include <QPointer>
 #include <QtCore>
 #include <optional>
 
 #include "core_export.h"
 #include "direction.h"
 #include "feature.h"
+#include "guarded.h"
 #include "measurementconfig.h"
 #include "position.h"
 #include "radius.h"
@@ -47,12 +46,11 @@ class CoordinateSystem;
 class OI_CORE_EXPORT Geometry : public Feature {
   friend class OiJob;
   friend struct codec::Access;  // the protobuf codec (see src/codec)
-  Q_OBJECT
 
  public:
-  explicit Geometry(QObject* parent = nullptr);
+  explicit Geometry();
 
-  Geometry(const Geometry& copy, QObject* parent = nullptr);
+  Geometry(const Geometry& copy);
 
   Geometry& operator=(const Geometry& copy);
 
@@ -74,8 +72,8 @@ class OI_CORE_EXPORT Geometry : public Feature {
   // meaningful on an actual; a nominal's own realises is always empty.
   // Many actuals may share one nominal, so there is deliberately no
   // back-reference list on the nominal side.
-  [[nodiscard]] const std::optional<QPointer<Geometry>>& getRealises() const;
-  bool setRealises(const QPointer<Geometry>& nominal);
+  [[nodiscard]] const std::optional<oi::Guarded<Geometry>>& getRealises() const;
+  bool setRealises(const oi::Guarded<Geometry>& nominal);
   void clearRealises();
 
   // D19 applied to functions (Stage 7h, domain-model.md S6): the feature
@@ -86,9 +84,9 @@ class OI_CORE_EXPORT Geometry : public Feature {
   // generated the owned accessor (OiJob::addOwnedSubGeometry), not a user
   // edit. See getOwnedSubGeometries() for the reverse (owner -> children)
   // direction.
-  [[nodiscard]] const std::optional<QPointer<Geometry>>& getOwnerFeature()
+  [[nodiscard]] const std::optional<oi::Guarded<Geometry>>& getOwnerFeature()
       const;
-  bool setOwnerFeature(const QPointer<Geometry>& owner);
+  bool setOwnerFeature(const oi::Guarded<Geometry>& owner);
 
   // the geometries this geometry owns and regenerates on its own recalc
   //(the reverse of getOwnerFeature()). Populated by
@@ -98,14 +96,15 @@ class OI_CORE_EXPORT Geometry : public Feature {
   // children when this geometry's own value actually changes, and by
   // OiJob::removeFeature to cascade-delete them when this geometry is
   // removed.
-  [[nodiscard]] const QList<QPointer<Geometry>>& getOwnedSubGeometries() const;
+  [[nodiscard]] const QList<oi::Guarded<Geometry>>& getOwnedSubGeometries()
+      const;
 
-  [[nodiscard]] const QList<QPointer<Observation>>& getObservations() const;
-  void addObservation(const QPointer<Observation>& obs);
-  void removeObservation(const QPointer<Observation>& obs);
+  [[nodiscard]] const QList<oi::Guarded<Observation>>& getObservations() const;
+  void addObservation(const oi::Guarded<Observation>& obs);
+  void removeObservation(const oi::Guarded<Observation>& obs);
 
-  [[nodiscard]] const QPointer<CoordinateSystem>& getNominalSystem() const;
-  bool setNominalSystem(const QPointer<CoordinateSystem>& nomSys);
+  [[nodiscard]] const oi::Guarded<CoordinateSystem>& getNominalSystem() const;
+  bool setNominalSystem(const oi::Guarded<CoordinateSystem>& nomSys);
 
   [[nodiscard]] const MeasurementConfigKey& getMeasurementConfig() const;
   void setMeasurementConfig(const MeasurementConfigKey& myConfig);
@@ -222,23 +221,23 @@ class OI_CORE_EXPORT Geometry : public Feature {
   // an actual (an actual's fit set it when it was told which nominal it
   // was measuring); a nominal's own value is always nullopt. See the
   // class comment for why this is not a back-reference list.
-  std::optional<QPointer<Geometry>> realises;
+  std::optional<oi::Guarded<Geometry>> realises;
 
   // D19 applied to functions (Stage 7h): the feature that owns this
   // geometry, if any (see getOwnerFeature() above), and the geometries
   // this geometry itself owns (see getOwnedSubGeometries() above). A
   // geometry can be an owner, an owned accessor, or neither, but not both
   // at once in this stage - nothing nests owned accessors yet.
-  std::optional<QPointer<Geometry>> ownerFeature;
-  QList<QPointer<Geometry>> ownedSubGeometries;
+  std::optional<oi::Guarded<Geometry>> ownerFeature;
+  QList<oi::Guarded<Geometry>> ownedSubGeometries;
 
   // the coordinate system a *nominal* geometry is defined in (unused by
   // an actual). Kept as a plain field rather than being nominal-only by
   // type, same reasoning as `realises` above - Geometry<G> is impossible.
-  QPointer<CoordinateSystem> nominalSystem;
+  oi::Guarded<CoordinateSystem> nominalSystem;
 
   // observations
-  QList<QPointer<Observation>> observations;
+  QList<oi::Guarded<Observation>> observations;
 
   // statistic
   Statistic statistic;

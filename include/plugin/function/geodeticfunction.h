@@ -11,11 +11,8 @@ namespace oi {
  * for future use only
  */
 class OI_CORE_EXPORT GeodeticFunction : public Function {
-  Q_OBJECT
-  Q_DISABLE_COPY_MOVE(GeodeticFunction)
-
  public:
-  explicit GeodeticFunction(QObject* parent = nullptr) : Function(parent) {}
+  explicit GeodeticFunction() : Function() {}
 
   ~GeodeticFunction() override {}
 };

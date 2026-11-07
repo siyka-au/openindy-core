@@ -4,10 +4,9 @@ using namespace oi;
 
 /*!
  * \brief FeatureWrapper::FeatureWrapper
- * \param parent
  */
-FeatureWrapper::FeatureWrapper(QObject* parent)
-    : QObject(parent), typeOfFeature(FeatureTypes::eUndefinedFeature) {}
+FeatureWrapper::FeatureWrapper()
+    : typeOfFeature(FeatureTypes::eUndefinedFeature) {}
 
 /*!
  * \brief FeatureWrapper::operator ==
@@ -49,7 +48,7 @@ const FeatureTypes& FeatureWrapper::getFeatureTypeEnum() const {
  * \brief FeatureWrapper::getFeature
  * \return
  */
-const QPointer<Feature>& FeatureWrapper::getFeature() const {
+const oi::Guarded<Feature>& FeatureWrapper::getFeature() const {
   return this->feature;
 }
 
@@ -57,7 +56,7 @@ const QPointer<Feature>& FeatureWrapper::getFeature() const {
  * \brief FeatureWrapper::getGeometry
  * \return
  */
-const QPointer<Geometry>& FeatureWrapper::getGeometry() const {
+const oi::Guarded<Geometry>& FeatureWrapper::getGeometry() const {
   return this->geometry;
 }
 
@@ -65,7 +64,8 @@ const QPointer<Geometry>& FeatureWrapper::getGeometry() const {
  * \brief FeatureWrapper::getCoordinateSystem
  * \return
  */
-const QPointer<CoordinateSystem>& FeatureWrapper::getCoordinateSystem() const {
+const oi::Guarded<CoordinateSystem>& FeatureWrapper::getCoordinateSystem()
+    const {
   return this->coordinateSystem;
 }
 
@@ -73,7 +73,7 @@ const QPointer<CoordinateSystem>& FeatureWrapper::getCoordinateSystem() const {
  * \brief FeatureWrapper::getTrafoParam
  * \return
  */
-const QPointer<TrafoParam>& FeatureWrapper::getTrafoParam() const {
+const oi::Guarded<TrafoParam>& FeatureWrapper::getTrafoParam() const {
   return this->trafoParam;
 }
 
@@ -81,7 +81,7 @@ const QPointer<TrafoParam>& FeatureWrapper::getTrafoParam() const {
  * \brief FeatureWrapper::getStation
  * \return
  */
-const QPointer<Station>& FeatureWrapper::getStation() const {
+const oi::Guarded<Station>& FeatureWrapper::getStation() const {
   return this->station;
 }
 
@@ -89,25 +89,29 @@ const QPointer<Station>& FeatureWrapper::getStation() const {
  * \brief FeatureWrapper::getPoint
  * \return
  */
-const QPointer<Point>& FeatureWrapper::getPoint() const { return this->point; }
+const oi::Guarded<Point>& FeatureWrapper::getPoint() const {
+  return this->point;
+}
 
 /*!
  * \brief FeatureWrapper::getLine
  * \return
  */
-const QPointer<Line>& FeatureWrapper::getLine() const { return this->line; }
+const oi::Guarded<Line>& FeatureWrapper::getLine() const { return this->line; }
 
 /*!
  * \brief FeatureWrapper::getPlane
  * \return
  */
-const QPointer<Plane>& FeatureWrapper::getPlane() const { return this->plane; }
+const oi::Guarded<Plane>& FeatureWrapper::getPlane() const {
+  return this->plane;
+}
 
 /*!
  * \brief FeatureWrapper::getSphere
  * \return
  */
-const QPointer<Sphere>& FeatureWrapper::getSphere() const {
+const oi::Guarded<Sphere>& FeatureWrapper::getSphere() const {
   return this->sphere;
 }
 
@@ -115,7 +119,7 @@ const QPointer<Sphere>& FeatureWrapper::getSphere() const {
  * \brief FeatureWrapper::getCircle
  * \return
  */
-const QPointer<Circle>& FeatureWrapper::getCircle() const {
+const oi::Guarded<Circle>& FeatureWrapper::getCircle() const {
   return this->circle;
 }
 
@@ -123,13 +127,13 @@ const QPointer<Circle>& FeatureWrapper::getCircle() const {
  * \brief FeatureWrapper::getCone
  * \return
  */
-const QPointer<Cone>& FeatureWrapper::getCone() const { return this->cone; }
+const oi::Guarded<Cone>& FeatureWrapper::getCone() const { return this->cone; }
 
 /*!
  * \brief FeatureWrapper::getCylinder
  * \return
  */
-const QPointer<Cylinder>& FeatureWrapper::getCylinder() const {
+const oi::Guarded<Cylinder>& FeatureWrapper::getCylinder() const {
   return this->cylinder;
 }
 
@@ -137,7 +141,7 @@ const QPointer<Cylinder>& FeatureWrapper::getCylinder() const {
  * \brief FeatureWrapper::getEllipsoid
  * \return
  */
-const QPointer<Ellipsoid>& FeatureWrapper::getEllipsoid() const {
+const oi::Guarded<Ellipsoid>& FeatureWrapper::getEllipsoid() const {
   return this->ellipsoid;
 }
 
@@ -145,7 +149,7 @@ const QPointer<Ellipsoid>& FeatureWrapper::getEllipsoid() const {
  * \brief FeatureWrapper::getHyperboloid
  * \return
  */
-const QPointer<Hyperboloid>& FeatureWrapper::getHyperboloid() const {
+const oi::Guarded<Hyperboloid>& FeatureWrapper::getHyperboloid() const {
   return this->hyperboloid;
 }
 
@@ -153,7 +157,7 @@ const QPointer<Hyperboloid>& FeatureWrapper::getHyperboloid() const {
  * \brief FeatureWrapper::getParaboloid
  * \return
  */
-const QPointer<Paraboloid>& FeatureWrapper::getParaboloid() const {
+const oi::Guarded<Paraboloid>& FeatureWrapper::getParaboloid() const {
   return this->paraboloid;
 }
 
@@ -161,7 +165,7 @@ const QPointer<Paraboloid>& FeatureWrapper::getParaboloid() const {
  * \brief FeatureWrapper::getGroup
  * \return
  */
-const QPointer<Group>& FeatureWrapper::getGroup() const {
+const oi::Guarded<Group>& FeatureWrapper::getGroup() const {
   return this->groupFeature;
 }
 
@@ -169,7 +173,7 @@ const QPointer<Group>& FeatureWrapper::getGroup() const {
  * \brief FeatureWrapper::getPointGroup
  * \return
  */
-const QPointer<PointGroup>& FeatureWrapper::getPointGroup() const {
+const oi::Guarded<PointGroup>& FeatureWrapper::getPointGroup() const {
   return this->pointGroup;
 }
 
@@ -177,7 +181,7 @@ const QPointer<PointGroup>& FeatureWrapper::getPointGroup() const {
  * \brief FeatureWrapper::getPointCloud
  * \return
  */
-const QPointer<PointCloud>& FeatureWrapper::getPointCloud() const {
+const oi::Guarded<PointCloud>& FeatureWrapper::getPointCloud() const {
   return this->pointCloud;
 }
 
@@ -185,13 +189,15 @@ const QPointer<PointCloud>& FeatureWrapper::getPointCloud() const {
  * \brief FeatureWrapper::getNurbs
  * \return
  */
-const QPointer<Nurbs>& FeatureWrapper::getNurbs() const { return this->nurbs; }
+const oi::Guarded<Nurbs>& FeatureWrapper::getNurbs() const {
+  return this->nurbs;
+}
 
 /*!
  * \brief FeatureWrapper::getEllipse
  * \return
  */
-const QPointer<Ellipse>& FeatureWrapper::getEllipse() const {
+const oi::Guarded<Ellipse>& FeatureWrapper::getEllipse() const {
   return this->ellipse;
 }
 
@@ -199,7 +205,7 @@ const QPointer<Ellipse>& FeatureWrapper::getEllipse() const {
  * \brief FeatureWrapper::getSlottedHole
  * \return
  */
-const QPointer<SlottedHole>& FeatureWrapper::getSlottedHole() const {
+const oi::Guarded<SlottedHole>& FeatureWrapper::getSlottedHole() const {
   return this->slottedHole;
 }
 
@@ -207,13 +213,15 @@ const QPointer<SlottedHole>& FeatureWrapper::getSlottedHole() const {
  * \brief FeatureWrapper::getTorus
  * \return
  */
-const QPointer<Torus>& FeatureWrapper::getTorus() const { return this->torus; }
+const oi::Guarded<Torus>& FeatureWrapper::getTorus() const {
+  return this->torus;
+}
 
 /*!
  * \brief FeatureWrapper::getScalarEntityAngle
  * \return
  */
-const QPointer<ScalarEntityAngle>& FeatureWrapper::getScalarEntityAngle()
+const oi::Guarded<ScalarEntityAngle>& FeatureWrapper::getScalarEntityAngle()
     const {
   return this->angle;
 }
@@ -222,8 +230,8 @@ const QPointer<ScalarEntityAngle>& FeatureWrapper::getScalarEntityAngle()
  * \brief FeatureWrapper::getScalarEntityDistance
  * \return
  */
-const QPointer<ScalarEntityDistance>& FeatureWrapper::getScalarEntityDistance()
-    const {
+const oi::Guarded<ScalarEntityDistance>&
+FeatureWrapper::getScalarEntityDistance() const {
   return this->distance;
 }
 
@@ -231,7 +239,7 @@ const QPointer<ScalarEntityDistance>& FeatureWrapper::getScalarEntityDistance()
  * \brief FeatureWrapper::getScalarEntityTemperature
  * \return
  */
-const QPointer<ScalarEntityTemperature>&
+const oi::Guarded<ScalarEntityTemperature>&
 FeatureWrapper::getScalarEntityTemperature() const {
   return this->temperature;
 }
@@ -240,7 +248,7 @@ FeatureWrapper::getScalarEntityTemperature() const {
  * \brief FeatureWrapper::getScalarEntityMeasurementSeries
  * \return
  */
-const QPointer<ScalarEntityMeasurementSeries>&
+const oi::Guarded<ScalarEntityMeasurementSeries>&
 FeatureWrapper::getScalarEntityMeasurementSeries() const {
   return this->measurementSeries;
 }
@@ -250,7 +258,7 @@ FeatureWrapper::getScalarEntityMeasurementSeries() const {
  * \param coordSystem
  */
 void FeatureWrapper::setCoordinateSystem(
-    const QPointer<CoordinateSystem>& coordSystem) {
+    const oi::Guarded<CoordinateSystem>& coordSystem) {
   if (!coordSystem.isNull() &&
       this->typeOfFeature == FeatureTypes::eUndefinedFeature) {
     this->feature = coordSystem;
@@ -263,7 +271,7 @@ void FeatureWrapper::setCoordinateSystem(
  * \brief FeatureWrapper::setTrafoParam
  * \param trafoParam
  */
-void FeatureWrapper::setTrafoParam(const QPointer<TrafoParam>& trafoParam) {
+void FeatureWrapper::setTrafoParam(const oi::Guarded<TrafoParam>& trafoParam) {
   if (!trafoParam.isNull() &&
       this->typeOfFeature == FeatureTypes::eUndefinedFeature) {
     this->feature = trafoParam;
@@ -276,7 +284,7 @@ void FeatureWrapper::setTrafoParam(const QPointer<TrafoParam>& trafoParam) {
  * \brief FeatureWrapper::setStation
  * \param station
  */
-void FeatureWrapper::setStation(const QPointer<Station>& station) {
+void FeatureWrapper::setStation(const oi::Guarded<Station>& station) {
   if (!station.isNull() &&
       this->typeOfFeature == FeatureTypes::eUndefinedFeature) {
     this->feature = station;
@@ -289,7 +297,7 @@ void FeatureWrapper::setStation(const QPointer<Station>& station) {
  * \brief FeatureWrapper::setPoint
  * \param point
  */
-void FeatureWrapper::setPoint(const QPointer<Point>& point) {
+void FeatureWrapper::setPoint(const oi::Guarded<Point>& point) {
   if (!point.isNull() &&
       this->typeOfFeature == FeatureTypes::eUndefinedFeature) {
     this->feature = point;
@@ -303,7 +311,7 @@ void FeatureWrapper::setPoint(const QPointer<Point>& point) {
  * \brief FeatureWrapper::setLine
  * \param line
  */
-void FeatureWrapper::setLine(const QPointer<Line>& line) {
+void FeatureWrapper::setLine(const oi::Guarded<Line>& line) {
   if (!line.isNull() &&
       this->typeOfFeature == FeatureTypes::eUndefinedFeature) {
     this->feature = line;
@@ -317,7 +325,7 @@ void FeatureWrapper::setLine(const QPointer<Line>& line) {
  * \brief FeatureWrapper::setPlane
  * \param plane
  */
-void FeatureWrapper::setPlane(const QPointer<Plane>& plane) {
+void FeatureWrapper::setPlane(const oi::Guarded<Plane>& plane) {
   if (!plane.isNull() &&
       this->typeOfFeature == FeatureTypes::eUndefinedFeature) {
     this->feature = plane;
@@ -331,7 +339,7 @@ void FeatureWrapper::setPlane(const QPointer<Plane>& plane) {
  * \brief FeatureWrapper::setSphere
  * \param sphere
  */
-void FeatureWrapper::setSphere(const QPointer<Sphere>& sphere) {
+void FeatureWrapper::setSphere(const oi::Guarded<Sphere>& sphere) {
   if (!sphere.isNull() &&
       this->typeOfFeature == FeatureTypes::eUndefinedFeature) {
     this->feature = sphere;
@@ -345,7 +353,7 @@ void FeatureWrapper::setSphere(const QPointer<Sphere>& sphere) {
  * \brief FeatureWrapper::setCircle
  * \param circle
  */
-void FeatureWrapper::setCircle(const QPointer<Circle>& circle) {
+void FeatureWrapper::setCircle(const oi::Guarded<Circle>& circle) {
   if (!circle.isNull() &&
       this->typeOfFeature == FeatureTypes::eUndefinedFeature) {
     this->feature = circle;
@@ -359,7 +367,7 @@ void FeatureWrapper::setCircle(const QPointer<Circle>& circle) {
  * \brief FeatureWrapper::setCone
  * \param cone
  */
-void FeatureWrapper::setCone(const QPointer<Cone>& cone) {
+void FeatureWrapper::setCone(const oi::Guarded<Cone>& cone) {
   if (!cone.isNull() &&
       this->typeOfFeature == FeatureTypes::eUndefinedFeature) {
     this->feature = cone;
@@ -373,7 +381,7 @@ void FeatureWrapper::setCone(const QPointer<Cone>& cone) {
  * \brief FeatureWrapper::setCylinder
  * \param cylinder
  */
-void FeatureWrapper::setCylinder(const QPointer<Cylinder>& cylinder) {
+void FeatureWrapper::setCylinder(const oi::Guarded<Cylinder>& cylinder) {
   if (!cylinder.isNull() &&
       this->typeOfFeature == FeatureTypes::eUndefinedFeature) {
     this->feature = cylinder;
@@ -387,7 +395,7 @@ void FeatureWrapper::setCylinder(const QPointer<Cylinder>& cylinder) {
  * \brief FeatureWrapper::setEllipsoid
  * \param ellipsoid
  */
-void FeatureWrapper::setEllipsoid(const QPointer<Ellipsoid>& ellipsoid) {
+void FeatureWrapper::setEllipsoid(const oi::Guarded<Ellipsoid>& ellipsoid) {
   if (!ellipsoid.isNull() &&
       this->typeOfFeature == FeatureTypes::eUndefinedFeature) {
     this->feature = ellipsoid;
@@ -401,7 +409,8 @@ void FeatureWrapper::setEllipsoid(const QPointer<Ellipsoid>& ellipsoid) {
  * \brief FeatureWrapper::setHyperboloid
  * \param hyperboloid
  */
-void FeatureWrapper::setHyperboloid(const QPointer<Hyperboloid>& hyperboloid) {
+void FeatureWrapper::setHyperboloid(
+    const oi::Guarded<Hyperboloid>& hyperboloid) {
   if (!hyperboloid.isNull() &&
       this->typeOfFeature == FeatureTypes::eUndefinedFeature) {
     this->feature = hyperboloid;
@@ -415,7 +424,7 @@ void FeatureWrapper::setHyperboloid(const QPointer<Hyperboloid>& hyperboloid) {
  * \brief FeatureWrapper::setParaboloid
  * \param paraboloid
  */
-void FeatureWrapper::setParaboloid(const QPointer<Paraboloid>& paraboloid) {
+void FeatureWrapper::setParaboloid(const oi::Guarded<Paraboloid>& paraboloid) {
   if (!paraboloid.isNull() &&
       this->typeOfFeature == FeatureTypes::eUndefinedFeature) {
     this->feature = paraboloid;
@@ -429,7 +438,7 @@ void FeatureWrapper::setParaboloid(const QPointer<Paraboloid>& paraboloid) {
  * \brief FeatureWrapper::setPointCloud
  * \param pointCloud
  */
-void FeatureWrapper::setGroup(const QPointer<Group>& group) {
+void FeatureWrapper::setGroup(const oi::Guarded<Group>& group) {
   if (!group.isNull() &&
       this->typeOfFeature == FeatureTypes::eUndefinedFeature) {
     this->feature = group;
@@ -442,7 +451,7 @@ void FeatureWrapper::setGroup(const QPointer<Group>& group) {
  * \brief FeatureWrapper::setPointGroup
  * \param pointGroup
  */
-void FeatureWrapper::setPointGroup(const QPointer<PointGroup>& pointGroup) {
+void FeatureWrapper::setPointGroup(const oi::Guarded<PointGroup>& pointGroup) {
   if (!pointGroup.isNull() &&
       this->typeOfFeature == FeatureTypes::eUndefinedFeature) {
     this->feature = pointGroup;
@@ -458,7 +467,7 @@ void FeatureWrapper::setPointGroup(const QPointer<PointGroup>& pointGroup) {
  * \brief FeatureWrapper::setPointCloud
  * \param pointCloud
  */
-void FeatureWrapper::setPointCloud(const QPointer<PointCloud>& pointCloud) {
+void FeatureWrapper::setPointCloud(const oi::Guarded<PointCloud>& pointCloud) {
   if (!pointCloud.isNull() &&
       this->typeOfFeature == FeatureTypes::eUndefinedFeature) {
     this->feature = pointCloud;
@@ -472,7 +481,7 @@ void FeatureWrapper::setPointCloud(const QPointer<PointCloud>& pointCloud) {
  * \brief FeatureWrapper::setNurbs
  * \param nurbs
  */
-void FeatureWrapper::setNurbs(const QPointer<Nurbs>& nurbs) {
+void FeatureWrapper::setNurbs(const oi::Guarded<Nurbs>& nurbs) {
   if (!nurbs.isNull() &&
       this->typeOfFeature == FeatureTypes::eUndefinedFeature) {
     this->feature = nurbs;
@@ -486,7 +495,7 @@ void FeatureWrapper::setNurbs(const QPointer<Nurbs>& nurbs) {
  * \brief FeatureWrapper::setEllipse
  * \param ellipse
  */
-void FeatureWrapper::setEllipse(const QPointer<Ellipse>& ellipse) {
+void FeatureWrapper::setEllipse(const oi::Guarded<Ellipse>& ellipse) {
   if (!ellipse.isNull() &&
       this->typeOfFeature == FeatureTypes::eUndefinedFeature) {
     this->feature = ellipse;
@@ -500,7 +509,8 @@ void FeatureWrapper::setEllipse(const QPointer<Ellipse>& ellipse) {
  * \brief FeatureWrapper::setSlottedHole
  * \param slottedHole
  */
-void FeatureWrapper::setSlottedHole(const QPointer<SlottedHole>& slottedHole) {
+void FeatureWrapper::setSlottedHole(
+    const oi::Guarded<SlottedHole>& slottedHole) {
   if (!slottedHole.isNull() &&
       this->typeOfFeature == FeatureTypes::eUndefinedFeature) {
     this->feature = slottedHole;
@@ -514,7 +524,7 @@ void FeatureWrapper::setSlottedHole(const QPointer<SlottedHole>& slottedHole) {
  * \brief FeatureWrapper::setTorus
  * \param torus
  */
-void FeatureWrapper::setTorus(const QPointer<Torus>& torus) {
+void FeatureWrapper::setTorus(const oi::Guarded<Torus>& torus) {
   if (!torus.isNull() &&
       this->typeOfFeature == FeatureTypes::eUndefinedFeature) {
     this->feature = torus;
@@ -529,7 +539,7 @@ void FeatureWrapper::setTorus(const QPointer<Torus>& torus) {
  * \param angle
  */
 void FeatureWrapper::setScalarEntityAngle(
-    const QPointer<ScalarEntityAngle>& angle) {
+    const oi::Guarded<ScalarEntityAngle>& angle) {
   if (!angle.isNull() &&
       this->typeOfFeature == FeatureTypes::eUndefinedFeature) {
     this->feature = angle;
@@ -544,7 +554,7 @@ void FeatureWrapper::setScalarEntityAngle(
  * \param distance
  */
 void FeatureWrapper::setScalarEntityDistance(
-    const QPointer<ScalarEntityDistance>& distance) {
+    const oi::Guarded<ScalarEntityDistance>& distance) {
   if (!distance.isNull() &&
       this->typeOfFeature == FeatureTypes::eUndefinedFeature) {
     this->feature = distance;
@@ -559,7 +569,7 @@ void FeatureWrapper::setScalarEntityDistance(
  * \param temperature
  */
 void FeatureWrapper::setScalarEntityTemperature(
-    const QPointer<ScalarEntityTemperature>& temperature) {
+    const oi::Guarded<ScalarEntityTemperature>& temperature) {
   if (!temperature.isNull() &&
       this->typeOfFeature == FeatureTypes::eUndefinedFeature) {
     this->feature = temperature;
@@ -574,7 +584,7 @@ void FeatureWrapper::setScalarEntityTemperature(
  * \param measurementSeries
  */
 void FeatureWrapper::setScalarEntityMeasurementSeries(
-    const QPointer<ScalarEntityMeasurementSeries>& measurementSeries) {
+    const oi::Guarded<ScalarEntityMeasurementSeries>& measurementSeries) {
   if (!measurementSeries.isNull() &&
       this->typeOfFeature == FeatureTypes::eUndefinedFeature) {
     this->feature = measurementSeries;

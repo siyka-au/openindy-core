@@ -3,11 +3,11 @@
 
 #include <QList>
 #include <QMap>
-#include <QPointer>
 #include <QString>
 #include <QVariantMap>
 
 #include "core_export.h"
+#include "guarded.h"
 #include "types.h"
 
 namespace oi {
@@ -55,7 +55,7 @@ class OI_CORE_EXPORT StationObserver {
   virtual void onCommandFinished(bool /*success*/, const QString& /*msg*/,
                                  SensorAction /*sensorAction*/) {}
   virtual void onMeasurementFinished(
-      int /*geomId*/, const QList<QPointer<Reading>>& /*readings*/) {}
+      int /*geomId*/, const QList<oi::Guarded<Reading>>& /*readings*/) {}
   virtual void onMeasurementDone(bool /*success*/) {}
 
   // what the driver reports on its own

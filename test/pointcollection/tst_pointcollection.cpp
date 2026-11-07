@@ -15,10 +15,10 @@ namespace {
 
 // a solved Point wrapped for group membership, which is how every real
 // point reaches a group
-QPointer<FeatureWrapper> makePoint(double x, double y, double z, int id) {
-  QPointer<Point> point = new Point(id, Position(x, y, z));
+oi::Guarded<FeatureWrapper> makePoint(double x, double y, double z, int id) {
+  oi::Guarded<Point> point = new Point(id, Position(x, y, z));
   point->setIsSolved(true);
-  QPointer<FeatureWrapper> wrapper = new FeatureWrapper();
+  oi::Guarded<FeatureWrapper> wrapper = new FeatureWrapper();
   wrapper->setPoint(point);
   return wrapper;
 }
@@ -55,7 +55,7 @@ void PointCollectionTest::initTestCase() {
 }
 
 void PointCollectionTest::groupHoldsReferencesNotCopies() {
-  QPointer<FeatureWrapper> point = makePoint(1.0, 2.0, 3.0, 1);
+  oi::Guarded<FeatureWrapper> point = makePoint(1.0, 2.0, 3.0, 1);
 
   PointGroup group("wall");
   QVERIFY(group.addMember(point));
@@ -73,7 +73,7 @@ void PointCollectionTest::groupHoldsReferencesNotCopies() {
 }
 
 void PointCollectionTest::pointInManyGroupsIsStoredOnce() {
-  QPointer<FeatureWrapper> shared = makePoint(1.0, 1.0, 1.0, 1);
+  oi::Guarded<FeatureWrapper> shared = makePoint(1.0, 1.0, 1.0, 1);
 
   PointGroup wall("wall");
   PointGroup control("control network");
@@ -89,8 +89,8 @@ void PointCollectionTest::pointInManyGroupsIsStoredOnce() {
 }
 
 void PointCollectionTest::constraintRejectsWrongType() {
-  QPointer<PointCloud> cloud = new PointCloud();
-  QPointer<FeatureWrapper> cloudWrapper = new FeatureWrapper();
+  oi::Guarded<PointCloud> cloud = new PointCloud();
+  oi::Guarded<FeatureWrapper> cloudWrapper = new FeatureWrapper();
   cloudWrapper->setPointCloud(cloud);
 
   PointGroup group("points only");
@@ -107,7 +107,7 @@ void PointCollectionTest::constraintRejectsWrongType() {
 }
 
 void PointCollectionTest::duplicateAndSelfMembershipRejected() {
-  QPointer<FeatureWrapper> point = makePoint(1.0, 1.0, 1.0, 1);
+  oi::Guarded<FeatureWrapper> point = makePoint(1.0, 1.0, 1.0, 1);
 
   PointGroup group("wall");
   QVERIFY(group.addMember(point));
@@ -116,14 +116,14 @@ void PointCollectionTest::duplicateAndSelfMembershipRejected() {
 
   // a group containing itself would recurse forever on traversal
   Group outer("outer");
-  QPointer<FeatureWrapper> selfWrapper = new FeatureWrapper();
+  oi::Guarded<FeatureWrapper> selfWrapper = new FeatureWrapper();
   QVERIFY2(!outer.addMember(selfWrapper),
            "a null-typed wrapper must be rejected outright");
 }
 
 void PointCollectionTest::compactDropsDeletedMembers() {
-  QPointer<FeatureWrapper> keep = makePoint(1.0, 1.0, 1.0, 1);
-  QPointer<FeatureWrapper> discard = makePoint(2.0, 2.0, 2.0, 2);
+  oi::Guarded<FeatureWrapper> keep = makePoint(1.0, 1.0, 1.0, 1);
+  oi::Guarded<FeatureWrapper> discard = makePoint(2.0, 2.0, 2.0, 2);
 
   PointGroup group("wall");
   QVERIFY(group.addMember(keep));
@@ -140,7 +140,7 @@ void PointCollectionTest::compactDropsDeletedMembers() {
 }
 
 void PointCollectionTest::deletingAGroupDoesNotDeleteItsMembers() {
-  QPointer<FeatureWrapper> point = makePoint(1.0, 2.0, 3.0, 1);
+  oi::Guarded<FeatureWrapper> point = makePoint(1.0, 2.0, 3.0, 1);
 
   {
     PointGroup group("temporary");
@@ -170,9 +170,9 @@ void PointCollectionTest::unsolvedPointsAreNotPartOfTheCollection() {
   PointGroup group("wall");
   group.addMember(makePoint(0.0, 0.0, 0.0, 1));
 
-  QPointer<Point> unsolved = new Point(2, Position(5.0, 5.0, 5.0));
+  oi::Guarded<Point> unsolved = new Point(2, Position(5.0, 5.0, 5.0));
   unsolved->setIsSolved(false);
-  QPointer<FeatureWrapper> unsolvedWrapper = new FeatureWrapper();
+  oi::Guarded<FeatureWrapper> unsolvedWrapper = new FeatureWrapper();
   unsolvedWrapper->setPoint(unsolved);
   QVERIFY(group.addMember(unsolvedWrapper));
 
@@ -183,7 +183,7 @@ void PointCollectionTest::unsolvedPointsAreNotPartOfTheCollection() {
 }
 
 void PointCollectionTest::pointCloudSatisfiesPointCollection() {
-  QPointer<PointCloud> cloud = new PointCloud();
+  oi::Guarded<PointCloud> cloud = new PointCloud();
   cloud->addPointCloudPoint(new Point_PC(1.0f, 2.0f, 3.0f));
   cloud->addPointCloudPoint(new Point_PC(4.0f, 5.0f, 6.0f));
 
@@ -210,7 +210,7 @@ void PointCollectionTest::
   group.addMember(makePoint(0.0, 0.0, 0.0, 1));
   group.addMember(makePoint(1.0, 0.0, 0.0, 2));
 
-  QPointer<PointCloud> cloud = new PointCloud();
+  oi::Guarded<PointCloud> cloud = new PointCloud();
   cloud->addPointCloudPoint(new Point_PC(0.0f, 0.0f, 0.0f));
   cloud->addPointCloudPoint(new Point_PC(1.0f, 0.0f, 0.0f));
 

@@ -8,9 +8,8 @@ using namespace oi::math;
 
 /*!
  * \brief Plane::Plane
- * \param parent
  */
-Plane::Plane(QObject* parent) : Geometry(parent) {
+Plane::Plane() : Geometry() {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setPlane(this);
@@ -21,10 +20,8 @@ Plane::Plane(QObject* parent) : Geometry(parent) {
  * \brief Plane::Plane
  * \param xyz
  * \param normal
- * \param parent
  */
-Plane::Plane(const Position& xyz, const Direction& normal, QObject* parent)
-    : Geometry(parent) {
+Plane::Plane(const Position& xyz, const Direction& normal) : Geometry() {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setPlane(this);
@@ -37,10 +34,8 @@ Plane::Plane(const Position& xyz, const Direction& normal, QObject* parent)
  * \brief Plane::Plane
  * \param normal
  * \param d
- * \param parent
  */
-Plane::Plane(const Direction& normal, const double& d, QObject* parent)
-    : Geometry(parent) {
+Plane::Plane(const Direction& normal, const double& d) : Geometry() {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setPlane(this);
@@ -52,9 +47,8 @@ Plane::Plane(const Direction& normal, const double& d, QObject* parent)
 /*!
  * \brief Plane::Plane
  * \param copy
- * \param parent
  */
-Plane::Plane(const Plane& copy, QObject* parent) : Geometry(copy, parent) {
+Plane::Plane(const Plane& copy) : Geometry(copy) {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setPlane(this);

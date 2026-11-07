@@ -1,7 +1,6 @@
 #ifndef SPHERE_H
 #define SPHERE_H
 
-#include <QObject>
 #include <QtCore>
 
 #include "core_export.h"
@@ -16,14 +15,11 @@ namespace oi {
  * \brief The Sphere class
  */
 class OI_CORE_EXPORT Sphere : public Geometry {
-  Q_OBJECT
-
  public:
-  explicit Sphere(QObject* parent = nullptr);
-  Sphere(const Position& center, const Radius& radius,
-         QObject* parent = nullptr);
+  explicit Sphere();
+  Sphere(const Position& center, const Radius& radius);
 
-  Sphere(const Sphere& copy, QObject* parent = nullptr);
+  Sphere(const Sphere& copy);
 
   Sphere& operator=(const Sphere& copy);
 

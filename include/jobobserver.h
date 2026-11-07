@@ -1,10 +1,10 @@
 #ifndef JOBOBSERVER_H
 #define JOBOBSERVER_H
 
-#include <QPointer>
 #include <QString>
 
 #include "core_export.h"
+#include "guarded.h"
 #include "measurementconfig.h"
 #include "types.h"
 
@@ -21,7 +21,7 @@ class OiJob;
  * Observers are registered with OiJob::addObserver (non-owning) and are
  * called synchronously on the thread that triggered the change.
  *
- * onRecalcFeatureRequested keeps the QPointer<Feature> of the old
+ * onRecalcFeatureRequested keeps the oi::Guarded<Feature> of the old
  * recalcFeature signal: the request is usually forwarded across threads
  * through queued delivery, and the guarded pointer is what keeps a feature
  * deleted in the meantime from being dereferenced.
@@ -172,7 +172,7 @@ class JobObserver {
     Q_UNUSED(msgDest);
   }
 
-  virtual void onRecalcFeatureRequested(const QPointer<Feature>& feature) {
+  virtual void onRecalcFeatureRequested(const oi::Guarded<Feature>& feature) {
     Q_UNUSED(feature);
   }
 

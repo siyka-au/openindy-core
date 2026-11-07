@@ -1,7 +1,6 @@
 #ifndef SCALARENTITYMEASUREMENTSERIES_H
 #define SCALARENTITYMEASUREMENTSERIES_H
 
-#include <QObject>
 #include <QtCore>
 
 #include "core_export.h"
@@ -14,15 +13,12 @@ namespace oi {
  */
 class OI_CORE_EXPORT ScalarEntityMeasurementSeries : public Geometry {
   friend struct codec::Access;  // the protobuf codec (see src/codec)
-  Q_OBJECT
 
  public:
-  explicit ScalarEntityMeasurementSeries(QObject* parent = nullptr);
-  explicit ScalarEntityMeasurementSeries(const double& seriesValue,
-                                         QObject* parent = nullptr);
+  explicit ScalarEntityMeasurementSeries();
+  explicit ScalarEntityMeasurementSeries(const double& seriesValue);
 
-  ScalarEntityMeasurementSeries(const ScalarEntityMeasurementSeries& copy,
-                                QObject* parent = nullptr);
+  ScalarEntityMeasurementSeries(const ScalarEntityMeasurementSeries& copy);
 
   ScalarEntityMeasurementSeries& operator=(
       const ScalarEntityMeasurementSeries& copy);

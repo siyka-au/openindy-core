@@ -99,9 +99,8 @@ bool implementsTransform(oi::Function* function) {
 
 /*!
  * \brief Function::Function
- * \param parent
  */
-Function::Function(QObject* parent) : QObject(parent), supportsWeights(false) {}
+Function::Function() : supportsWeights(false) {}
 
 /*!
  * \brief Function::~Function
@@ -143,7 +142,7 @@ void Function::init() {}
  * \return
  */
 std::expected<void, QString> Function::execChecked(
-    const QPointer<FeatureWrapper>& feature) {
+    const oi::Guarded<FeatureWrapper>& feature) {
   this->applyDeterministicPipelineStages();
 
   std::expected<void, QString> result = this->execByFeatureType(feature);
@@ -163,7 +162,7 @@ std::expected<void, QString> Function::execChecked(
  * \param feature
  * \return
  */
-bool Function::exec(const QPointer<FeatureWrapper>& feature) {
+bool Function::exec(const oi::Guarded<FeatureWrapper>& feature) {
   return this->execChecked(feature).has_value();
 }
 
@@ -180,7 +179,7 @@ bool Function::exec(const QPointer<FeatureWrapper>& feature) {
  * \return
  */
 std::expected<void, QString> Function::execByFeatureType(
-    const QPointer<FeatureWrapper>& feature) {
+    const oi::Guarded<FeatureWrapper>& feature) {
   if (feature.isNull()) {
     return std::unexpected(QString("no feature to execute against"));
   }
@@ -1082,8 +1081,8 @@ void Function::setIsUsed(const int& position, const int& id,
 }
 
 void Function::filterObservations(
-    QList<QPointer<Observation> >& allUsableObservations,
-    QList<QPointer<Observation> >& inputObservations) {
+    QList<oi::Guarded<Observation> >& allUsableObservations,
+    QList<oi::Guarded<Observation> >& inputObservations) {
   for (const InputElement& element :
        oi::snapshot(this->getInputElements()[0])) {
     if (!element.observation.isNull() && element.observation->getIsSolved() &&

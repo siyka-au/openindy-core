@@ -3,7 +3,6 @@
 
 #include <QList>
 #include <QMap>
-#include <QPointer>
 #include <QVariantMap>
 #include <atomic>
 #include <condition_variable>
@@ -15,6 +14,7 @@
 #include <thread>
 
 #include "core_export.h"
+#include "guarded.h"
 #include "sensor.h"
 #include "sensorsink.h"
 #include "sensorworkermessage.h"
@@ -87,9 +87,9 @@ class OI_CORE_EXPORT SensorWorker final : public SensorSink {
 
   // a copy of the sensor's static properties (not the live sensor)
   [[nodiscard]] Sensor getSensor() const;
-  void setSensor(const QPointer<Sensor>& sensor);
+  void setSensor(const oi::Guarded<Sensor>& sensor);
   // waits for a running command, then hands the sensor back
-  QPointer<Sensor> takeSensor();
+  oi::Guarded<Sensor> takeSensor();
   // disconnects (if connected) and deletes the sensor on the worker thread
   void resetSensor();
 
@@ -157,7 +157,7 @@ class OI_CORE_EXPORT SensorWorker final : public SensorSink {
   void onAsyncSensorResponse(const QJsonObject& response,
                              SensorAction sensorAction) override;
   void onAsyncMeasurementResult(const int& geomId,
-                                const QList<QPointer<Reading>>& measurements,
+                                const QList<oi::Guarded<Reading>>& measurements,
                                 SensorAction sensorAction) override;
   void onAsyncStreamResult(const QVariantMap& reading) override;
   void onAsyncSensorNotification(const QJsonObject& response) override;
@@ -173,9 +173,9 @@ class OI_CORE_EXPORT SensorWorker final : public SensorSink {
   void command(std::function<void()> task);
 
   // sensor access
-  [[nodiscard]] QPointer<Sensor> currentSensor() const;
+  [[nodiscard]] oi::Guarded<Sensor> currentSensor() const;
   void refreshSnapshot();
-  void storeSnapshot(const QPointer<Sensor>& sensor);
+  void storeSnapshot(const oi::Guarded<Sensor>& sensor);
 
   // command implementations (worker thread, driver lock held)
   void runConnectSensor();
@@ -200,7 +200,7 @@ class OI_CORE_EXPORT SensorWorker final : public SensorSink {
                 SensorAction action = SensorAction::eSensorActionUndefind);
   void finishedMeasurement(bool success, const QString& msg,
                            SensorAction action, int geomId,
-                           const QList<QPointer<Reading>>& readings);
+                           const QList<oi::Guarded<Reading>>& readings);
 
   // streams (worker thread)
   void runStartReadingStream();
@@ -225,7 +225,7 @@ class OI_CORE_EXPORT SensorWorker final : public SensorSink {
   // across a driver call. driverMutex is held by the worker for every driver
   // interaction (recursive: a result delivered inline may call back).
   mutable std::mutex stateMutex;
-  QPointer<Sensor> sensor;
+  oi::Guarded<Sensor> sensor;
   std::recursive_mutex driverMutex;
 
   // snapshot of the sensor's static properties; a leaf lock

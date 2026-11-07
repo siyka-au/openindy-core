@@ -8,9 +8,8 @@ using namespace oi::math;
 
 /*!
  * \brief Hyperboloid::Hyperboloid
- * \param parent
  */
-Hyperboloid::Hyperboloid(QObject* parent) : Geometry(parent) {
+Hyperboloid::Hyperboloid() : Geometry() {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setHyperboloid(this);
@@ -23,11 +22,10 @@ Hyperboloid::Hyperboloid(QObject* parent) : Geometry(parent) {
  * \param axis
  * \param a
  * \param c
- * \param parent
  */
 Hyperboloid::Hyperboloid(const Position& center, const Direction& axis,
-                         const double& a, const double& c, QObject* parent)
-    : Geometry(parent) {
+                         const double& a, const double& c)
+    : Geometry() {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setHyperboloid(this);
@@ -39,10 +37,8 @@ Hyperboloid::Hyperboloid(const Position& center, const Direction& axis,
 /*!
  * \brief Hyperboloid::Hyperboloid
  * \param copy
- * \param parent
  */
-Hyperboloid::Hyperboloid(const Hyperboloid& copy, QObject* parent)
-    : Geometry(copy, parent) {
+Hyperboloid::Hyperboloid(const Hyperboloid& copy) : Geometry(copy) {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setHyperboloid(this);

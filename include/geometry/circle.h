@@ -1,7 +1,6 @@
 #ifndef CIRCLE_H
 #define CIRCLE_H
 
-#include <QObject>
 #include <QtCore>
 
 #include "core_export.h"
@@ -16,14 +15,11 @@ namespace oi {
  * \brief The Circle class
  */
 class OI_CORE_EXPORT Circle : public Geometry {
-  Q_OBJECT
-
  public:
-  explicit Circle(QObject* parent = nullptr);
-  Circle(const Position& center, const Direction& normal, const Radius& radius,
-         QObject* parent = nullptr);
+  explicit Circle();
+  Circle(const Position& center, const Direction& normal, const Radius& radius);
 
-  Circle(const Circle& copy, QObject* parent = nullptr);
+  Circle(const Circle& copy);
 
   Circle& operator=(const Circle& copy);
 

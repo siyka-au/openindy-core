@@ -3,12 +3,11 @@
 
 #include <QJsonObject>
 #include <QList>
-#include <QObject>
-#include <QPointer>
 
 #include "core_export.h"
 #include "direction.h"
 #include "feature.h"
+#include "guarded.h"
 #include "position.h"
 
 class TrafoController;
@@ -32,15 +31,13 @@ class OI_CORE_EXPORT CoordinateSystem : public Feature {
   friend class ::ProjectExchanger;
   friend class Observation;
   friend struct codec::Access;  // the protobuf codec (see src/codec)
-  Q_OBJECT
 
  public:
-  explicit CoordinateSystem(QObject* parent = nullptr);
-  explicit CoordinateSystem(bool isBundleSystem, QObject* parent = nullptr);
-  explicit CoordinateSystem(const QPointer<Station>& station,
-                            QObject* parent = nullptr);
+  explicit CoordinateSystem();
+  explicit CoordinateSystem(bool isBundleSystem);
+  explicit CoordinateSystem(const oi::Guarded<Station>& station);
 
-  CoordinateSystem(const CoordinateSystem& copy, QObject* parent = nullptr);
+  CoordinateSystem(const CoordinateSystem& copy);
 
   CoordinateSystem& operator=(const CoordinateSystem& copy);
 
@@ -56,7 +53,7 @@ class OI_CORE_EXPORT CoordinateSystem : public Feature {
 
   // is stations system
   [[nodiscard]] const bool& getIsStationSystem() const;
-  [[nodiscard]] const QPointer<Station>& getStation() const;
+  [[nodiscard]] const oi::Guarded<Station>& getStation() const;
 
   // is bundle system
   [[nodiscard]] const bool& getIsBundleSystem() const;
@@ -80,24 +77,24 @@ class OI_CORE_EXPORT CoordinateSystem : public Feature {
   // ##################################################
 
   // observations
-  [[nodiscard]] const QList<QPointer<Observation>>& getObservations() const;
-  [[nodiscard]] QPointer<Observation> getObservation(
+  [[nodiscard]] const QList<oi::Guarded<Observation>>& getObservations() const;
+  [[nodiscard]] oi::Guarded<Observation> getObservation(
       const int& observationId) const;
-  bool addObservation(const QPointer<Observation>& observation);
+  bool addObservation(const oi::Guarded<Observation>& observation);
 
   // transformation parameters
-  [[nodiscard]] const QList<QPointer<TrafoParam>>& getTransformationParameters()
-      const;
-  [[nodiscard]] const QList<QPointer<TrafoParam>> getTransformationParameters(
-      const QPointer<CoordinateSystem>& to) const;
-  bool addTransformationParameter(const QPointer<TrafoParam>& trafoParam);
-  bool removeTransformationParameter(const QPointer<TrafoParam>& trafoParam);
+  [[nodiscard]] const QList<oi::Guarded<TrafoParam>>&
+  getTransformationParameters() const;
+  [[nodiscard]] const QList<oi::Guarded<TrafoParam>>
+  getTransformationParameters(const oi::Guarded<CoordinateSystem>& to) const;
+  bool addTransformationParameter(const oi::Guarded<TrafoParam>& trafoParam);
+  bool removeTransformationParameter(const oi::Guarded<TrafoParam>& trafoParam);
 
   // nominals
-  [[nodiscard]] const QList<QPointer<FeatureWrapper>>& getNominals() const;
-  bool addNominal(const QPointer<FeatureWrapper>& nominal);
-  bool addNominals(const QList<QPointer<FeatureWrapper>>& nominals);
-  bool removeNominal(const QPointer<FeatureWrapper>& nominal);
+  [[nodiscard]] const QList<oi::Guarded<FeatureWrapper>>& getNominals() const;
+  bool addNominal(const oi::Guarded<FeatureWrapper>& nominal);
+  bool addNominals(const QList<oi::Guarded<FeatureWrapper>>& nominals);
+  bool removeNominal(const oi::Guarded<FeatureWrapper>& nominal);
   bool removeNominal(const int& featureId);
 
   // bundle template
@@ -105,8 +102,8 @@ class OI_CORE_EXPORT CoordinateSystem : public Feature {
   void setBundleTemplate(const QJsonObject& bundleTemplate);
 
   // bundle adjustment
-  [[nodiscard]] const QPointer<BundleAdjustment>& getBundlePlugin() const;
-  void setBundlePlugin(const QPointer<BundleAdjustment>& bundle);
+  [[nodiscard]] const oi::Guarded<BundleAdjustment>& getBundlePlugin() const;
+  void setBundlePlugin(const oi::Guarded<BundleAdjustment>& bundle);
 
   // ###########################
   // reexecute the function list
@@ -157,13 +154,12 @@ class OI_CORE_EXPORT CoordinateSystem : public Feature {
 
   void setUpFeatureId() override;
 
- private slots:
-
+ private:
   // ##############
   // helper methods
   // ##############
 
-  void removeObservation(const QPointer<Observation>& obs);
+  void removeObservation(const oi::Guarded<Observation>& obs);
 
  private:
   // ####################################
@@ -188,27 +184,27 @@ class OI_CORE_EXPORT CoordinateSystem : public Feature {
   Position expansionOrigin;
 
   // holds the station object (only if this is a station system)
-  QPointer<Station> station;
+  oi::Guarded<Station> station;
 
   // the bundle plugin that is used to solve the bundle
   QJsonObject bundleTemplate;
-  QPointer<BundleAdjustment> bundlePlugin;
+  oi::Guarded<BundleAdjustment> bundlePlugin;
 
   // #######################################
   // observations, trafo params and nominals
   // #######################################
 
   // observations
-  QList<QPointer<Observation>> observationsList;
-  QMap<int, QPointer<Observation>>
+  QList<oi::Guarded<Observation>> observationsList;
+  QMap<int, oi::Guarded<Observation>>
       observationsMap;  // same observations but id as key
 
   // trafo params
-  QList<QPointer<TrafoParam>> trafoParams;
+  QList<oi::Guarded<TrafoParam>> trafoParams;
 
   // nominals
-  QList<QPointer<FeatureWrapper>> nominalsList;
-  QMap<int, QPointer<FeatureWrapper>>
+  QList<oi::Guarded<FeatureWrapper>> nominalsList;
+  QMap<int, oi::Guarded<FeatureWrapper>>
       nominalsMap;  // same geometries but id as key
 };
 

@@ -6,9 +6,8 @@ using namespace oi;
 
 /*!
  * \brief Nurbs::Nurbs
- * \param parent
  */
-Nurbs::Nurbs(QObject* parent) : Geometry(parent) {
+Nurbs::Nurbs() : Geometry() {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setNurbs(this);
@@ -18,9 +17,8 @@ Nurbs::Nurbs(QObject* parent) : Geometry(parent) {
 /*!
  * \brief Nurbs::Nurbs
  * \param copy
- * \param parent
  */
-Nurbs::Nurbs(const Nurbs& copy, QObject* parent) : Geometry(copy, parent) {
+Nurbs::Nurbs(const Nurbs& copy) : Geometry(copy) {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setNurbs(this);

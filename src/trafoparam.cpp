@@ -11,14 +11,9 @@ using namespace oi::math;
 
 /*!
  * \brief TrafoParam::TrafoParam
- * \param parent
  */
-TrafoParam::TrafoParam(QObject* parent)
-    : Feature(parent),
-      translation(3),
-      rotation(3),
-      scale(3),
-      homogenMatrix(4, 4) {
+TrafoParam::TrafoParam()
+    : Feature(), translation(3), rotation(3), scale(3), homogenMatrix(4, 4) {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setTrafoParam(this);
@@ -41,10 +36,8 @@ TrafoParam::TrafoParam(QObject* parent)
 /*!
  * \brief TrafoParam::TrafoParam
  * \param copy
- * \param parent
  */
-TrafoParam::TrafoParam(const TrafoParam& copy, QObject* parent)
-    : Feature(copy, parent) {
+TrafoParam::TrafoParam(const TrafoParam& copy) : Feature(copy) {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setTrafoParam(this);
@@ -136,7 +129,7 @@ void TrafoParam::setIsUsed(const bool& isUsed) {
  * \brief TrafoParam::getStartSystem
  * \return
  */
-const QPointer<CoordinateSystem>& TrafoParam::getStartSystem() const {
+const oi::Guarded<CoordinateSystem>& TrafoParam::getStartSystem() const {
   return this->from;
 }
 
@@ -144,7 +137,7 @@ const QPointer<CoordinateSystem>& TrafoParam::getStartSystem() const {
  * \brief TrafoParam::getDestinationSystem
  * \return
  */
-const QPointer<CoordinateSystem>& TrafoParam::getDestinationSystem() const {
+const oi::Guarded<CoordinateSystem>& TrafoParam::getDestinationSystem() const {
   return this->to;
 }
 
@@ -154,8 +147,8 @@ const QPointer<CoordinateSystem>& TrafoParam::getDestinationSystem() const {
  * \param to
  * \return
  */
-bool TrafoParam::setCoordinateSystems(const QPointer<CoordinateSystem>& from,
-                                      const QPointer<CoordinateSystem>& to) {
+bool TrafoParam::setCoordinateSystems(const oi::Guarded<CoordinateSystem>& from,
+                                      const oi::Guarded<CoordinateSystem>& to) {
   // check if to and from were already set
   if (!this->to.isNull() || !this->from.isNull()) {
     return false;
@@ -164,9 +157,10 @@ bool TrafoParam::setCoordinateSystems(const QPointer<CoordinateSystem>& from,
   if (!from.isNull() && !to.isNull()) {
     // check if to and from are in the same job
     if (!this->job.isNull()) {
-      QPointer<FeatureWrapper> jobFrom =
+      oi::Guarded<FeatureWrapper> jobFrom =
           this->job->getFeatureById(from->getId());
-      QPointer<FeatureWrapper> jobTo = this->job->getFeatureById(to->getId());
+      oi::Guarded<FeatureWrapper> jobTo =
+          this->job->getFeatureById(to->getId());
       if (jobFrom.isNull() || jobTo.isNull() ||
           jobFrom->getCoordinateSystem().isNull() ||
           jobTo->getCoordinateSystem().isNull() ||

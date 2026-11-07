@@ -14,7 +14,7 @@ namespace oi {
  * feature-coding. A Point carries a *list* of these (many-to-many: a point
  * shot for wall-01 may also serve as a registration target).
  *
- * Anchored to featureId, not a feature name or a live QPointer<Geometry>:
+ * Anchored to featureId, not a feature name or a live oi::Guarded<Geometry>:
  * a name collides/orphans silently on rename (the exact class of bug
  * MeasurementConfigKey and the git-derived plugin IID already caused, see
  * domain-model.md S9.1), and a raw pointer has nowhere stable to live

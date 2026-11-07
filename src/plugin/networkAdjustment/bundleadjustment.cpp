@@ -8,9 +8,8 @@ using namespace oi;
 
 /*!
  * \brief BundleAdjustment::BundleAdjustment
- * \param parent
  */
-BundleAdjustment::BundleAdjustment(QObject* parent) : QObject(parent) {}
+BundleAdjustment::BundleAdjustment() {}
 
 /*!
  * \brief BundleAdjustment::~BundleAdjustment
@@ -27,7 +26,7 @@ void BundleAdjustment::init() {}
  * \return
  */
 bool BundleAdjustment::runBundle() {
-  emit this->sendMessage(
+  this->sendMessage(
       "Bundle \"" + this->getMetaData().name + "\" not implemented",
       MessageTypes::eCriticalMessage, MessageDestinations::eMessageBoxMessage);
   return false;
@@ -130,7 +129,7 @@ void BundleAdjustment::setBaseStation(const BundleStation& station) {
  * \brief BundleAdjustment::getBundleSystem
  * \return
  */
-const QPointer<CoordinateSystem>& BundleAdjustment::getBundleSystem() const {
+const oi::Guarded<CoordinateSystem>& BundleAdjustment::getBundleSystem() const {
   return this->bundleSystem;
 }
 
@@ -139,7 +138,7 @@ const QPointer<CoordinateSystem>& BundleAdjustment::getBundleSystem() const {
  * \param system
  */
 void BundleAdjustment::setBundleSystem(
-    const QPointer<CoordinateSystem>& system) {
+    const oi::Guarded<CoordinateSystem>& system) {
   this->bundleSystem = system;
 }
 
@@ -147,7 +146,7 @@ void BundleAdjustment::setBundleSystem(
  * \brief BundleAdjustment::getCurrentJob
  * \return
  */
-const QPointer<OiJob>& BundleAdjustment::getCurrentJob() const {
+const oi::Guarded<OiJob>& BundleAdjustment::getCurrentJob() const {
   return this->currentJob;
 }
 
@@ -155,7 +154,7 @@ const QPointer<OiJob>& BundleAdjustment::getCurrentJob() const {
  * \brief BundleAdjustment::setCurrentJob
  * \param job
  */
-void BundleAdjustment::setCurrentJob(const QPointer<OiJob>& job) {
+void BundleAdjustment::setCurrentJob(const oi::Guarded<OiJob>& job) {
   // disconnect old job
   this->disconnectJob();
 

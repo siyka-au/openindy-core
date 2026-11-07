@@ -8,9 +8,8 @@ using namespace oi;
 
 /*!
  * \brief ScalarEntityDistance::ScalarEntityDistance
- * \param parent
  */
-ScalarEntityDistance::ScalarEntityDistance(QObject* parent) : Geometry(parent) {
+ScalarEntityDistance::ScalarEntityDistance() : Geometry() {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setScalarEntityDistance(this);
@@ -20,11 +19,9 @@ ScalarEntityDistance::ScalarEntityDistance(QObject* parent) : Geometry(parent) {
 /*!
  * \brief ScalarEntityDistance::ScalarEntityDistance
  * \param distance
- * \param parent
  */
-ScalarEntityDistance::ScalarEntityDistance(const double& distance,
-                                           QObject* parent)
-    : Geometry(parent) {
+ScalarEntityDistance::ScalarEntityDistance(const double& distance)
+    : Geometry() {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setScalarEntityDistance(this);
@@ -36,11 +33,9 @@ ScalarEntityDistance::ScalarEntityDistance(const double& distance,
 /*!
  * \brief ScalarEntityDistance::ScalarEntityDistance
  * \param copy
- * \param parent
  */
-ScalarEntityDistance::ScalarEntityDistance(const ScalarEntityDistance& copy,
-                                           QObject* parent)
-    : Geometry(copy, parent) {
+ScalarEntityDistance::ScalarEntityDistance(const ScalarEntityDistance& copy)
+    : Geometry(copy) {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setScalarEntityDistance(this);

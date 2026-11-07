@@ -1,9 +1,6 @@
 #ifndef FEATUREWRAPPER_H
 #define FEATUREWRAPPER_H
 
-#include <QObject>
-#include <QPointer>
-
 #include "circle.h"
 #include "cone.h"
 #include "coordinatesystem.h"
@@ -14,6 +11,7 @@
 #include "feature.h"
 #include "geometry.h"
 #include "group.h"
+#include "guarded.h"
 #include "hyperboloid.h"
 #include "line.h"
 #include "nurbs.h"
@@ -36,11 +34,9 @@
 
 namespace oi {
 
-class OI_CORE_EXPORT FeatureWrapper : public QObject {
-  Q_OBJECT
-
+class OI_CORE_EXPORT FeatureWrapper : public oi::Trackable {
  public:
-  explicit FeatureWrapper(QObject* parent = nullptr);
+  explicit FeatureWrapper();
 
   bool operator==(const FeatureWrapper& other);
 
@@ -55,106 +51,109 @@ class OI_CORE_EXPORT FeatureWrapper : public QObject {
   // get feature pointer
   // ###################
 
-  [[nodiscard]] const QPointer<Feature>& getFeature() const;
-  [[nodiscard]] const QPointer<Geometry>& getGeometry() const;
+  [[nodiscard]] const oi::Guarded<Feature>& getFeature() const;
+  [[nodiscard]] const oi::Guarded<Geometry>& getGeometry() const;
 
-  [[nodiscard]] const QPointer<CoordinateSystem>& getCoordinateSystem() const;
-  [[nodiscard]] const QPointer<TrafoParam>& getTrafoParam() const;
-  [[nodiscard]] const QPointer<Station>& getStation() const;
-  [[nodiscard]] const QPointer<Group>& getGroup() const;
-  [[nodiscard]] const QPointer<PointGroup>& getPointGroup() const;
-
-  [[nodiscard]] const QPointer<Point>& getPoint() const;
-  [[nodiscard]] const QPointer<Line>& getLine() const;
-  [[nodiscard]] const QPointer<Plane>& getPlane() const;
-  [[nodiscard]] const QPointer<Sphere>& getSphere() const;
-  [[nodiscard]] const QPointer<Circle>& getCircle() const;
-  [[nodiscard]] const QPointer<Cone>& getCone() const;
-  [[nodiscard]] const QPointer<Cylinder>& getCylinder() const;
-  [[nodiscard]] const QPointer<Ellipsoid>& getEllipsoid() const;
-  [[nodiscard]] const QPointer<Hyperboloid>& getHyperboloid() const;
-  [[nodiscard]] const QPointer<Paraboloid>& getParaboloid() const;
-  [[nodiscard]] const QPointer<PointCloud>& getPointCloud() const;
-  [[nodiscard]] const QPointer<Nurbs>& getNurbs() const;
-  [[nodiscard]] const QPointer<Ellipse>& getEllipse() const;
-  [[nodiscard]] const QPointer<SlottedHole>& getSlottedHole() const;
-  [[nodiscard]] const QPointer<Torus>& getTorus() const;
-
-  [[nodiscard]] const QPointer<ScalarEntityAngle>& getScalarEntityAngle() const;
-  [[nodiscard]] const QPointer<ScalarEntityDistance>& getScalarEntityDistance()
+  [[nodiscard]] const oi::Guarded<CoordinateSystem>& getCoordinateSystem()
       const;
-  [[nodiscard]] const QPointer<ScalarEntityTemperature>&
+  [[nodiscard]] const oi::Guarded<TrafoParam>& getTrafoParam() const;
+  [[nodiscard]] const oi::Guarded<Station>& getStation() const;
+  [[nodiscard]] const oi::Guarded<Group>& getGroup() const;
+  [[nodiscard]] const oi::Guarded<PointGroup>& getPointGroup() const;
+
+  [[nodiscard]] const oi::Guarded<Point>& getPoint() const;
+  [[nodiscard]] const oi::Guarded<Line>& getLine() const;
+  [[nodiscard]] const oi::Guarded<Plane>& getPlane() const;
+  [[nodiscard]] const oi::Guarded<Sphere>& getSphere() const;
+  [[nodiscard]] const oi::Guarded<Circle>& getCircle() const;
+  [[nodiscard]] const oi::Guarded<Cone>& getCone() const;
+  [[nodiscard]] const oi::Guarded<Cylinder>& getCylinder() const;
+  [[nodiscard]] const oi::Guarded<Ellipsoid>& getEllipsoid() const;
+  [[nodiscard]] const oi::Guarded<Hyperboloid>& getHyperboloid() const;
+  [[nodiscard]] const oi::Guarded<Paraboloid>& getParaboloid() const;
+  [[nodiscard]] const oi::Guarded<PointCloud>& getPointCloud() const;
+  [[nodiscard]] const oi::Guarded<Nurbs>& getNurbs() const;
+  [[nodiscard]] const oi::Guarded<Ellipse>& getEllipse() const;
+  [[nodiscard]] const oi::Guarded<SlottedHole>& getSlottedHole() const;
+  [[nodiscard]] const oi::Guarded<Torus>& getTorus() const;
+
+  [[nodiscard]] const oi::Guarded<ScalarEntityAngle>& getScalarEntityAngle()
+      const;
+  [[nodiscard]] const oi::Guarded<ScalarEntityDistance>&
+  getScalarEntityDistance() const;
+  [[nodiscard]] const oi::Guarded<ScalarEntityTemperature>&
   getScalarEntityTemperature() const;
-  [[nodiscard]] const QPointer<ScalarEntityMeasurementSeries>&
+  [[nodiscard]] const oi::Guarded<ScalarEntityMeasurementSeries>&
   getScalarEntityMeasurementSeries() const;
 
   // ###################
   // set feature pointer
   // ###################
 
-  void setCoordinateSystem(const QPointer<CoordinateSystem>& coordSystem);
-  void setTrafoParam(const QPointer<TrafoParam>& trafoParam);
-  void setStation(const QPointer<Station>& station);
-  void setGroup(const QPointer<Group>& group);
-  void setPointGroup(const QPointer<PointGroup>& pointGroup);
+  void setCoordinateSystem(const oi::Guarded<CoordinateSystem>& coordSystem);
+  void setTrafoParam(const oi::Guarded<TrafoParam>& trafoParam);
+  void setStation(const oi::Guarded<Station>& station);
+  void setGroup(const oi::Guarded<Group>& group);
+  void setPointGroup(const oi::Guarded<PointGroup>& pointGroup);
 
-  void setPoint(const QPointer<Point>& point);
-  void setLine(const QPointer<Line>& line);
-  void setPlane(const QPointer<Plane>& plane);
-  void setSphere(const QPointer<Sphere>& sphere);
-  void setCircle(const QPointer<Circle>& circle);
-  void setCone(const QPointer<Cone>& cone);
-  void setCylinder(const QPointer<Cylinder>& cylinder);
-  void setEllipsoid(const QPointer<Ellipsoid>& ellipsoid);
-  void setHyperboloid(const QPointer<Hyperboloid>& hyperboloid);
-  void setParaboloid(const QPointer<Paraboloid>& paraboloid);
-  void setPointCloud(const QPointer<PointCloud>& pointCloud);
-  void setNurbs(const QPointer<Nurbs>& nurbs);
-  void setEllipse(const QPointer<Ellipse>& ellipse);
-  void setSlottedHole(const QPointer<SlottedHole>& slottedHole);
-  void setTorus(const QPointer<Torus>& torus);
+  void setPoint(const oi::Guarded<Point>& point);
+  void setLine(const oi::Guarded<Line>& line);
+  void setPlane(const oi::Guarded<Plane>& plane);
+  void setSphere(const oi::Guarded<Sphere>& sphere);
+  void setCircle(const oi::Guarded<Circle>& circle);
+  void setCone(const oi::Guarded<Cone>& cone);
+  void setCylinder(const oi::Guarded<Cylinder>& cylinder);
+  void setEllipsoid(const oi::Guarded<Ellipsoid>& ellipsoid);
+  void setHyperboloid(const oi::Guarded<Hyperboloid>& hyperboloid);
+  void setParaboloid(const oi::Guarded<Paraboloid>& paraboloid);
+  void setPointCloud(const oi::Guarded<PointCloud>& pointCloud);
+  void setNurbs(const oi::Guarded<Nurbs>& nurbs);
+  void setEllipse(const oi::Guarded<Ellipse>& ellipse);
+  void setSlottedHole(const oi::Guarded<SlottedHole>& slottedHole);
+  void setTorus(const oi::Guarded<Torus>& torus);
 
-  void setScalarEntityAngle(const QPointer<ScalarEntityAngle>& angle);
-  void setScalarEntityDistance(const QPointer<ScalarEntityDistance>& distance);
+  void setScalarEntityAngle(const oi::Guarded<ScalarEntityAngle>& angle);
+  void setScalarEntityDistance(
+      const oi::Guarded<ScalarEntityDistance>& distance);
   void setScalarEntityTemperature(
-      const QPointer<ScalarEntityTemperature>& temperature);
+      const oi::Guarded<ScalarEntityTemperature>& temperature);
   void setScalarEntityMeasurementSeries(
-      const QPointer<ScalarEntityMeasurementSeries>& measurementSeries);
+      const oi::Guarded<ScalarEntityMeasurementSeries>& measurementSeries);
 
  private:
   // #################################################################
   // private feature pointer that hold a feature or are set to invalid
   // #################################################################
 
-  QPointer<Feature> feature;
-  QPointer<Geometry> geometry;
+  oi::Guarded<Feature> feature;
+  oi::Guarded<Geometry> geometry;
 
-  QPointer<CoordinateSystem> coordinateSystem;
-  QPointer<TrafoParam> trafoParam;
+  oi::Guarded<CoordinateSystem> coordinateSystem;
+  oi::Guarded<TrafoParam> trafoParam;
 
-  QPointer<Station> station;
+  oi::Guarded<Station> station;
 
-  QPointer<Point> point;
-  QPointer<Line> line;
-  QPointer<Plane> plane;
-  QPointer<Sphere> sphere;
-  QPointer<Circle> circle;
-  QPointer<Cone> cone;
-  QPointer<Cylinder> cylinder;
-  QPointer<Ellipsoid> ellipsoid;
-  QPointer<Hyperboloid> hyperboloid;
-  QPointer<Paraboloid> paraboloid;
-  QPointer<PointCloud> pointCloud;
-  QPointer<Group> groupFeature;
-  QPointer<PointGroup> pointGroup;
-  QPointer<Nurbs> nurbs;
-  QPointer<Ellipse> ellipse;
-  QPointer<SlottedHole> slottedHole;
-  QPointer<Torus> torus;
-  QPointer<ScalarEntityAngle> angle;
-  QPointer<ScalarEntityDistance> distance;
-  QPointer<ScalarEntityTemperature> temperature;
-  QPointer<ScalarEntityMeasurementSeries> measurementSeries;
+  oi::Guarded<Point> point;
+  oi::Guarded<Line> line;
+  oi::Guarded<Plane> plane;
+  oi::Guarded<Sphere> sphere;
+  oi::Guarded<Circle> circle;
+  oi::Guarded<Cone> cone;
+  oi::Guarded<Cylinder> cylinder;
+  oi::Guarded<Ellipsoid> ellipsoid;
+  oi::Guarded<Hyperboloid> hyperboloid;
+  oi::Guarded<Paraboloid> paraboloid;
+  oi::Guarded<PointCloud> pointCloud;
+  oi::Guarded<Group> groupFeature;
+  oi::Guarded<PointGroup> pointGroup;
+  oi::Guarded<Nurbs> nurbs;
+  oi::Guarded<Ellipse> ellipse;
+  oi::Guarded<SlottedHole> slottedHole;
+  oi::Guarded<Torus> torus;
+  oi::Guarded<ScalarEntityAngle> angle;
+  oi::Guarded<ScalarEntityDistance> distance;
+  oi::Guarded<ScalarEntityTemperature> temperature;
+  oi::Guarded<ScalarEntityMeasurementSeries> measurementSeries;
 
   FeatureTypes typeOfFeature;
 };

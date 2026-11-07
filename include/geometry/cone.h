@@ -1,7 +1,6 @@
 #ifndef CONE_H
 #define CONE_H
 
-#include <QObject>
 #include <QtCore>
 
 #include "core_export.h"
@@ -17,14 +16,12 @@ namespace oi {
  */
 class OI_CORE_EXPORT Cone : public Geometry {
   friend struct codec::Access;  // the protobuf codec (see src/codec)
-  Q_OBJECT
 
  public:
-  explicit Cone(QObject* parent = nullptr);
-  Cone(const Position& apex, const Direction& axis, const double& aperture,
-       QObject* parent = nullptr);
+  explicit Cone();
+  Cone(const Position& apex, const Direction& axis, const double& aperture);
 
-  Cone(const Cone& copy, QObject* parent = nullptr);
+  Cone(const Cone& copy);
 
   Cone& operator=(const Cone& copy);
 

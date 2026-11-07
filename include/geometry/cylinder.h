@@ -1,7 +1,6 @@
 #ifndef CYLINDER_H
 #define CYLINDER_H
 
-#include <QObject>
 #include <QtCore>
 
 #include "core_export.h"
@@ -17,14 +16,12 @@ namespace oi {
  * Defines a right circular cylinder
  */
 class OI_CORE_EXPORT Cylinder : public Geometry {
-  Q_OBJECT
-
  public:
-  explicit Cylinder(QObject* parent = nullptr);
+  explicit Cylinder();
   Cylinder(const Position& axisPoint, const Direction& axis,
-           const Radius& radius, QObject* parent = nullptr);
+           const Radius& radius);
 
-  Cylinder(const Cylinder& copy, QObject* parent = nullptr);
+  Cylinder(const Cylinder& copy);
 
   Cylinder& operator=(const Cylinder& copy);
 

@@ -2,12 +2,12 @@
 #define SENSORCONFIGURATION_H
 
 #include <QMap>
-#include <QPointer>
 #include <QString>
 #include <QtSerialPort/QSerialPort>
 
 #include "connectionkind.h"
 #include "core_export.h"
+#include "guarded.h"
 #include "oivec.h"
 #include "sensortype.h"
 #include "types.h"

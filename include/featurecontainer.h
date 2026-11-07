@@ -4,7 +4,6 @@
 #include <QList>
 #include <QMap>
 #include <QMultiMap>
-#include <QPointer>
 #include <QString>
 #include <QStringList>
 
@@ -12,6 +11,7 @@
 #include "core_export.h"
 #include "feature.h"
 #include "featurewrapper.h"
+#include "guarded.h"
 #include "station.h"
 #include "trafoparam.h"
 #include "types.h"
@@ -35,16 +35,18 @@ class OI_CORE_EXPORT FeatureContainer {
   // ###############
 
   // getter to access feature lists
-  [[nodiscard]] const QList<QPointer<FeatureWrapper>>& getFeaturesList() const;
-  [[nodiscard]] const QList<QPointer<CoordinateSystem>>&
+  [[nodiscard]] const QList<oi::Guarded<FeatureWrapper>>& getFeaturesList()
+      const;
+  [[nodiscard]] const QList<oi::Guarded<CoordinateSystem>>&
   getCoordinateSystemsList() const;
-  [[nodiscard]] QList<QPointer<CoordinateSystem>> getStationSystemsList() const;
-  // QList<QPointer<CoordinateSystem> > getBundleSystemList() const; // TODO
+  [[nodiscard]] QList<oi::Guarded<CoordinateSystem>> getStationSystemsList()
+      const;
+  // QList<oi::Guarded<CoordinateSystem> > getBundleSystemList() const; // TODO
   // OI-982 remove
-  [[nodiscard]] const QList<QPointer<Station>>& getStationsList() const;
-  [[nodiscard]] const QList<QPointer<TrafoParam>>&
+  [[nodiscard]] const QList<oi::Guarded<Station>>& getStationsList() const;
+  [[nodiscard]] const QList<oi::Guarded<TrafoParam>>&
   getTransformationParametersList() const;
-  [[nodiscard]] const QList<QPointer<FeatureWrapper>>& getGeometriesList()
+  [[nodiscard]] const QList<oi::Guarded<FeatureWrapper>>& getGeometriesList()
       const;
 
   // getter to get a list of all feature ids, names, groups and measurement
@@ -56,15 +58,15 @@ class OI_CORE_EXPORT FeatureContainer {
       const;
 
   // getter to access features by id, name, group, type or mConfig
-  [[nodiscard]] QPointer<FeatureWrapper> getFeatureById(
+  [[nodiscard]] oi::Guarded<FeatureWrapper> getFeatureById(
       const int& featureId) const;
-  [[nodiscard]] QList<QPointer<FeatureWrapper>> getFeaturesByName(
+  [[nodiscard]] QList<oi::Guarded<FeatureWrapper>> getFeaturesByName(
       const QString& name, const bool startWith = false) const;
-  [[nodiscard]] QList<QPointer<FeatureWrapper>> getFeaturesByGroup(
+  [[nodiscard]] QList<oi::Guarded<FeatureWrapper>> getFeaturesByGroup(
       const QString& group) const;
-  [[nodiscard]] QList<QPointer<FeatureWrapper>> getFeaturesByType(
+  [[nodiscard]] QList<oi::Guarded<FeatureWrapper>> getFeaturesByType(
       const FeatureTypes& type) const;
-  [[nodiscard]] QList<QPointer<Geometry>> getGeometriesByMConfig(
+  [[nodiscard]] QList<oi::Guarded<Geometry>> getGeometriesByMConfig(
       const MeasurementConfigKey& key) const;
 
   // ######################
@@ -80,7 +82,7 @@ class OI_CORE_EXPORT FeatureContainer {
   // add or remove features
   // ######################
 
-  bool addFeature(const QPointer<FeatureWrapper>& feature);
+  bool addFeature(const oi::Guarded<FeatureWrapper>& feature);
   bool removeFeature(const int& featureId);
 
   void checkAndClean(const int& featureId, const QString& name,
@@ -105,31 +107,31 @@ class OI_CORE_EXPORT FeatureContainer {
 
   // feature lists (useful to provide lists of features by category (geometries,
   // stations etc.))
-  QList<QPointer<FeatureWrapper>>
+  QList<oi::Guarded<FeatureWrapper>>
       featuresList;  // list of all features in OpenIndy
-  QList<QPointer<CoordinateSystem>>
+  QList<oi::Guarded<CoordinateSystem>>
       coordSystems;  // list of all non-station coordinate systems
-  QList<QPointer<Station>>
+  QList<oi::Guarded<Station>>
       stationsList;  // list of all stations (each station has pointer to its
                      // coordinate system)
-  QList<QPointer<TrafoParam>> trafoParamsList;  // list of all trafo params
-  QList<QPointer<FeatureWrapper>>
+  QList<oi::Guarded<TrafoParam>> trafoParamsList;  // list of all trafo params
+  QList<oi::Guarded<FeatureWrapper>>
       geometriesList;  // list of all geometry features
 
   // feature maps (useful to quickly find a feature with a given id, name, group
   // etc.)
-  QMap<int, QPointer<FeatureWrapper>>
+  QMap<int, oi::Guarded<FeatureWrapper>>
       featuresIdMap;  // map of all features in OpenIndy with their id as key
-  QMultiMap<QString, QPointer<FeatureWrapper>>
+  QMultiMap<QString, oi::Guarded<FeatureWrapper>>
       featuresNameMap;  // map of all features in OpenIndy with their name as
                         // key
-  QMultiMap<QString, QPointer<FeatureWrapper>>
+  QMultiMap<QString, oi::Guarded<FeatureWrapper>>
       featuresGroupMap;  // map of all features in OpenIndy with their group as
                          // key
-  QMultiMap<FeatureTypes, QPointer<FeatureWrapper>>
+  QMultiMap<FeatureTypes, oi::Guarded<FeatureWrapper>>
       featuresTypeMap;  // map of all features in OpenIndy with their type as
                         // key
-  QMultiMap<MeasurementConfigKey, QPointer<Geometry>>
+  QMultiMap<MeasurementConfigKey, oi::Guarded<Geometry>>
       geometriesMConfigMap;  // map of all geometries in OpenIndy with their
                              // measurement config name and saved state as key
 

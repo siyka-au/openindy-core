@@ -6,6 +6,7 @@
 #include "jobobserver.h"
 #include "oijob.h"
 #include "point.h"
+#include "queuedexecutor.h"
 #include "recordingjobobserver.h"
 #include "station.h"
 #include "trafoparam.h"
@@ -296,7 +297,9 @@ void JobObserverTest::jobDestroyedIsReported() {
 }
 
 void JobObserverTest::isSolvedIsDeliveredDeferred() {
+  QueuedExecutor executor;
   OiJob job;
+  job.setExecutor(&executor);
   RecordingJobObserver rec;
   rec.attach(&job);
   Point point;
@@ -306,7 +309,7 @@ void JobObserverTest::isSolvedIsDeliveredDeferred() {
 
   point.setIsSolved(true);
   QCOMPARE(rec.count("featureIsSolvedChanged"), 0);  // queued
-  QCoreApplication::processEvents();
+  executor.flush();
   QCOMPARE(rec.count("featureIsSolvedChanged"), 1);
 }
 

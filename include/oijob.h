@@ -7,8 +7,6 @@
 #include <QMultiMap>
 #include <QMutex>
 #include <QMutexLocker>
-#include <QObject>
-#include <QPointer>
 #include <QSet>
 #include <QString>
 #include <QStringList>
@@ -22,6 +20,7 @@
 #include "featurecontainer.h"
 #include "featureobserver.h"
 #include "function.h"
+#include "guarded.h"
 #include "jobobserver.h"
 #include "messagesink.h"
 #include "types.h"
@@ -44,16 +43,14 @@ enum class CompatibilyCheckResult {
  * \brief The OiJob class
  * Represents an OpenIndy job (holds all features and active states)
  */
-class OI_CORE_EXPORT OiJob : public QObject,
+class OI_CORE_EXPORT OiJob : public oi::Trackable,
                              public FeatureObserver,
                              public MessageSink {
   friend class ::ProjectExchanger;
   friend struct codec::Access;  // the protobuf codec (see src/codec)
-  Q_OBJECT
-  Q_DISABLE_COPY_MOVE(OiJob)
 
  public:
-  explicit OiJob(QObject* parent = nullptr);
+  explicit OiJob();
 
   ~OiJob() override;
 
@@ -95,36 +92,40 @@ class OI_CORE_EXPORT OiJob : public QObject,
       const;
 
   // access feature lists
-  [[nodiscard]] const QList<QPointer<FeatureWrapper>>& getFeaturesList() const;
-  [[nodiscard]] const QList<QPointer<CoordinateSystem>>&
+  [[nodiscard]] const QList<oi::Guarded<FeatureWrapper>>& getFeaturesList()
+      const;
+  [[nodiscard]] const QList<oi::Guarded<CoordinateSystem>>&
   getCoordinateSystemsList() const;
-  [[nodiscard]] QList<QPointer<CoordinateSystem>> getStationSystemsList() const;
-  [[nodiscard]] QList<QPointer<CoordinateSystem>> getBundleSystemList() const;
-  [[nodiscard]] const QList<QPointer<Station>>& getStationsList() const;
-  [[nodiscard]] const QList<QPointer<TrafoParam>>&
+  [[nodiscard]] QList<oi::Guarded<CoordinateSystem>> getStationSystemsList()
+      const;
+  [[nodiscard]] QList<oi::Guarded<CoordinateSystem>> getBundleSystemList()
+      const;
+  [[nodiscard]] const QList<oi::Guarded<Station>>& getStationsList() const;
+  [[nodiscard]] const QList<oi::Guarded<TrafoParam>>&
   getTransformationParametersList() const;
-  [[nodiscard]] const QList<QPointer<FeatureWrapper>>& getGeometriesList()
+  [[nodiscard]] const QList<oi::Guarded<FeatureWrapper>>& getGeometriesList()
       const;
 
   // access specific features
-  [[nodiscard]] QPointer<FeatureWrapper> getFeatureById(
+  [[nodiscard]] oi::Guarded<FeatureWrapper> getFeatureById(
       const int& featureId) const;
-  [[nodiscard]] QList<QPointer<FeatureWrapper>> getFeaturesByName(
+  [[nodiscard]] QList<oi::Guarded<FeatureWrapper>> getFeaturesByName(
       const QString& name, const bool startWith = false) const;
-  [[nodiscard]] QList<QPointer<FeatureWrapper>> getFeaturesByGroup(
+  [[nodiscard]] QList<oi::Guarded<FeatureWrapper>> getFeaturesByGroup(
       const QString& group) const;
-  [[nodiscard]] QList<QPointer<FeatureWrapper>> getFeaturesByType(
+  [[nodiscard]] QList<oi::Guarded<FeatureWrapper>> getFeaturesByType(
       const FeatureTypes& type) const;
-  [[nodiscard]] QList<QPointer<Geometry>> getGeometriesByMConfig(
+  [[nodiscard]] QList<oi::Guarded<Geometry>> getGeometriesByMConfig(
       const MeasurementConfigKey& key) const;
 
   // access active features
-  [[nodiscard]] const QPointer<FeatureWrapper>& getActiveFeature() const;
-  [[nodiscard]] const QPointer<Station>& getActiveStation() const;
-  [[nodiscard]] const QPointer<CoordinateSystem>& getActiveCoordinateSystem()
+  [[nodiscard]] const oi::Guarded<FeatureWrapper>& getActiveFeature() const;
+  [[nodiscard]] const oi::Guarded<Station>& getActiveStation() const;
+  [[nodiscard]] const oi::Guarded<CoordinateSystem>& getActiveCoordinateSystem()
       const;
-  [[nodiscard]] const QPointer<CoordinateSystem>& getActiveBundleSystem() const;
-  [[nodiscard]] const QPointer<oi::BundleAdjustment>&
+  [[nodiscard]] const oi::Guarded<CoordinateSystem>& getActiveBundleSystem()
+      const;
+  [[nodiscard]] const oi::Guarded<oi::BundleAdjustment>&
   getActiveBundleAdjustment() const;
   [[nodiscard]] const QJsonObject getActiveBundleTemplate() const;
 
@@ -137,16 +138,17 @@ class OI_CORE_EXPORT OiJob : public QObject,
   // ######################
 
   // add features
-  bool addFeature(const QPointer<FeatureWrapper>& feature);
-  QList<QPointer<FeatureWrapper>> addFeatures(const FeatureAttributes& fAttr);
-  bool addFeatures(const QList<QPointer<FeatureWrapper>>& features,
+  bool addFeature(const oi::Guarded<FeatureWrapper>& feature);
+  QList<oi::Guarded<FeatureWrapper>> addFeatures(
+      const FeatureAttributes& fAttr);
+  bool addFeatures(const QList<oi::Guarded<FeatureWrapper>>& features,
                    bool overwrite = false);
 
   // remove features
   bool removeFeature(const int& featureId);
-  bool removeFeature(const QPointer<FeatureWrapper>& feature);
+  bool removeFeature(const oi::Guarded<FeatureWrapper>& feature);
   bool removeFeatures(const QSet<int>& featureIds);
-  bool removeFeatures(const QList<QPointer<FeatureWrapper>>& features);
+  bool removeFeatures(const QList<oi::Guarded<FeatureWrapper>>& features);
   void removeAll();
 
   // ##########################################
@@ -154,7 +156,7 @@ class OI_CORE_EXPORT OiJob : public QObject,
   // ##########################################
 
   // add or remove functions
-  void addFunction(const QPointer<Function>& function);
+  void addFunction(const oi::Guarded<Function>& function);
   void removeFunction(const int& functionIndex);
 
   // #############################################################
@@ -173,39 +175,39 @@ class OI_CORE_EXPORT OiJob : public QObject,
   //(Feature::addFunction) machinery - not a parallel path. Generic
   // across geometry type: this is the one primitive Haiku's replication
   // pass for other owner/accessor pairs reuses unchanged.
-  bool addOwnedSubGeometry(const QPointer<FeatureWrapper>& owner,
-                           const QPointer<FeatureWrapper>& subGeometry,
-                           const QPointer<Function>& producerFunction,
+  bool addOwnedSubGeometry(const oi::Guarded<FeatureWrapper>& owner,
+                           const oi::Guarded<FeatureWrapper>& subGeometry,
+                           const oi::Guarded<Function>& producerFunction,
                            const int& neededElementsIndex = 0);
 
   // add input elements to a feature's function
-  void addInputObservation(const QPointer<FeatureWrapper>& target,
+  void addInputObservation(const oi::Guarded<FeatureWrapper>& target,
                            const int& functionPosition,
                            const int& neededElementsIndex,
-                           const QPointer<Observation>& observation);
-  void addInputReading(const QPointer<FeatureWrapper>& target,
+                           const oi::Guarded<Observation>& observation);
+  void addInputReading(const oi::Guarded<FeatureWrapper>& target,
                        const int& functionPosition,
                        const int& neededElementsIndex,
-                       const QPointer<Reading>& reading);
-  void addInputFeature(const QPointer<FeatureWrapper>& target,
+                       const oi::Guarded<Reading>& reading);
+  void addInputFeature(const oi::Guarded<FeatureWrapper>& target,
                        const int& functionPosition,
                        const int& neededElementsIndex,
-                       const QPointer<FeatureWrapper>& feature);
-  void addInputPoint(const QPointer<FeatureWrapper>& target,
+                       const oi::Guarded<FeatureWrapper>& feature);
+  void addInputPoint(const oi::Guarded<FeatureWrapper>& target,
                      const int& functionPosition,
                      const int& neededElementsIndex,
-                     const QPointer<Point>& point);
+                     const oi::Guarded<Point>& point);
 
   // D12: stamp a tag on an existing point (hand-allocation, e.g.
   // dissecting a batch in the office) and feed any function that
   // declares a matching role - the same resolution addMeasurementResults
   // uses at acquisition time, so hand-tagging and field acquisition are
   // the same operation (domain-model.md S3).
-  void tagPoint(const QPointer<Point>& point, int featureId,
+  void tagPoint(const oi::Guarded<Point>& point, int featureId,
                 const QString& roleName);
 
   // remove input elements from a feature's function
-  void removeInputElement(const QPointer<FeatureWrapper>& target,
+  void removeInputElement(const oi::Guarded<FeatureWrapper>& target,
                           const int& functionPosition,
                           const int& neededElementsIndex, const int& elementId);
 
@@ -215,7 +217,7 @@ class OI_CORE_EXPORT OiJob : public QObject,
 
   // add new observations
   void addMeasurementResults(const int& geomId,
-                             const QList<QPointer<Reading>>& readings);
+                             const QList<oi::Guarded<Reading>>& readings);
 
   // remove existing observations
   void removeObservations(const int& featureId);
@@ -228,7 +230,7 @@ class OI_CORE_EXPORT OiJob : public QObject,
   // set use state of input elements
   // ###############################
 
-  void setShouldBeUsed(const QPointer<FeatureWrapper>& target,
+  void setShouldBeUsed(const oi::Guarded<FeatureWrapper>& target,
                        const int& functionIndex, const int& neededElementIndex,
                        const int& elementId, const bool& use,
                        const bool& recalc);
@@ -241,7 +243,7 @@ class OI_CORE_EXPORT OiJob : public QObject,
   // the callable entry point a UI would use for "define the filter for
   // this role". Same shape as setShouldBeUsed above: mutate, then
   // optionally force the recalc that makes it take effect.
-  void setPipeline(const QPointer<FeatureWrapper>& target,
+  void setPipeline(const oi::Guarded<FeatureWrapper>& target,
                    const int& functionIndex, const int& neededElementIndex,
                    const QList<PipelineStage>& stages, const bool& recalc);
 
@@ -251,15 +253,14 @@ class OI_CORE_EXPORT OiJob : public QObject,
   // position. Appends an eExcludeStage rather than replacing the
   // pipeline, so it composes with an already-declared
   // eResidualOutlierRejectionStage instead of clobbering it.
-  void excludeElement(const QPointer<FeatureWrapper>& target,
+  void excludeElement(const oi::Guarded<FeatureWrapper>& target,
                       const int& functionIndex, const int& neededElementIndex,
                       const int& elementId, const QString& reason,
                       const bool& recalc);
 
   void createTemplateFromJob();
 
- public slots:
-
+ public:
   // ###################################################################
   // report job issues and recalculation results (used to be signals; as
   // slots they can still be the target of connect() from other objects)
@@ -293,8 +294,7 @@ class OI_CORE_EXPORT OiJob : public QObject,
   void setExecutor(Executor* executor);
   [[nodiscard]] Executor* getExecutor() const;
 
- private slots:
-
+ private:
   // ###########################################################################
   // internal slots that are called when a feature changes (or is added/removed)
   // ###########################################################################
@@ -377,8 +377,8 @@ class OI_CORE_EXPORT OiJob : public QObject,
   // connect or disconnect features
   // ##############################
 
-  void attachFeature(const QPointer<FeatureWrapper>& feature);
-  void detachFeature(const QPointer<FeatureWrapper>& feature);
+  void attachFeature(const oi::Guarded<FeatureWrapper>& feature);
+  void detachFeature(const oi::Guarded<FeatureWrapper>& feature);
 
   // make this job the message sink of a function it owns (and take it back);
   // a function must never be left pointing at a job that is gone
@@ -437,13 +437,13 @@ class OI_CORE_EXPORT OiJob : public QObject,
 
   [[nodiscard]] QStringList createFeatureNames(const QString& name,
                                                const int& count) const;
-  [[nodiscard]] QPointer<FeatureWrapper> createFeatureWrapper(
+  [[nodiscard]] oi::Guarded<FeatureWrapper> createFeatureWrapper(
       const FeatureTypes& type) const;
-  bool checkAndSetUpNewFeature(const QPointer<FeatureWrapper>& feature,
+  bool checkAndSetUpNewFeature(const oi::Guarded<FeatureWrapper>& feature,
                                bool overwrite = false);
 
   [[nodiscard]] bool canRemoveFeature(
-      const QPointer<FeatureWrapper>& feature) const;
+      const oi::Guarded<FeatureWrapper>& feature) const;
 
   // D19 applied to functions (Stage 7h): "deleting the owner deletes its
   // owned sub-geometry" - called from removeFeature() before the feature
@@ -452,21 +452,21 @@ class OI_CORE_EXPORT OiJob : public QObject,
   // cleanup), and recurses through the ordinary removeFeature(int) path
   // rather than deleting Feature objects directly, so every owned child
   // gets the normal disconnect/container-removal/signal bookkeeping.
-  void removeOwnedSubGeometries(const QPointer<FeatureWrapper>& feature);
+  void removeOwnedSubGeometries(const oi::Guarded<FeatureWrapper>& feature);
 
-  bool checkCircleWarning(const QPointer<Feature>& activeFeature,
-                          const QPointer<Feature>& usedForActiveFeature);
+  bool checkCircleWarning(const oi::Guarded<Feature>& activeFeature,
+                          const oi::Guarded<Feature>& usedForActiveFeature);
 
   void setUpDependencies(const InputElement& element,
-                         const QPointer<Feature>& feature);
+                         const oi::Guarded<Feature>& feature);
   void resetDependencies(const InputElement& element,
-                         const QPointer<Feature>& feature);
+                         const oi::Guarded<Feature>& feature);
 
   // D12: feeds any function of the tagged feature that declares a
   // matching ePointElement role - the query behind tag resolution. Used
   // by both addMeasurementResults (acquisition) and tagPoint (hand
   // allocation), which is what makes them the same operation.
-  void resolvePointIntent(const QPointer<Point>& point,
+  void resolvePointIntent(const oi::Guarded<Point>& point,
                           const MeasurementIntent& intent);
 
   // ###################################################################################
@@ -474,7 +474,7 @@ class OI_CORE_EXPORT OiJob : public QObject,
   // ProjectExchanger)
   // ###################################################################################
 
-  void addFeaturesFromXml(const QList<QPointer<FeatureWrapper>>& features);
+  void addFeaturesFromXml(const QList<oi::Guarded<FeatureWrapper>>& features);
 
  private:
   // #########################
@@ -492,10 +492,10 @@ class OI_CORE_EXPORT OiJob : public QObject,
   // ################################
 
   // active features
-  QPointer<FeatureWrapper> activeFeature;
-  QPointer<Station> activeStation;
-  QPointer<CoordinateSystem> activeCoordinateSystem;
-  QPointer<CoordinateSystem> activeBundleSystem;
+  oi::Guarded<FeatureWrapper> activeFeature;
+  oi::Guarded<Station> activeStation;
+  oi::Guarded<CoordinateSystem> activeCoordinateSystem;
+  oi::Guarded<CoordinateSystem> activeBundleSystem;
 
   // active group
   QString activeGroup;
@@ -509,10 +509,10 @@ class OI_CORE_EXPORT OiJob : public QObject,
   int nextId{1};  // the next free id an element of this job could get
 
   void enableOrDisableObservations(const int& featureId, bool enable);
-  void enableOrDisableStationObservations(QPointer<Station> station,
+  void enableOrDisableStationObservations(oi::Guarded<Station> station,
                                           bool enable);
   void enableOrDisableGeometryObservations(const int& featureId, bool enable,
-                                           QPointer<Station> station);
+                                           oi::Guarded<Station> station);
 
   QString loadedVersion;
 };

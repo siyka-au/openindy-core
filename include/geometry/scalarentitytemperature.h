@@ -1,7 +1,6 @@
 #ifndef SCALARENTITYTEMPERATURE_H
 #define SCALARENTITYTEMPERATURE_H
 
-#include <QObject>
 #include <QtCore>
 
 #include "core_export.h"
@@ -14,15 +13,12 @@ namespace oi {
  */
 class OI_CORE_EXPORT ScalarEntityTemperature : public Geometry {
   friend struct codec::Access;  // the protobuf codec (see src/codec)
-  Q_OBJECT
 
  public:
-  explicit ScalarEntityTemperature(QObject* parent = nullptr);
-  explicit ScalarEntityTemperature(const double& temperature,
-                                   QObject* parent = nullptr);
+  explicit ScalarEntityTemperature();
+  explicit ScalarEntityTemperature(const double& temperature);
 
-  ScalarEntityTemperature(const ScalarEntityTemperature& copy,
-                          QObject* parent = nullptr);
+  ScalarEntityTemperature(const ScalarEntityTemperature& copy);
 
   ScalarEntityTemperature& operator=(const ScalarEntityTemperature& copy);
 

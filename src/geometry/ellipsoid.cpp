@@ -8,9 +8,8 @@ using namespace oi::math;
 
 /*!
  * \brief Ellipsoid::Ellipsoid
- * \param parent
  */
-Ellipsoid::Ellipsoid(QObject* parent) : Geometry(parent) {
+Ellipsoid::Ellipsoid() : Geometry() {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setEllipsoid(this);
@@ -25,11 +24,10 @@ Ellipsoid::Ellipsoid(QObject* parent) : Geometry(parent) {
  * \param b
  * \param c
  * \param minorAxis
- * \param parent
  */
 Ellipsoid::Ellipsoid(const Position& center, const Direction& majorAxis,
-                     const double& a, const double& b, QObject* parent)
-    : Geometry(parent) {
+                     const double& a, const double& b)
+    : Geometry() {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setEllipsoid(this);
@@ -41,10 +39,8 @@ Ellipsoid::Ellipsoid(const Position& center, const Direction& majorAxis,
 /*!
  * \brief Ellipsoid::Ellipsoid
  * \param copy
- * \param parent
  */
-Ellipsoid::Ellipsoid(const Ellipsoid& copy, QObject* parent)
-    : Geometry(copy, parent) {
+Ellipsoid::Ellipsoid(const Ellipsoid& copy) : Geometry(copy) {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setEllipsoid(this);

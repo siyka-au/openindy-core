@@ -6,7 +6,7 @@
 
 using namespace oi;
 
-SensorInterface::SensorInterface(QObject* parent) : QObject(parent) {}
+SensorInterface::SensorInterface() {}
 
 void SensorInterface::setSensorSink(SensorSink* sink) {
   const std::scoped_lock lock(this->sinkMutex);
@@ -44,7 +44,7 @@ void SensorInterface::asyncSensorResponse(const QJsonObject& response,
 }
 
 void SensorInterface::asyncMeasurementResult(
-    const int& geomId, const QList<QPointer<Reading>>& measurements,
+    const int& geomId, const QList<oi::Guarded<Reading>>& measurements,
     const SensorAction sensorAction) {
   const std::scoped_lock lock(this->sinkMutex);
   if (this->sink != nullptr) {
@@ -68,17 +68,15 @@ void SensorInterface::asyncSensorNotification(const QJsonObject& response) {
 
 /*!
  * \brief Sensor::Sensor
- * \param parent
  */
-Sensor::Sensor(QObject* parent) : SensorInterface(parent) {}
+Sensor::Sensor() : SensorInterface() {}
 
 /*!
  * \brief Sensor::Sensor
  * \param copy
- * \param parent
  */
-Sensor::Sensor(const Sensor& copy, QObject* parent)
-    : SensorInterface(parent),
+Sensor::Sensor(const Sensor& copy)
+    : SensorInterface(),
       acquisitionResultShape(copy.getAcquisitionResultShape()),
       defaultAccuracy(copy.getDefaultAccuracy()),
       doubleParameters(copy.getDoubleParameter()),
@@ -156,7 +154,7 @@ void Sensor::setMeasurementConfig(const MeasurementConfig& mConfig) {
  * \brief Sensor::getLastReading
  * \return
  */
-const std::pair<ReadingTypes, QPointer<Reading>>& Sensor::getLastReading()
+const std::pair<ReadingTypes, oi::Guarded<Reading>>& Sensor::getLastReading()
     const {
   return this->lastReading;
 }
@@ -303,7 +301,7 @@ bool Sensor::abortAction() { return false; }
  * \return
  */
 bool Sensor::connectSensor() {
-  emit this->sensorMessage(
+  this->sensorMessage(
       QString("Sensor not implemented correctly: connect method missing"),
       MessageTypes::eCriticalMessage, MessageDestinations::eMessageBoxMessage);
   return false;
@@ -314,7 +312,7 @@ bool Sensor::connectSensor() {
  * \return
  */
 bool Sensor::disconnectSensor() {
-  emit this->sensorMessage(
+  this->sensorMessage(
       QString("Sensor not implemented correctly: disconnect method missing"),
       MessageTypes::eCriticalMessage, MessageDestinations::eMessageBoxMessage);
   return false;
@@ -325,11 +323,12 @@ bool Sensor::disconnectSensor() {
  * \param mConfig
  * \return
  */
-QList<QPointer<Reading>> Sensor::measure(const MeasurementConfig& /*mConfig*/) {
-  emit this->sensorMessage(
+QList<oi::Guarded<Reading>> Sensor::measure(
+    const MeasurementConfig& /*mConfig*/) {
+  this->sensorMessage(
       QString("Sensor not implemented correctly: measure method missing"),
       MessageTypes::eCriticalMessage, MessageDestinations::eMessageBoxMessage);
-  return QList<QPointer<Reading>>();
+  return QList<oi::Guarded<Reading>>();
 }
 
 /*!
@@ -338,7 +337,7 @@ QList<QPointer<Reading>> Sensor::measure(const MeasurementConfig& /*mConfig*/) {
  * \return
  */
 QVariantMap Sensor::readingStream(const ReadingTypes& /*streamFormat*/) {
-  emit this->sensorMessage(
+  this->sensorMessage(
       QString(
           "Sensor not implemented correctly: reading stream method missing"),
       MessageTypes::eCriticalMessage, MessageDestinations::eMessageBoxMessage);
@@ -350,7 +349,7 @@ QVariantMap Sensor::readingStream(const ReadingTypes& /*streamFormat*/) {
  * \return
  */
 bool Sensor::getConnectionState() {
-  emit this->sensorMessage(
+  this->sensorMessage(
       QString(
           "Sensor not implemented correctly: connection state method missing"),
       MessageTypes::eCriticalMessage, MessageDestinations::eMessageBoxMessage);
@@ -362,7 +361,7 @@ bool Sensor::getConnectionState() {
  * \return
  */
 bool Sensor::getIsReadyForMeasurement() {
-  emit this->sensorMessage(
+  this->sensorMessage(
       QString("Sensor not implemented correctly: is ready method missing"),
       MessageTypes::eCriticalMessage, MessageDestinations::eMessageBoxMessage);
   return false;
@@ -373,7 +372,7 @@ bool Sensor::getIsReadyForMeasurement() {
  * \return
  */
 bool Sensor::getIsBusy() {
-  emit this->sensorMessage(
+  this->sensorMessage(
       QString("Sensor not implemented correctly: is busy method missing"),
       MessageTypes::eCriticalMessage, MessageDestinations::eMessageBoxMessage);
   return false;
@@ -384,7 +383,7 @@ bool Sensor::getIsBusy() {
  * \return
  */
 QMap<QString, QString> Sensor::getSensorStatus() {
-  emit this->sensorMessage(
+  this->sensorMessage(
       QString("Sensor not implemented correctly: sensor status method missing"),
       MessageTypes::eCriticalMessage, MessageDestinations::eMessageBoxMessage);
   return QMap<QString, QString>();

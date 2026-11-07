@@ -10,11 +10,8 @@ namespace oi {
  * \brief The TotalStation class
  */
 class OI_CORE_EXPORT TotalStation : public Sensor {
-  Q_OBJECT
-  Q_DISABLE_COPY_MOVE(TotalStation)
-
  public:
-  explicit TotalStation(QObject* parent = nullptr) : Sensor(parent) {}
+  explicit TotalStation() : Sensor() {}
 
   ~TotalStation() override {}
 
@@ -53,7 +50,7 @@ class OI_CORE_EXPORT TotalStation : public Sensor {
    */
   virtual bool move(const double& /*azimuth*/, const double& /*zenith*/,
                     const double& /*distance*/, const bool& /*isRelative*/) {
-    emit this->sensorMessage(
+    this->sensorMessage(
         QString("Total Station not implemented correctly: move method missing"),
         MessageTypes::eCriticalMessage,
         MessageDestinations::eMessageBoxMessage);
@@ -69,7 +66,7 @@ class OI_CORE_EXPORT TotalStation : public Sensor {
    */
   virtual bool move(const double& /*x*/, const double& /*y*/,
                     const double& /*z*/) {
-    emit this->sensorMessage(
+    this->sensorMessage(
         QString("Total Station not implemented correctly: move method missing"),
         MessageTypes::eCriticalMessage,
         MessageDestinations::eMessageBoxMessage);
@@ -81,10 +78,10 @@ class OI_CORE_EXPORT TotalStation : public Sensor {
    * \return
    */
   virtual bool toggleSightOrientation() {
-    emit this->sensorMessage(QString("Total Station not implemented correctly: "
-                                     "toggle sight method missing"),
-                             MessageTypes::eCriticalMessage,
-                             MessageDestinations::eMessageBoxMessage);
+    this->sensorMessage(QString("Total Station not implemented correctly: "
+                                "toggle sight method missing"),
+                        MessageTypes::eCriticalMessage,
+                        MessageDestinations::eMessageBoxMessage);
     return false;
   }
 };

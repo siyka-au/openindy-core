@@ -119,7 +119,7 @@ class SensorControl::Relay final : public StationObserver {
     });
   }
   void onMeasurementFinished(
-      int geomId, const QList<QPointer<Reading>>& readings) override {
+      int geomId, const QList<oi::Guarded<Reading>>& readings) override {
     this->delivery->post([geomId, readings](StationObserver& o) {
       o.onMeasurementFinished(geomId, readings);
     });
@@ -191,7 +191,7 @@ Sensor SensorControl::getSensor() { return this->worker->getSensor(); }
  * Sets the current sensor to the given one
  * \param sensor
  */
-void SensorControl::setSensor(const QPointer<Sensor>& sensor) {
+void SensorControl::setSensor(const oi::Guarded<Sensor>& sensor) {
   // check sensor
   if (sensor.isNull()) {
     return;
@@ -214,13 +214,13 @@ void SensorControl::setSensor(const QPointer<Sensor>& sensor) {
  * the sensor worker
  * \return
  */
-QPointer<Sensor> SensorControl::takeSensor() {
+oi::Guarded<Sensor> SensorControl::takeSensor() {
   // check old sensor and add it to the list of used sensors
   if (this->sensorValid) {
     this->usedSensors.append(this->getSensor());
   }
 
-  QPointer<Sensor> sensor = this->worker->takeSensor();
+  oi::Guarded<Sensor> sensor = this->worker->takeSensor();
 
   // set sensor invalid
   this->sensorValid = false;

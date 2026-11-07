@@ -11,11 +11,8 @@ namespace oi {
  * handles special function e. g. configured functions
  */
 class OI_CORE_EXPORT SpecialFunction : public Function {
-  Q_OBJECT
-  Q_DISABLE_COPY_MOVE(SpecialFunction)
-
  public:
-  explicit SpecialFunction(QObject* parent = nullptr) : Function(parent) {}
+  explicit SpecialFunction() : Function() {}
 
   ~SpecialFunction() override {}
 };

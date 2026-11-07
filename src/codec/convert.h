@@ -6,12 +6,12 @@
 // once it exists). This header is internal to the OpenIndyCodec library and
 // its tests.
 
-#include <QPointer>
 #include <optional>
 
 #include "coordinatesystem.h"
 #include "geometry.h"
 #include "group.h"
+#include "guarded.h"
 #include "measurementconfig.h"
 #include "observation.h"
 #include "openindy/project.pb.h"
@@ -57,28 +57,28 @@ namespace oi::codec {
 // ---------------------------------------------------------------------------
 
 [[nodiscard]] openindy::v1::Reading toProto(const Reading& reading);
-[[nodiscard]] QPointer<Reading> createReading(
+[[nodiscard]] oi::Guarded<Reading> createReading(
     const openindy::v1::Reading& message);
 
 [[nodiscard]] openindy::v1::Observation toProto(const Observation& observation);
 /*! Creates the observation and the reading it owns, and points the reading
  *  back at the observation. */
-[[nodiscard]] QPointer<Observation> createObservation(
+[[nodiscard]] oi::Guarded<Observation> createObservation(
     const openindy::v1::Observation& message);
 
 [[nodiscard]] openindy::v1::TrafoParam toProto(const TrafoParam& trafoParam);
-[[nodiscard]] QPointer<TrafoParam> createTrafoParam(
+[[nodiscard]] oi::Guarded<TrafoParam> createTrafoParam(
     const openindy::v1::TrafoParam& message);
 
 [[nodiscard]] openindy::v1::CoordinateSystem toProto(
     const CoordinateSystem& system);
-[[nodiscard]] QPointer<CoordinateSystem> createCoordinateSystem(
+[[nodiscard]] oi::Guarded<CoordinateSystem> createCoordinateSystem(
     const openindy::v1::CoordinateSystem& message);
 
 [[nodiscard]] openindy::v1::Station toProto(const Station& station);
 /*! The new station comes with its own default position and station system;
  *  the linking pass replaces them with the saved ones. */
-[[nodiscard]] QPointer<Station> createStation(
+[[nodiscard]] oi::Guarded<Station> createStation(
     const openindy::v1::Station& message);
 
 /*! Writes any of the 19 concrete geometry types (not an Observation, which
@@ -86,13 +86,14 @@ namespace oi::codec {
 [[nodiscard]] openindy::v1::Geometry toProto(const Geometry& geometry);
 /*! Null if the message has no shape. The geometry's references (observations,
  *  nominal system, realised nominal, owner) are left for the linking pass. */
-[[nodiscard]] QPointer<Geometry> createGeometry(
+[[nodiscard]] oi::Guarded<Geometry> createGeometry(
     const openindy::v1::Geometry& message);
 
 [[nodiscard]] openindy::v1::Group toProto(const Group& group);
 /*! A plain Group or a PointGroup, as the message says. Members are left for
  *  the linking pass. */
-[[nodiscard]] QPointer<Group> createGroup(const openindy::v1::Group& message);
+[[nodiscard]] oi::Guarded<Group> createGroup(
+    const openindy::v1::Group& message);
 
 /*! A function's identity and the user-facing state that makes a project
  *  reproducible: inputs, pipeline stages, parameters. Results are not stored;

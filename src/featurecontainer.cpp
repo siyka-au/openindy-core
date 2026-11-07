@@ -18,7 +18,7 @@ FeatureContainer::~FeatureContainer() {}
  * \brief FeatureContainer::getFeaturesList
  * \return
  */
-const QList<QPointer<FeatureWrapper> >& FeatureContainer::getFeaturesList()
+const QList<oi::Guarded<FeatureWrapper> >& FeatureContainer::getFeaturesList()
     const {
   return this->featuresList;
 }
@@ -27,7 +27,7 @@ const QList<QPointer<FeatureWrapper> >& FeatureContainer::getFeaturesList()
  * \brief FeatureContainer::getCoordinateSystemsList
  * \return
  */
-const QList<QPointer<CoordinateSystem> >&
+const QList<oi::Guarded<CoordinateSystem> >&
 FeatureContainer::getCoordinateSystemsList() const {
   return this->coordSystems;
 }
@@ -36,10 +36,10 @@ FeatureContainer::getCoordinateSystemsList() const {
  * \brief FeatureContainer::getStationSystemsList
  * \return
  */
-QList<QPointer<CoordinateSystem> > FeatureContainer::getStationSystemsList()
+QList<oi::Guarded<CoordinateSystem> > FeatureContainer::getStationSystemsList()
     const {
-  QList<QPointer<CoordinateSystem> > stationSystems;
-  for (const QPointer<Station>& station : oi::snapshot(this->stationsList)) {
+  QList<oi::Guarded<CoordinateSystem> > stationSystems;
+  for (const oi::Guarded<Station>& station : oi::snapshot(this->stationsList)) {
     if (!station.isNull() && !station->getCoordinateSystem().isNull()) {
       stationSystems.append(station->getCoordinateSystem());
     }
@@ -52,9 +52,9 @@ QList<QPointer<CoordinateSystem> > FeatureContainer::getStationSystemsList()
  * \return
  */
 /* // TODO OI-982 remove
-QList<QPointer<CoordinateSystem> > FeatureContainer::getBundleSystemList()
-const{ QList<QPointer<CoordinateSystem> > bundleSystems; for (const
-QPointer<CoordinateSystem> &system : oi::snapshot(this->coordSystems)){
+QList<oi::Guarded<CoordinateSystem> > FeatureContainer::getBundleSystemList()
+const{ QList<oi::Guarded<CoordinateSystem> > bundleSystems; for (const
+oi::Guarded<CoordinateSystem> &system : oi::snapshot(this->coordSystems)){
 if(!system.isNull() && system->getIsBundleSystem()){
 bundleSystems.append(system);
         }
@@ -66,7 +66,7 @@ bundleSystems.append(system);
  * \brief FeatureContainer::getStationsList
  * \return
  */
-const QList<QPointer<Station> >& FeatureContainer::getStationsList() const {
+const QList<oi::Guarded<Station> >& FeatureContainer::getStationsList() const {
   return this->stationsList;
 }
 
@@ -74,7 +74,7 @@ const QList<QPointer<Station> >& FeatureContainer::getStationsList() const {
  * \brief FeatureContainer::getTransformationParametersList
  * \return
  */
-const QList<QPointer<TrafoParam> >&
+const QList<oi::Guarded<TrafoParam> >&
 FeatureContainer::getTransformationParametersList() const {
   return this->trafoParamsList;
 }
@@ -83,7 +83,7 @@ FeatureContainer::getTransformationParametersList() const {
  * \brief FeatureContainer::getGeometriesList
  * \return
  */
-const QList<QPointer<FeatureWrapper> >& FeatureContainer::getGeometriesList()
+const QList<oi::Guarded<FeatureWrapper> >& FeatureContainer::getGeometriesList()
     const {
   return this->geometriesList;
 }
@@ -126,10 +126,10 @@ const QList<MeasurementConfigKey>& FeatureContainer::getUsedMeasurementConfigs()
  * \param featureId
  * \return
  */
-QPointer<FeatureWrapper> FeatureContainer::getFeatureById(
+oi::Guarded<FeatureWrapper> FeatureContainer::getFeatureById(
     const int& featureId) const {
   return this->featuresIdMap.value(featureId,
-                                   QPointer<FeatureWrapper>(nullptr));
+                                   oi::Guarded<FeatureWrapper>(nullptr));
 }
 
 /*!
@@ -138,11 +138,11 @@ QPointer<FeatureWrapper> FeatureContainer::getFeatureById(
  * \param startWith use name as "start with" pattern
  * \return
  */
-QList<QPointer<FeatureWrapper> > FeatureContainer::getFeaturesByName(
+QList<oi::Guarded<FeatureWrapper> > FeatureContainer::getFeaturesByName(
     const QString& name, const bool startWith) const {
   if (startWith) {
-    QList<QPointer<FeatureWrapper> > result;
-    for (const QPointer<FeatureWrapper>& feature :
+    QList<oi::Guarded<FeatureWrapper> > result;
+    for (const oi::Guarded<FeatureWrapper>& feature :
          oi::snapshot(this->featuresList)) {
       if (!feature.isNull() && !feature->getFeature().isNull() &&
           feature->getFeature()->getFeatureName().startsWith(
@@ -161,7 +161,7 @@ QList<QPointer<FeatureWrapper> > FeatureContainer::getFeaturesByName(
  * \param group
  * \return
  */
-QList<QPointer<FeatureWrapper> > FeatureContainer::getFeaturesByGroup(
+QList<oi::Guarded<FeatureWrapper> > FeatureContainer::getFeaturesByGroup(
     const QString& group) const {
   return this->featuresGroupMap.values(group);
 }
@@ -171,7 +171,7 @@ QList<QPointer<FeatureWrapper> > FeatureContainer::getFeaturesByGroup(
  * \param type
  * \return
  */
-QList<QPointer<FeatureWrapper> > FeatureContainer::getFeaturesByType(
+QList<oi::Guarded<FeatureWrapper> > FeatureContainer::getFeaturesByType(
     const FeatureTypes& type) const {
   return this->featuresTypeMap.values(type);
 }
@@ -181,7 +181,7 @@ QList<QPointer<FeatureWrapper> > FeatureContainer::getFeaturesByType(
  * \param mConfig
  * \return
  */
-QList<QPointer<Geometry> > FeatureContainer::getGeometriesByMConfig(
+QList<oi::Guarded<Geometry> > FeatureContainer::getGeometriesByMConfig(
     const MeasurementConfigKey& key) const {
   return this->geometriesMConfigMap.values(key);
 }
@@ -225,7 +225,7 @@ int FeatureContainer::getFeatureCount(const QString& group) const {
  * \param feature
  * \return
  */
-bool FeatureContainer::addFeature(const QPointer<FeatureWrapper>& feature) {
+bool FeatureContainer::addFeature(const oi::Guarded<FeatureWrapper>& feature) {
   // if the feature is not valid
   if (feature.isNull() || feature->getFeature().isNull()) {
     return false;
@@ -253,7 +253,7 @@ bool FeatureContainer::addFeature(const QPointer<FeatureWrapper>& feature) {
     case FeatureTypes::eStationFeature:
       this->stationsList.append(feature->getStation());
       if (!feature->getStation()->getCoordinateSystem().isNull()) {
-        QPointer<FeatureWrapper> stationSystem = new FeatureWrapper();
+        oi::Guarded<FeatureWrapper> stationSystem = new FeatureWrapper();
         stationSystem->setCoordinateSystem(
             feature->getStation()->getCoordinateSystem());
         this->featuresIdMap.insert(
@@ -307,8 +307,8 @@ bool FeatureContainer::removeFeature(const int& featureId) {
   }
 
   // get the feature pointer
-  QPointer<FeatureWrapper> feature =
-      this->featuresIdMap.value(featureId, QPointer<FeatureWrapper>());
+  oi::Guarded<FeatureWrapper> feature =
+      this->featuresIdMap.value(featureId, oi::Guarded<FeatureWrapper>());
 
   // check if the feature is valid
   if (feature.isNull() || feature->getFeature().isNull()) {
@@ -386,7 +386,7 @@ void FeatureContainer::checkAndClean(const int& featureId, const QString& name,
   }
 
   // get and check feature by id
-  QPointer<FeatureWrapper> feature = this->featuresIdMap.value(featureId);
+  oi::Guarded<FeatureWrapper> feature = this->featuresIdMap.value(featureId);
   if (feature.isNull() || feature->getFeature().isNull()) {
     return;
   }
@@ -447,7 +447,7 @@ void FeatureContainer::checkAndClean(const int& featureId, const QString& name,
  */
 void FeatureContainer::removeAll() {
   // delete all features
-  for (const QPointer<FeatureWrapper>& feature :
+  for (const oi::Guarded<FeatureWrapper>& feature :
        oi::snapshot(this->featuresList)) {
     if (!feature.isNull()) {
       if (feature->getFeature().isNull()) {
@@ -489,8 +489,8 @@ bool FeatureContainer::featureNameChanged(const int& featureId,
   }
 
   // get the feature pointer
-  QPointer<FeatureWrapper> feature =
-      this->featuresIdMap.value(featureId, QPointer<FeatureWrapper>());
+  oi::Guarded<FeatureWrapper> feature =
+      this->featuresIdMap.value(featureId, oi::Guarded<FeatureWrapper>());
 
   // check if the feature is valid
   if (feature.isNull() || feature->getFeature().isNull()) {
@@ -527,8 +527,8 @@ bool FeatureContainer::featureGroupChanged(const int& featureId,
   }
 
   // get the feature pointer
-  QPointer<FeatureWrapper> feature =
-      this->featuresIdMap.value(featureId, QPointer<FeatureWrapper>());
+  oi::Guarded<FeatureWrapper> feature =
+      this->featuresIdMap.value(featureId, oi::Guarded<FeatureWrapper>());
 
   // check if the feature is valid
   if (feature.isNull() || feature->getFeature().isNull()) {
@@ -589,14 +589,14 @@ bool FeatureContainer::geometryMeasurementConfigChanged(
   }
 
   // get the feature pointer
-  QPointer<FeatureWrapper> feature =
-      this->featuresIdMap.value(featureId, QPointer<FeatureWrapper>());
+  oi::Guarded<FeatureWrapper> feature =
+      this->featuresIdMap.value(featureId, oi::Guarded<FeatureWrapper>());
 
   // check if the feature is valid and is a geometry
   if (feature.isNull() || feature->getGeometry().isNull()) {
     return false;
   }
-  QPointer<Geometry> geometry = feature->getGeometry();
+  oi::Guarded<Geometry> geometry = feature->getGeometry();
 
   // if both, old and new mConfig, are empty nothing should happen
   if (oldMConfig.compare("") == 0 &&

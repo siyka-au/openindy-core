@@ -12,19 +12,15 @@ using namespace oi;
 
 /*!
  * \brief Feature::Feature
- * \param parent
  */
-Feature::Feature(QObject* parent) : Element(parent) {
-  this->selfFeature = new FeatureWrapper();
-}
+Feature::Feature() : Element() { this->selfFeature = new FeatureWrapper(); }
 
 /*!
  * \brief Feature::Feature
  * \param copy
- * \param parent
  */
-Feature::Feature(const Feature& copy, QObject* parent)
-    : Element(copy, parent),
+Feature::Feature(const Feature& copy)
+    : Element(copy),
       comment(copy.comment),
       group(copy.group),
       isActiveFeature(copy.isActiveFeature),
@@ -69,7 +65,7 @@ Feature& Feature::operator=(const Feature& copy) {
 Feature::~Feature() {
   // check and update features which need this feature to recalc
   if (this->usedForList.size() > 0 && !this->selfFeature.isNull()) {
-    for (const QPointer<FeatureWrapper>& feature :
+    for (const oi::Guarded<FeatureWrapper>& feature :
          oi::snapshot(this->usedForList)) {
       // check feature
       if (feature.isNull() || feature->getFeature().isNull()) {
@@ -77,7 +73,7 @@ Feature::~Feature() {
       }
 
       // delete the feature from all functions
-      for (const QPointer<Function> function :
+      for (const oi::Guarded<Function> function :
            oi::snapshot(feature->getFeature()->getFunctions())) {
         if (!function.isNull()) {
           function->removeInputElement(this->id);
@@ -91,7 +87,7 @@ Feature::~Feature() {
 
   // check and update features which were needed to recalc this feature
   if (this->previouslyNeededList.size() > 0) {
-    for (const QPointer<FeatureWrapper>& feature :
+    for (const oi::Guarded<FeatureWrapper>& feature :
          oi::snapshot(this->previouslyNeededList)) {
       // remove this feature from usedFor list
       if (!this->selfFeature.isNull() && !feature.isNull() &&
@@ -105,7 +101,7 @@ Feature::~Feature() {
   if (this->producerFunction.has_value() && !this->producerFunction->isNull()) {
     delete this->producerFunction->data();
   }
-  for (const QPointer<Function>& function :
+  for (const oi::Guarded<Function>& function :
        oi::snapshot(this->transformFunctions)) {
     if (!function.isNull()) {
       delete function.data();
@@ -129,7 +125,7 @@ Feature::~Feature() {
  * \brief Feature::getFeatureWrapper
  * \return
  */
-const QPointer<FeatureWrapper>& Feature::getFeatureWrapper() const {
+const oi::Guarded<FeatureWrapper>& Feature::getFeatureWrapper() const {
   return this->selfFeature;
 }
 
@@ -159,7 +155,7 @@ bool Feature::rejectIfNotEditable(const QString& attemptedEdit) const {
   }
 
   if (!this->job.isNull()) {
-    emit this->job->sendMessage(
+    this->job->sendMessage(
         QString("Cannot edit %1 of \"%2\": it is owned by %3 and is read-only.")
             .arg(attemptedEdit, this->name, *owner),
         MessageTypes::eErrorMessage, MessageDestinations::eMessageBoxMessage);
@@ -278,8 +274,8 @@ void Feature::setIsSolved(const bool& isSolved) {
  * the split directly to every caller.
  * \return
  */
-QList<QPointer<Function> > Feature::getFunctions() const {
-  QList<QPointer<Function> > functions;
+QList<oi::Guarded<Function> > Feature::getFunctions() const {
+  QList<oi::Guarded<Function> > functions;
   if (this->producerFunction.has_value() && !this->producerFunction->isNull()) {
     functions.append(this->producerFunction.value());
   }
@@ -291,7 +287,8 @@ QList<QPointer<Function> > Feature::getFunctions() const {
  * \brief Feature::getProducerFunction
  * \return
  */
-const std::optional<QPointer<Function> >& Feature::getProducerFunction() const {
+const std::optional<oi::Guarded<Function> >& Feature::getProducerFunction()
+    const {
   return this->producerFunction;
 }
 
@@ -299,7 +296,7 @@ const std::optional<QPointer<Function> >& Feature::getProducerFunction() const {
  * \brief Feature::getTransformFunctions
  * \return
  */
-const QList<QPointer<Function> >& Feature::getTransformFunctions() const {
+const QList<oi::Guarded<Function> >& Feature::getTransformFunctions() const {
   return this->transformFunctions;
 }
 
@@ -325,7 +322,7 @@ const QList<QPointer<Function> >& Feature::getTransformFunctions() const {
  * See domain-model.md S7 "Dispatch boundary" and D21's left-open call.
  * \param function
  */
-void Feature::addFunction(const QPointer<Function>& function) {
+void Feature::addFunction(const oi::Guarded<Function>& function) {
   if (function.isNull() || this->selfFeature.isNull()) {
     return;
   }
@@ -354,8 +351,8 @@ void Feature::addFunction(const QPointer<Function>& function) {
                   "Function \"%1\" cannot be attached to \"%2\": it implements "
                   "neither Producer<T> nor Transform<T> for this feature type")
                   .arg(function->getMetaData().name, this->getFeatureName());
-    emit function->sendMessage(reason, MessageTypes::eCriticalMessage,
-                               MessageDestinations::eMessageBoxMessage);
+    function->sendMessage(reason, MessageTypes::eCriticalMessage,
+                          MessageDestinations::eMessageBoxMessage);
     return;
   }
 
@@ -431,7 +428,7 @@ void Feature::setActiveFeatureState(const bool& isActiveFeature) {
  * \brief Feature::getUsedFor
  * \return
  */
-const QList<QPointer<FeatureWrapper> >& Feature::getUsedFor() const {
+const QList<oi::Guarded<FeatureWrapper> >& Feature::getUsedFor() const {
   return this->usedForList;
 }
 
@@ -440,7 +437,7 @@ const QList<QPointer<FeatureWrapper> >& Feature::getUsedFor() const {
  * \param feature
  * \return
  */
-bool Feature::addUsedFor(const QPointer<FeatureWrapper>& feature) {
+bool Feature::addUsedFor(const oi::Guarded<FeatureWrapper>& feature) {
   // check feature
   if (feature.isNull() || feature->getFeature().isNull()) {
     return false;
@@ -453,7 +450,7 @@ bool Feature::addUsedFor(const QPointer<FeatureWrapper>& feature) {
 
   // check if feature is in same job
   if (!this->job.isNull()) {
-    QPointer<FeatureWrapper> jobFeature =
+    oi::Guarded<FeatureWrapper> jobFeature =
         this->job->getFeatureById(feature->getFeature()->getId());
     if (jobFeature.isNull() || jobFeature->getFeature().isNull() ||
         feature->getFeature() != jobFeature->getFeature()) {
@@ -477,7 +474,7 @@ bool Feature::addUsedFor(const QPointer<FeatureWrapper>& feature) {
  * \param feature
  * \return
  */
-bool Feature::removeUsedFor(const QPointer<FeatureWrapper>& feature) {
+bool Feature::removeUsedFor(const oi::Guarded<FeatureWrapper>& feature) {
   // check feature
   if (feature.isNull() || feature->getFeature().isNull()) {
     return false;
@@ -490,7 +487,7 @@ bool Feature::removeUsedFor(const QPointer<FeatureWrapper>& feature) {
 
   // check if feature is in same job
   if (!this->job.isNull()) {
-    QPointer<FeatureWrapper> jobFeature =
+    oi::Guarded<FeatureWrapper> jobFeature =
         this->job->getFeatureById(feature->getFeature()->getId());
     if (jobFeature.isNull() || jobFeature->getFeature().isNull() ||
         feature->getFeature() != jobFeature->getFeature()) {
@@ -513,7 +510,8 @@ bool Feature::removeUsedFor(const QPointer<FeatureWrapper>& feature) {
  * \brief Feature::getPreviouslyNeeded
  * \return
  */
-const QList<QPointer<FeatureWrapper> >& Feature::getPreviouslyNeeded() const {
+const QList<oi::Guarded<FeatureWrapper> >& Feature::getPreviouslyNeeded()
+    const {
   return this->previouslyNeededList;
 }
 
@@ -522,7 +520,7 @@ const QList<QPointer<FeatureWrapper> >& Feature::getPreviouslyNeeded() const {
  * \param feature
  * \return
  */
-bool Feature::addPreviouslyNeeded(const QPointer<FeatureWrapper>& feature) {
+bool Feature::addPreviouslyNeeded(const oi::Guarded<FeatureWrapper>& feature) {
   // check feature
   if (feature.isNull() || feature->getFeature().isNull()) {
     return false;
@@ -535,7 +533,7 @@ bool Feature::addPreviouslyNeeded(const QPointer<FeatureWrapper>& feature) {
 
   // check if feature is in same job
   if (!this->job.isNull()) {
-    QPointer<FeatureWrapper> jobFeature =
+    oi::Guarded<FeatureWrapper> jobFeature =
         this->job->getFeatureById(feature->getFeature()->getId());
     if (jobFeature.isNull() || jobFeature->getFeature().isNull() ||
         feature->getFeature() != jobFeature->getFeature()) {
@@ -561,7 +559,8 @@ bool Feature::addPreviouslyNeeded(const QPointer<FeatureWrapper>& feature) {
  * \param feature
  * \return
  */
-bool Feature::removePreviouslyNeeded(const QPointer<FeatureWrapper>& feature) {
+bool Feature::removePreviouslyNeeded(
+    const oi::Guarded<FeatureWrapper>& feature) {
   // check feature
   if (feature.isNull() || feature->getFeature().isNull()) {
     return false;
@@ -574,7 +573,7 @@ bool Feature::removePreviouslyNeeded(const QPointer<FeatureWrapper>& feature) {
 
   // check if feature is in same job
   if (!this->job.isNull()) {
-    QPointer<FeatureWrapper> jobFeature =
+    oi::Guarded<FeatureWrapper> jobFeature =
         this->job->getFeatureById(feature->getFeature()->getId());
     if (jobFeature.isNull() || jobFeature->getFeature().isNull() ||
         feature->getFeature() != jobFeature->getFeature()) {
@@ -622,7 +621,7 @@ void Feature::recalc() {
         this->producerFunction.value()->execChecked(this->selfFeature);
 
     if (result.has_value()) {
-      for (const QPointer<Function>& transform :
+      for (const oi::Guarded<Function>& transform :
            oi::snapshot(this->transformFunctions)) {
         if (transform.isNull()) {
           result = std::unexpected(
@@ -687,9 +686,9 @@ QString Feature::getDisplayIsUpdated() const {
  */
 QString Feature::getDisplayFunctions() const {
   QString display = "";
-  const QList<QPointer<Function> > functions = this->getFunctions();
+  const QList<oi::Guarded<Function> > functions = this->getFunctions();
   for (int i = 0; i < functions.size(); i++) {
-    QPointer<Function> function = functions.at(i);
+    oi::Guarded<Function> function = functions.at(i);
     if (!function.isNull()) {
       display +=
           function->getMetaData().name + (i < functions.size() - 1 ? ", " : "");
@@ -705,7 +704,7 @@ QString Feature::getDisplayFunctions() const {
 QString Feature::getDisplayUsedFor() const {
   QString display = "";
   for (int i = 0; i < this->usedForList.size(); i++) {
-    QPointer<FeatureWrapper> feature = this->usedForList.at(i);
+    oi::Guarded<FeatureWrapper> feature = this->usedForList.at(i);
     if (!feature.isNull() && !feature->getFeature().isNull()) {
       display += feature->getFeature()->getFeatureName() +
                  (i < this->usedForList.size() - 1 ? ", " : "");
@@ -721,7 +720,7 @@ QString Feature::getDisplayUsedFor() const {
 QString Feature::getDisplayPreviouslyNeeded() const {
   QString display = "";
   for (int i = 0; i < this->previouslyNeededList.size(); i++) {
-    QPointer<FeatureWrapper> feature = this->previouslyNeededList.at(i);
+    oi::Guarded<FeatureWrapper> feature = this->previouslyNeededList.at(i);
     if (!feature.isNull() && !feature->getFeature().isNull()) {
       display += feature->getFeature()->getFeatureName() +
                  (i < this->previouslyNeededList.size() - 1 ? ", " : "");
@@ -1281,7 +1280,7 @@ void Feature::setUpFeatureId() {
   if (this->producerFunction.has_value() && !this->producerFunction->isNull()) {
     this->producerFunction.value()->id = this->job->generateUniqueId();
   }
-  for (const QPointer<Function>& function :
+  for (const oi::Guarded<Function>& function :
        oi::snapshot(this->transformFunctions)) {
     if (!function.isNull()) {
       function->id = this->job->generateUniqueId();
@@ -1295,7 +1294,7 @@ void Feature::setUpFeatureId() {
  * id
  * \param job
  */
-void Feature::setJob(const QPointer<OiJob>& job) {
+void Feature::setJob(const oi::Guarded<OiJob>& job) {
   // check and set job
   if (job.isNull()) {
     return;

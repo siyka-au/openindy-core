@@ -1,7 +1,6 @@
 #ifndef POINT_H
 #define POINT_H
 
-#include <QObject>
 #include <QtCore>
 
 #include "core_export.h"
@@ -17,14 +16,13 @@ namespace oi {
 class OI_CORE_EXPORT Point : public Geometry {
   friend class Station;
   friend struct codec::Access;  // the protobuf codec (see src/codec)
-  Q_OBJECT
 
  public:
-  explicit Point(QObject* parent = nullptr);
-  explicit Point(const Position& xyz, QObject* parent = nullptr);
-  Point(int id, const Position& xyz, QObject* parent = nullptr);
+  explicit Point();
+  explicit Point(const Position& xyz);
+  Point(int id, const Position& xyz);
 
-  Point(const Point& copy, QObject* parent = nullptr);
+  Point(const Point& copy);
 
   Point& operator=(const Point& copy);
 

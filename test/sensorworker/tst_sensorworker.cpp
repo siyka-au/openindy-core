@@ -107,7 +107,7 @@ class FakeSensor : public Sensor {
   std::atomic<int> inDriver{0};
   std::atomic<bool> overlapped{false};
 
-  explicit FakeSensor(QObject* parent = nullptr) : Sensor(parent) {}
+  explicit FakeSensor() : Sensor() {}
 
   bool isSensorAsync() const override { return this->async; }
 
@@ -130,11 +130,11 @@ class FakeSensor : public Sensor {
     this->calls.add("status");
     return {{"state", "ok"}};
   }
-  QList<QPointer<Reading>> measure(const MeasurementConfig&) override {
+  QList<oi::Guarded<Reading>> measure(const MeasurementConfig&) override {
     const Guard g(*this, "measure");
     std::this_thread::sleep_for(
         std::chrono::milliseconds(this->measureDelayMs));
-    QList<QPointer<Reading>> result;
+    QList<oi::Guarded<Reading>> result;
     for (int i = 0; i < this->readings; ++i) {
       ReadingCartesian r;
       r.isValid = true;
@@ -219,7 +219,7 @@ class RecordingObserver : public StationObserver {
                       .arg(static_cast<int>(action)));
   }
   void onMeasurementFinished(
-      int geomId, const QList<QPointer<Reading>>& readings) override {
+      int geomId, const QList<oi::Guarded<Reading>>& readings) override {
     const Scope s(*this);
     this->log.add(
         QString("measurementFinished:%1:%2").arg(geomId).arg(readings.size()));
@@ -569,7 +569,7 @@ void SensorWorkerTest::asyncSensorReportsFromForeignThreadsAreSerialised() {
           sensor.asyncSensorResponse(response, SensorAction::eSensorActionMove);
         }
         if (i % 50 == 0) {
-          QList<QPointer<Reading>> none;
+          QList<oi::Guarded<Reading>> none;
           sensor.asyncMeasurementResult(t, none);
         }
       }
@@ -628,7 +628,7 @@ void SensorWorkerTest::takeSensorWaitsForTheRunningCommandAndDetaches() {
 
   worker.connectSensor();
   QVERIFY(sensor.calls.waitForCount("connect", 1));
-  const QPointer<Sensor> taken = worker.takeSensor();
+  const oi::Guarded<Sensor> taken = worker.takeSensor();
   // the command was complete when the sensor was handed back
   QVERIFY(sensor.connected);
   QCOMPARE(taken.data(), &sensor);
@@ -846,20 +846,20 @@ void SensorWorkerTest::stationsOfAJobUseTheJobsExecutor() {
   OiJob job;
 
   // a station that was added before the executor was set ...
-  QPointer<Station> early = new Station("S1");
-  QPointer<FeatureWrapper> earlyFeature = new FeatureWrapper();
+  oi::Guarded<Station> early = new Station("S1");
+  oi::Guarded<FeatureWrapper> earlyFeature = new FeatureWrapper();
   earlyFeature->setStation(early);
   job.addFeature(earlyFeature);
   job.setExecutor(&executor);
   QCOMPARE(job.getExecutor(), &executor);
 
   // ... and one added afterwards
-  QPointer<Station> late = new Station("S2");
-  QPointer<FeatureWrapper> lateFeature = new FeatureWrapper();
+  oi::Guarded<Station> late = new Station("S2");
+  oi::Guarded<FeatureWrapper> lateFeature = new FeatureWrapper();
   lateFeature->setStation(late);
   job.addFeature(lateFeature);
 
-  for (const QPointer<Station>& station : {early, late}) {
+  for (const oi::Guarded<Station>& station : {early, late}) {
     QCOMPARE(station->getSensorControl()->getExecutor(), &executor);
   }
 
@@ -887,8 +887,8 @@ void SensorWorkerTest::stationReportsActiveStationAndSensorChangesToTheJob() {
   RecordingJobObserver jobObserver;
   jobObserver.attach(&job);
 
-  QPointer<Station> station = new Station("S1");
-  QPointer<FeatureWrapper> feature = new FeatureWrapper();
+  oi::Guarded<Station> station = new Station("S1");
+  oi::Guarded<FeatureWrapper> feature = new FeatureWrapper();
   feature->setStation(station);
   job.addFeature(feature);
 
@@ -899,7 +899,7 @@ void SensorWorkerTest::stationReportsActiveStationAndSensorChangesToTheJob() {
   FakeSensor sensor;
   station->setSensor(&sensor);
   QCOMPARE(jobObserver.count("stationSensorChanged"), 1);
-  QPointer<Sensor> taken = station->takeSensor();
+  oi::Guarded<Sensor> taken = station->takeSensor();
   QCOMPARE(jobObserver.count("stationSensorChanged"), 2);
   QCOMPARE(taken.data(), &sensor);
 }

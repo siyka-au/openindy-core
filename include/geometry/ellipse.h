@@ -1,7 +1,6 @@
 #ifndef ELLIPSE_H
 #define ELLIPSE_H
 
-#include <QObject>
 #include <QtCore>
 
 #include "core_export.h"
@@ -17,15 +16,13 @@ namespace oi {
  */
 class OI_CORE_EXPORT Ellipse : public Geometry {
   friend struct codec::Access;  // the protobuf codec (see src/codec)
-  Q_OBJECT
 
  public:
-  explicit Ellipse(QObject* parent = nullptr);
+  explicit Ellipse();
   Ellipse(const Position& center, const Direction& normal, const double& a,
-          const double& b, const Direction& semiMajorAxis,
-          QObject* parent = nullptr);
+          const double& b, const Direction& semiMajorAxis);
 
-  Ellipse(const Ellipse& copy, QObject* parent = nullptr);
+  Ellipse(const Ellipse& copy);
 
   Ellipse& operator=(const Ellipse& copy);
 
