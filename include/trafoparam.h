@@ -1,8 +1,7 @@
 #ifndef TRAFOPARAM_H
 #define TRAFOPARAM_H
-#include <QtCore/qmath.h>
-
 #include <map>
+#include <string>
 
 #include "core_export.h"
 #include "feature.h"
@@ -83,7 +82,7 @@ class OI_CORE_EXPORT TrafoParam : public Feature {
   // #############################
 
   // unknown parameters
-  [[nodiscard]] virtual std::map<TrafoParamParameters, QString>
+  [[nodiscard]] virtual std::map<TrafoParamParameters, std::string>
   getUnknownParameters(const std::map<DimensionType, UnitType>& displayUnits,
                        const std::map<DimensionType, int>& displayDigits) const;
   virtual void setUnknownParameters(
@@ -99,28 +98,28 @@ class OI_CORE_EXPORT TrafoParam : public Feature {
   // display methods
   // ###############
 
-  [[nodiscard]] QString getDisplayStDev(const UnitType& type,
-                                        const int& digits) const override;
+  [[nodiscard]] std::string getDisplayStDev(const UnitType& type,
+                                            const int& digits) const override;
 
-  [[nodiscard]] QString getDisplayStartSystem() const override;
-  [[nodiscard]] QString getDisplayDestinationSystem() const override;
-  [[nodiscard]] QString getDisplayTranslationX(
+  [[nodiscard]] std::string getDisplayStartSystem() const override;
+  [[nodiscard]] std::string getDisplayDestinationSystem() const override;
+  [[nodiscard]] std::string getDisplayTranslationX(
       const UnitType& type, const int& digits) const override;
-  [[nodiscard]] QString getDisplayTranslationY(
+  [[nodiscard]] std::string getDisplayTranslationY(
       const UnitType& type, const int& digits) const override;
-  [[nodiscard]] QString getDisplayTranslationZ(
+  [[nodiscard]] std::string getDisplayTranslationZ(
       const UnitType& type, const int& digits) const override;
-  [[nodiscard]] QString getDisplayRotationX(const UnitType& type,
-                                            const int& digits) const override;
-  [[nodiscard]] QString getDisplayRotationY(const UnitType& type,
-                                            const int& digits) const override;
-  [[nodiscard]] QString getDisplayRotationZ(const UnitType& type,
-                                            const int& digits) const override;
-  [[nodiscard]] QString getDisplayScaleX(const int& digits) const override;
-  [[nodiscard]] QString getDisplayScaleY(const int& digits) const override;
-  [[nodiscard]] QString getDisplayScaleZ(const int& digits) const override;
-  [[nodiscard]] QString getDisplayIsUsed() const override;
-  [[nodiscard]] QString getDisplayIsDatumTransformation() const override;
+  [[nodiscard]] std::string getDisplayRotationX(
+      const UnitType& type, const int& digits) const override;
+  [[nodiscard]] std::string getDisplayRotationY(
+      const UnitType& type, const int& digits) const override;
+  [[nodiscard]] std::string getDisplayRotationZ(
+      const UnitType& type, const int& digits) const override;
+  [[nodiscard]] std::string getDisplayScaleX(const int& digits) const override;
+  [[nodiscard]] std::string getDisplayScaleY(const int& digits) const override;
+  [[nodiscard]] std::string getDisplayScaleZ(const int& digits) const override;
+  [[nodiscard]] std::string getDisplayIsUsed() const override;
+  [[nodiscard]] std::string getDisplayIsDatumTransformation() const override;
 
  private:
   // ##############################

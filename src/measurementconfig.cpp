@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "containers.h"
+#include "value.h"
 
 using namespace oi;
 
@@ -66,13 +67,13 @@ MeasurementConfig& MeasurementConfig::operator=(const MeasurementConfig& copy) {
  * \brief MeasurementConfig::getName
  * \return
  */
-const QString& MeasurementConfig::getName() const { return this->name; }
+const std::string& MeasurementConfig::getName() const { return this->name; }
 
 /*!
  * \brief MeasurementConfig::setName
  * \param name
  */
-void MeasurementConfig::setName(const QString& name) { this->name = name; }
+void MeasurementConfig::setName(const std::string& name) { this->name = name; }
 
 /* key for maps */
 MeasurementConfigKey MeasurementConfig::getKey() const {
@@ -91,7 +92,7 @@ bool MeasurementConfig::isStandardConfig() const {
 }
 bool MeasurementConfig::isEditable() const { return this->editable; }
 bool MeasurementConfig::isValid() const {
-  return !this->name.isEmpty() && this->configType != ConfigTypes::eUndefinded;
+  return !this->name.empty() && this->configType != ConfigTypes::eUndefinded;
 }
 
 /*!
@@ -158,11 +159,12 @@ void MeasurementConfig::setSensorType(const SensorType& type) {
   this->sensorType = type;
 }
 
-const QVariant MeasurementConfig::getTransientData(const QString key) const {
+const oi::Value MeasurementConfig::getTransientData(
+    const std::string key) const {
   return oi::value(this->transientData, key);
 }
-void MeasurementConfig::setTransientData(const QString key,
-                                         const QVariant value) {
+void MeasurementConfig::setTransientData(const std::string key,
+                                         const oi::Value value) {
   this->transientData.insert_or_assign(key, value);
 }
 

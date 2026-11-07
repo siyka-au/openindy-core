@@ -1,7 +1,7 @@
 #ifndef NURBS_H
 #define NURBS_H
 
-#include <QtCore>
+#include <string>
 
 #include "core_export.h"
 #include "geometry.h"

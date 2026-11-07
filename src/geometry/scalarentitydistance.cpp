@@ -6,6 +6,7 @@
 
 #include "containers.h"
 #include "featurewrapper.h"
+#include "stringutil.h"
 
 using namespace oi;
 
@@ -93,11 +94,11 @@ void ScalarEntityDistance::setDistance(const double& distance) {
  * \param displayDigits
  * \return
  */
-std::map<GeometryParameters, QString>
+std::map<GeometryParameters, std::string>
 ScalarEntityDistance::getUnknownParameters(
     const std::map<DimensionType, UnitType>& displayUnits,
     const std::map<DimensionType, int>& displayDigits) const {
-  std::map<GeometryParameters, QString> parameters;
+  std::map<GeometryParameters, std::string> parameters;
 
   parameters.insert_or_assign(
       GeometryParameters::eUnknownDistance,
@@ -152,11 +153,10 @@ void ScalarEntityDistance::recalc() {
  * \param showDiff
  * \return
  */
-QString ScalarEntityDistance::getDisplayDistance(
+std::string ScalarEntityDistance::getDisplayDistance(
     const UnitType& type, const int& digits, const bool& /*showDiff*/) const {
   if (this->isSolved) {
-    return QString::number(convertFromDefault(this->distance, type), 'f',
-                           digits);
+    return oi::number(convertFromDefault(this->distance, type), 'f', digits);
   }
-  return QString("");
+  return std::string("");
 }

@@ -24,7 +24,7 @@ PipelineStage PipelineStage::explicitList(const std::vector<int>& ids) {
  * \param reason
  * \return
  */
-PipelineStage PipelineStage::exclude(int elementId, const QString& reason) {
+PipelineStage PipelineStage::exclude(int elementId, const std::string& reason) {
   PipelineStage stage(PipelineStageType::eExcludeStage);
   stage.explicitExclusions.push_back(PipelineExclusion(elementId, reason));
   return stage;

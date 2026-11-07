@@ -6,6 +6,7 @@
 
 #include "containers.h"
 #include "featurewrapper.h"
+#include "stringutil.h"
 
 using namespace oi;
 
@@ -89,10 +90,11 @@ void ScalarEntityAngle::setAngle(const double& angle) {
  * \param displayDigits
  * \return
  */
-std::map<GeometryParameters, QString> ScalarEntityAngle::getUnknownParameters(
+std::map<GeometryParameters, std::string>
+ScalarEntityAngle::getUnknownParameters(
     const std::map<DimensionType, UnitType>& displayUnits,
     const std::map<DimensionType, int>& displayDigits) const {
-  std::map<GeometryParameters, QString> parameters;
+  std::map<GeometryParameters, std::string> parameters;
 
   parameters.insert_or_assign(
       GeometryParameters::eUnknownAngle,
@@ -148,11 +150,11 @@ void ScalarEntityAngle::recalc() {
  * \param showDiff
  * \return
  */
-QString ScalarEntityAngle::getDisplayAngle(const UnitType& type,
-                                           const int& digits,
-                                           const bool& /*showDiff*/) const {
+std::string ScalarEntityAngle::getDisplayAngle(const UnitType& type,
+                                               const int& digits,
+                                               const bool& /*showDiff*/) const {
   if (this->isSolved) {
-    return QString::number(convertFromDefault(this->angle, type), 'f', digits);
+    return oi::number(convertFromDefault(this->angle, type), 'f', digits);
   }
-  return QString("");
+  return std::string("");
 }

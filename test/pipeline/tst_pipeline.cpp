@@ -1,6 +1,6 @@
-#include <QString>
 #include <QtTest>
 #include <cmath>
+#include <string>
 #include <vector>
 
 #include "chooselalib.h"
@@ -38,11 +38,11 @@ class FakeAverageFit : public FitFunction, public Producer<Point> {
     this->applicableFor.push_back(FeatureTypes::ePointFeature);
   }
 
-  std::expected<Point, QString> exec() override {
+  std::expected<Point, std::string> exec() override {
     this->statistic.reset();
 
     if (!this->inputElements.contains(0) || this->inputElements[0].empty()) {
-      return std::unexpected(QString("FakeAverageFit: no input elements"));
+      return std::unexpected(std::string("FakeAverageFit: no input elements"));
     }
 
     std::vector<InputElement> usable;
@@ -59,7 +59,7 @@ class FakeAverageFit : public FitFunction, public Producer<Point> {
 
     if (usable.empty()) {
       return std::unexpected(
-          QString("FakeAverageFit: no usable input elements"));
+          std::string("FakeAverageFit: no usable input elements"));
     }
 
     double sum = 0.0;
@@ -116,7 +116,7 @@ class PipelineTest : public QObject {
   void addingANewOutlierLaterReTriggersTheFilterOnRecalc();
 
  private:
-  oi::Guarded<FeatureWrapper> makeTargetPoint(const QString& name);
+  oi::Guarded<FeatureWrapper> makeTargetPoint(const std::string& name);
   oi::Guarded<Point> makeCandidate(double x, oi::Guarded<OiJob> job);
 };
 
@@ -124,7 +124,8 @@ void PipelineTest::initTestCase() {
   ChooseLALib::setLinearAlgebra(ChooseLALib::LinearAlgebraLibrary::Armadillo);
 }
 
-oi::Guarded<FeatureWrapper> PipelineTest::makeTargetPoint(const QString& name) {
+oi::Guarded<FeatureWrapper> PipelineTest::makeTargetPoint(
+    const std::string& name) {
   oi::Guarded<Point> point = new Point();
   point->setFeatureName(name);
   oi::Guarded<FeatureWrapper> wrapper = new FeatureWrapper();
@@ -216,7 +217,7 @@ void PipelineTest::explicitListStageKeepsOnlyListedIdsAndRecordsReasons() {
       function->getPipelineExclusions(0);
   QCOMPARE(exclusions.size(), 1);
   QCOMPARE(exclusions.front().elementId, p3->getId());
-  QVERIFY(!exclusions.front().reason.isEmpty());
+  QVERIFY(!exclusions.front().reason.empty());
 }
 
 void PipelineTest::excludeStageDropsSpecificIdWithReason() {
@@ -253,7 +254,7 @@ void PipelineTest::excludeStageDropsSpecificIdWithReason() {
   QCOMPARE(exclusions.size(), 1);
   QCOMPARE(exclusions.front().elementId, p2->getId());
   QCOMPARE(exclusions.front().reason,
-           QString("known bad target - operator flagged on site"));
+           std::string("known bad target - operator flagged on site"));
 }
 
 /*!
@@ -303,9 +304,9 @@ void PipelineTest::residualOutlierRejectionExcludesTheOutlierAndConverges() {
 
   const double converged =
       target->getPoint()->getPosition().getVector().getAt(0);
-  QVERIFY2(std::abs(converged) < 1.0,
-           qPrintable(
-               QString("expected convergence near 0, got %1").arg(converged)));
+  QVERIFY2(
+      std::abs(converged) < 1.0,
+      (std::format("expected convergence near 0, got {}", converged)).c_str());
 
   const int outlierId = candidates.back()->getId();
   QVERIFY2(!function->getShouldBeUsed(0, outlierId),
@@ -317,7 +318,7 @@ void PipelineTest::residualOutlierRejectionExcludesTheOutlierAndConverges() {
   for (const PipelineExclusion& excl : exclusions) {
     if (excl.elementId == outlierId) {
       found = true;
-      QVERIFY2(excl.reason.contains("residual"), qPrintable(excl.reason));
+      QVERIFY2(excl.reason.contains("residual"), (excl.reason).c_str());
     }
   }
   QVERIFY2(
@@ -358,8 +359,8 @@ void PipelineTest::omittingTheFilterLeavesTheResultSkewedByTheOutlier() {
   const double skewed = target->getPoint()->getPosition().getVector().getAt(0);
   QVERIFY2(
       skewed > 10.0,
-      qPrintable(QString("expected the outlier to skew the average, got %1")
-                     .arg(skewed)));
+      (std::format("expected the outlier to skew the average, got {}", skewed))
+          .c_str());
 }
 
 /*!
@@ -414,4 +415,6 @@ void PipelineTest::addingANewOutlierLaterReTriggersTheFilterOnRecalc() {
 }
 
 QTEST_APPLESS_MAIN(PipelineTest)
+#include <format>
+
 #include "tst_pipeline.moc"

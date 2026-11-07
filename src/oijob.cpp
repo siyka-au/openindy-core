@@ -1,5 +1,6 @@
 #include "oijob.h"
 
+#include <format>
 #include <iterator>
 #include <map>
 #include <set>
@@ -8,8 +9,8 @@
 
 #include "bundleadjustment.h"
 #include "containers.h"
-#include "qtinterop.h"
 #include "snapshot.h"
+#include "stringutil.h"
 using namespace oi;
 
 /*!
@@ -112,7 +113,7 @@ Executor* OiJob::getExecutor() const { return this->executor; }
  * \brief OiJob::sendMessage
  * Reports a job issue to the observers.
  */
-void OiJob::sendMessage(const QString& msg, const MessageTypes& msgType,
+void OiJob::sendMessage(const std::string& msg, const MessageTypes& msgType,
                         const MessageDestinations& msgDest) const {
   // notifying does not change the job's observable state
   const_cast<OiJob*>(this)->notifyObservers(&JobObserver::onSendMessage, msg,
@@ -135,13 +136,13 @@ void OiJob::trafoParamRecalculated(const int& featureId) {
  * \brief OiJob::getJobName
  * \return
  */
-const QString& OiJob::getJobName() const { return this->jobName; }
+const std::string& OiJob::getJobName() const { return this->jobName; }
 
 /*!
  * \brief OiJob::setJobName
  * \param jobName
  */
-void OiJob::setJobName(const QString& jobName) { this->jobName = jobName; }
+void OiJob::setJobName(const std::string& jobName) { this->jobName = jobName; }
 
 /*!
  * \brief OiJob::getJobFile
@@ -160,33 +161,32 @@ void OiJob::setJobFile(std::filesystem::path jobFile) {
 /*!
  * \return the last calculated digest of the job content
  */
-const QString& OiJob::getDigest() const { return this->digest; }
+const std::string& OiJob::getDigest() const { return this->digest; }
 
 /*!
  * \brief set the digest of the job content
  */
-void OiJob::setDigest(const QString& digest) { this->digest = digest; }
+void OiJob::setDigest(const std::string& digest) { this->digest = digest; }
 
 /*!
  * \return true if the project file version compatible with this program version
  */
 CompatibilyCheckResult OiJob::checkCompatibilty() const {
-  std::vector<QString> jobParts = oi::toVector(loadedVersion.split("."));
+  std::vector<std::string> jobParts = oi::split(loadedVersion, ".");
   if (jobParts.size() < 2) {
     return CompatibilyCheckResult::eCheckResult_job_wo_valid_version;
   }
 
-  int jobMajor = jobParts.at(0).toInt();
-  int jobMinor = jobParts.at(1).toInt();
+  int jobMajor = oi::toInt(jobParts.at(0)).value_or(0);
+  int jobMinor = oi::toInt(jobParts.at(1)).value_or(0);
 
-  std::vector<QString> oiParts =
-      oi::toVector(QString(OPENINDY_VERSION).split("."));
+  std::vector<std::string> oiParts = oi::split(OPENINDY_VERSION, ".");
   if (oiParts.size() < 2) {
     return CompatibilyCheckResult::eCheckResult_oi_wo_valid_version;
   }
 
-  int oiMajor = oiParts.at(0).toInt();
-  int oiMinor = oiParts.at(1).toInt();
+  int oiMajor = oi::toInt(oiParts.at(0)).value_or(0);
+  int oiMinor = oi::toInt(oiParts.at(1)).value_or(0);
 
   if (jobMajor <= 22 && jobMinor <= 1) {
     return CompatibilyCheckResult::eCheckResult_job_lt_oi_22_1;
@@ -205,7 +205,7 @@ CompatibilyCheckResult OiJob::checkCompatibilty() const {
   }
 }
 
-void OiJob::setLoadedProjectVersion(const QString& loadedVersion) {
+void OiJob::setLoadedProjectVersion(const std::string& loadedVersion) {
   this->loadedVersion = loadedVersion;
 }
 
@@ -229,7 +229,8 @@ int OiJob::generateUniqueId() {
  * \param type
  * \return
  */
-bool OiJob::validateFeatureName(const QString& name, const FeatureTypes& type) {
+bool OiJob::validateFeatureName(const std::string& name,
+                                const FeatureTypes& type) {
   // do not accept empty names
   if (name.compare("") == 0) {
     return false;
@@ -297,7 +298,7 @@ int OiJob::getFeatureCount(const FeatureTypes& type) const {
  * \param group
  * \return
  */
-int OiJob::getFeatureCount(const QString& group) const {
+int OiJob::getFeatureCount(const std::string& group) const {
   return this->featureContainer.getFeatureCount(group);
 }
 
@@ -313,7 +314,7 @@ const std::vector<int>& OiJob::getFeatureIdList() const {
  * \brief OiJob::getFeatureNameList
  * \return
  */
-const std::vector<QString>& OiJob::getFeatureNameList() const {
+const std::vector<std::string>& OiJob::getFeatureNameList() const {
   return this->featureContainer.getFeatureNameList();
 }
 
@@ -321,7 +322,7 @@ const std::vector<QString>& OiJob::getFeatureNameList() const {
  * \brief OiJob::getFeatureGroupList
  * \return
  */
-const std::vector<QString>& OiJob::getFeatureGroupList() const {
+const std::vector<std::string>& OiJob::getFeatureGroupList() const {
   return this->featureContainer.getFeatureGroupList();
 }
 
@@ -415,7 +416,7 @@ oi::Guarded<FeatureWrapper> OiJob::getFeatureById(const int& featureId) const {
  * \return
  */
 std::vector<oi::Guarded<FeatureWrapper> > OiJob::getFeaturesByName(
-    const QString& name, const bool startWith) const {
+    const std::string& name, const bool startWith) const {
   return this->featureContainer.getFeaturesByName(name, startWith);
 }
 
@@ -425,7 +426,7 @@ std::vector<oi::Guarded<FeatureWrapper> > OiJob::getFeaturesByName(
  * \return
  */
 std::vector<oi::Guarded<FeatureWrapper> > OiJob::getFeaturesByGroup(
-    const QString& group) const {
+    const std::string& group) const {
   return this->featureContainer.getFeaturesByGroup(group);
 }
 
@@ -478,9 +479,9 @@ const oi::Guarded<oi::BundleAdjustment>& OiJob::getActiveBundleAdjustment()
   return this->activeBundleSystem->getBundlePlugin();
 }
 
-const QJsonObject OiJob::getActiveBundleTemplate() const {
+std::string OiJob::getActiveBundleTemplate() const {
   if (this->activeBundleSystem.isNull()) {
-    return QJsonObject();
+    return {};
   }
   return this->activeBundleSystem->getBundleTemplate();
 }
@@ -497,14 +498,14 @@ const oi::Guarded<CoordinateSystem>& OiJob::getActiveCoordinateSystem() const {
  * \brief OiJob::getActiveGroup
  * \return
  */
-const QString& OiJob::getActiveGroup() const { return this->activeGroup; }
+const std::string& OiJob::getActiveGroup() const { return this->activeGroup; }
 
 /*!
  * \brief OiJob::setActiveGroup
  * \param group
  * \return
  */
-bool OiJob::setActiveGroup(const QString& group) {
+bool OiJob::setActiveGroup(const std::string& group) {
   if (oi::contains(this->featureContainer.getFeatureGroupList(), group) &&
       this->activeGroup.compare(group) != 0) {
     this->activeGroup = group;
@@ -580,7 +581,7 @@ std::vector<oi::Guarded<FeatureWrapper> > OiJob::addFeatures(
   // a nominal system it must resolve; if not, this geometry simply has none
   //(the ordinary case for a fit-produced actual).
   oi::Guarded<CoordinateSystem> nominalSystem;
-  if (getIsGeometry(fAttr.typeOfFeature) && !fAttr.nominalSystem.isEmpty()) {
+  if (getIsGeometry(fAttr.typeOfFeature) && !fAttr.nominalSystem.empty()) {
     std::vector<oi::Guarded<FeatureWrapper> > features =
         this->featureContainer.getFeaturesByName(fAttr.nominalSystem);
     if (features.size() != 1 || features.at(0).isNull() ||
@@ -635,9 +636,9 @@ std::vector<oi::Guarded<FeatureWrapper> > OiJob::addFeatures(
   }
 
   // create and validate feature names
-  std::vector<QString> featureNames =
+  std::vector<std::string> featureNames =
       this->createFeatureNames(fAttr.name, fAttr.count);
-  for (const QString& name : oi::snapshot(featureNames)) {
+  for (const std::string& name : oi::snapshot(featureNames)) {
     if (!validateFeatureName(name, fAttr.typeOfFeature)) {
       this->sendMessage("No valid feature name specified",
                         MessageTypes::eErrorMessage);
@@ -654,7 +655,7 @@ std::vector<oi::Guarded<FeatureWrapper> > OiJob::addFeatures(
   }
 
   // create the features and add them to OpenIndy
-  for (const QString& name : oi::snapshot(featureNames)) {
+  for (const std::string& name : oi::snapshot(featureNames)) {
     // create geometry (D17: a single ordinary feature - whether it ends
     // up nominal or actual falls out of the producer function attached
     // to it afterwards by Controller::addFeatures, not out of a flag set
@@ -838,8 +839,8 @@ bool OiJob::removeFeature(const int& featureId) {
 
   // check wether the feature could be deleted
   if (!this->canRemoveFeature(feature)) {
-    this->sendMessage(QString("Cannot remove feature %1")
-                          .arg(feature->getFeature()->getFeatureName()),
+    this->sendMessage(std::format("Cannot remove feature {}",
+                                  feature->getFeature()->getFeatureName()),
                       MessageTypes::eWarningMessage);
     return false;
   }
@@ -882,8 +883,8 @@ bool OiJob::removeFeature(const oi::Guarded<FeatureWrapper>& feature) {
 
   // check wether the feature could be deleted
   if (!this->canRemoveFeature(feature)) {
-    this->sendMessage(QString("Cannot remove feature %1")
-                          .arg(feature->getFeature()->getFeatureName()),
+    this->sendMessage(std::format("Cannot remove feature {}",
+                                  feature->getFeature()->getFeatureName()),
                       MessageTypes::eWarningMessage);
     return false;
   }
@@ -1305,7 +1306,7 @@ void OiJob::resolvePointIntent(const oi::Guarded<Point>& point,
  * \param roleName
  */
 void OiJob::tagPoint(const oi::Guarded<Point>& point, int featureId,
-                     const QString& roleName) {
+                     const std::string& roleName) {
   if (point.isNull()) {
     return;
   }
@@ -1838,8 +1839,9 @@ void OiJob::addMeasurementResults(
       this->featureContainer.getFeatureById(geomId);
   if (targetFeature.isNull() || targetFeature->getGeometry().isNull()) {
     this->sendMessage(
-        QString("Measurement rejected: target feature %1 could not be resolved")
-            .arg(geomId),
+        std::format(
+            "Measurement rejected: target feature {} could not be resolved",
+            geomId),
         MessageTypes::eErrorMessage, MessageDestinations::eMessageBoxMessage);
     for (const oi::Guarded<Reading>& reading : oi::snapshot(readings)) {
       if (!reading.isNull()) {
@@ -1893,7 +1895,7 @@ void OiJob::addMeasurementResults(
 
   pointFeature->getFeature()->setJob(this);
   pointFeature->getFeature()->name =
-      QString("P%1").arg(pointFeature->getFeature()->getId());
+      std::format("P{}", pointFeature->getFeature()->getId());
 
   this->featureContainer.addFeature(pointFeature);
   this->attachFeature(pointFeature);
@@ -1915,8 +1917,8 @@ void OiJob::addMeasurementResults(
   // addInputPoint -> setUpDependencies) that makes the recalc below
   // reach this point's own transform+average before the function that
   // consumes it runs.
-  const QString roleName =
-      isDummyPoint ? QStringLiteral("dummyPoint") : QStringLiteral("default");
+  const std::string roleName =
+      isDummyPoint ? std::string("dummyPoint") : std::string("default");
   const MeasurementIntent intent(geomId, roleName);
   point->addIntent(intent);
   this->resolvePointIntent(point, intent);
@@ -1967,9 +1969,9 @@ void OiJob::enableOrDisableObservations(const int& featureId, bool enable) {
       this->featureContainer.getFeatureById(featureId);
   if (feature.isNull()) {
     this->sendMessage(
-        QString("Cannot enable or disable observations from %1")
-            .arg(feature.isNull() ? QString("feature id: %1").arg(featureId)
-                                  : feature->getFeature()->getFeatureName()),
+        std::format("Cannot enable or disable observations from {}",
+                    feature.isNull() ? std::format("feature id: {}", featureId)
+                                     : feature->getFeature()->getFeatureName()),
         MessageTypes::eWarningMessage);
     return;
   }
@@ -2001,9 +2003,9 @@ void OiJob::enableOrDisableGeometryObservations(const int& featureId,
       this->featureContainer.getFeatureById(featureId);
   if (feature.isNull() || feature->getGeometry().isNull()) {
     this->sendMessage(
-        QString("Cannot enable or disable observations from %1")
-            .arg(feature.isNull() ? QString("feature id: %1").arg(featureId)
-                                  : feature->getFeature()->getFeatureName()),
+        std::format("Cannot enable or disable observations from {}",
+                    feature.isNull() ? std::format("feature id: {}", featureId)
+                                     : feature->getFeature()->getFeatureName()),
         MessageTypes::eWarningMessage);
     return;
   }
@@ -2192,7 +2194,7 @@ void OiJob::setPipeline(const oi::Guarded<FeatureWrapper>& target,
 void OiJob::excludeElement(const oi::Guarded<FeatureWrapper>& target,
                            const int& functionIndex,
                            const int& neededElementIndex, const int& elementId,
-                           const QString& reason, const bool& recalc) {
+                           const std::string& reason, const bool& recalc) {
   if (target.isNull() || target->getFeature().isNull()) {
     return;
   }
@@ -2383,7 +2385,7 @@ void OiJob::setActiveCoordinateSystem(const int& featureId) {
  * \param featureId
  * \param oldName
  */
-void OiJob::setFeatureName(const int& featureId, const QString& oldName) {
+void OiJob::setFeatureName(const int& featureId, const std::string& oldName) {
   // get and check the feature
   oi::Guarded<FeatureWrapper> feature =
       this->featureContainer.getFeatureById(featureId);
@@ -2408,7 +2410,7 @@ void OiJob::setFeatureName(const int& featureId, const QString& oldName) {
  * \param featureId
  * \param oldGroup
  */
-void OiJob::setFeatureGroup(const int& featureId, const QString& oldGroup) {
+void OiJob::setFeatureGroup(const int& featureId, const std::string& oldGroup) {
   // get and check the feature
   oi::Guarded<FeatureWrapper> feature =
       this->featureContainer.getFeatureById(featureId);
@@ -2581,7 +2583,7 @@ void OiJob::setGeometrySimulationData(const int& featureId) {
  * \param oldIsSaved
  */
 void OiJob::setGeometryMeasurementConfig(const int& featureId,
-                                         const QString& oldMConfig,
+                                         const std::string& oldMConfig,
                                          const MeasurementConfigKey oldKey) {
   // update feature container
   this->featureContainer.geometryMeasurementConfigChanged(featureId, oldMConfig,
@@ -2690,8 +2692,9 @@ void OiJob::setTrafoParamIsDatum(const int& featureId) {
  * \param group
  * \param type
  */
-void OiJob::elementAboutToBeDeleted(const int& elementId, const QString& name,
-                                    const QString& group,
+void OiJob::elementAboutToBeDeleted(const int& elementId,
+                                    const std::string& name,
+                                    const std::string& group,
                                     const FeatureTypes& type) {
   oi::Guarded<FeatureWrapper> feature =
       this->featureContainer.getFeatureById(elementId);
@@ -2773,7 +2776,7 @@ void OiJob::releaseFunction(Function* function) {
   }
 }
 
-void OiJob::onMessage(const QString& msg, const MessageTypes& type,
+void OiJob::onMessage(const std::string& msg, const MessageTypes& type,
                       const MessageDestinations& dest) {
   this->sendMessage(msg, type, dest);
 }
@@ -2783,18 +2786,20 @@ void OiJob::onMessage(const QString& msg, const MessageTypes& type,
 // its own signals exactly as the former signal/slot connections did
 // ###########################################################################
 
-void OiJob::onElementAboutToBeDeleted(const int& elementId, const QString& name,
-                                      const QString& group,
+void OiJob::onElementAboutToBeDeleted(const int& elementId,
+                                      const std::string& name,
+                                      const std::string& group,
                                       const FeatureTypes& type) {
   this->elementAboutToBeDeleted(elementId, name, group, type);
 }
 
-void OiJob::onFeatureNameChanged(const int& featureId, const QString& oldName) {
+void OiJob::onFeatureNameChanged(const int& featureId,
+                                 const std::string& oldName) {
   this->setFeatureName(featureId, oldName);
 }
 
 void OiJob::onFeatureGroupChanged(const int& featureId,
-                                  const QString& oldGroup) {
+                                  const std::string& oldGroup) {
   this->setFeatureGroup(featureId, oldGroup);
 }
 
@@ -2852,7 +2857,7 @@ void OiJob::onGeomSimulationDataChanged(const int& featureId) {
 }
 
 void OiJob::onGeomMeasurementConfigChanged(const int& featureId,
-                                           const QString& oldMConfig,
+                                           const std::string& oldMConfig,
                                            const MeasurementConfigKey oldKey) {
   this->setGeometryMeasurementConfig(featureId, oldMConfig, oldKey);
 }
@@ -2894,9 +2899,9 @@ void OiJob::onActiveCoordinateSystemChanged(const int& coordId) {
  * \param name
  * \return
  */
-std::vector<QString> OiJob::createFeatureNames(const QString& name,
-                                               const int& count) const {
-  std::vector<QString> result;
+std::vector<std::string> OiJob::createFeatureNames(const std::string& name,
+                                                   const int& count) const {
+  std::vector<std::string> result;
 
   // if only one feature shall be created take the hole name
   if (count == 1) {
@@ -2905,39 +2910,39 @@ std::vector<QString> OiJob::createFeatureNames(const QString& name,
   }
 
   // split base name from postfix
-  QString baseName = name;
-  QString postFix;
+  std::string baseName = name;
+  std::string postFix;
 
   // the postfix is the run of ASCII digits at the end of the name
-  qsizetype digitsStart = baseName.size();
-  while (digitsStart > 0 && baseName.at(digitsStart - 1) >= QChar('0') &&
-         baseName.at(digitsStart - 1) <= QChar('9')) {
+  std::size_t digitsStart = baseName.size();
+  while (digitsStart > 0 && baseName.at(digitsStart - 1) >= '0' &&
+         baseName.at(digitsStart - 1) <= '9') {
     --digitsStart;
   }
-  postFix = baseName.mid(digitsStart);
-  baseName.truncate(digitsStart);
+  postFix = baseName.substr(digitsStart);
+  baseName.resize(digitsStart);
 
   // add leading zero
   int numLeadingZeros = 0;
   while (postFix.size() > 1 && postFix.at(0) == '0') {
     numLeadingZeros++;
-    postFix.remove(0, 1);
+    postFix.erase(0, 1);
   }
 
-  numLeadingZeros = numLeadingZeros + postFix.length();
+  numLeadingZeros = numLeadingZeros + static_cast<int>(postFix.length());
 
-  int postFixInt = postFix.toInt();
+  int postFixInt = oi::toInt(postFix).value_or(0);
   if (postFixInt == 0) {
     postFixInt++;
   }
-  QString leadZeros = "";
+  std::string leadZeros = "";
 
   for (int i = 0; i < count; i++) {
     leadZeros.clear();
 
-    postFix = QString::number(postFixInt + i);
+    postFix = oi::number(postFixInt + i);
 
-    int diff = numLeadingZeros - postFix.length();
+    int diff = numLeadingZeros - static_cast<int>(postFix.length());
 
     if (diff > 0) {
       for (int j = 0; j < diff; j++) {
@@ -2945,12 +2950,11 @@ std::vector<QString> OiJob::createFeatureNames(const QString& name,
       }
     }
 
-    if (leadZeros.compare("") == 0 && postFix.toInt() < 10) {
+    if (leadZeros.compare("") == 0 && oi::toInt(postFix).value_or(0) < 10) {
       leadZeros.append("0");
     }
 
-    result.push_back(
-        QString("%1%2%3").arg(baseName).arg(leadZeros).arg(postFix));
+    result.push_back(std::format("{}{}{}", baseName, leadZeros, postFix));
   }
 
   return result;

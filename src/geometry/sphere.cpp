@@ -101,10 +101,10 @@ void Sphere::setSphere(const Position& center, const Radius& radius) {
  * \param displayDigits
  * \return
  */
-std::map<GeometryParameters, QString> Sphere::getUnknownParameters(
+std::map<GeometryParameters, std::string> Sphere::getUnknownParameters(
     const std::map<DimensionType, UnitType>& displayUnits,
     const std::map<DimensionType, int>& displayDigits) const {
-  std::map<GeometryParameters, QString> parameters;
+  std::map<GeometryParameters, std::string> parameters;
 
   parameters.insert_or_assign(
       GeometryParameters::eUnknownX,

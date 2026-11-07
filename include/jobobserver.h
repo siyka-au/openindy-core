@@ -1,7 +1,7 @@
 #ifndef JOBOBSERVER_H
 #define JOBOBSERVER_H
 
-#include <QString>
+#include <string>
 
 #include "core_export.h"
 #include "guarded.h"
@@ -60,10 +60,10 @@ class JobObserver {
   virtual void onFeatureAttributesChanged() {}
 
   virtual void onFeatureNameChanged(const int& /*featureId*/,
-                                    const QString& /*oldName*/) {}
+                                    const std::string& /*oldName*/) {}
 
   virtual void onFeatureGroupChanged(const int& /*featureId*/,
-                                     const QString& /*oldGroup*/) {}
+                                     const std::string& /*oldGroup*/) {}
 
   virtual void onFeatureCommentChanged(const int& /*featureId*/) {}
 
@@ -92,7 +92,7 @@ class JobObserver {
   virtual void onGeometrySimulationDataChanged(const int& /*featureId*/) {}
 
   virtual void onGeometryMeasurementConfigChanged(
-      const int& /*featureId*/, const QString& /*oldMConfig*/,
+      const int& /*featureId*/, const std::string& /*oldMConfig*/,
       const MeasurementConfigKey /*oldKey*/) {}
 
   virtual void onSystemObservationsChanged(const int& /*featureId*/,
@@ -112,7 +112,7 @@ class JobObserver {
 
   virtual void onTrafoParamIsDatumChanged(const int& /*featureId*/) {}
 
-  virtual void onSendMessage(const QString& /*msg*/,
+  virtual void onSendMessage(const std::string& /*msg*/,
                              const MessageTypes& /*msgType*/,
                              const MessageDestinations& /*msgDest*/) {}
 

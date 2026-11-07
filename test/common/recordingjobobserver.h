@@ -1,6 +1,7 @@
 #ifndef RECORDINGJOBOBSERVER_H
 #define RECORDINGJOBOBSERVER_H
-#include <QString>
+#include <format>
+#include <string>
 #include <vector>
 
 #include "containers.h"
@@ -13,17 +14,17 @@
 // arrival order.
 class RecordingJobObserver : public oi::JobObserver {
  public:
-  std::vector<QString> calls;
+  std::vector<std::string> calls;
   std::vector<oi::OiJob*> destroyed;
 
   RecordingJobObserver() = default;
 
   //! all calls joined with `sep`, for readable failure messages and substring
   //! checks
-  [[nodiscard]] QString joined(const QString& sep = ";") const {
-    QString out;
-    for (const QString& call : this->calls) {
-      if (!out.isEmpty()) {
+  [[nodiscard]] std::string joined(const std::string& sep = ";") const {
+    std::string out;
+    for (const std::string& call : this->calls) {
+      if (!out.empty()) {
         out += sep;
       }
       out += call;
@@ -44,10 +45,10 @@ class RecordingJobObserver : public oi::JobObserver {
     job->addObserver(this);
   }
 
-  [[nodiscard]] int count(const QString& name) const {
+  [[nodiscard]] int count(const std::string& name) const {
     int n = 0;
-    for (const QString& c : this->calls) {
-      if (c == name || c.startsWith(name + ":")) {
+    for (const std::string& c : this->calls) {
+      if (c == name || c.starts_with(name + ":")) {
         ++n;
       }
     }
@@ -60,152 +61,150 @@ class RecordingJobObserver : public oi::JobObserver {
   }
 
   void onActiveFeatureChanged() override {
-    this->calls.push_back(QString("activeFeatureChanged"));
+    this->calls.push_back(std::string("activeFeatureChanged"));
   }
   void onActiveStationChanged() override {
-    this->calls.push_back(QString("activeStationChanged"));
+    this->calls.push_back(std::string("activeStationChanged"));
   }
   void onActiveCoordinateSystemChanged() override {
-    this->calls.push_back(QString("activeCoordinateSystemChanged"));
+    this->calls.push_back(std::string("activeCoordinateSystemChanged"));
   }
   void onFeatureSetChanged() override {
-    this->calls.push_back(QString("featureSetChanged"));
+    this->calls.push_back(std::string("featureSetChanged"));
   }
   void onCoordSystemSetChanged() override {
-    this->calls.push_back(QString("coordSystemSetChanged"));
+    this->calls.push_back(std::string("coordSystemSetChanged"));
   }
   void onStationSetChanged() override {
-    this->calls.push_back(QString("stationSetChanged"));
+    this->calls.push_back(std::string("stationSetChanged"));
   }
   void onTrafoParamSetChanged() override {
-    this->calls.push_back(QString("trafoParamSetChanged"));
+    this->calls.push_back(std::string("trafoParamSetChanged"));
   }
   void onGeometrySetChanged() override {
-    this->calls.push_back(QString("geometrySetChanged"));
+    this->calls.push_back(std::string("geometrySetChanged"));
   }
   void onAvailableGroupsChanged() override {
-    this->calls.push_back(QString("availableGroupsChanged"));
+    this->calls.push_back(std::string("availableGroupsChanged"));
   }
   void onActiveGroupChanged() override {
-    this->calls.push_back(QString("activeGroupChanged"));
+    this->calls.push_back(std::string("activeGroupChanged"));
   }
   void onFeatureAttributesChanged() override {
-    this->calls.push_back(QString("featureAttributesChanged"));
+    this->calls.push_back(std::string("featureAttributesChanged"));
   }
   void onFeatureNameChanged(const int& featureId,
-                            const QString& oldName) override {
+                            const std::string& oldName) override {
     this->calls.push_back(
-        QString("featureNameChanged:%1:%2").arg(featureId).arg(oldName));
+        std::format("featureNameChanged:{}:{}", featureId, oldName));
   }
   void onFeatureGroupChanged(const int& featureId,
-                             const QString& oldGroup) override {
+                             const std::string& oldGroup) override {
     this->calls.push_back(
-        QString("featureGroupChanged:%1:%2").arg(featureId).arg(oldGroup));
+        std::format("featureGroupChanged:{}:{}", featureId, oldGroup));
   }
   void onFeatureCommentChanged(const int& featureId) override {
-    this->calls.push_back(QString("featureCommentChanged:%1").arg(featureId));
+    this->calls.push_back(std::format("featureCommentChanged:{}", featureId));
   }
   void onFeatureIsUpdatedChanged(const int& featureId) override {
-    this->calls.push_back(QString("featureIsUpdatedChanged:%1").arg(featureId));
+    this->calls.push_back(std::format("featureIsUpdatedChanged:{}", featureId));
   }
   void onFeatureIsSolvedChanged(const int& featureId) override {
-    this->calls.push_back(QString("featureIsSolvedChanged:%1").arg(featureId));
+    this->calls.push_back(std::format("featureIsSolvedChanged:{}", featureId));
   }
   void onFeatureFunctionsChanged(const int& featureId) override {
-    this->calls.push_back(QString("featureFunctionsChanged:%1").arg(featureId));
+    this->calls.push_back(std::format("featureFunctionsChanged:{}", featureId));
   }
   void onFeatureUsedForChanged(const int& featureId) override {
-    this->calls.push_back(QString("featureUsedForChanged:%1").arg(featureId));
+    this->calls.push_back(std::format("featureUsedForChanged:{}", featureId));
   }
   void onFeaturePreviouslyNeededChanged(const int& featureId) override {
     this->calls.push_back(
-        QString("featurePreviouslyNeededChanged:%1").arg(featureId));
+        std::format("featurePreviouslyNeededChanged:{}", featureId));
   }
   void onGeometryIsCommonChanged(const int& featureId) override {
-    this->calls.push_back(QString("geometryIsCommonChanged:%1").arg(featureId));
+    this->calls.push_back(std::format("geometryIsCommonChanged:{}", featureId));
   }
   void onGeometryRealisesChanged(const int& featureId) override {
-    this->calls.push_back(QString("geometryRealisesChanged:%1").arg(featureId));
+    this->calls.push_back(std::format("geometryRealisesChanged:{}", featureId));
   }
   void onGeometryObservationsChanged(const int& featureId) override {
     this->calls.push_back(
-        QString("geometryObservationsChanged:%1").arg(featureId));
+        std::format("geometryObservationsChanged:{}", featureId));
   }
   void onGroupMembersChanged(const int& featureId) override {
-    this->calls.push_back(QString("groupMembersChanged:%1").arg(featureId));
+    this->calls.push_back(std::format("groupMembersChanged:{}", featureId));
   }
   void onGeometryNominalSystemChanged(const int& featureId) override {
     this->calls.push_back(
-        QString("geometryNominalSystemChanged:%1").arg(featureId));
+        std::format("geometryNominalSystemChanged:{}", featureId));
   }
   void onGeometryStatisticChanged(const int& featureId) override {
     this->calls.push_back(
-        QString("geometryStatisticChanged:%1").arg(featureId));
+        std::format("geometryStatisticChanged:{}", featureId));
   }
   void onGeometrySimulationDataChanged(const int& featureId) override {
     this->calls.push_back(
-        QString("geometrySimulationDataChanged:%1").arg(featureId));
+        std::format("geometrySimulationDataChanged:{}", featureId));
   }
   void onGeometryMeasurementConfigChanged(
-      const int& featureId, const QString& oldMConfig,
+      const int& featureId, const std::string& oldMConfig,
       const oi::MeasurementConfigKey oldKey) override {
-    this->calls.push_back(QString("geometryMeasurementConfigChanged:%1:%2:%3")
-                              .arg(featureId)
-                              .arg(oldMConfig)
-                              .arg(oldKey.getName()));
+    this->calls.push_back(
+        std::format("geometryMeasurementConfigChanged:{}:{}:{}", featureId,
+                    oldMConfig, oldKey.getName()));
   }
   void onSystemObservationsChanged(const int& featureId,
                                    const int& obsId) override {
     this->calls.push_back(
-        QString("systemObservationsChanged:%1:%2").arg(featureId).arg(obsId));
+        std::format("systemObservationsChanged:{}:{}", featureId, obsId));
   }
   void onSystemTrafoParamsChanged(const int& featureId) override {
     this->calls.push_back(
-        QString("systemTrafoParamsChanged:%1").arg(featureId));
+        std::format("systemTrafoParamsChanged:{}", featureId));
   }
   void onSystemsNominalsChanged(const int& featureId) override {
-    this->calls.push_back(QString("systemsNominalsChanged:%1").arg(featureId));
+    this->calls.push_back(std::format("systemsNominalsChanged:{}", featureId));
   }
   void onStationSensorChanged(const int& featureId) override {
-    this->calls.push_back(QString("stationSensorChanged:%1").arg(featureId));
+    this->calls.push_back(std::format("stationSensorChanged:{}", featureId));
   }
   void onTrafoParamParametersChanged(const int& featureId) override {
     this->calls.push_back(
-        QString("trafoParamParametersChanged:%1").arg(featureId));
+        std::format("trafoParamParametersChanged:{}", featureId));
   }
   void onTrafoParamSystemsChanged(const int& featureId) override {
     this->calls.push_back(
-        QString("trafoParamSystemsChanged:%1").arg(featureId));
+        std::format("trafoParamSystemsChanged:{}", featureId));
   }
   void onTrafoParamIsUsedChanged(const int& featureId) override {
-    this->calls.push_back(QString("trafoParamIsUsedChanged:%1").arg(featureId));
+    this->calls.push_back(std::format("trafoParamIsUsedChanged:{}", featureId));
   }
   void onTrafoParamIsDatumChanged(const int& featureId) override {
     this->calls.push_back(
-        QString("trafoParamIsDatumChanged:%1").arg(featureId));
+        std::format("trafoParamIsDatumChanged:{}", featureId));
   }
-  void onSendMessage(const QString& msg, const oi::MessageTypes& msgType,
+  void onSendMessage(const std::string& msg, const oi::MessageTypes& msgType,
                      const oi::MessageDestinations& msgDest) override {
-    this->calls.push_back(QString("sendMessage:%1:%2:%3")
-                              .arg(msg)
-                              .arg(static_cast<int>(msgType))
-                              .arg(static_cast<int>(msgDest)));
+    this->calls.push_back(std::format("sendMessage:{}:{}:{}", msg,
+                                      static_cast<int>(msgType),
+                                      static_cast<int>(msgDest)));
   }
   void onRecalcFeatureRequested(
       const oi::Guarded<oi::Feature>& feature) override {
-    this->calls.push_back(QString("recalcFeature:%1").arg(feature->getId()));
+    this->calls.push_back(std::format("recalcFeature:{}", feature->getId()));
   }
   void onRecalcFeatureSetRequested() override {
-    this->calls.push_back(QString("recalcFeatureSet"));
+    this->calls.push_back(std::string("recalcFeatureSet"));
   }
   void onFeaturesRecalculated() override {
-    this->calls.push_back(QString("featuresRecalculated"));
+    this->calls.push_back(std::string("featuresRecalculated"));
   }
   void onFeatureRecalculated(const int& featureId) override {
-    this->calls.push_back(QString("featureRecalculated:%1").arg(featureId));
+    this->calls.push_back(std::format("featureRecalculated:{}", featureId));
   }
   void onTrafoParamRecalculated(const int& featureId) override {
-    this->calls.push_back(QString("trafoParamRecalculated:%1").arg(featureId));
+    this->calls.push_back(std::format("trafoParamRecalculated:{}", featureId));
   }
 
  private:

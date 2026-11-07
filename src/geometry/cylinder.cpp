@@ -115,10 +115,10 @@ void Cylinder::setCylinder(const Position& axisPoint, const Direction& axis,
  * \param displayDigits
  * \return
  */
-std::map<GeometryParameters, QString> Cylinder::getUnknownParameters(
+std::map<GeometryParameters, std::string> Cylinder::getUnknownParameters(
     const std::map<DimensionType, UnitType>& displayUnits,
     const std::map<DimensionType, int>& displayDigits) const {
-  std::map<GeometryParameters, QString> parameters;
+  std::map<GeometryParameters, std::string> parameters;
 
   parameters.insert_or_assign(
       GeometryParameters::eUnknownX,

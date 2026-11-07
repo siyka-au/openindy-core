@@ -37,7 +37,7 @@ class OI_CORE_EXPORT PointGroup : public Group, public PointCollection {
 
  public:
   explicit PointGroup();
-  explicit PointGroup(const QString& name);
+  explicit PointGroup(const std::string& name);
 
   PointGroup(const PointGroup& copy);
   PointGroup& operator=(const PointGroup& copy);
@@ -65,7 +65,7 @@ class OI_CORE_EXPORT PointGroup : public Group, public PointCollection {
   // display methods
   // ###############
 
-  [[nodiscard]] QString getDisplayType() const override;
+  [[nodiscard]] std::string getDisplayType() const override;
 };
 
 }  // namespace oi

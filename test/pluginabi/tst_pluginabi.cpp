@@ -1,11 +1,14 @@
-#include <QCryptographicHash>
-#include <QDir>
-#include <QDirIterator>
-#include <QFile>
-#include <QMap>
-#include <QRegularExpression>
-#include <QSet>
-#include <QtTest>
+#include <algorithm>
+#include <catch2/catch_test_macros.hpp>
+#include <filesystem>
+#include <format>
+#include <fstream>
+#include <iterator>
+#include <map>
+#include <set>
+#include <sstream>
+#include <string>
+#include <vector>
 
 #include "constructfunction.h"
 #include "exchangeinterface.h"
@@ -16,9 +19,15 @@
 #include "objecttransformation.h"
 #include "plugin.h"
 #include "pluginabi.h"
+#include "sha256.h"
 #include "specialfunction.h"
+#include "stringutil.h"
 #include "systemtransformation.h"
 #include "totalstation.h"
+
+namespace {
+
+namespace fs = std::filesystem;
 
 /*!
  * Guards the plugin ABI version declared in include/plugin/pluginabi.h.
@@ -46,111 +55,108 @@
  * Observation, ...). Those are just as ABI-breaking. Judgement is still
  * required; see the bump criteria in pluginabi.h.
  */
-class PluginAbiTest : public QObject {
-  Q_OBJECT
 
- private slots:
-  void interfaceHeadersMatchTheDeclaredAbiVersion();
-  void everyInterfaceIidCarriesTheAbiVersion();
-
- private:
-  static QString normalize(const QString& source);
-  static QString digestOfInterfaceHeaders(QStringList& filesOut);
-};
-
-/*!
- * \brief PluginAbiTest::normalize
- * Strips comments and insignificant whitespace so that documentation changes
- * do not read as interface changes.
- */
-QString PluginAbiTest::normalize(const QString& source) {
-  QString text = source;
-
-  // block comments first, so a "//" inside one is not mistaken for a line
-  // comment
-  text.remove(QRegularExpression(
-      "/\\*.*?\\*/", QRegularExpression::DotMatchesEverythingOption));
-  text.remove(QRegularExpression("//[^\n]*"));
-
-  QStringList significantLines;
-  for (const QString& rawLine : text.split('\n')) {
-    const QString line = rawLine.simplified();
-    if (!line.isEmpty()) {
-      significantLines.append(line);
+//! Strips comments and insignificant whitespace so that documentation changes
+//! do not read as interface changes.
+std::string normalize(const std::string& source) {
+  // comments out; a "//" inside a block comment is part of the block, and a
+  // "/*" inside a line comment is part of the line
+  std::string text;
+  for (std::size_t i = 0; i < source.size();) {
+    if (source.compare(i, 2, "/*") == 0) {
+      const std::size_t end = source.find("*/", i + 2);
+      i = end == std::string::npos ? source.size() : end + 2;
+    } else if (source.compare(i, 2, "//") == 0) {
+      const std::size_t end = source.find('\n', i);
+      i = end == std::string::npos ? source.size() : end;
+    } else {
+      text.push_back(source[i]);
+      ++i;
     }
   }
 
-  return significantLines.join('\n');
+  std::vector<std::string> significantLines;
+  for (const std::string& rawLine : oi::split(text, "\n")) {
+    // whitespace runs collapse to one space, the ends are trimmed
+    std::string line;
+    for (const char c : oi::trim(rawLine)) {
+      const bool space =
+          c == ' ' || c == '\t' || c == '\r' || c == '\v' || c == '\f';
+      if (space && !line.empty() && line.back() == ' ') {
+        continue;
+      }
+      line.push_back(space ? ' ' : c);
+    }
+    if (!line.empty()) {
+      significantLines.push_back(line);
+    }
+  }
+
+  return oi::join(significantLines, "\n");
 }
 
-/*!
- * \brief PluginAbiTest::digestOfInterfaceHeaders
- * \param filesOut receives the hashed file names, in the order hashed
- * \return hex sha256 over every header in include/plugin/ except pluginabi.h
- */
-QString PluginAbiTest::digestOfInterfaceHeaders(QStringList& filesOut) {
-  const QDir pluginIncludeDir(QString("%1/include/plugin").arg(SOURCEDIR));
+//! hex sha256 over every header in include/plugin/ except pluginabi.h; the
+//! hashed file names are returned in the order hashed
+std::string digestOfInterfaceHeaders(std::vector<std::string>& filesOut) {
+  const fs::path pluginIncludeDir = fs::path(SOURCEDIR) / "include" / "plugin";
 
-  QStringList headers;
-  QDirIterator it(pluginIncludeDir.absolutePath(), QStringList() << "*.h",
-                  QDir::Files, QDirIterator::Subdirectories);
-  while (it.hasNext()) {
-    const QString absolute = it.next();
-    const QString relative = pluginIncludeDir.relativeFilePath(absolute);
-    // pluginabi.h itself is excluded: bumping the version edits it, which
-    // would change the digest on every bump and make the pairing circular
-    if (relative == QString("pluginabi.h")) {
+  std::vector<std::string> headers;
+  for (const fs::directory_entry& entry :
+       fs::recursive_directory_iterator(pluginIncludeDir)) {
+    if (!entry.is_regular_file() || entry.path().extension() != ".h") {
       continue;
     }
-    headers.append(relative);
+    const std::string relative =
+        entry.path().lexically_relative(pluginIncludeDir).generic_string();
+    // pluginabi.h itself is excluded: bumping the version edits it, which
+    // would change the digest on every bump and make the pairing circular
+    if (relative == "pluginabi.h") {
+      continue;
+    }
+    headers.push_back(relative);
   }
 
   // sorted, so the digest does not depend on filesystem iteration order
-  headers.sort();
+  std::ranges::sort(headers);
 
-  QCryptographicHash hash(QCryptographicHash::Sha256);
-  for (const QString& relative : headers) {
-    QFile file(pluginIncludeDir.absoluteFilePath(relative));
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-      return QString();
+  std::string hashed;
+  for (const std::string& relative : headers) {
+    std::ifstream file(pluginIncludeDir / relative);
+    if (!file) {
+      return {};
     }
+    std::stringstream contents;
+    contents << file.rdbuf();
     // the file name participates, so renaming or moving an interface header
     // counts as a change even when its contents are untouched
-    hash.addData(relative.toUtf8());
-    hash.addData(
-        PluginAbiTest::normalize(QString::fromUtf8(file.readAll())).toUtf8());
+    hashed += relative;
+    hashed += normalize(contents.str());
   }
 
   filesOut = headers;
-  return QString::fromLatin1(hash.result().toHex());
+  return oi::codec::sha256Hex(hashed);
 }
 
-void PluginAbiTest::interfaceHeadersMatchTheDeclaredAbiVersion() {
-  QStringList hashedFiles;
-  const QString actualDigest =
-      PluginAbiTest::digestOfInterfaceHeaders(hashedFiles);
-  QVERIFY2(!actualDigest.isEmpty(),
-           "could not read the plugin interface headers");
-  QVERIFY2(!hashedFiles.isEmpty(),
-           "found no plugin interface headers to fingerprint");
+}  // namespace
 
-  const QString digestPath = QString("%1/plugin-abi.digest").arg(SOURCEDIR);
+TEST_CASE("interface headers match the declared ABI version") {
+  std::vector<std::string> hashedFiles;
+  const std::string actualDigest = digestOfInterfaceHeaders(hashedFiles);
+  REQUIRE_FALSE(actualDigest.empty());
+  REQUIRE_FALSE(hashedFiles.empty());
 
-  QFile digestFile(digestPath);
-  QString recordedVersion;
-  QString recordedDigest;
-  if (digestFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-    const QStringList parts =
-        QString::fromUtf8(digestFile.readAll()).simplified().split(' ');
-    if (parts.size() == 2) {
-      recordedVersion = parts.at(0);
-      recordedDigest = parts.at(1);
-    }
+  const std::string digestPath =
+      (fs::path(SOURCEDIR) / "plugin-abi.digest").string();
+
+  std::string recordedVersion;
+  std::string recordedDigest;
+  if (std::ifstream digestFile(digestPath); digestFile) {
+    digestFile >> recordedVersion >> recordedDigest;
   }
 
-  const QString currentVersion = QString::number(OI_PLUGIN_ABI_VERSION);
-  const QString expectedFileContents =
-      QString("%1 %2\n").arg(currentVersion).arg(actualDigest);
+  const std::string currentVersion = oi::number(OI_PLUGIN_ABI_VERSION);
+  const std::string expectedFileContents =
+      std::format("{} {}\n", currentVersion, actualDigest);
 
   if (recordedVersion == currentVersion && recordedDigest == actualDigest) {
     return;
@@ -158,45 +164,36 @@ void PluginAbiTest::interfaceHeadersMatchTheDeclaredAbiVersion() {
 
   // write what the file should say, so the fix is a copy rather than a
   // transcription of a 64-character hex string from a test log
-  const QString suggestionPath =
-      QString("%1/plugin-abi.digest.actual").arg(QDir::currentPath());
-  QFile suggestion(suggestionPath);
-  if (suggestion.open(QIODevice::WriteOnly | QIODevice::Text)) {
-    suggestion.write(expectedFileContents.toUtf8());
-    suggestion.close();
+  const std::string suggestionPath =
+      (fs::current_path() / "plugin-abi.digest.actual").string();
+  if (std::ofstream suggestion(suggestionPath); suggestion) {
+    suggestion << expectedFileContents;
   }
 
-  const QString message =
-      QString(
-          "\n"
-          "The plugin interface headers no longer match the recorded "
-          "fingerprint for\n"
-          "plugin ABI version %1.\n"
-          "\n"
-          "  recorded: version %2, digest %3\n"
-          "  actual:   version %1, digest %4\n"
-          "\n"
-          "If you changed the plugin contract (see the bump criteria in\n"
-          "include/plugin/pluginabi.h), bump OI_PLUGIN_ABI_VERSION and then "
-          "run:\n"
-          "\n"
-          "    cp %5 %6\n"
-          "\n"
-          "If the change genuinely cannot break an existing plugin binary, "
-          "refresh\n"
-          "the digest with the same command without bumping - but do that "
-          "knowingly,\n"
-          "because the diff is the only record that you decided it was safe.\n")
-          .arg(currentVersion)
-          .arg(recordedVersion.isEmpty() ? QString("<none recorded>")
-                                         : recordedVersion)
-          .arg(recordedDigest.isEmpty() ? QString("<none recorded>")
-                                        : recordedDigest)
-          .arg(actualDigest)
-          .arg(suggestionPath)
-          .arg(digestPath);
-
-  QFAIL(qPrintable(message));
+  FAIL(std::format(
+      "\n"
+      "The plugin interface headers no longer match the recorded fingerprint "
+      "for\n"
+      "plugin ABI version {0}.\n"
+      "\n"
+      "  recorded: version {1}, digest {2}\n"
+      "  actual:   version {0}, digest {3}\n"
+      "\n"
+      "If you changed the plugin contract (see the bump criteria in\n"
+      "include/plugin/pluginabi.h), bump OI_PLUGIN_ABI_VERSION and then "
+      "run:\n"
+      "\n"
+      "    cp {4} {5}\n"
+      "\n"
+      "If the change genuinely cannot break an existing plugin binary, "
+      "refresh\n"
+      "the digest with the same command without bumping - but do that "
+      "knowingly,\n"
+      "because the diff is the only record that you decided it was safe.\n",
+      currentVersion,
+      recordedVersion.empty() ? "<none recorded>" : recordedVersion,
+      recordedDigest.empty() ? "<none recorded>" : recordedDigest, actualDigest,
+      suggestionPath, digestPath));
 }
 
 /*!
@@ -204,12 +201,11 @@ void PluginAbiTest::interfaceHeadersMatchTheDeclaredAbiVersion() {
  * not would keep a constant IID across a genuine ABI break - it would keep
  * loading, and keep being wrong.
  */
-void PluginAbiTest::everyInterfaceIidCarriesTheAbiVersion() {
-  const QDir pluginIncludeDir(QString("%1/include/plugin").arg(SOURCEDIR));
-  const QString suffix = QString::number(OI_PLUGIN_ABI_VERSION);
+TEST_CASE("every interface IID carries the ABI version") {
+  const std::string suffix = oi::number(OI_PLUGIN_ABI_VERSION);
 
   // a representative IID from each interface family
-  const QMap<QString, QString> iids = {
+  const std::map<std::string, std::string> iids = {
       {"Plugin", Plugin_iidd},
       {"Sensor", Sensor_iidd},
       {"LaserTracker", LaserTracker_iidd},
@@ -228,29 +224,15 @@ void PluginAbiTest::everyInterfaceIidCarriesTheAbiVersion() {
       {"ExchangeSimpleAscii", ExchangeSimpleAscii_iidd},
       {"ExchangeDefinedFormat", ExchangeDefinedFormat_iidd}};
 
-  for (auto it = iids.constBegin(); it != iids.constEnd(); ++it) {
-    QVERIFY2(
-        it.value().endsWith(suffix),
-        qPrintable(QString("%1's IID (%2) does not end with the ABI version %3")
-                       .arg(it.key())
-                       .arg(it.value())
-                       .arg(suffix)));
-    QVERIFY2(
-        it.value().startsWith("de.openIndy.plugin"),
-        qPrintable(
-            QString("%1's IID (%2) is not in the de.openIndy.plugin namespace")
-                .arg(it.key())
-                .arg(it.value())));
+  std::set<std::string> distinct;
+  for (const auto& [name, iid] : iids) {
+    INFO(name << "'s IID is " << iid);
+    CHECK(iid.ends_with(suffix));
+    CHECK(iid.starts_with("de.openIndy.plugin"));
+    distinct.insert(iid);
   }
 
   // and they must be distinct, or two interface categories would be
   // mutually castable
-  QSet<QString> distinct;
-  for (const QString& iid : iids.values()) {
-    distinct.insert(iid);
-  }
-  QCOMPARE(distinct.size(), iids.size());
+  CHECK(distinct.size() == iids.size());
 }
-
-QTEST_APPLESS_MAIN(PluginAbiTest)
-#include "tst_pluginabi.moc"

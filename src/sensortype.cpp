@@ -1,5 +1,6 @@
 #include "sensortype.h"
 
+#include <cctype>
 #include <map>
 #include <vector>
 
@@ -11,24 +12,25 @@ namespace {
 
 //! turns "laserTracker" into "Laser Tracker" so a type nobody registered
 //! still presents reasonably
-QString humanize(const QString& id) {
-  QString result;
-  for (int i = 0; i < id.size(); i++) {
-    const QChar c = id.at(i);
+std::string humanize(const std::string& id) {
+  std::string result;
+  for (std::size_t i = 0; i < id.size(); i++) {
+    const char c = id.at(i);
     if (i == 0) {
-      result.append(c.toUpper());
-    } else if (c.isUpper()) {
-      result.append(' ');
-      result.append(c);
+      result.push_back(
+          static_cast<char>(std::toupper(static_cast<unsigned char>(c))));
+    } else if (std::isupper(static_cast<unsigned char>(c)) != 0) {
+      result.push_back(' ');
+      result.push_back(c);
     } else {
-      result.append(c);
+      result.push_back(c);
     }
   }
   return result;
 }
 
-std::map<QString, SensorType>& registry() {
-  static std::map<QString, SensorType> instance;
+std::map<std::string, SensorType>& registry() {
+  static std::map<std::string, SensorType> instance;
   return instance;
 }
 
@@ -36,8 +38,8 @@ bool seeded = false;
 
 }  // namespace
 
-SensorType::SensorType(const QString& id, const QString& displayName,
-                       const QString& iconKey)
+SensorType::SensorType(const std::string& id, const std::string& displayName,
+                       const std::string& iconKey)
     : m_id(id), m_displayName(displayName), m_iconKey(iconKey) {}
 
 /*!
@@ -47,23 +49,23 @@ SensorType::SensorType(const QString& id, const QString& displayName,
  * (de.openIndy.plugin.sensor.v<version>) carries no type of its own and yields
  * an invalid SensorType.
  */
-SensorType SensorType::fromInterfaceId(const QString& interfaceId) {
-  const QString marker = QStringLiteral("plugin.sensor.");
-  const int start = interfaceId.indexOf(marker);
-  if (start < 0) {
+SensorType SensorType::fromInterfaceId(const std::string& interfaceId) {
+  const std::string marker = std::string("plugin.sensor.");
+  const std::size_t start = interfaceId.find(marker);
+  if (start == std::string::npos) {
     return SensorType();
   }
 
-  QString remainder = interfaceId.mid(start + marker.size());
+  std::string remainder = interfaceId.substr(start + marker.size());
 
   // strip the trailing version segment
-  const int versionAt = remainder.lastIndexOf(QStringLiteral(".v"));
-  if (versionAt >= 0) {
-    remainder = remainder.left(versionAt);
+  const std::size_t versionAt = remainder.rfind(".v");
+  if (versionAt != std::string::npos) {
+    remainder.resize(versionAt);
   }
 
   // the bare sensor interface has nothing between the marker and the version
-  if (remainder.isEmpty() || remainder.startsWith(QLatin1Char('v'))) {
+  if (remainder.empty() || remainder.starts_with('v')) {
     return SensorType();
   }
 
@@ -75,13 +77,15 @@ SensorType SensorType::fromInterfaceId(const QString& interfaceId) {
   return SensorType(remainder, humanize(remainder));
 }
 
-const QString& SensorType::id() const { return this->m_id; }
+const std::string& SensorType::id() const { return this->m_id; }
 
-const QString& SensorType::displayName() const { return this->m_displayName; }
+const std::string& SensorType::displayName() const {
+  return this->m_displayName;
+}
 
-const QString& SensorType::iconKey() const { return this->m_iconKey; }
+const std::string& SensorType::iconKey() const { return this->m_iconKey; }
 
-bool SensorType::isValid() const { return !this->m_id.isEmpty(); }
+bool SensorType::isValid() const { return !this->m_id.empty(); }
 
 bool SensorType::operator==(const SensorType& other) const {
   return this->m_id == other.m_id;
@@ -96,14 +100,14 @@ void SensorTypeRegistry::ensureSeeded() {
     return;
   }
   seeded = true;
-  registry().insert_or_assign(QStringLiteral("laserTracker"),
-                              SensorType(QStringLiteral("laserTracker"),
-                                         QStringLiteral("Laser Tracker"),
-                                         QStringLiteral("laserTracker")));
-  registry().insert_or_assign(QStringLiteral("totalStation"),
-                              SensorType(QStringLiteral("totalStation"),
-                                         QStringLiteral("Total Station"),
-                                         QStringLiteral("totalStation")));
+  registry().insert_or_assign(
+      std::string("laserTracker"),
+      SensorType(std::string("laserTracker"), std::string("Laser Tracker"),
+                 std::string("laserTracker")));
+  registry().insert_or_assign(
+      std::string("totalStation"),
+      SensorType(std::string("totalStation"), std::string("Total Station"),
+                 std::string("totalStation")));
 }
 
 void SensorTypeRegistry::registerType(const SensorType& type) {
@@ -114,7 +118,7 @@ void SensorTypeRegistry::registerType(const SensorType& type) {
   registry().insert_or_assign(type.id(), type);
 }
 
-std::optional<SensorType> SensorTypeRegistry::byId(const QString& id) {
+std::optional<SensorType> SensorTypeRegistry::byId(const std::string& id) {
   SensorTypeRegistry::ensureSeeded();
   const auto it = registry().find(id);
   if (it == registry().cend()) {

@@ -55,8 +55,8 @@ class OI_CORE_EXPORT LaserTracker : public Sensor {
    * \return
    */
   virtual bool initialize() {
-    this->sensorMessage(QString("Laser Tracker not implemented correctly: "
-                                "initialization method missing"),
+    this->sensorMessage(std::string("Laser Tracker not implemented correctly: "
+                                    "initialization method missing"),
                         MessageTypes::eCriticalMessage,
                         MessageDestinations::eMessageBoxMessage);
     return false;
@@ -73,7 +73,8 @@ class OI_CORE_EXPORT LaserTracker : public Sensor {
   virtual bool move(const double& /*azimuth*/, const double& /*zenith*/,
                     const double& /*distance*/, const bool& /*isRelative*/) {
     this->sensorMessage(
-        QString("Laser Tracker not implemented correctly: move method missing"),
+        std::string(
+            "Laser Tracker not implemented correctly: move method missing"),
         MessageTypes::eCriticalMessage,
         MessageDestinations::eMessageBoxMessage);
     return false;
@@ -89,7 +90,8 @@ class OI_CORE_EXPORT LaserTracker : public Sensor {
   virtual bool move(const double& /*x*/, const double& /*y*/,
                     const double& /*z*/) {
     this->sensorMessage(
-        QString("Laser Tracker not implemented correctly: move method missing"),
+        std::string(
+            "Laser Tracker not implemented correctly: move method missing"),
         MessageTypes::eCriticalMessage,
         MessageDestinations::eMessageBoxMessage);
     return false;
@@ -101,7 +103,8 @@ class OI_CORE_EXPORT LaserTracker : public Sensor {
    */
   virtual bool home() {
     this->sensorMessage(
-        QString("Laser Tracker not implemented correctly: home method missing"),
+        std::string(
+            "Laser Tracker not implemented correctly: home method missing"),
         MessageTypes::eCriticalMessage,
         MessageDestinations::eMessageBoxMessage);
     return false;
@@ -112,8 +115,8 @@ class OI_CORE_EXPORT LaserTracker : public Sensor {
    * \return
    */
   virtual bool changeMotorState() {
-    this->sensorMessage(QString("Laser Tracker not implemented correctly: "
-                                "motor state method missing"),
+    this->sensorMessage(std::string("Laser Tracker not implemented correctly: "
+                                    "motor state method missing"),
                         MessageTypes::eCriticalMessage,
                         MessageDestinations::eMessageBoxMessage);
     return false;
@@ -124,8 +127,8 @@ class OI_CORE_EXPORT LaserTracker : public Sensor {
    * \return
    */
   virtual bool toggleSightOrientation() {
-    this->sensorMessage(QString("Laser Tracker not implemented correctly: "
-                                "toggle sight method missing"),
+    this->sensorMessage(std::string("Laser Tracker not implemented correctly: "
+                                    "toggle sight method missing"),
                         MessageTypes::eCriticalMessage,
                         MessageDestinations::eMessageBoxMessage);
     return false;
@@ -136,8 +139,8 @@ class OI_CORE_EXPORT LaserTracker : public Sensor {
    * \return
    */
   virtual bool compensation() {
-    this->sensorMessage(QString("Laser Tracker not implemented correctly: "
-                                "compensation method missing"),
+    this->sensorMessage(std::string("Laser Tracker not implemented correctly: "
+                                    "compensation method missing"),
                         MessageTypes::eCriticalMessage,
                         MessageDestinations::eMessageBoxMessage);
     return false;
@@ -145,7 +148,7 @@ class OI_CORE_EXPORT LaserTracker : public Sensor {
 
   bool search() override {
     this->sensorMessage(
-        QString(
+        std::string(
             "Laser Tracker not implemented correctly: search method missing"),
         MessageTypes::eCriticalMessage,
         MessageDestinations::eMessageBoxMessage);

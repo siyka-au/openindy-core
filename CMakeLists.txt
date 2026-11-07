@@ -243,6 +243,9 @@ target_compile_definitions(OpenIndyCore
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_compile_options(OpenIndyCore PRIVATE -Wall -Wextra -Wpedantic)
 endif()
+# Source files and string literals are UTF-8 (std::string holds UTF-8); MSVC
+# needs to be told, and consumers of the headers must compile the same way.
+target_compile_options(OpenIndyCore PUBLIC $<$<CXX_COMPILER_ID:MSVC>:/utf-8>)
 
 target_include_directories(OpenIndyCore
     PUBLIC
@@ -300,6 +303,7 @@ target_link_libraries(OpenIndyCodec PUBLIC OpenIndyCore PUBLIC protobuf::libprot
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_compile_options(OpenIndyCodec PRIVATE -Wall -Wextra -Wpedantic)
 endif()
+target_compile_options(OpenIndyCodec PUBLIC $<$<CXX_COMPILER_ID:MSVC>:/utf-8>)
 
 # --- tests ---
 
@@ -340,6 +344,11 @@ add_executable(tst_codec test/codec/tst_codec.cpp)
 target_link_libraries(tst_codec PRIVATE
     OpenIndyCodec OpenIndyCore OpenIndyMath Catch2::Catch2WithMain)
 add_test(NAME codec COMMAND tst_codec)
+
+add_executable(tst_strings test/strings/tst_strings.cpp)
+target_link_libraries(tst_strings PRIVATE Catch2::Catch2WithMain)
+target_include_directories(tst_strings PRIVATE include)
+add_test(NAME strings COMMAND tst_strings)
 
 add_executable(tst_guarded test/guarded/tst_guarded.cpp)
 target_include_directories(tst_guarded PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
@@ -432,7 +441,8 @@ endif()
 add_test(NAME sensorworker COMMAND tst_sensorworker)
 
 add_executable(tst_pluginabi test/pluginabi/tst_pluginabi.cpp)
-target_link_libraries(tst_pluginabi PRIVATE Qt6::Test OpenIndyCore OpenIndyMath)
+target_link_libraries(tst_pluginabi PRIVATE OpenIndyCore OpenIndyMath Catch2::Catch2WithMain)
+target_include_directories(tst_pluginabi PRIVATE src/codec)
 target_compile_definitions(tst_pluginabi PRIVATE SOURCEDIR="${CMAKE_CURRENT_SOURCE_DIR}")
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")

@@ -1,8 +1,8 @@
 #ifndef PRODUCERTRANSFORM_H
 #define PRODUCERTRANSFORM_H
 
-#include <QString>
 #include <expected>
+#include <string>
 
 namespace oi {
 
@@ -47,7 +47,7 @@ template <typename T>
 class Producer {
  public:
   virtual ~Producer() = default;
-  virtual std::expected<T, QString> exec() = 0;
+  virtual std::expected<T, std::string> exec() = 0;
 };
 
 /*!
@@ -60,7 +60,7 @@ template <typename T>
 class Transform {
  public:
   virtual ~Transform() = default;
-  virtual std::expected<T, QString> exec(const T& input) = 0;
+  virtual std::expected<T, std::string> exec(const T& input) = 0;
 };
 
 }  // namespace oi

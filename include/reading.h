@@ -1,10 +1,8 @@
 #ifndef READING_H
 #define READING_H
-#include <QtCore/qmath.h>
-
-#include <QtCore>
 #include <chrono>
 #include <map>
+#include <string>
 
 #include "core_export.h"
 #include "element.h"
@@ -120,8 +118,8 @@ class OI_CORE_EXPORT ReadingUndefined {
  public:
   ReadingUndefined() {}
 
-  std::map<QString, double> values;
-  std::map<QString, double> sigmaValues;
+  std::map<std::string, double> values;
+  std::map<std::string, double> sigmaValues;
   bool isValid{false};
 };
 
@@ -239,46 +237,46 @@ class OI_CORE_EXPORT Reading : public Element {
   // display methods
   // ###############
 
-  [[nodiscard]] QString getDisplayId() const;
-  [[nodiscard]] QString getDisplayType() const;
-  [[nodiscard]] QString getDisplayTime() const;
-  [[nodiscard]] QString getDisplaySensorConfigName() const;
-  [[nodiscard]] QString getDisplayMeasurementConfigName() const;
-  [[nodiscard]] QString getDisplaySide() const;
-  [[nodiscard]] QString getDisplayAzimuth(const UnitType& type,
-                                          const int& digits) const;
-  [[nodiscard]] QString getDisplayZenith(const UnitType& type,
-                                         const int& digits) const;
-  [[nodiscard]] QString getDisplayDistance(const UnitType& type,
-                                           const int& digits) const;
-  [[nodiscard]] QString getDisplayX(const UnitType& type,
-                                    const int& digits) const;
-  [[nodiscard]] QString getDisplayY(const UnitType& type,
-                                    const int& digits) const;
-  [[nodiscard]] QString getDisplayZ(const UnitType& type,
-                                    const int& digits) const;
-  [[nodiscard]] QString getDisplayI(const int& digits) const;
-  [[nodiscard]] QString getDisplayJ(const int& digits) const;
-  [[nodiscard]] QString getDisplayK(const int& digits) const;
-  [[nodiscard]] QString getDisplayTemperature(const UnitType& type,
+  [[nodiscard]] std::string getDisplayId() const;
+  [[nodiscard]] std::string getDisplayType() const;
+  [[nodiscard]] std::string getDisplayTime() const;
+  [[nodiscard]] std::string getDisplaySensorConfigName() const;
+  [[nodiscard]] std::string getDisplayMeasurementConfigName() const;
+  [[nodiscard]] std::string getDisplaySide() const;
+  [[nodiscard]] std::string getDisplayAzimuth(const UnitType& type,
                                               const int& digits) const;
-  [[nodiscard]] QString getDisplaySigmaAzimuth(const UnitType& type,
+  [[nodiscard]] std::string getDisplayZenith(const UnitType& type,
+                                             const int& digits) const;
+  [[nodiscard]] std::string getDisplayDistance(const UnitType& type,
                                                const int& digits) const;
-  [[nodiscard]] QString getDisplaySigmaZenith(const UnitType& type,
-                                              const int& digits) const;
-  [[nodiscard]] QString getDisplaySigmaDistance(const UnitType& type,
-                                                const int& digits) const;
-  [[nodiscard]] QString getDisplaySigmaX(const UnitType& type,
-                                         const int& digits) const;
-  [[nodiscard]] QString getDisplaySigmaY(const UnitType& type,
-                                         const int& digits) const;
-  [[nodiscard]] QString getDisplaySigmaZ(const UnitType& type,
-                                         const int& digits) const;
-  [[nodiscard]] QString getDisplaySigmaI(const int& digits) const;
-  [[nodiscard]] QString getDisplaySigmaJ(const int& digits) const;
-  [[nodiscard]] QString getDisplaySigmaK(const int& digits) const;
-  [[nodiscard]] QString getDisplaySigmaTemperature(const UnitType& type,
+  [[nodiscard]] std::string getDisplayX(const UnitType& type,
+                                        const int& digits) const;
+  [[nodiscard]] std::string getDisplayY(const UnitType& type,
+                                        const int& digits) const;
+  [[nodiscard]] std::string getDisplayZ(const UnitType& type,
+                                        const int& digits) const;
+  [[nodiscard]] std::string getDisplayI(const int& digits) const;
+  [[nodiscard]] std::string getDisplayJ(const int& digits) const;
+  [[nodiscard]] std::string getDisplayK(const int& digits) const;
+  [[nodiscard]] std::string getDisplayTemperature(const UnitType& type,
+                                                  const int& digits) const;
+  [[nodiscard]] std::string getDisplaySigmaAzimuth(const UnitType& type,
                                                    const int& digits) const;
+  [[nodiscard]] std::string getDisplaySigmaZenith(const UnitType& type,
+                                                  const int& digits) const;
+  [[nodiscard]] std::string getDisplaySigmaDistance(const UnitType& type,
+                                                    const int& digits) const;
+  [[nodiscard]] std::string getDisplaySigmaX(const UnitType& type,
+                                             const int& digits) const;
+  [[nodiscard]] std::string getDisplaySigmaY(const UnitType& type,
+                                             const int& digits) const;
+  [[nodiscard]] std::string getDisplaySigmaZ(const UnitType& type,
+                                             const int& digits) const;
+  [[nodiscard]] std::string getDisplaySigmaI(const int& digits) const;
+  [[nodiscard]] std::string getDisplaySigmaJ(const int& digits) const;
+  [[nodiscard]] std::string getDisplaySigmaK(const int& digits) const;
+  [[nodiscard]] std::string getDisplaySigmaTemperature(const UnitType& type,
+                                                       const int& digits) const;
 
  private:
   // #######################
@@ -323,7 +321,7 @@ class OI_CORE_EXPORT Reading : public Element {
   // ######################
 
   SensorConfiguration sConfig;
-  QString sensorConfigName;
+  std::string sensorConfigName;
   oi::Guarded<Observation> observation;
 
   // ################

@@ -1,8 +1,8 @@
 #ifndef CALIBRATEDCONSTELLATION_H
 #define CALIBRATEDCONSTELLATION_H
-#include <QString>
 #include <chrono>
 #include <optional>
+#include <string>
 #include <vector>
 
 #include "core_export.h"
@@ -31,15 +31,15 @@ using namespace math;
 class OI_CORE_EXPORT LocalPoint {
  public:
   LocalPoint() = default;
-  LocalPoint(const QString& label, const OiVec& position,
+  LocalPoint(const std::string& label, const OiVec& position,
              bool isMeasured = true);
 
-  [[nodiscard]] const QString& label() const;
+  [[nodiscard]] const std::string& label() const;
   [[nodiscard]] const OiVec& position() const;
   [[nodiscard]] bool isMeasured() const;
 
  private:
-  QString m_label;
+  std::string m_label;
   OiVec m_position;
   bool m_isMeasured = true;
 };
@@ -63,31 +63,31 @@ class OI_CORE_EXPORT LocalPoint {
 class OI_CORE_EXPORT CalibratedConstellation {
  public:
   CalibratedConstellation() = default;
-  CalibratedConstellation(const QString& name,
+  CalibratedConstellation(const std::string& name,
                           const std::vector<LocalPoint>& points,
-                          const QString& certificateId = QString(),
+                          const std::string& certificateId = std::string(),
                           const std::optional<std::chrono::year_month_day>&
                               calibratedAt = std::nullopt);
 
-  [[nodiscard]] const QString& name() const;
+  [[nodiscard]] const std::string& name() const;
   [[nodiscard]] const std::vector<LocalPoint>& points() const;
 
   [[nodiscard]] std::vector<LocalPoint> measuredPoints() const;
   [[nodiscard]] std::vector<LocalPoint> derivedPoints() const;
 
   [[nodiscard]] std::optional<LocalPoint> pointByLabel(
-      const QString& label) const;
+      const std::string& label) const;
 
-  [[nodiscard]] const QString& certificateId() const;
+  [[nodiscard]] const std::string& certificateId() const;
   [[nodiscard]] const std::optional<std::chrono::year_month_day>& calibratedAt()
       const;
 
   [[nodiscard]] bool isValid() const;
 
  private:
-  QString m_name;
+  std::string m_name;
   std::vector<LocalPoint> m_points;
-  QString m_certificateId;
+  std::string m_certificateId;
   std::optional<std::chrono::year_month_day> m_calibratedAt;
 };
 

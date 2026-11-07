@@ -1,7 +1,7 @@
 #ifndef EXCHANGEOBSERVER_H
 #define EXCHANGEOBSERVER_H
 
-#include <QString>
+#include <string>
 
 #include "core_export.h"
 
@@ -30,7 +30,7 @@ class OI_CORE_EXPORT ExchangeObserver {
   ExchangeObserver& operator=(ExchangeObserver&&) = delete;
 
   // 0 <= percent <= 100
-  virtual void onProgress(int /*percent*/, const QString& /*message*/) {}
+  virtual void onProgress(int /*percent*/, const std::string& /*message*/) {}
   virtual void onImportFinished(bool /*success*/) {}
   virtual void onExportFinished(bool /*success*/) {}
 };

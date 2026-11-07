@@ -8,6 +8,7 @@
 #include "featurewrapper.h"
 #include "oijob.h"
 #include "snapshot.h"
+#include "stringutil.h"
 
 using namespace oi;
 using namespace oi::math;
@@ -61,7 +62,7 @@ TrafoParam::TrafoParam(const TrafoParam& copy) : Feature(copy) {
   // exec(TrafoParam&) only ever mutated a live object in place, but a
   // real bug once a Producer<TrafoParam> builds a fresh local and hands
   // it back by value (Helmert7Param::exec()), because *this* copy
-  // constructor runs on the way into std::expected<TrafoParam, QString>,
+  // constructor runs on the way into std::expected<TrafoParam, std::string>,
   // before execAs<T>'s explicit statistic propagation ever gets a chance
   // to see it. Found via tst_calibratedconstellation while migrating.
   this->statistic = copy.statistic;
@@ -399,10 +400,10 @@ bool TrafoParam::setTransformationParameters(const OiMat& /*homogenMatrix*/) {
  * \param displayDigits
  * \return
  */
-std::map<TrafoParamParameters, QString> TrafoParam::getUnknownParameters(
+std::map<TrafoParamParameters, std::string> TrafoParam::getUnknownParameters(
     const std::map<DimensionType, UnitType>& displayUnits,
     const std::map<DimensionType, int>& displayDigits) const {
-  std::map<TrafoParamParameters, QString> parameters;
+  std::map<TrafoParamParameters, std::string> parameters;
 
   parameters.insert_or_assign(
       TrafoParamParameters::eUnknownTX,
@@ -522,32 +523,32 @@ void TrafoParam::recalc() { Feature::recalc(); }
  * \param digits
  * \return
  */
-QString TrafoParam::getDisplayStDev(const UnitType& type,
-                                    const int& digits) const {
-  return QString::number(convertFromDefault(this->statistic.getStdev(), type),
-                         'f', digits);
+std::string TrafoParam::getDisplayStDev(const UnitType& type,
+                                        const int& digits) const {
+  return oi::number(convertFromDefault(this->statistic.getStdev(), type), 'f',
+                    digits);
 }
 
 /*!
  * \brief TrafoParam::getDisplayStartSystem
  * \return
  */
-QString TrafoParam::getDisplayStartSystem() const {
+std::string TrafoParam::getDisplayStartSystem() const {
   if (!this->from.isNull()) {
     return this->from->getFeatureName();
   }
-  return QString("");
+  return std::string("");
 }
 
 /*!
  * \brief TrafoParam::getDisplayDestinationSystem
  * \return
  */
-QString TrafoParam::getDisplayDestinationSystem() const {
+std::string TrafoParam::getDisplayDestinationSystem() const {
   if (!this->to.isNull()) {
     return this->to->getFeatureName();
   }
-  return QString("");
+  return std::string("");
 }
 
 /*!
@@ -556,13 +557,13 @@ QString TrafoParam::getDisplayDestinationSystem() const {
  * \param digits
  * \return
  */
-QString TrafoParam::getDisplayTranslationX(const UnitType& type,
-                                           const int& digits) const {
+std::string TrafoParam::getDisplayTranslationX(const UnitType& type,
+                                               const int& digits) const {
   if (this->isSolved) {
-    return QString::number(convertFromDefault(this->translation.getAt(0), type),
-                           'f', digits);
+    return oi::number(convertFromDefault(this->translation.getAt(0), type), 'f',
+                      digits);
   }
-  return QString("");
+  return std::string("");
 }
 
 /*!
@@ -571,13 +572,13 @@ QString TrafoParam::getDisplayTranslationX(const UnitType& type,
  * \param digits
  * \return
  */
-QString TrafoParam::getDisplayTranslationY(const UnitType& type,
-                                           const int& digits) const {
+std::string TrafoParam::getDisplayTranslationY(const UnitType& type,
+                                               const int& digits) const {
   if (this->isSolved) {
-    return QString::number(convertFromDefault(this->translation.getAt(1), type),
-                           'f', digits);
+    return oi::number(convertFromDefault(this->translation.getAt(1), type), 'f',
+                      digits);
   }
-  return QString("");
+  return std::string("");
 }
 
 /*!
@@ -586,13 +587,13 @@ QString TrafoParam::getDisplayTranslationY(const UnitType& type,
  * \param digits
  * \return
  */
-QString TrafoParam::getDisplayTranslationZ(const UnitType& type,
-                                           const int& digits) const {
+std::string TrafoParam::getDisplayTranslationZ(const UnitType& type,
+                                               const int& digits) const {
   if (this->isSolved) {
-    return QString::number(convertFromDefault(this->translation.getAt(2), type),
-                           'f', digits);
+    return oi::number(convertFromDefault(this->translation.getAt(2), type), 'f',
+                      digits);
   }
-  return QString("");
+  return std::string("");
 }
 
 /*!
@@ -601,13 +602,13 @@ QString TrafoParam::getDisplayTranslationZ(const UnitType& type,
  * \param digits
  * \return
  */
-QString TrafoParam::getDisplayRotationX(const UnitType& type,
-                                        const int& digits) const {
+std::string TrafoParam::getDisplayRotationX(const UnitType& type,
+                                            const int& digits) const {
   if (this->isSolved) {
-    return QString::number(convertFromDefault(this->rotation.getAt(0), type),
-                           'f', digits);
+    return oi::number(convertFromDefault(this->rotation.getAt(0), type), 'f',
+                      digits);
   }
-  return QString("");
+  return std::string("");
 }
 
 /*!
@@ -616,13 +617,13 @@ QString TrafoParam::getDisplayRotationX(const UnitType& type,
  * \param digits
  * \return
  */
-QString TrafoParam::getDisplayRotationY(const UnitType& type,
-                                        const int& digits) const {
+std::string TrafoParam::getDisplayRotationY(const UnitType& type,
+                                            const int& digits) const {
   if (this->isSolved) {
-    return QString::number(convertFromDefault(this->rotation.getAt(1), type),
-                           'f', digits);
+    return oi::number(convertFromDefault(this->rotation.getAt(1), type), 'f',
+                      digits);
   }
-  return QString("");
+  return std::string("");
 }
 
 /*!
@@ -631,13 +632,13 @@ QString TrafoParam::getDisplayRotationY(const UnitType& type,
  * \param digits
  * \return
  */
-QString TrafoParam::getDisplayRotationZ(const UnitType& type,
-                                        const int& digits) const {
+std::string TrafoParam::getDisplayRotationZ(const UnitType& type,
+                                            const int& digits) const {
   if (this->isSolved) {
-    return QString::number(convertFromDefault(this->rotation.getAt(2), type),
-                           'f', digits);
+    return oi::number(convertFromDefault(this->rotation.getAt(2), type), 'f',
+                      digits);
   }
-  return QString("");
+  return std::string("");
 }
 
 /*!
@@ -645,11 +646,11 @@ QString TrafoParam::getDisplayRotationZ(const UnitType& type,
  * \param digits
  * \return
  */
-QString TrafoParam::getDisplayScaleX(const int& digits) const {
+std::string TrafoParam::getDisplayScaleX(const int& digits) const {
   if (this->isSolved) {
-    return QString::number(this->scale.getAt(0), 'f', digits);
+    return oi::number(this->scale.getAt(0), 'f', digits);
   }
-  return QString("");
+  return std::string("");
 }
 
 /*!
@@ -657,11 +658,11 @@ QString TrafoParam::getDisplayScaleX(const int& digits) const {
  * \param digits
  * \return
  */
-QString TrafoParam::getDisplayScaleY(const int& digits) const {
+std::string TrafoParam::getDisplayScaleY(const int& digits) const {
   if (this->isSolved) {
-    return QString::number(this->scale.getAt(1), 'f', digits);
+    return oi::number(this->scale.getAt(1), 'f', digits);
   }
-  return QString("");
+  return std::string("");
 }
 
 /*!
@@ -669,18 +670,18 @@ QString TrafoParam::getDisplayScaleY(const int& digits) const {
  * \param digits
  * \return
  */
-QString TrafoParam::getDisplayScaleZ(const int& digits) const {
+std::string TrafoParam::getDisplayScaleZ(const int& digits) const {
   if (this->isSolved) {
-    return QString::number(this->scale.getAt(2), 'f', digits);
+    return oi::number(this->scale.getAt(2), 'f', digits);
   }
-  return QString("");
+  return std::string("");
 }
 
 /*!
  * \brief TrafoParam::getDisplayIsUsed
  * \return
  */
-QString TrafoParam::getDisplayIsUsed() const {
+std::string TrafoParam::getDisplayIsUsed() const {
   return this->isUsed ? "true" : "false";
 }
 
@@ -688,6 +689,6 @@ QString TrafoParam::getDisplayIsUsed() const {
  * \brief TrafoParam::getDisplayIsDatumTransformation
  * \return
  */
-QString TrafoParam::getDisplayIsDatumTransformation() const {
+std::string TrafoParam::getDisplayIsDatumTransformation() const {
   return this->isDatumTrafo ? "true" : "false";
 }

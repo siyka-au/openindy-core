@@ -1,28 +1,36 @@
 #ifndef PLUGINMETADATA_H
 #define PLUGINMETADATA_H
 
-#include <QJsonArray>
+#include <string>
+#include <vector>
 
 #include "core_export.h"
 #include "types.h"
 
 namespace oi {
 
+//! A file the plugin needs next to it: its name and where it is installed
+//! ("app" for the application's own folder).
+struct PluginDependency {
+  std::string name;
+  std::string path;
+};
+
 class OI_CORE_EXPORT PluginMetaData {
  public:
-  QString iid;
-  QString name;
-  QString pluginName;
-  QString pluginVersion;
-  QString author;
-  QString compiler;
-  QString operatingSystem;
+  std::string iid;
+  std::string name;
+  std::string pluginName;
+  std::string pluginVersion;
+  std::string author;
+  std::string compiler;
+  std::string operatingSystem;
   bool dependencies{};
-  QJsonArray dependenciesPath;
-  QString description;
-  QString path;
+  std::vector<PluginDependency> dependenciesPath;
+  std::string description;
+  std::string path;
   bool isValid{};
-  QString pluginType;
+  std::string pluginType;
 };
 
 }  // namespace oi

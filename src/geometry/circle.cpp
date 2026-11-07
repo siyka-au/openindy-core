@@ -112,10 +112,10 @@ void Circle::setCircle(const Position& center, const Direction& normal,
  * \param displayDigits
  * \return
  */
-std::map<GeometryParameters, QString> Circle::getUnknownParameters(
+std::map<GeometryParameters, std::string> Circle::getUnknownParameters(
     const std::map<DimensionType, UnitType>& displayUnits,
     const std::map<DimensionType, int>& displayDigits) const {
-  std::map<GeometryParameters, QString> parameters;
+  std::map<GeometryParameters, std::string> parameters;
 
   parameters.insert_or_assign(
       GeometryParameters::eUnknownX,

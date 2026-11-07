@@ -90,7 +90,7 @@ void ExchangeInterface::setExportObservations(const bool& exportObservations) {
  * \brief ExchangeInterface::getGroupName
  * \return
  */
-const QString& ExchangeInterface::getGroupName() const {
+const std::string& ExchangeInterface::getGroupName() const {
   return this->groupName;
 }
 
@@ -98,7 +98,7 @@ const QString& ExchangeInterface::getGroupName() const {
  * \brief ExchangeInterface::setGroupName
  * \param groupName
  */
-void ExchangeInterface::setGroupName(const QString& groupName) {
+void ExchangeInterface::setGroupName(const std::string& groupName) {
   this->groupName = groupName;
 }
 
@@ -143,7 +143,7 @@ void ExchangeInterface::setUnit(const DimensionType& dimension,
  */
 void ExchangeInterface::importOiData() {
   this->sendMessage(
-      QString(
+      std::string(
           "Exchange Plugin not implemented correctly: import method missing"),
       MessageTypes::eCriticalMessage, MessageDestinations::eMessageBoxMessage);
 }
@@ -153,7 +153,7 @@ void ExchangeInterface::importOiData() {
  */
 void ExchangeInterface::exportOiData() {
   this->sendMessage(
-      QString(
+      std::string(
           "Exchange Plugin not implemented correctly: export method missing"),
       MessageTypes::eCriticalMessage, MessageDestinations::eMessageBoxMessage);
 }

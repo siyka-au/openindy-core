@@ -115,10 +115,10 @@ void Cone::setCone(const Position& apex, const Direction& axis,
  * \param displayDigits
  * \return
  */
-std::map<GeometryParameters, QString> Cone::getUnknownParameters(
+std::map<GeometryParameters, std::string> Cone::getUnknownParameters(
     const std::map<DimensionType, UnitType>& displayUnits,
     const std::map<DimensionType, int>& displayDigits) const {
-  std::map<GeometryParameters, QString> parameters;
+  std::map<GeometryParameters, std::string> parameters;
 
   parameters.insert_or_assign(
       GeometryParameters::eUnknownX,

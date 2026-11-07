@@ -1,8 +1,8 @@
 #ifndef GEOMETRY_H
 #define GEOMETRY_H
-#include <QtCore>
 #include <map>
 #include <optional>
+#include <string>
 #include <vector>
 
 #include "core_export.h"
@@ -65,7 +65,7 @@ class OI_CORE_EXPORT Geometry : public Feature {
   // D19: empty when the user owns this geometry (no producer yet, or a
   // scalar-only "nominal" producer); otherwise names the fit that owns
   // it. See the class comment.
-  [[nodiscard]] std::optional<QString> getOwnerDescription() const override;
+  [[nodiscard]] std::optional<std::string> getOwnerDescription() const override;
 
   // the nominal this geometry realises, if any (D17). Only ever
   // meaningful on an actual; a nominal's own realises is always empty.
@@ -139,7 +139,7 @@ class OI_CORE_EXPORT Geometry : public Feature {
   // get or set unknown parameters
   // #############################
 
-  [[nodiscard]] virtual std::map<GeometryParameters, QString>
+  [[nodiscard]] virtual std::map<GeometryParameters, std::string>
   getUnknownParameters(const std::map<DimensionType, UnitType>& displayUnits,
                        const std::map<DimensionType, int>& displayDigits) const;
 
@@ -164,32 +164,32 @@ class OI_CORE_EXPORT Geometry : public Feature {
   // display methods
   // ###############
 
-  [[nodiscard]] QString getDisplayStDev(const UnitType& type,
-                                        const int& digits) const override;
-  [[nodiscard]] QString getDisplayFormError(const UnitType& type,
+  [[nodiscard]] std::string getDisplayStDev(const UnitType& type,
                                             const int& digits) const override;
+  [[nodiscard]] std::string getDisplayFormError(
+      const UnitType& type, const int& digits) const override;
 
-  [[nodiscard]] QString getDisplayMeasurementConfig() const override;
-  [[nodiscard]] QString getDisplayObservations() const override;
-  [[nodiscard]] QString getDisplayIsCommon() const override;
-  [[nodiscard]] QString getDisplayIsActual() const override;
+  [[nodiscard]] std::string getDisplayMeasurementConfig() const override;
+  [[nodiscard]] std::string getDisplayObservations() const override;
+  [[nodiscard]] std::string getDisplayIsCommon() const override;
+  [[nodiscard]] std::string getDisplayIsActual() const override;
 
-  [[nodiscard]] QString getDisplayX(
+  [[nodiscard]] std::string getDisplayX(
       const UnitType& type, const int& digits,
       const bool& showDiff = false) const override;
-  [[nodiscard]] QString getDisplayY(
+  [[nodiscard]] std::string getDisplayY(
       const UnitType& type, const int& digits,
       const bool& showDiff = false) const override;
-  [[nodiscard]] QString getDisplayZ(
+  [[nodiscard]] std::string getDisplayZ(
       const UnitType& type, const int& digits,
       const bool& showDiff = false) const override;
-  [[nodiscard]] QString getDisplayPrimaryI(
+  [[nodiscard]] std::string getDisplayPrimaryI(
       const int& digits, const bool& showDiff = false) const override;
-  [[nodiscard]] QString getDisplayPrimaryJ(
+  [[nodiscard]] std::string getDisplayPrimaryJ(
       const int& digits, const bool& showDiff = false) const override;
-  [[nodiscard]] QString getDisplayPrimaryK(
+  [[nodiscard]] std::string getDisplayPrimaryK(
       const int& digits, const bool& showDiff = false) const override;
-  [[nodiscard]] QString getDisplayRadiusA(
+  [[nodiscard]] std::string getDisplayRadiusA(
       const UnitType& type, const int& digits,
       const bool& showDiff = false) const override;
 

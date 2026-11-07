@@ -60,12 +60,12 @@ class OI_CORE_EXPORT ExchangeSimpleAscii : public ExchangeInterface {
   [[nodiscard]] virtual std::vector<ExchangeSimpleAscii::ColumnType>
   getDefaultColumnOrder(const GeometryTypes& typeOfGeometry) const;
   [[nodiscard]]
-  virtual std::map<ExchangeSimpleAscii::ColumnType, std::vector<QVariant>>
+  virtual std::map<ExchangeSimpleAscii::ColumnType, std::vector<oi::Value>>
   getFilePreview(const GeometryTypes& typeOfGeometry) const;
   [[nodiscard]] virtual std::vector<ExchangeSimpleAscii::ColumnType>
   getPossibleColumns(const GeometryTypes& typeOfGeometry) const;
 
-  [[nodiscard]] const std::vector<QString>& getSupportedDelimiters() const;
+  [[nodiscard]] const std::vector<std::string>& getSupportedDelimiters() const;
 
   [[nodiscard]] const std::vector<ExchangeSimpleAscii::ColumnType>&
   getUserDefinedColumns() const;
@@ -78,8 +78,8 @@ class OI_CORE_EXPORT ExchangeSimpleAscii : public ExchangeInterface {
   [[nodiscard]] const bool& getSkipFirstLine() const;
   void setSkipFirstLine(const bool& skipFirstLine);
 
-  [[nodiscard]] const QString& getUsedDelimiter() const;
-  void setDelimiter(const QString& usedDelimiter);
+  [[nodiscard]] const std::string& getUsedDelimiter() const;
+  void setDelimiter(const std::string& usedDelimiter);
 
   void setCurrentJob(oi::Guarded<OiJob> job);
   oi::Guarded<OiJob> getCurrentJob();
@@ -106,10 +106,10 @@ class OI_CORE_EXPORT ExchangeSimpleAscii : public ExchangeInterface {
                                            // shall be im- or exported
   bool skipFirstLine{};  // Skip the first line in a file during import / do not
                          // write headers to file during export
-  QString
+  std::string
       usedDelimiter;  // the delimiter that shall be used when parsing the file
 
-  std::vector<QString> supportedDelimiters;
+  std::vector<std::string> supportedDelimiters;
 
   oi::Guarded<OiJob> currentJob;
 
@@ -135,6 +135,7 @@ class OI_CORE_EXPORT ExchangeSimpleAscii : public ExchangeInterface {
 #endif
 
 #include "pluginabi.h"
+#include "value.h"
 
 #define EXCHANGE_SIMPLEASCII_PREFIX \
   de.openIndy.plugin.exchange.exchangeSimpleAscii.v

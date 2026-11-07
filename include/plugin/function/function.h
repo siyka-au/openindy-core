@@ -2,11 +2,11 @@
 #define FUNCTION_H
 #include <math.h>
 
-#include <QtCore>
 #include <cmath>
 #include <expected>
 #include <map>
 #include <optional>
+#include <string>
 #include <vector>
 
 #include "circle.h"
@@ -70,11 +70,11 @@ namespace oi {
 class NeededElement {
  public:
   ElementTypes typeOfElement;  // type of the needed input element
-  QString description;  // optional description for the needed element to show
-                        // in the GUI
-  bool infinite{};      // only one element or as many elements as one wants?
-  QString roleName;  // stable role name for tag-based resolution (D12); empty
-                     // for an undistinguished single input
+  std::string description;     // optional description for the needed element to
+                            // show in the GUI
+  bool infinite{};       // only one element or as many elements as one wants?
+  std::string roleName;  // stable role name for tag-based resolution (D12);
+                         // empty for an undistinguished single input
 
   // D16/domain-model.md S5: the ordered, declarative pipeline over this
   // role's tag-resolved candidates - Java-Stream-shaped, evaluated by
@@ -102,7 +102,7 @@ class InputElement {
   }
 
   int id;  // the id of the element
-  QString label;
+  std::string label;
   ElementTypes typeOfElement;  // the type of the element
 
   // single parameters of this element that shall not be used in function
@@ -244,7 +244,7 @@ class OI_CORE_EXPORT Function : public oi::Trackable {
   // every pre-7d caller (tests calling a function directly without going
   // through Feature::recalc(), cfvisitor.cpp, OiJob) - it is now a thin
   // wrapper over execChecked().
-  virtual std::expected<void, QString> execChecked(
+  virtual std::expected<void, std::string> execChecked(
       const oi::Guarded<FeatureWrapper>& feature);
   virtual bool exec(const oi::Guarded<FeatureWrapper>& feature);
 
@@ -269,10 +269,10 @@ class OI_CORE_EXPORT Function : public oi::Trackable {
   [[nodiscard]] const std::vector<FeatureTypes>& getApplicableFor() const;
   [[nodiscard]] const PluginMetaData& getMetaData() const;
 
-  [[nodiscard]] const std::map<QString, int>& getIntegerParameter() const;
-  [[nodiscard]] const std::map<QString, double>& getDoubleParameter() const;
-  [[nodiscard]] const std::multimap<QString, QString>& getStringParameter()
-      const;
+  [[nodiscard]] const std::map<std::string, int>& getIntegerParameter() const;
+  [[nodiscard]] const std::map<std::string, double>& getDoubleParameter() const;
+  [[nodiscard]] const std::multimap<std::string, std::string>&
+  getStringParameter() const;
 
   void setScalarInputParams(const ScalarInputParams& params);
   const ScalarInputParams& getScalarInputParams();
@@ -286,7 +286,7 @@ class OI_CORE_EXPORT Function : public oi::Trackable {
   // get function results
   // ####################
 
-  [[nodiscard]] const std::vector<QString>& getResultProtocol() const;
+  [[nodiscard]] const std::vector<std::string>& getResultProtocol() const;
 
   [[nodiscard]] const Statistic& getStatistic() const;
 
@@ -365,7 +365,7 @@ class OI_CORE_EXPORT Function : public oi::Trackable {
     return this->messageSink;
   }
 
-  void sendMessage(const QString& msg, const MessageTypes& msgType,
+  void sendMessage(const std::string& msg, const MessageTypes& msgType,
                    const MessageDestinations& msgDest =
                        MessageDestinations::eConsoleMessage) {
     if (this->messageSink != nullptr) {
@@ -399,9 +399,9 @@ class OI_CORE_EXPORT Function : public oi::Trackable {
   PluginMetaData metaData;
 
   // the needed scalar input parameters including default values
-  std::map<QString, int> integerParameters;
-  std::map<QString, double> doubleParameters;
-  std::multimap<QString, QString> stringParameters;
+  std::map<std::string, int> integerParameters;
+  std::map<std::string, double> doubleParameters;
+  std::multimap<std::string, std::string> stringParameters;
 
   // user defined scalar input parameters
   ScalarInputParams scalarInputParams;
@@ -409,7 +409,7 @@ class OI_CORE_EXPORT Function : public oi::Trackable {
   // parameters of a geometry that should have a fixed value
   std::vector<FixedParameter> fixedParameters;
 
-  std::vector<QString> resultProtocol;
+  std::vector<std::string> resultProtocol;
 
   // ##################
   // general attributes
@@ -457,7 +457,7 @@ class OI_CORE_EXPORT Function : public oi::Trackable {
   // function doesn't belong in this slot" rejection - no separate
   // validation step required here (attach-time validation is a distinct,
   // additional check - see canActAsProducer/canActAsTransform above).
-  std::expected<void, QString> execByFeatureType(
+  std::expected<void, std::string> execByFeatureType(
       const oi::Guarded<FeatureWrapper>& feature);
 
   // deterministic pipeline stages (ExplicitList, Exclude) - need no fit

@@ -1,7 +1,7 @@
 #ifndef SIMULATIONMODEL_H
 #define SIMULATIONMODEL_H
-#include <QString>
 #include <map>
+#include <string>
 #include <vector>
 
 #include "core_export.h"
@@ -25,18 +25,18 @@ namespace oi {
  */
 class OI_CORE_EXPORT UncertaintyComponent {
  public:
-  QString name;
+  std::string name;
 
-  double value{};        // magnitude of the error
-  double uncertainty{};  // uncertainty of the error
-  QString distribution;  // the distribution of the uncertainty component
+  double value{};            // magnitude of the error
+  double uncertainty{};      // uncertainty of the error
+  std::string distribution;  // the distribution of the uncertainty component
 
-  QString errorUnit;  // unit of the uncertainty value (mm, m ,...)
+  std::string errorUnit;  // unit of the uncertainty value (mm, m ,...)
 
-  QString description;
+  std::string description;
 
-  std::vector<QString> distributions;  // distributions in which the error could
-                                       // be determined at random
+  std::vector<std::string> distributions;  // distributions in which the error
+                                           // could be determined at random
 };
 
 /*!
@@ -44,10 +44,10 @@ class OI_CORE_EXPORT UncertaintyComponent {
  */
 class OI_CORE_EXPORT Uncertainties {
  public:
-  std::map<QString, UncertaintyComponent> sensorUncertainties;
-  std::map<QString, UncertaintyComponent> objectUncertainties;
-  std::map<QString, UncertaintyComponent> enviromentUncertainties;
-  std::map<QString, UncertaintyComponent> humanUncertainties;
+  std::map<std::string, UncertaintyComponent> sensorUncertainties;
+  std::map<std::string, UncertaintyComponent> objectUncertainties;
+  std::map<std::string, UncertaintyComponent> enviromentUncertainties;
+  std::map<std::string, UncertaintyComponent> humanUncertainties;
 };
 
 /*!
@@ -66,7 +66,7 @@ class OI_CORE_EXPORT UncertaintyData {
   double expectation{};
   double uncertainty{};  // uncertainty of the data series
 
-  QString distribution;  // name of the distribution of the data series
+  std::string distribution;  // name of the distribution of the data series
 
   // function pointers that calculate density and distribution values
   double (*densityFunction)(const double& x, const double& expectation,
@@ -77,7 +77,7 @@ class OI_CORE_EXPORT UncertaintyData {
                                  const double& lowerLimit,
                                  const double& upperLimit){};
 
-  std::map<QString, QString> info;  // custom information
+  std::map<std::string, std::string> info;  // custom information
 };
 
 /*!
@@ -118,7 +118,7 @@ class OI_CORE_EXPORT SimulationData {
   // correlations between parameters
   // ###############################
 
-  std::map<QString, double> correlations;
+  std::map<std::string, double> correlations;
 };
 
 // TODO set simulation config as separate class like sensor config an add xml
@@ -131,9 +131,9 @@ class OI_CORE_EXPORT SimulationConfiguration {
  public:
   Uncertainties uncertainties;
 
-  std::map<QString, int> integerParameters;
-  std::map<QString, double> doubleParameters;
-  std::map<QString, QString> stringParameters;
+  std::map<std::string, int> integerParameters;
+  std::map<std::string, double> doubleParameters;
+  std::map<std::string, std::string> stringParameters;
 };
 
 // #######################
@@ -168,22 +168,22 @@ class OI_CORE_EXPORT SimulationModel : public oi::Trackable {
       const;
   void setSimulationConfiguration(const SimulationConfiguration& sConfig);
 
-  [[nodiscard]] const std::map<QString, int>& getIntegerParameter() const;
-  [[nodiscard]] const std::map<QString, double>& getDoubleParameter() const;
-  [[nodiscard]] const std::multimap<QString, QString>& getStringParameter()
-      const;
+  [[nodiscard]] const std::map<std::string, int>& getIntegerParameter() const;
+  [[nodiscard]] const std::map<std::string, double>& getDoubleParameter() const;
+  [[nodiscard]] const std::multimap<std::string, std::string>&
+  getStringParameter() const;
 
   // ##################
   // simulation methods
   // ##################
 
-  [[nodiscard]] const std::map<QString, UncertaintyComponent>&
+  [[nodiscard]] const std::map<std::string, UncertaintyComponent>&
   getSensorUncertainties() const;
-  [[nodiscard]] const std::map<QString, UncertaintyComponent>&
+  [[nodiscard]] const std::map<std::string, UncertaintyComponent>&
   getObjectUncertainties() const;
-  [[nodiscard]] const std::map<QString, UncertaintyComponent>&
+  [[nodiscard]] const std::map<std::string, UncertaintyComponent>&
   getEnviromentUncertainties() const;
-  [[nodiscard]] const std::map<QString, UncertaintyComponent>&
+  [[nodiscard]] const std::map<std::string, UncertaintyComponent>&
   getHumanInfluence() const;
 
   virtual bool distort(const oi::Guarded<Reading>& r,
@@ -204,7 +204,7 @@ class OI_CORE_EXPORT SimulationModel : public oi::Trackable {
     return this->messageSink;
   }
 
-  void sendMessage(const QString& msg, const MessageTypes& msgType,
+  void sendMessage(const std::string& msg, const MessageTypes& msgType,
                    const MessageDestinations& msgDest =
                        MessageDestinations::eConsoleMessage) {
     if (this->messageSink != nullptr) {
@@ -222,15 +222,15 @@ class OI_CORE_EXPORT SimulationModel : public oi::Trackable {
   PluginMetaData metaData;
 
   // the needed scalar input parameters including default values
-  std::map<QString, int> integerParameters;
-  std::map<QString, double> doubleParameters;
-  std::multimap<QString, QString> stringParameters;
+  std::map<std::string, int> integerParameters;
+  std::map<std::string, double> doubleParameters;
+  std::multimap<std::string, std::string> stringParameters;
 
   // uncertainties provided by plugin writer
-  std::map<QString, UncertaintyComponent> sensorUncertainties;
-  std::map<QString, UncertaintyComponent> objectUncertainties;
-  std::map<QString, UncertaintyComponent> environmentUncertainties;
-  std::map<QString, UncertaintyComponent> humanInfluence;
+  std::map<std::string, UncertaintyComponent> sensorUncertainties;
+  std::map<std::string, UncertaintyComponent> objectUncertainties;
+  std::map<std::string, UncertaintyComponent> environmentUncertainties;
+  std::map<std::string, UncertaintyComponent> humanInfluence;
 
  private:
   MessageSink* messageSink = nullptr;  // non-owning

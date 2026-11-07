@@ -1,7 +1,7 @@
 #ifndef ELLIPSOID_H
 #define ELLIPSOID_H
-#include <QtCore>
 #include <map>
+#include <string>
 
 #include "core_export.h"
 #include "direction.h"
@@ -64,7 +64,7 @@ class OI_CORE_EXPORT Ellipsoid : public Geometry {
   // get or set unknown parameters
   // #############################
 
-  [[nodiscard]] std::map<GeometryParameters, QString> getUnknownParameters(
+  [[nodiscard]] std::map<GeometryParameters, std::string> getUnknownParameters(
       const std::map<DimensionType, UnitType>& displayUnits,
       const std::map<DimensionType, int>& displayDigits) const override;
   void applyUnknownParameters(
@@ -80,10 +80,10 @@ class OI_CORE_EXPORT Ellipsoid : public Geometry {
   // display methods
   // ###############
 
-  [[nodiscard]] QString getDisplayA(
+  [[nodiscard]] std::string getDisplayA(
       const UnitType& type, const int& digits,
       const bool& showDiff = false) const override;
-  [[nodiscard]] QString getDisplayB(
+  [[nodiscard]] std::string getDisplayB(
       const UnitType& type, const int& digits,
       const bool& showDiff = false) const override;
 

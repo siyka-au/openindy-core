@@ -59,17 +59,17 @@ inline void appendIds(const std::vector<oi::Guarded<FeatureWrapper>>& wrappers,
 
 inline oipb::PluginObjectRef pluginRef(const PluginMetaData& meta) {
   oipb::PluginObjectRef ref;
-  ref.set_name(meta.name.toStdString());
-  ref.set_plugin(meta.pluginName.toStdString());
+  ref.set_name(meta.name);
+  ref.set_plugin(meta.pluginName);
   return ref;
 }
 
 inline oipb::FeatureCommon commonOf(const Feature& f) {
   oipb::FeatureCommon c;
   c.set_id(f.getId());
-  c.set_name(f.getFeatureName().toStdString());
-  c.set_group(f.getGroupName().toStdString());
-  c.set_comment(f.getComment().toStdString());
+  c.set_name(f.getFeatureName());
+  c.set_group(f.getGroupName());
+  c.set_comment(f.getComment());
   c.set_solved(f.getIsSolved());
   c.set_active(f.getIsActiveFeature());
   appendIds(f.getUsedFor(), c.mutable_used_for());
@@ -105,9 +105,9 @@ inline std::chrono::system_clock::time_point fromTimestamp(
  *  by name and sensor type. */
 inline oipb::MeasurementConfigRef configRefOf(const MeasurementConfigKey& key) {
   oipb::MeasurementConfigRef ref;
-  ref.set_name(key.getName().toStdString());
+  ref.set_name(key.getName());
   if (key.getSensorType().isValid()) {
-    ref.set_sensor_type(key.getSensorType().id().toStdString());
+    ref.set_sensor_type(key.getSensorType().id());
   }
   return ref;
 }
@@ -116,11 +116,10 @@ inline MeasurementConfigKey configKeyOf(const oipb::MeasurementConfigRef& ref) {
   SensorType sensorType;
   if (ref.has_sensor_type()) {
     sensorType =
-        SensorTypeRegistry::byId(QString::fromStdString(ref.sensor_type()))
-            .value_or(SensorType());
+        SensorTypeRegistry::byId((ref.sensor_type())).value_or(SensorType());
   }
-  return MeasurementConfigKey(QString::fromStdString(ref.name()),
-                              ConfigTypes::eUndefinded, sensorType);
+  return MeasurementConfigKey((ref.name()), ConfigTypes::eUndefinded,
+                              sensorType);
 }
 
 }  // namespace oi::codec

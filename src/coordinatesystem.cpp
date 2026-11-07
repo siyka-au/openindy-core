@@ -10,6 +10,7 @@
 #include "observation.h"
 #include "oijob.h"
 #include "snapshot.h"
+#include "stringutil.h"
 #include "trafoparam.h"
 
 using namespace oi;
@@ -537,7 +538,7 @@ bool CoordinateSystem::removeNominal(const int& featureId) {
  * \brief CoordinateSystem::getBundleTemplate
  * \return
  */
-const QJsonObject& CoordinateSystem::getBundleTemplate() const {
+const std::string& CoordinateSystem::getBundleTemplate() const {
   return this->bundleTemplate;
 }
 
@@ -545,7 +546,7 @@ const QJsonObject& CoordinateSystem::getBundleTemplate() const {
  * \brief CoordinateSystem::setBundleTemplate
  * \param bundleTemplate
  */
-void CoordinateSystem::setBundleTemplate(const QJsonObject& bundleTemplate) {
+void CoordinateSystem::setBundleTemplate(const std::string& bundleTemplate) {
   this->bundleTemplate = bundleTemplate;
 }
 
@@ -594,16 +595,17 @@ void CoordinateSystem::recalc() { Feature::recalc(); }
  * \param showDiff
  * \return
  */
-QString CoordinateSystem::getDisplayX(const UnitType& type, const int& digits,
-                                      const bool& /*showDiff*/) const {
+std::string CoordinateSystem::getDisplayX(const UnitType& type,
+                                          const int& digits,
+                                          const bool& /*showDiff*/) const {
   if (this->getIsActiveCoordinateSystem()) {
-    return QString::number(
+    return oi::number(
         convertFromDefault(this->origin.getVector().getAt(0), type), 'f',
         digits);
   }
   for (oi::Guarded<TrafoParam> trafoP : oi::snapshot(this->trafoParams)) {
     if (trafoP->getIsUsed()) {
-      return QString::number(
+      return oi::number(
           convertFromDefault(this->origin.getVector().getAt(0), type), 'f',
           digits);
     }
@@ -618,16 +620,17 @@ QString CoordinateSystem::getDisplayX(const UnitType& type, const int& digits,
  * \param showDiff
  * \return
  */
-QString CoordinateSystem::getDisplayY(const UnitType& type, const int& digits,
-                                      const bool& /*showDiff*/) const {
+std::string CoordinateSystem::getDisplayY(const UnitType& type,
+                                          const int& digits,
+                                          const bool& /*showDiff*/) const {
   if (this->getIsActiveCoordinateSystem()) {
-    return QString::number(
+    return oi::number(
         convertFromDefault(this->origin.getVector().getAt(1), type), 'f',
         digits);
   }
   for (oi::Guarded<TrafoParam> trafoP : oi::snapshot(this->trafoParams)) {
     if (trafoP->getIsUsed()) {
-      return QString::number(
+      return oi::number(
           convertFromDefault(this->origin.getVector().getAt(1), type), 'f',
           digits);
     }
@@ -642,16 +645,17 @@ QString CoordinateSystem::getDisplayY(const UnitType& type, const int& digits,
  * \param showDiff
  * \return
  */
-QString CoordinateSystem::getDisplayZ(const UnitType& type, const int& digits,
-                                      const bool& /*showDiff*/) const {
+std::string CoordinateSystem::getDisplayZ(const UnitType& type,
+                                          const int& digits,
+                                          const bool& /*showDiff*/) const {
   if (this->getIsActiveCoordinateSystem()) {
-    return QString::number(
+    return oi::number(
         convertFromDefault(this->origin.getVector().getAt(2), type), 'f',
         digits);
   }
   for (oi::Guarded<TrafoParam> trafoP : oi::snapshot(this->trafoParams)) {
     if (trafoP->getIsUsed()) {
-      return QString::number(
+      return oi::number(
           convertFromDefault(this->origin.getVector().getAt(2), type), 'f',
           digits);
     }
@@ -665,9 +669,9 @@ QString CoordinateSystem::getDisplayZ(const UnitType& type, const int& digits,
  * \param showDiff
  * \return
  */
-QString CoordinateSystem::getDisplayPrimaryI(const int& digits,
-                                             const bool& /*showDiff*/) const {
-  return QString::number(this->zAxis.getVector().getAt(0), 'f', digits);
+std::string CoordinateSystem::getDisplayPrimaryI(
+    const int& digits, const bool& /*showDiff*/) const {
+  return oi::number(this->zAxis.getVector().getAt(0), 'f', digits);
 }
 
 /*!
@@ -676,9 +680,9 @@ QString CoordinateSystem::getDisplayPrimaryI(const int& digits,
  * \param showDiff
  * \return
  */
-QString CoordinateSystem::getDisplayPrimaryJ(const int& digits,
-                                             const bool& /*showDiff*/) const {
-  return QString::number(this->zAxis.getVector().getAt(1), 'f', digits);
+std::string CoordinateSystem::getDisplayPrimaryJ(
+    const int& digits, const bool& /*showDiff*/) const {
+  return oi::number(this->zAxis.getVector().getAt(1), 'f', digits);
 }
 
 /*!
@@ -687,9 +691,9 @@ QString CoordinateSystem::getDisplayPrimaryJ(const int& digits,
  * \param showDiff
  * \return
  */
-QString CoordinateSystem::getDisplayPrimaryK(const int& digits,
-                                             const bool& /*showDiff*/) const {
-  return QString::number(this->zAxis.getVector().getAt(2), 'f', digits);
+std::string CoordinateSystem::getDisplayPrimaryK(
+    const int& digits, const bool& /*showDiff*/) const {
+  return oi::number(this->zAxis.getVector().getAt(2), 'f', digits);
 }
 
 /*!
@@ -698,9 +702,9 @@ QString CoordinateSystem::getDisplayPrimaryK(const int& digits,
  * \param digits
  * \return
  */
-QString CoordinateSystem::getDisplayExpansionOriginX(const UnitType& type,
-                                                     const int& digits) const {
-  return QString::number(
+std::string CoordinateSystem::getDisplayExpansionOriginX(
+    const UnitType& type, const int& digits) const {
+  return oi::number(
       convertFromDefault(this->expansionOrigin.getVector().getAt(0), type), 'f',
       digits);
 }
@@ -711,9 +715,9 @@ QString CoordinateSystem::getDisplayExpansionOriginX(const UnitType& type,
  * \param digits
  * \return
  */
-QString CoordinateSystem::getDisplayExpansionOriginY(const UnitType& type,
-                                                     const int& digits) const {
-  return QString::number(
+std::string CoordinateSystem::getDisplayExpansionOriginY(
+    const UnitType& type, const int& digits) const {
+  return oi::number(
       convertFromDefault(this->expansionOrigin.getVector().getAt(1), type), 'f',
       digits);
 }
@@ -724,9 +728,9 @@ QString CoordinateSystem::getDisplayExpansionOriginY(const UnitType& type,
  * \param digits
  * \return
  */
-QString CoordinateSystem::getDisplayExpansionOriginZ(const UnitType& type,
-                                                     const int& digits) const {
-  return QString::number(
+std::string CoordinateSystem::getDisplayExpansionOriginZ(
+    const UnitType& type, const int& digits) const {
+  return oi::number(
       convertFromDefault(this->expansionOrigin.getVector().getAt(2), type), 'f',
       digits);
 }
@@ -736,8 +740,8 @@ QString CoordinateSystem::getDisplayExpansionOriginZ(const UnitType& type,
  * \param digits
  * \return
  */
-QString CoordinateSystem::getDisplayXAxisI(const int& digits) const {
-  return QString::number(this->xAxis.getVector().getAt(0), 'f', digits);
+std::string CoordinateSystem::getDisplayXAxisI(const int& digits) const {
+  return oi::number(this->xAxis.getVector().getAt(0), 'f', digits);
 }
 
 /*!
@@ -745,8 +749,8 @@ QString CoordinateSystem::getDisplayXAxisI(const int& digits) const {
  * \param digits
  * \return
  */
-QString CoordinateSystem::getDisplayXAxisJ(const int& digits) const {
-  return QString::number(this->xAxis.getVector().getAt(1), 'f', digits);
+std::string CoordinateSystem::getDisplayXAxisJ(const int& digits) const {
+  return oi::number(this->xAxis.getVector().getAt(1), 'f', digits);
 }
 
 /*!
@@ -754,8 +758,8 @@ QString CoordinateSystem::getDisplayXAxisJ(const int& digits) const {
  * \param digits
  * \return
  */
-QString CoordinateSystem::getDisplayXAxisK(const int& digits) const {
-  return QString::number(this->xAxis.getVector().getAt(2), 'f', digits);
+std::string CoordinateSystem::getDisplayXAxisK(const int& digits) const {
+  return oi::number(this->xAxis.getVector().getAt(2), 'f', digits);
 }
 
 /*!
@@ -763,8 +767,8 @@ QString CoordinateSystem::getDisplayXAxisK(const int& digits) const {
  * \param digits
  * \return
  */
-QString CoordinateSystem::getDisplayYAxisI(const int& digits) const {
-  return QString::number(this->yAxis.getVector().getAt(0), 'f', digits);
+std::string CoordinateSystem::getDisplayYAxisI(const int& digits) const {
+  return oi::number(this->yAxis.getVector().getAt(0), 'f', digits);
 }
 
 /*!
@@ -772,8 +776,8 @@ QString CoordinateSystem::getDisplayYAxisI(const int& digits) const {
  * \param digits
  * \return
  */
-QString CoordinateSystem::getDisplayYAxisJ(const int& digits) const {
-  return QString::number(this->yAxis.getVector().getAt(1), 'f', digits);
+std::string CoordinateSystem::getDisplayYAxisJ(const int& digits) const {
+  return oi::number(this->yAxis.getVector().getAt(1), 'f', digits);
 }
 
 /*!
@@ -781,8 +785,8 @@ QString CoordinateSystem::getDisplayYAxisJ(const int& digits) const {
  * \param digits
  * \return
  */
-QString CoordinateSystem::getDisplayYAxisK(const int& digits) const {
-  return QString::number(this->yAxis.getVector().getAt(2), 'f', digits);
+std::string CoordinateSystem::getDisplayYAxisK(const int& digits) const {
+  return oi::number(this->yAxis.getVector().getAt(2), 'f', digits);
 }
 
 /*!
@@ -790,8 +794,8 @@ QString CoordinateSystem::getDisplayYAxisK(const int& digits) const {
  * \param digits
  * \return
  */
-QString CoordinateSystem::getDisplayZAxisI(const int& digits) const {
-  return QString::number(this->zAxis.getVector().getAt(0), 'f', digits);
+std::string CoordinateSystem::getDisplayZAxisI(const int& digits) const {
+  return oi::number(this->zAxis.getVector().getAt(0), 'f', digits);
 }
 
 /*!
@@ -799,8 +803,8 @@ QString CoordinateSystem::getDisplayZAxisI(const int& digits) const {
  * \param digits
  * \return
  */
-QString CoordinateSystem::getDisplayZAxisJ(const int& digits) const {
-  return QString::number(this->zAxis.getVector().getAt(1), 'f', digits);
+std::string CoordinateSystem::getDisplayZAxisJ(const int& digits) const {
+  return oi::number(this->zAxis.getVector().getAt(1), 'f', digits);
 }
 
 /*!
@@ -808,8 +812,8 @@ QString CoordinateSystem::getDisplayZAxisJ(const int& digits) const {
  * \param digits
  * \return
  */
-QString CoordinateSystem::getDisplayZAxisK(const int& digits) const {
-  return QString::number(this->zAxis.getVector().getAt(2), 'f', digits);
+std::string CoordinateSystem::getDisplayZAxisK(const int& digits) const {
+  return oi::number(this->zAxis.getVector().getAt(2), 'f', digits);
 }
 
 /*!

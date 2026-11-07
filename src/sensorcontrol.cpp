@@ -8,6 +8,8 @@
 #include <utility>
 #include <vector>
 
+#include "value.h"
+
 using namespace oi;
 
 /*!
@@ -96,11 +98,12 @@ class SensorControl::Relay final : public StationObserver {
   explicit Relay(std::shared_ptr<Delivery> delivery)
       : delivery(std::move(delivery)) {}
 
-  void onRealTimeReading(const std::map<QString, QVariant>& reading) override {
+  void onRealTimeReading(const oi::ValueMap& reading) override {
     this->delivery->post(
         [reading](StationObserver& o) { o.onRealTimeReading(reading); });
   }
-  void onRealTimeStatus(const std::map<QString, QString>& status) override {
+  void onRealTimeStatus(
+      const std::map<std::string, std::string>& status) override {
     this->delivery->post(
         [status](StationObserver& o) { o.onRealTimeStatus(status); });
   }
@@ -114,7 +117,7 @@ class SensorControl::Relay final : public StationObserver {
     this->delivery->post(
         [isReady](StationObserver& o) { o.onIsReadyForMeasurement(isReady); });
   }
-  void onCommandFinished(bool success, const QString& msg,
+  void onCommandFinished(bool success, const std::string& msg,
                          SensorAction action) override {
     this->delivery->post([success, msg, action](StationObserver& o) {
       o.onCommandFinished(success, msg, action);
@@ -130,13 +133,13 @@ class SensorControl::Relay final : public StationObserver {
     this->delivery->post(
         [success](StationObserver& o) { o.onMeasurementDone(success); });
   }
-  void onSensorMessage(const QString& msg, MessageTypes msgType,
+  void onSensorMessage(const std::string& msg, MessageTypes msgType,
                        MessageDestinations msgDest) override {
     this->delivery->post([msg, msgType, msgDest](StationObserver& o) {
       o.onSensorMessage(msg, msgType, msgDest);
     });
   }
-  void onSensorStatus(SensorStatus status, const QString& msg) override {
+  void onSensorStatus(SensorStatus status, const std::string& msg) override {
     this->delivery->post(
         [status, msg](StationObserver& o) { o.onSensorStatus(status, msg); });
   }
@@ -274,7 +277,7 @@ bool SensorControl::getIsReadyForMeasurement() {
 
 bool SensorControl::getIsBusy() { return this->worker->getIsBusy(); }
 
-std::map<QString, QString> SensorControl::getSensorStatus() {
+std::map<std::string, std::string> SensorControl::getSensorStatus() {
   return this->worker->getSensorStatus();
 }
 
@@ -294,7 +297,7 @@ std::vector<SensorFunctions> SensorControl::getSupportedSensorActions() {
   return this->worker->getSupportedSensorActions();
 }
 
-std::vector<QString> SensorControl::getSelfDefinedActions() {
+std::vector<std::string> SensorControl::getSelfDefinedActions() {
   return this->worker->getSelfDefinedActions();
 }
 
@@ -335,7 +338,7 @@ void SensorControl::home() { this->worker->home(); }
 void SensorControl::toggleSight() { this->worker->toggleSight(); }
 void SensorControl::compensation() { this->worker->compensation(); }
 
-void SensorControl::selfDefinedAction(const QString& action) {
+void SensorControl::selfDefinedAction(const std::string& action) {
   this->worker->selfDefinedAction(action);
 }
 

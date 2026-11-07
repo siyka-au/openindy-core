@@ -1,6 +1,6 @@
 #include <QCoreApplication>
-#include <QString>
 #include <QtTest>
+#include <string>
 #include <vector>
 
 #include "chooselalib.h"
@@ -24,65 +24,65 @@ namespace {
 class FakeFit : public FitFunction, public Producer<Point> {
  public:
   explicit FakeFit() : FitFunction() { this->metaData.name = "FakeFit"; }
-  std::expected<Point, QString> exec() override { return Point(); }
+  std::expected<Point, std::string> exec() override { return Point(); }
 };
 
 // Remembers every notification as "name:arg:arg..." in arrival order
 class RecordingObserver : public FeatureObserver {
  public:
-  std::vector<QString> calls;
+  std::vector<std::string> calls;
 
-  [[nodiscard]] int count(const QString& name) const {
+  [[nodiscard]] int count(const std::string& name) const {
     int n = 0;
-    for (const QString& c : this->calls) {
-      if (c == name || c.startsWith(name + ":")) {
+    for (const std::string& c : this->calls) {
+      if (c == name || c.starts_with(name + ":")) {
         ++n;
       }
     }
     return n;
   }
 
-  void onElementAboutToBeDeleted(const int& id, const QString&, const QString&,
+  void onElementAboutToBeDeleted(const int& id, const std::string&,
+                                 const std::string&,
                                  const FeatureTypes&) override {
-    this->calls.push_back(QString("elementAboutToBeDeleted:%1").arg(id));
+    this->calls.push_back(std::format("elementAboutToBeDeleted:{}", id));
   }
-  void onFeatureNameChanged(const int& id, const QString& old) override {
-    this->calls.push_back(QString("featureName:%1:%2").arg(id).arg(old));
+  void onFeatureNameChanged(const int& id, const std::string& old) override {
+    this->calls.push_back(std::format("featureName:{}:{}", id, old));
   }
-  void onFeatureGroupChanged(const int& id, const QString& old) override {
-    this->calls.push_back(QString("featureGroup:%1:%2").arg(id).arg(old));
+  void onFeatureGroupChanged(const int& id, const std::string& old) override {
+    this->calls.push_back(std::format("featureGroup:{}:{}", id, old));
   }
   void onFeatureCommentChanged(const int& id) override {
-    this->calls.push_back(QString("featureComment:%1").arg(id));
+    this->calls.push_back(std::format("featureComment:{}", id));
   }
   void onFeatureIsSolvedChanged(const int& id) override {
-    this->calls.push_back(QString("featureIsSolved:%1").arg(id));
+    this->calls.push_back(std::format("featureIsSolved:{}", id));
   }
   void onFeatureFunctionListChanged(const int& id) override {
-    this->calls.push_back(QString("featureFunctionList:%1").arg(id));
+    this->calls.push_back(std::format("featureFunctionList:{}", id));
   }
   void onFeatureUsedForChanged(const int& id) override {
-    this->calls.push_back(QString("featureUsedFor:%1").arg(id));
+    this->calls.push_back(std::format("featureUsedFor:{}", id));
   }
   void onGeomIsCommonChanged(const int& id) override {
-    this->calls.push_back(QString("geomIsCommon:%1").arg(id));
+    this->calls.push_back(std::format("geomIsCommon:{}", id));
   }
-  void onGeomMeasurementConfigChanged(const int& id, const QString& old,
+  void onGeomMeasurementConfigChanged(const int& id, const std::string& old,
                                       const MeasurementConfigKey) override {
-    this->calls.push_back(
-        QString("geomMeasurementConfig:%1:%2").arg(id).arg(old));
+    this->calls.push_back(std::format("geomMeasurementConfig:{}:{}", id, old));
   }
   void onGroupMembersChanged(const int& id) override {
-    this->calls.push_back(QString("groupMembers:%1").arg(id));
+    this->calls.push_back(std::format("groupMembers:{}", id));
   }
   void onIsUsedChanged(const int& id) override {
-    this->calls.push_back(QString("trafoIsUsed:%1").arg(id));
+    this->calls.push_back(std::format("trafoIsUsed:{}", id));
   }
   void onIsDatumTrafoChanged(const int& id) override {
-    this->calls.push_back(QString("trafoIsDatum:%1").arg(id));
+    this->calls.push_back(std::format("trafoIsDatum:{}", id));
   }
   void onObservationsChanged(const int& id, const int& obs) override {
-    this->calls.push_back(QString("systemObservations:%1:%2").arg(id).arg(obs));
+    this->calls.push_back(std::format("systemObservations:{}:{}", id, obs));
   }
 };
 
@@ -131,7 +131,7 @@ void FeatureObserverTest::renameCommentGroupSolved() {
 
   point.setFeatureName("P1");
   QCOMPARE(rec.count("featureName"), 1);
-  QCOMPARE(rec.calls.back(), QString("featureName:%1:").arg(point.getId()));
+  QCOMPARE(rec.calls.back(), std::format("featureName:{}:", point.getId()));
 
   point.setFeatureName("P1");  // unchanged: nothing
   QCOMPARE(rec.count("featureName"), 1);
@@ -266,7 +266,7 @@ void FeatureObserverTest::destroyingTheFeatureTellsTheObserverOnce() {
     point.setObserver(&rec);
   }
   QCOMPARE(rec.count("elementAboutToBeDeleted"), 1);
-  QCOMPARE(rec.calls.back(), QString("elementAboutToBeDeleted:%1").arg(id));
+  QCOMPARE(rec.calls.back(), std::format("elementAboutToBeDeleted:{}", id));
 }
 
 void FeatureObserverTest::observerIsClearedWhenFeatureIsRemovedFromJob() {
@@ -344,7 +344,7 @@ void FeatureObserverTest::jobRelaysIntoItsOwnSignals() {
   point.setFeatureName("renamed");
   QCOMPARE(rec.count("featureNameChanged"), 1);  // synchronous
   QVERIFY(oi::contains(rec.calls,
-                       QString("featureNameChanged:%1:P1").arg(point.getId())));
+                       std::format("featureNameChanged:{}:P1", point.getId())));
 
   point.setComment("c");
   QCOMPARE(rec.count("featureCommentChanged"), 1);
@@ -371,8 +371,10 @@ void FeatureObserverTest::jobDeliversIsSolvedDeferred() {
   executor.flush();
   QCOMPARE(spy.count("featureIsSolvedChanged"), 1);
   QVERIFY(oi::contains(
-      spy.calls, QString("featureIsSolvedChanged:%1").arg(point.getId())));
+      spy.calls, std::format("featureIsSolvedChanged:{}", point.getId())));
 }
 
 QTEST_MAIN(FeatureObserverTest)
+#include <format>
+
 #include "tst_featureobserver.moc"

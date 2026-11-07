@@ -1,12 +1,13 @@
 #ifndef STATIONOBSERVER_H
 #define STATIONOBSERVER_H
-#include <QString>
 #include <map>
+#include <string>
 #include <vector>
 
 #include "core_export.h"
 #include "guarded.h"
 #include "types.h"
+#include "value.h"
 
 namespace oi {
 
@@ -43,25 +44,26 @@ class OI_CORE_EXPORT StationObserver {
   virtual void onStationDestroyed(Station* /*station*/) {}
 
   // streaming results
-  virtual void onRealTimeReading(
-      const std::map<QString, QVariant>& /*reading*/) {}
-  virtual void onRealTimeStatus(const std::map<QString, QString>& /*status*/) {}
+  virtual void onRealTimeReading(const oi::ValueMap& /*reading*/) {}
+  virtual void onRealTimeStatus(
+      const std::map<std::string, std::string>& /*status*/) {}
   virtual void onConnectionLost() {}
   virtual void onConnectionReceived() {}
   virtual void onIsReadyForMeasurement(bool /*isReady*/) {}
 
   // results of sensor commands
-  virtual void onCommandFinished(bool /*success*/, const QString& /*msg*/,
+  virtual void onCommandFinished(bool /*success*/, const std::string& /*msg*/,
                                  SensorAction /*sensorAction*/) {}
   virtual void onMeasurementFinished(
       int /*geomId*/, const std::vector<oi::Guarded<Reading>>& /*readings*/) {}
   virtual void onMeasurementDone(bool /*success*/) {}
 
   // what the driver reports on its own
-  virtual void onSensorMessage(const QString& /*msg*/, MessageTypes /*msgType*/,
+  virtual void onSensorMessage(const std::string& /*msg*/,
+                               MessageTypes /*msgType*/,
                                MessageDestinations /*msgDest*/) {}
-  virtual void onSensorStatus(SensorStatus /*status*/, const QString& /*msg*/) {
-  }
+  virtual void onSensorStatus(SensorStatus /*status*/,
+                              const std::string& /*msg*/) {}
 };
 
 }  // namespace oi

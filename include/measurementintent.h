@@ -1,7 +1,7 @@
 #ifndef MEASUREMENTINTENT_H
 #define MEASUREMENTINTENT_H
 
-#include <QString>
+#include <string>
 
 namespace oi {
 
@@ -29,7 +29,7 @@ namespace oi {
 class MeasurementIntent {
  public:
   MeasurementIntent() : featureId(-1) {}
-  MeasurementIntent(int featureId, const QString& roleName)
+  MeasurementIntent(int featureId, const std::string& roleName)
       : featureId(featureId), roleName(roleName) {}
 
   bool operator==(const MeasurementIntent& other) const {
@@ -38,7 +38,7 @@ class MeasurementIntent {
   }
 
   int featureId;
-  QString roleName;
+  std::string roleName;
 };
 
 }  // namespace oi

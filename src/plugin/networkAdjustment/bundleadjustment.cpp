@@ -47,7 +47,8 @@ const PluginMetaData& BundleAdjustment::getMetaData() const {
  * \brief BundleAdjustment::getIntegerParameter
  * \return
  */
-const std::map<QString, int>& BundleAdjustment::getIntegerParameter() const {
+const std::map<std::string, int>& BundleAdjustment::getIntegerParameter()
+    const {
   return this->integerParameters;
 }
 
@@ -55,7 +56,8 @@ const std::map<QString, int>& BundleAdjustment::getIntegerParameter() const {
  * \brief BundleAdjustment::getDoubleParameter
  * \return
  */
-const std::map<QString, double>& BundleAdjustment::getDoubleParameter() const {
+const std::map<std::string, double>& BundleAdjustment::getDoubleParameter()
+    const {
   return this->doubleParameters;
 }
 
@@ -63,8 +65,8 @@ const std::map<QString, double>& BundleAdjustment::getDoubleParameter() const {
  * \brief BundleAdjustment::getStringParameter
  * \return
  */
-const std::multimap<QString, QString>& BundleAdjustment::getStringParameter()
-    const {
+const std::multimap<std::string, std::string>&
+BundleAdjustment::getStringParameter() const {
   return this->stringParameters;
 }
 
@@ -77,8 +79,8 @@ const ScalarInputParams& BundleAdjustment::getScalarInputParams() {
   if (!this->scalarInputParams.isValid) {
     this->scalarInputParams.doubleParameter = this->doubleParameters;
     this->scalarInputParams.intParameter = this->integerParameters;
-    std::vector<QString> keys = oi::keys(this->stringParameters);
-    for (const QString& key : std::as_const(keys)) {
+    std::vector<std::string> keys = oi::keys(this->stringParameters);
+    for (const std::string& key : std::as_const(keys)) {
       this->scalarInputParams.stringParameter.insert_or_assign(
           key, oi::value(this->stringParameters, key));
     }

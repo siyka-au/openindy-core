@@ -1,12 +1,13 @@
 #ifndef ELEMENT_H
 #define ELEMENT_H
-#include <QtCore>
 #include <map>
+#include <string>
 
 #include "core_export.h"
 #include "guarded.h"
 #include "types.h"
 #include "util.h"
+#include "value.h"
 
 namespace oi {
 
@@ -46,8 +47,8 @@ class OI_CORE_EXPORT Element : public oi::Trackable {
   // Not persisted and not copied with the object.
   // #####################################################################
 
-  void setTransientAttribute(const QString& name, const QVariant& value);
-  [[nodiscard]] QVariant getTransientAttribute(const QString& name) const;
+  void setTransientAttribute(const std::string& name, const oi::Value& value);
+  [[nodiscard]] oi::Value getTransientAttribute(const std::string& name) const;
 
  protected:
   int id{-1};
@@ -55,7 +56,7 @@ class OI_CORE_EXPORT Element : public oi::Trackable {
   bool isNullObject{false};
 
  private:
-  std::map<QString, QVariant> transientAttributes;
+  oi::ValueMap transientAttributes;
 };
 
 }  // namespace oi

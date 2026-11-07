@@ -1,10 +1,8 @@
 #ifndef SENSOR_H
 #define SENSOR_H
-#include <QJsonObject>
-#include <QString>
-#include <QVariant>
 #include <map>
 #include <mutex>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -32,7 +30,7 @@ class OI_CORE_EXPORT SensorAttributes {
   double moveX{};
   double moveY{};
   double moveZ{};
-  QString action;
+  std::string action;
 };
 
 class OI_CORE_EXPORT SensorInterface : public oi::Trackable {
@@ -90,15 +88,15 @@ class OI_CORE_EXPORT SensorInterface : public oi::Trackable {
   [[nodiscard]] virtual const PluginMetaData& getMetaData() const = 0;
 
   // integer, double and string parameter
-  [[nodiscard]] virtual const std::map<QString, int>& getIntegerParameter()
+  [[nodiscard]] virtual const std::map<std::string, int>& getIntegerParameter()
       const = 0;
-  [[nodiscard]] virtual const std::map<QString, double>& getDoubleParameter()
-      const = 0;
-  [[nodiscard]] virtual const std::multimap<QString, QString>&
+  [[nodiscard]] virtual const std::map<std::string, double>&
+  getDoubleParameter() const = 0;
+  [[nodiscard]] virtual const std::multimap<std::string, std::string>&
   getStringParameter() const = 0;
 
   // self deined actions
-  [[nodiscard]] virtual const std::vector<QString>& getSelfDefinedActions()
+  [[nodiscard]] virtual const std::vector<std::string>& getSelfDefinedActions()
       const = 0;
 
   // accuracy
@@ -112,7 +110,12 @@ class OI_CORE_EXPORT SensorInterface : public oi::Trackable {
   virtual bool accept(const SensorFunctions& method,
                       const SensorAttributes& sAttr) = 0;
 
-  virtual QJsonObject performAsyncSensorCommand(const QJsonObject& request) = 0;
+  // Asynchronous sensors take a command as named values ("method", plus its
+  // parameters such as "x", "geomId") and answer with named values: "status"
+  // ("blocked" if the sensor is busy), "result", or "error" (the message) with
+  // "errorCode", and the request's "id".
+  virtual oi::ValueMap performAsyncSensorCommand(
+      const oi::ValueMap& request) = 0;
 
   // abort actions
   virtual bool abortAction() = 0;
@@ -124,17 +127,16 @@ class OI_CORE_EXPORT SensorInterface : public oi::Trackable {
   // measurements
   virtual std::vector<oi::Guarded<Reading>> measure(
       const MeasurementConfig& mConfig) = 0;
-  virtual std::map<QString, QVariant> readingStream(
-      const ReadingTypes& streamFormat) = 0;
+  virtual oi::ValueMap readingStream(const ReadingTypes& streamFormat) = 0;
 
   // status information
   virtual bool getConnectionState() = 0;
   virtual bool getIsReadyForMeasurement() = 0;
   virtual bool getIsBusy() = 0;
-  virtual std::map<QString, QString> getSensorStatus() = 0;
+  virtual std::map<std::string, std::string> getSensorStatus() = 0;
 
   // self defined actions
-  virtual bool doSelfDefinedAction(const QString& action) = 0;
+  virtual bool doSelfDefinedAction(const std::string& action) = 0;
 
   virtual bool search() = 0;
 
@@ -155,18 +157,18 @@ class OI_CORE_EXPORT SensorInterface : public oi::Trackable {
   void setSensorSink(SensorSink* sink);
   [[nodiscard]] SensorSink* getSensorSink() const;
 
-  void sensorStatus(const SensorStatus& status, const QString& msg);
-  void sensorMessage(const QString& msg, const MessageTypes& msgType,
+  void sensorStatus(const SensorStatus& status, const std::string& msg);
+  void sensorMessage(const std::string& msg, const MessageTypes& msgType,
                      const MessageDestinations& msgDest =
                          MessageDestinations::eConsoleMessage);
   void asyncSensorResponse(
-      const QJsonObject& response,
+      const oi::ValueMap& response,
       const SensorAction sensorAction = SensorAction::eSensorActionUndefind);
   void asyncMeasurementResult(
       const int& geomId, const std::vector<oi::Guarded<Reading>>& measurements,
       const SensorAction sensorAction = SensorAction::eSensorActionUndefind);
-  void asyncStreamResult(const std::map<QString, QVariant>& reading);
-  void asyncSensorNotification(const QJsonObject& response);
+  void asyncStreamResult(const oi::ValueMap& reading);
+  void asyncSensorNotification(const oi::ValueMap& response);
 
  private:
   // recursive: a sink may call back into the sensor (or swap itself) from
@@ -234,15 +236,15 @@ class OI_CORE_EXPORT Sensor : public SensorInterface {
   [[nodiscard]] const PluginMetaData& getMetaData() const override;
 
   // integer, double and string parameter
-  [[nodiscard]] const std::map<QString, int>& getIntegerParameter()
+  [[nodiscard]] const std::map<std::string, int>& getIntegerParameter()
       const override;
-  [[nodiscard]] const std::map<QString, double>& getDoubleParameter()
+  [[nodiscard]] const std::map<std::string, double>& getDoubleParameter()
       const override;
-  [[nodiscard]] const std::multimap<QString, QString>& getStringParameter()
-      const override;
+  [[nodiscard]] const std::multimap<std::string, std::string>&
+  getStringParameter() const override;
 
   // self deined actions
-  [[nodiscard]] const std::vector<QString>& getSelfDefinedActions()
+  [[nodiscard]] const std::vector<std::string>& getSelfDefinedActions()
       const override;
 
   // accuracy
@@ -256,7 +258,7 @@ class OI_CORE_EXPORT Sensor : public SensorInterface {
   bool accept(const SensorFunctions& method,
               const SensorAttributes& sAttr) override;
 
-  QJsonObject performAsyncSensorCommand(const QJsonObject& request) override;
+  oi::ValueMap performAsyncSensorCommand(const oi::ValueMap& request) override;
 
   // abort actions
   bool abortAction() override;
@@ -268,17 +270,16 @@ class OI_CORE_EXPORT Sensor : public SensorInterface {
   // measurements
   std::vector<oi::Guarded<Reading>> measure(
       const MeasurementConfig& mConfig) override;
-  std::map<QString, QVariant> readingStream(
-      const ReadingTypes& streamFormat) override;
+  oi::ValueMap readingStream(const ReadingTypes& streamFormat) override;
 
   // status information
   bool getConnectionState() override;
   bool getIsReadyForMeasurement() override;
   bool getIsBusy() override;
-  std::map<QString, QString> getSensorStatus() override;
+  std::map<std::string, std::string> getSensorStatus() override;
 
   // self defined actions
-  bool doSelfDefinedAction(const QString& action) override;
+  bool doSelfDefinedAction(const std::string& action) override;
 
   bool search() override;
 
@@ -313,14 +314,14 @@ class OI_CORE_EXPORT Sensor : public SensorInterface {
   // per-subclass virtual override.
   AcquisitionResultShape acquisitionResultShape =
       AcquisitionResultShape::eOnePoint;
-  std::vector<QString> selfDefinedActions;
+  std::vector<std::string> selfDefinedActions;
   Accuracy defaultAccuracy;
   PluginMetaData metaData;
 
   // the needed scalar input parameters including default values
-  std::map<QString, int> integerParameters;
-  std::map<QString, double> doubleParameters;
-  std::multimap<QString, QString> stringParameters;
+  std::map<std::string, int> integerParameters;
+  std::map<std::string, double> doubleParameters;
+  std::multimap<std::string, std::string> stringParameters;
 };
 
 }  // namespace oi
@@ -340,6 +341,7 @@ class OI_CORE_EXPORT Sensor : public SensorInterface {
 #endif
 
 #include "pluginabi.h"
+#include "value.h"
 
 #define SENSOR_PREFIX de.openIndy.plugin.sensor.v
 #define Sensor_iidd STR2(CONCAT2(SENSOR_PREFIX, OI_PLUGIN_ABI_VERSION))

@@ -7,6 +7,7 @@
 #include "measurementconfig.h"
 #include "reading.h"
 #include "sensorcontrol.h"
+#include "value.h"
 
 using namespace oi;
 
@@ -23,14 +24,14 @@ SensorSink* SensorInterface::getSensorSink() const {
 }
 
 void SensorInterface::sensorStatus(const SensorStatus& status,
-                                   const QString& msg) {
+                                   const std::string& msg) {
   const std::scoped_lock lock(this->sinkMutex);
   if (this->sink != nullptr) {
     this->sink->onSensorStatus(status, msg);
   }
 }
 
-void SensorInterface::sensorMessage(const QString& msg,
+void SensorInterface::sensorMessage(const std::string& msg,
                                     const MessageTypes& msgType,
                                     const MessageDestinations& msgDest) {
   const std::scoped_lock lock(this->sinkMutex);
@@ -39,7 +40,7 @@ void SensorInterface::sensorMessage(const QString& msg,
   }
 }
 
-void SensorInterface::asyncSensorResponse(const QJsonObject& response,
+void SensorInterface::asyncSensorResponse(const oi::ValueMap& response,
                                           const SensorAction sensorAction) {
   const std::scoped_lock lock(this->sinkMutex);
   if (this->sink != nullptr) {
@@ -56,15 +57,14 @@ void SensorInterface::asyncMeasurementResult(
   }
 }
 
-void SensorInterface::asyncStreamResult(
-    const std::map<QString, QVariant>& reading) {
+void SensorInterface::asyncStreamResult(const oi::ValueMap& reading) {
   const std::scoped_lock lock(this->sinkMutex);
   if (this->sink != nullptr) {
     this->sink->onAsyncStreamResult(reading);
   }
 }
 
-void SensorInterface::asyncSensorNotification(const QJsonObject& response) {
+void SensorInterface::asyncSensorNotification(const oi::ValueMap& response) {
   const std::scoped_lock lock(this->sinkMutex);
   if (this->sink != nullptr) {
     this->sink->onAsyncSensorNotification(response);
@@ -230,7 +230,7 @@ const PluginMetaData& Sensor::getMetaData() const { return this->metaData; }
  * \brief Sensor::getIntegerParameter
  * \return
  */
-const std::map<QString, int>& Sensor::getIntegerParameter() const {
+const std::map<std::string, int>& Sensor::getIntegerParameter() const {
   return this->integerParameters;
 }
 
@@ -238,7 +238,7 @@ const std::map<QString, int>& Sensor::getIntegerParameter() const {
  * \brief Sensor::getDoubleParameter
  * \return
  */
-const std::map<QString, double>& Sensor::getDoubleParameter() const {
+const std::map<std::string, double>& Sensor::getDoubleParameter() const {
   return this->doubleParameters;
 }
 
@@ -246,7 +246,8 @@ const std::map<QString, double>& Sensor::getDoubleParameter() const {
  * \brief Sensor::getStringParameter
  * \return
  */
-const std::multimap<QString, QString>& Sensor::getStringParameter() const {
+const std::multimap<std::string, std::string>& Sensor::getStringParameter()
+    const {
   return this->stringParameters;
 }
 
@@ -254,7 +255,7 @@ const std::multimap<QString, QString>& Sensor::getStringParameter() const {
  * \brief Sensor::getSelfDefinedActions
  * \return
  */
-const std::vector<QString>& Sensor::getSelfDefinedActions() const {
+const std::vector<std::string>& Sensor::getSelfDefinedActions() const {
   return this->selfDefinedActions;
 }
 
@@ -284,16 +285,15 @@ bool Sensor::accept(const SensorFunctions& /*method*/,
  * \param request
  * \return
  */
-QJsonObject Sensor::performAsyncSensorCommand(const QJsonObject& request) {
-  QJsonObject response;
-  QJsonObject error;
-  error.insert("code", -32000);
-  error.insert("message",
-               "this sensor does not implement the interface methode for "
-               "asynchronous commands");
-  response.insert("jsonrpc", "2.0");
-  response.insert("error", error);
-  response.insert("id", request.value("id"));
+oi::ValueMap Sensor::performAsyncSensorCommand(const oi::ValueMap& request) {
+  oi::ValueMap response;
+  response.insert_or_assign("jsonrpc", "2.0");
+  response.insert_or_assign("errorCode", -32000);
+  response.insert_or_assign(
+      "error",
+      "this sensor does not implement the interface methode for "
+      "asynchronous commands");
+  response.insert_or_assign("id", oi::value(request, std::string("id")));
   return response;
 }
 
@@ -309,7 +309,7 @@ bool Sensor::abortAction() { return false; }
  */
 bool Sensor::connectSensor() {
   this->sensorMessage(
-      QString("Sensor not implemented correctly: connect method missing"),
+      std::string("Sensor not implemented correctly: connect method missing"),
       MessageTypes::eCriticalMessage, MessageDestinations::eMessageBoxMessage);
   return false;
 }
@@ -320,7 +320,8 @@ bool Sensor::connectSensor() {
  */
 bool Sensor::disconnectSensor() {
   this->sensorMessage(
-      QString("Sensor not implemented correctly: disconnect method missing"),
+      std::string(
+          "Sensor not implemented correctly: disconnect method missing"),
       MessageTypes::eCriticalMessage, MessageDestinations::eMessageBoxMessage);
   return false;
 }
@@ -333,7 +334,7 @@ bool Sensor::disconnectSensor() {
 std::vector<oi::Guarded<Reading>> Sensor::measure(
     const MeasurementConfig& /*mConfig*/) {
   this->sensorMessage(
-      QString("Sensor not implemented correctly: measure method missing"),
+      std::string("Sensor not implemented correctly: measure method missing"),
       MessageTypes::eCriticalMessage, MessageDestinations::eMessageBoxMessage);
   return std::vector<oi::Guarded<Reading>>();
 }
@@ -343,13 +344,12 @@ std::vector<oi::Guarded<Reading>> Sensor::measure(
  * \param streamFormat
  * \return
  */
-std::map<QString, QVariant> Sensor::readingStream(
-    const ReadingTypes& /*streamFormat*/) {
+oi::ValueMap Sensor::readingStream(const ReadingTypes& /*streamFormat*/) {
   this->sensorMessage(
-      QString(
+      std::string(
           "Sensor not implemented correctly: reading stream method missing"),
       MessageTypes::eCriticalMessage, MessageDestinations::eMessageBoxMessage);
-  return std::map<QString, QVariant>();
+  return oi::ValueMap();
 }
 
 /*!
@@ -358,7 +358,7 @@ std::map<QString, QVariant> Sensor::readingStream(
  */
 bool Sensor::getConnectionState() {
   this->sensorMessage(
-      QString(
+      std::string(
           "Sensor not implemented correctly: connection state method missing"),
       MessageTypes::eCriticalMessage, MessageDestinations::eMessageBoxMessage);
   return false;
@@ -370,7 +370,7 @@ bool Sensor::getConnectionState() {
  */
 bool Sensor::getIsReadyForMeasurement() {
   this->sensorMessage(
-      QString("Sensor not implemented correctly: is ready method missing"),
+      std::string("Sensor not implemented correctly: is ready method missing"),
       MessageTypes::eCriticalMessage, MessageDestinations::eMessageBoxMessage);
   return false;
 }
@@ -381,7 +381,7 @@ bool Sensor::getIsReadyForMeasurement() {
  */
 bool Sensor::getIsBusy() {
   this->sensorMessage(
-      QString("Sensor not implemented correctly: is busy method missing"),
+      std::string("Sensor not implemented correctly: is busy method missing"),
       MessageTypes::eCriticalMessage, MessageDestinations::eMessageBoxMessage);
   return false;
 }
@@ -390,11 +390,12 @@ bool Sensor::getIsBusy() {
  * \brief Sensor::getSensorStatus
  * \return
  */
-std::map<QString, QString> Sensor::getSensorStatus() {
+std::map<std::string, std::string> Sensor::getSensorStatus() {
   this->sensorMessage(
-      QString("Sensor not implemented correctly: sensor status method missing"),
+      std::string(
+          "Sensor not implemented correctly: sensor status method missing"),
       MessageTypes::eCriticalMessage, MessageDestinations::eMessageBoxMessage);
-  return std::map<QString, QString>();
+  return std::map<std::string, std::string>();
 }
 
 /*!
@@ -402,7 +403,9 @@ std::map<QString, QString> Sensor::getSensorStatus() {
  * \param action
  * \return
  */
-bool Sensor::doSelfDefinedAction(const QString& /*action*/) { return false; }
+bool Sensor::doSelfDefinedAction(const std::string& /*action*/) {
+  return false;
+}
 
 bool Sensor::search() { return false; }
 

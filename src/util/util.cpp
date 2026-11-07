@@ -20,10 +20,10 @@ namespace internal {
 // settings keys. Changing one silently breaks loading. See util.h.
 // ############################################################################
 
-std::map<ElementTypes, QString> elementTypesMap;
-std::map<ElementTypes, QString> elementTypesPluralMap;
-std::map<FeatureTypes, QString> featureTypesMap;
-std::map<GeometryTypes, QString> geometryTypesMap;
+std::map<ElementTypes, std::string> elementTypesMap;
+std::map<ElementTypes, std::string> elementTypesPluralMap;
+std::map<FeatureTypes, std::string> featureTypesMap;
+std::map<GeometryTypes, std::string> geometryTypesMap;
 
 // ############################################################################
 // DISPLAY NAMES - shown to the user, never persisted, safe to edit freely.
@@ -31,41 +31,43 @@ std::map<GeometryTypes, QString> geometryTypesMap;
 // that changing what a user reads can never change what a file contains.
 // ############################################################################
 
-std::map<ElementTypes, QString> elementTypesDisplayMap;
-std::map<ElementTypes, QString> elementTypesDisplayPluralMap;
-std::map<FeatureTypes, QString> featureTypesDisplayMap;
-std::map<GeometryTypes, QString> geometryTypesDisplayMap;
+std::map<ElementTypes, std::string> elementTypesDisplayMap;
+std::map<ElementTypes, std::string> elementTypesDisplayPluralMap;
+std::map<FeatureTypes, std::string> featureTypesDisplayMap;
+std::map<GeometryTypes, std::string> geometryTypesDisplayMap;
 
-std::map<ElementTypes, QString> elementTypeIcons;
-std::map<FeatureTypes, QString> featureTypeIcons;
+std::map<ElementTypes, std::string> elementTypeIcons;
+std::map<FeatureTypes, std::string> featureTypeIcons;
 
-std::map<ReadingTypes, QString> readingTypesMap;
+std::map<ReadingTypes, std::string> readingTypesMap;
 
-std::map<FeatureDisplayAttributes, QString> featureDisplayAttributesMap;
-std::map<TrafoParamDisplayAttributes, QString> trafoParamDisplayAttributesMap;
-std::map<ObservationDisplayAttributes, QString> observationDisplayAttributesMap;
-std::map<ReadingDisplayAttributes, QString> readingDisplayAttributesMap;
+std::map<FeatureDisplayAttributes, std::string> featureDisplayAttributesMap;
+std::map<TrafoParamDisplayAttributes, std::string>
+    trafoParamDisplayAttributesMap;
+std::map<ObservationDisplayAttributes, std::string>
+    observationDisplayAttributesMap;
+std::map<ReadingDisplayAttributes, std::string> readingDisplayAttributesMap;
 
 std::vector<int> featureDisplayAttributes;
 std::vector<ObservationDisplayAttributes> observationDisplayAttributes;
 std::vector<ReadingDisplayAttributes> readingDisplayAttributes;
 
-std::map<UnitType, QString> unitTypesMap;
+std::map<UnitType, std::string> unitTypesMap;
 
-std::map<SensorFunctions, QString> sensorFunctionsMap;
+std::map<SensorFunctions, std::string> sensorFunctionsMap;
 
-std::map<ToolTypes, QString> toolTypesMap;
+std::map<ToolTypes, std::string> toolTypesMap;
 
-std::map<MessageTypes, QString> messageTypesMap;
+std::map<MessageTypes, std::string> messageTypesMap;
 
-std::map<GeometryParameters, QString> geometryParametersMap;
-std::map<TrafoParamParameters, QString> trafoParamParametersMap;
+std::map<GeometryParameters, std::string> geometryParametersMap;
+std::map<TrafoParamParameters, std::string> trafoParamParametersMap;
 
-std::map<ActualNominalFilter, QString> actualNominalFilterMap;
+std::map<ActualNominalFilter, std::string> actualNominalFilterMap;
 
-QString undefined = "";
+std::string undefined = "";
 
-std::map<MaterialsTempComp, QString> materialStringsMap;
+std::map<MaterialsTempComp, std::string> materialStringsMap;
 std::map<MaterialsTempComp, double> materialValuesMap;
 
 bool isInit = false;
@@ -1113,7 +1115,7 @@ std::vector<GeometryTypes> getAvailableGeometryTypes() {
  * \param type
  * \return
  */
-const QString& getElementTypeName(const ElementTypes& type) {
+const std::string& getElementTypeName(const ElementTypes& type) {
   // fill helper maps if not yet done
   if (!internal::isInit) {
     internal::init();
@@ -1131,7 +1133,7 @@ const QString& getElementTypeName(const ElementTypes& type) {
  * \param type
  * \return
  */
-const QString& getElementTypePluralName(const ElementTypes& type) {
+const std::string& getElementTypePluralName(const ElementTypes& type) {
   // fill helper maps if not yet done
   if (!internal::isInit) {
     internal::init();
@@ -1149,7 +1151,7 @@ const QString& getElementTypePluralName(const ElementTypes& type) {
  * \param name
  * \return
  */
-ElementTypes getElementTypeEnum(const QString& name) {
+ElementTypes getElementTypeEnum(const std::string& name) {
   // fill helper maps if not yet done
   if (!internal::isInit) {
     internal::init();
@@ -1262,7 +1264,7 @@ ElementTypes getElementTypeEnum(const ReadingTypes& type) {
  * \param type
  * \return
  */
-const QString& getFeatureTypeName(const FeatureTypes& type) {
+const std::string& getFeatureTypeName(const FeatureTypes& type) {
   // fill helper maps if not yet done
   if (!internal::isInit) {
     internal::init();
@@ -1280,7 +1282,7 @@ const QString& getFeatureTypeName(const FeatureTypes& type) {
  * \param name
  * \return
  */
-FeatureTypes getFeatureTypeEnum(const QString& name) {
+FeatureTypes getFeatureTypeEnum(const std::string& name) {
   // fill helper maps if not yet done
   if (!internal::isInit) {
     internal::init();
@@ -1296,7 +1298,7 @@ FeatureTypes getFeatureTypeEnum(const QString& name) {
  * \param type
  * \return
  */
-const QString& getGeometryTypeName(const GeometryTypes& type) {
+const std::string& getGeometryTypeName(const GeometryTypes& type) {
   // fill helper maps if not yet done
   if (!internal::isInit) {
     internal::init();
@@ -1314,7 +1316,7 @@ const QString& getGeometryTypeName(const GeometryTypes& type) {
  * \param name
  * \return
  */
-GeometryTypes getGeometryTypeEnum(const QString& name) {
+GeometryTypes getGeometryTypeEnum(const std::string& name) {
   // fill helper maps if not yet done
   if (!internal::isInit) {
     internal::init();
@@ -1392,7 +1394,7 @@ GeometryTypes getGeometryTypeEnum(const FeatureTypes& type) {
  * \param type
  * \return
  */
-const QString& getElementTypeDisplayName(const ElementTypes& type) {
+const std::string& getElementTypeDisplayName(const ElementTypes& type) {
   // fill helper maps if not yet done
   if (!internal::isInit) {
     internal::init();
@@ -1411,7 +1413,7 @@ const QString& getElementTypeDisplayName(const ElementTypes& type) {
  * \param type
  * \return
  */
-const QString& getElementTypeDisplayPluralName(const ElementTypes& type) {
+const std::string& getElementTypeDisplayPluralName(const ElementTypes& type) {
   // fill helper maps if not yet done
   if (!internal::isInit) {
     internal::init();
@@ -1430,7 +1432,7 @@ const QString& getElementTypeDisplayPluralName(const ElementTypes& type) {
  * \param type
  * \return
  */
-const QString& getFeatureTypeDisplayName(const FeatureTypes& type) {
+const std::string& getFeatureTypeDisplayName(const FeatureTypes& type) {
   // fill helper maps if not yet done
   if (!internal::isInit) {
     internal::init();
@@ -1449,7 +1451,7 @@ const QString& getFeatureTypeDisplayName(const FeatureTypes& type) {
  * \param type
  * \return
  */
-const QString& getGeometryTypeDisplayName(const GeometryTypes& type) {
+const std::string& getGeometryTypeDisplayName(const GeometryTypes& type) {
   // fill helper maps if not yet done
   if (!internal::isInit) {
     internal::init();
@@ -1551,7 +1553,7 @@ bool getIsScalarEntity(const FeatureTypes& type) {
  * \param type
  * \return
  */
-const QString& getElementTypeIconPath(const ElementTypes& type) {
+const std::string& getElementTypeIconPath(const ElementTypes& type) {
   // fill helper maps if not yet done
   if (!internal::isInit) {
     internal::init();
@@ -1569,7 +1571,7 @@ const QString& getElementTypeIconPath(const ElementTypes& type) {
  * \param type
  * \return
  */
-const QString& getFeatureTypeIconPath(const FeatureTypes& type) {
+const std::string& getFeatureTypeIconPath(const FeatureTypes& type) {
   // fill helper maps if not yet done
   if (!internal::isInit) {
     internal::init();
@@ -1587,7 +1589,7 @@ const QString& getFeatureTypeIconPath(const FeatureTypes& type) {
  * \param type
  * \return
  */
-const QString& getReadingTypeName(const ReadingTypes& type) {
+const std::string& getReadingTypeName(const ReadingTypes& type) {
   // fill helper maps if not yet done
   if (!internal::isInit) {
     internal::init();
@@ -1605,7 +1607,7 @@ const QString& getReadingTypeName(const ReadingTypes& type) {
  * \param name
  * \return
  */
-ReadingTypes getReadingTypeEnum(const QString& name) {
+ReadingTypes getReadingTypeEnum(const std::string& name) {
   // fill helper maps if not yet done
   if (!internal::isInit) {
     internal::init();
@@ -1691,7 +1693,7 @@ bool getIsTrafoParamDisplayAttribute(const int& attr) {
  * \param attr
  * \return
  */
-const QString& getFeatureDisplayAttributeName(const int& attr) {
+const std::string& getFeatureDisplayAttributeName(const int& attr) {
   // fill helper maps if not yet done
   if (!internal::isInit) {
     internal::init();
@@ -1714,7 +1716,7 @@ const QString& getFeatureDisplayAttributeName(const int& attr) {
  * \param attr
  * \return
  */
-const QString& getFeatureDisplayAttributeName(
+const std::string& getFeatureDisplayAttributeName(
     const FeatureDisplayAttributes& attr) {
   // fill helper maps if not yet done
   if (!internal::isInit) {
@@ -1729,7 +1731,7 @@ const QString& getFeatureDisplayAttributeName(
  * \param attr
  * \return
  */
-const QString& getFeatureDisplayAttributeName(
+const std::string& getFeatureDisplayAttributeName(
     const TrafoParamDisplayAttributes& attr) {
   // fill helper maps if not yet done
   if (!internal::isInit) {
@@ -1875,7 +1877,7 @@ bool getReadingDisplayAttributeVisibility(const ReadingDisplayAttributes& attr,
  * \param attr
  * \return
  */
-const QString& getObservationDisplayAttributesName(
+const std::string& getObservationDisplayAttributesName(
     const ObservationDisplayAttributes& attr) {
   // fill helper maps if not yet done
   if (!internal::isInit) {
@@ -1890,7 +1892,7 @@ const QString& getObservationDisplayAttributesName(
  * \param attr
  * \return
  */
-const QString& getReadingDisplayAttributeName(
+const std::string& getReadingDisplayAttributeName(
     const ReadingDisplayAttributes& attr) {
   // fill helper maps if not yet done
   if (!internal::isInit) {
@@ -1906,7 +1908,7 @@ const QString& getReadingDisplayAttributeName(
  * \return
  */
 ObservationDisplayAttributes getObservationDisplayAttributeEnum(
-    const QString& name) {
+    const std::string& name) {
   // fill helper maps if not yet done
   if (!internal::isInit) {
     internal::init();
@@ -1922,7 +1924,8 @@ ObservationDisplayAttributes getObservationDisplayAttributeEnum(
  * \param name
  * \return
  */
-ReadingDisplayAttributes getReadingDisplayAttributeEnum(const QString& name) {
+ReadingDisplayAttributes getReadingDisplayAttributeEnum(
+    const std::string& name) {
   // fill helper maps if not yet done
   if (!internal::isInit) {
     internal::init();
@@ -1998,7 +2001,7 @@ double convertFromDefault(const double& value, const UnitType& type) {
  * \param type
  * \return
  */
-const QString& getUnitTypeName(const UnitType& type) {
+const std::string& getUnitTypeName(const UnitType& type) {
   // fill helper maps if not yet done
   if (!internal::isInit) {
     internal::init();
@@ -2016,7 +2019,7 @@ const QString& getUnitTypeName(const UnitType& type) {
  * \param name
  * \return
  */
-UnitType getUnitTypeEnum(const QString& name) {
+UnitType getUnitTypeEnum(const std::string& name) {
   // fill helper maps if not yet done
   if (!internal::isInit) {
     internal::init();
@@ -2065,7 +2068,7 @@ std::vector<SensorFunctions> getAvailableSensorFunctions() {
  * \param type
  * \return
  */
-const QString& getSensorFunctionName(const SensorFunctions& type) {
+const std::string& getSensorFunctionName(const SensorFunctions& type) {
   // fill helper maps if not yet done
   if (!internal::isInit) {
     internal::init();
@@ -2083,7 +2086,7 @@ const QString& getSensorFunctionName(const SensorFunctions& type) {
  * \param name
  * \return
  */
-SensorFunctions getSensorFunctionEnum(const QString& name) {
+SensorFunctions getSensorFunctionEnum(const std::string& name) {
   // fill helper maps if not yet done
   if (!internal::isInit) {
     internal::init();
@@ -2112,7 +2115,7 @@ std::vector<ToolTypes> getAvailableToolTypes() {
  * \param type
  * \return
  */
-const QString& getToolTypeName(const ToolTypes& type) {
+const std::string& getToolTypeName(const ToolTypes& type) {
   // fill helper maps if not yet done
   if (!internal::isInit) {
     internal::init();
@@ -2130,7 +2133,7 @@ const QString& getToolTypeName(const ToolTypes& type) {
  * \param name
  * \return
  */
-ToolTypes getToolTypeEnum(const QString& name) {
+ToolTypes getToolTypeEnum(const std::string& name) {
   // fill helper maps if not yet done
   if (!internal::isInit) {
     internal::init();
@@ -2158,7 +2161,7 @@ std::vector<MessageTypes> getAvailableMessageTypes() {
  * \param type
  * \return
  */
-const QString& getMessageTypeName(const MessageTypes& type) {
+const std::string& getMessageTypeName(const MessageTypes& type) {
   // fill helper maps if not yet done
   if (!internal::isInit) {
     internal::init();
@@ -2176,7 +2179,7 @@ const QString& getMessageTypeName(const MessageTypes& type) {
  * \param name
  * \return
  */
-MessageTypes getMessageTypeEnum(const QString& name) {
+MessageTypes getMessageTypeEnum(const std::string& name) {
   // fill helper maps if not yet done
   if (!internal::isInit) {
     internal::init();
@@ -2205,7 +2208,8 @@ std::vector<GeometryParameters> getAvailableGeometryParameters() {
  * \param parameter
  * \return
  */
-const QString& getGeometryParameterName(const GeometryParameters& parameter) {
+const std::string& getGeometryParameterName(
+    const GeometryParameters& parameter) {
   // fill helper maps if not yet done
   if (!internal::isInit) {
     internal::init();
@@ -2223,7 +2227,7 @@ const QString& getGeometryParameterName(const GeometryParameters& parameter) {
  * \param name
  * \return
  */
-GeometryParameters getGeometryParameterEnum(const QString& name) {
+GeometryParameters getGeometryParameterEnum(const std::string& name) {
   // fill helper maps if not yet done
   if (!internal::isInit) {
     internal::init();
@@ -2405,7 +2409,7 @@ std::vector<TrafoParamParameters> getAvailableTrafoParamParameters() {
  * \param parameter
  * \return
  */
-const QString& getTrafoParamParameterName(
+const std::string& getTrafoParamParameterName(
     const TrafoParamParameters& parameter) {
   // fill helper maps if not yet done
   if (!internal::isInit) {
@@ -2424,7 +2428,7 @@ const QString& getTrafoParamParameterName(
  * \param name
  * \return
  */
-TrafoParamParameters getTrafoParamParameterEnum(const QString& name) {
+TrafoParamParameters getTrafoParamParameterEnum(const std::string& name) {
   // fill helper maps if not yet done
   if (!internal::isInit) {
     internal::init();
@@ -2453,7 +2457,7 @@ std::vector<ActualNominalFilter> getAvailableActualNominalFilters() {
  * \param type
  * \return
  */
-const QString& getActualNominalFilterName(const ActualNominalFilter& type) {
+const std::string& getActualNominalFilterName(const ActualNominalFilter& type) {
   // fill helper maps if not yet done
   if (!internal::isInit) {
     internal::init();
@@ -2471,7 +2475,7 @@ const QString& getActualNominalFilterName(const ActualNominalFilter& type) {
  * \param name
  * \return
  */
-ActualNominalFilter getActualNominalFilterEnum(const QString& name) {
+ActualNominalFilter getActualNominalFilterEnum(const std::string& name) {
   // fill helper maps if not yet done
   if (!internal::isInit) {
     internal::init();
@@ -2487,7 +2491,7 @@ ActualNominalFilter getActualNominalFilterEnum(const QString& name) {
  * \param material
  * \return
  */
-const QString& getMaterialName(const MaterialsTempComp& material) {
+const std::string& getMaterialName(const MaterialsTempComp& material) {
   // fill helper maps if not yet done
   if (!internal::isInit) {
     internal::init();
@@ -2522,7 +2526,7 @@ double getMaterialValue(const MaterialsTempComp& material) {
  * \brief getMaterials
  * \return
  */
-std::vector<QString> getMaterials() {
+std::vector<std::string> getMaterials() {
   // fill helper maps if not yet done
   if (!internal::isInit) {
     internal::init();
@@ -2538,7 +2542,7 @@ std::vector<QString> getMaterials() {
  * \param nominal
  * \return
  */
-double getTemperatureExpansion(const QString material, double actual,
+double getTemperatureExpansion(const std::string material, double actual,
                                double nominal) {
   // fill helper maps if not yet done
   if (!internal::isInit) {

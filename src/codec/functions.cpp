@@ -419,7 +419,7 @@ void Access::encodeFunction(const Function& f, oipb::FunctionRecord* m) {
       entry->set_position(it->first);
       entry->set_element_id(input.id);
       entry->set_kind(toProto(input.typeOfElement));
-      entry->set_label(input.label.toStdString());
+      entry->set_label(input.label);
       addParameters(input.ignoredDestinationParams,
                     entry->mutable_ignored_destination());
       addParameters(input.ignoredTargetParams, entry->mutable_ignored_target());
@@ -445,7 +445,7 @@ void Access::encodeFunction(const Function& f, oipb::FunctionRecord* m) {
       for (const PipelineExclusion& exclusion : stage.explicitExclusions) {
         auto* e = entry->add_exclusions();
         e->set_element_id(exclusion.elementId);
-        e->set_reason(exclusion.reason.toStdString());
+        e->set_reason(exclusion.reason);
       }
       entry->set_sigma_multiplier(stage.sigmaMultiplier);
     }
@@ -456,39 +456,39 @@ void Access::encodeFunction(const Function& f, oipb::FunctionRecord* m) {
     for (auto it = f.scalarInputParams.intParameter.cbegin();
          it != f.scalarInputParams.intParameter.cend(); ++it) {
       auto* p = m->add_int_parameters();
-      p->set_name(it->first.toStdString());
+      p->set_name(it->first);
       p->set_value(it->second);
     }
     for (auto it = f.scalarInputParams.doubleParameter.cbegin();
          it != f.scalarInputParams.doubleParameter.cend(); ++it) {
       auto* p = m->add_double_parameters();
-      p->set_name(it->first.toStdString());
+      p->set_name(it->first);
       p->set_value(it->second);
     }
     for (auto it = f.scalarInputParams.stringParameter.cbegin();
          it != f.scalarInputParams.stringParameter.cend(); ++it) {
       auto* p = m->add_string_parameters();
-      p->set_name(it->first.toStdString());
-      p->set_value(it->second.toStdString());
+      p->set_name(it->first);
+      p->set_value(it->second);
     }
   } else {
     for (auto it = f.integerParameters.cbegin();
          it != f.integerParameters.cend(); ++it) {
       auto* p = m->add_int_parameters();
-      p->set_name(it->first.toStdString());
+      p->set_name(it->first);
       p->set_value(it->second);
     }
     for (auto it = f.doubleParameters.cbegin(); it != f.doubleParameters.cend();
          ++it) {
       auto* p = m->add_double_parameters();
-      p->set_name(it->first.toStdString());
+      p->set_name(it->first);
       p->set_value(it->second);
     }
     for (auto it = f.stringParameters.cbegin(); it != f.stringParameters.cend();
          ++it) {
       auto* p = m->add_string_parameters();
-      p->set_name(it->first.toStdString());
-      p->set_value(it->second.toStdString());
+      p->set_name(it->first);
+      p->set_value(it->second);
     }
   }
 
@@ -504,16 +504,14 @@ void Access::applyFunction(const oipb::FunctionRecord& m, Function& f) {
   f.scalarInputParams.doubleParameter.clear();
   f.scalarInputParams.stringParameter.clear();
   for (const auto& p : m.int_parameters()) {
-    f.scalarInputParams.intParameter.insert_or_assign(
-        QString::fromStdString(p.name()), p.value());
+    f.scalarInputParams.intParameter.insert_or_assign((p.name()), p.value());
   }
   for (const auto& p : m.double_parameters()) {
-    f.scalarInputParams.doubleParameter.insert_or_assign(
-        QString::fromStdString(p.name()), p.value());
+    f.scalarInputParams.doubleParameter.insert_or_assign((p.name()), p.value());
   }
   for (const auto& p : m.string_parameters()) {
-    f.scalarInputParams.stringParameter.insert_or_assign(
-        QString::fromStdString(p.name()), QString::fromStdString(p.value()));
+    f.scalarInputParams.stringParameter.insert_or_assign((p.name()),
+                                                         (p.value()));
   }
   f.scalarInputParams.isValid = true;
 
@@ -544,8 +542,8 @@ void Access::applyFunction(const oipb::FunctionRecord& m, Function& f) {
         stage.explicitIds.push_back(id);
       }
       for (const auto& e : entry.exclusions()) {
-        stage.explicitExclusions.push_back(PipelineExclusion(
-            e.element_id(), QString::fromStdString(e.reason())));
+        stage.explicitExclusions.push_back(
+            PipelineExclusion(e.element_id(), (e.reason())));
       }
       stage.sigmaMultiplier = entry.sigma_multiplier();
       stages.push_back(stage);
@@ -558,7 +556,7 @@ void Access::applyFunction(const oipb::FunctionRecord& m, Function& f) {
     InputElement input(entry.element_id());
     input.typeOfElement =
         elementTypeOf(entry.kind()).value_or(ElementTypes::eUndefinedElement);
-    input.label = QString::fromStdString(entry.label());
+    input.label = (entry.label());
     input.ignoredDestinationParams = parametersOf(entry.ignored_destination());
     input.ignoredTargetParams = parametersOf(entry.ignored_target());
     input.shouldBeUsed = entry.should_be_used();

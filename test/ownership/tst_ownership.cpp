@@ -1,7 +1,6 @@
-#include <QString>
-#include <QtCore>
 #include <QtTest>
 #include <map>
+#include <string>
 
 #include "chooselalib.h"
 #include "constructfunction.h"
@@ -20,7 +19,7 @@ using namespace oi;
 class FakeFit : public FitFunction, public Producer<Point> {
  public:
   explicit FakeFit() : FitFunction() { this->metaData.name = "FakeFit"; }
-  std::expected<Point, QString> exec() override { return Point(); }
+  std::expected<Point, std::string> exec() override { return Point(); }
 };
 
 class FakeConstruct : public ConstructFunction, public Producer<Point> {
@@ -28,7 +27,7 @@ class FakeConstruct : public ConstructFunction, public Producer<Point> {
   explicit FakeConstruct() : ConstructFunction() {
     this->metaData.name = "FakeConstruct";
   }
-  std::expected<Point, QString> exec() override { return Point(); }
+  std::expected<Point, std::string> exec() override { return Point(); }
 };
 
 /*!
@@ -79,7 +78,7 @@ void OwnershipTest::fitFunctionProducerMakesGeometryReadOnly() {
   Point point;
   oi::Guarded<FakeFit> fit = new FakeFit();
   point.addFunction(fit);
-  const std::optional<QString> owner = point.getOwnerDescription();
+  const std::optional<std::string> owner = point.getOwnerDescription();
   QVERIFY(owner.has_value());
   QVERIFY(owner->contains("FakeFit"));
 }
@@ -177,7 +176,7 @@ void OwnershipTest::ownedSubGeometryIsReadOnlyAndNamesItsOwner() {
 
   QVERIFY(child.setOwnerFeature(owner.getFeatureWrapper()->getGeometry()));
 
-  const std::optional<QString> description = child.getOwnerDescription();
+  const std::optional<std::string> description = child.getOwnerDescription();
   QVERIFY(description.has_value());
   QVERIFY(description->contains("FakeConstruct"));
   QVERIFY(description->contains("Plane1"));

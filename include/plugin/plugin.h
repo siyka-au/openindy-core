@@ -1,5 +1,9 @@
 #ifndef PLUGIN_H
 #define PLUGIN_H
+// Q_DECLARE_INTERFACE is the one Qt dependency left in the core headers: the
+// app loads plugins through QPluginLoader, which needs the interface id
+// declared. It goes with the std-only plugin loader (phase 7).
+#include <QtPlugin>
 #include <vector>
 
 #include "bundleadjustment.h"
@@ -37,16 +41,16 @@ class Plugin {
   // create instances of a plugin type with a given name
   // ###################################################
 
-  virtual oi::Guarded<Sensor> createSensor(const QString& name) = 0;
-  virtual oi::Guarded<Function> createFunction(const QString& name) = 0;
+  virtual oi::Guarded<Sensor> createSensor(const std::string& name) = 0;
+  virtual oi::Guarded<Function> createFunction(const std::string& name) = 0;
   virtual oi::Guarded<BundleAdjustment> createBundleAdjustment(
-      const QString& name) = 0;
+      const std::string& name) = 0;
   virtual oi::Guarded<SimulationModel> createSimulation(
-      const QString& name) = 0;
+      const std::string& name) = 0;
   virtual oi::Guarded<ExchangeSimpleAscii> createSimpleAsciiExchange(
-      const QString& name) = 0;
+      const std::string& name) = 0;
   virtual oi::Guarded<ExchangeDefinedFormat> createDefinedFormatExchange(
-      const QString& name) = 0;
+      const std::string& name) = 0;
 };
 
 }  // namespace oi

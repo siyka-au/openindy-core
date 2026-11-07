@@ -1,8 +1,7 @@
 #ifndef OIREQUESTRESPONSE_H
 #define OIREQUESTRESPONSE_H
 
-#include <QByteArray>
-#include <QString>
+#include <string>
 
 #include "types.h"
 
@@ -84,8 +83,8 @@ class OiRequestResponse {
   RequestType myRequestType{
       RequestType::eUnknownRequest};         // defines the type of request
   ErrorCode errorCode{ErrorCode::eNoError};  // outcome of the request
-  QByteArray request;                        // the serialized request message
-  QByteArray response;                       // the serialized response message
+  std::string request;   // the serialized request message (bytes)
+  std::string response;  // the serialized response message (bytes)
   int requesterId{};  // identifies the requester so that the response is send
                       // only to him
 };

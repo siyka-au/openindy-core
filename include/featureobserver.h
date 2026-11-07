@@ -1,7 +1,7 @@
 #ifndef FEATUREOBSERVER_H
 #define FEATUREOBSERVER_H
 
-#include <QString>
+#include <string>
 
 #include "core_export.h"
 #include "measurementconfig.h"
@@ -35,15 +35,15 @@ class OI_CORE_EXPORT FeatureObserver {
   // Element: sent from the feature's destructor, the observer is detached
   // right afterwards
   virtual void onElementAboutToBeDeleted(const int& /*elementId*/,
-                                         const QString& /*name*/,
-                                         const QString& /*group*/,
+                                         const std::string& /*name*/,
+                                         const std::string& /*group*/,
                                          const FeatureTypes& /*type*/) {}
 
   // Feature
   virtual void onFeatureNameChanged(const int& /*featureId*/,
-                                    const QString& /*oldName*/) {}
+                                    const std::string& /*oldName*/) {}
   virtual void onFeatureGroupChanged(const int& /*featureId*/,
-                                     const QString& /*oldGroup*/) {}
+                                     const std::string& /*oldGroup*/) {}
   virtual void onFeatureCommentChanged(const int& /*featureId*/) {}
   virtual void onFeatureIsUpdatedChanged(const int& /*featureId*/) {}
   virtual void onFeatureIsSolvedChanged(const int& /*featureId*/) {}
@@ -61,7 +61,7 @@ class OI_CORE_EXPORT FeatureObserver {
   virtual void onGeomStatisticChanged(const int& /*featureId*/) {}
   virtual void onGeomSimulationDataChanged(const int& /*featureId*/) {}
   virtual void onGeomMeasurementConfigChanged(
-      const int& /*featureId*/, const QString& /*oldMConfig*/,
+      const int& /*featureId*/, const std::string& /*oldMConfig*/,
       const MeasurementConfigKey /*oldKey*/) {}
   virtual void onGeomParametersChanged(const int& /*featureId*/) {}
 

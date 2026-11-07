@@ -1,7 +1,7 @@
 #ifndef SENSORCONFIGURATION_H
 #define SENSORCONFIGURATION_H
-#include <QString>
 #include <map>
+#include <string>
 
 #include "connectionkind.h"
 #include "core_export.h"
@@ -50,11 +50,11 @@ class OI_CORE_EXPORT ConnectionConfig {
   ConnectionKind typeOfConnection;
 
   // network
-  QString ip;
-  QString port;
+  std::string ip;
+  std::string port;
 
   // serial
-  QString comPort;
+  std::string comPort;
   oi::BaudRate baudRate{oi::BaudRate::Baud9600};
   oi::DataBits dataBits{oi::DataBits::Data8};
   oi::Parity parity{oi::Parity::None};
@@ -87,7 +87,7 @@ class OI_CORE_EXPORT Accuracy {
   double sigmaK{0.0};
 
   // undefined
-  std::map<QString, double> sigmaUndefined;
+  std::map<std::string, double> sigmaUndefined;
 };
 
 // ###########################
@@ -117,8 +117,8 @@ class OI_CORE_EXPORT SensorConfiguration {
   // get or set sensor configuration attributes
   // ##########################################
 
-  [[nodiscard]] const QString& getName() const;
-  void setName(const QString& name);
+  [[nodiscard]] const std::string& getName() const;
+  void setName(const std::string& name);
 
   [[nodiscard]] const bool& getIsSaved() const;
   void setIsSaved(const bool& isSaved);
@@ -128,11 +128,11 @@ class OI_CORE_EXPORT SensorConfiguration {
   [[nodiscard]] const SensorType& getTypeOfSensor() const;
   void setTypeOfSensor(const SensorType& type);
 
-  [[nodiscard]] const QString& getPluginName() const;
-  void setPluginName(const QString& name);
+  [[nodiscard]] const std::string& getPluginName() const;
+  void setPluginName(const std::string& name);
 
-  [[nodiscard]] const QString& getSensorName() const;
-  void setSensorName(const QString& name);
+  [[nodiscard]] const std::string& getSensorName() const;
+  void setSensorName(const std::string& name);
 
   [[nodiscard]] const Accuracy& getAccuracy() const;
   void setAccuracy(const Accuracy& accuracy);
@@ -140,42 +140,44 @@ class OI_CORE_EXPORT SensorConfiguration {
   [[nodiscard]] const ConnectionConfig& getConnectionConfig() const;
   void setConnectionConfig(const ConnectionConfig& cConfig);
 
-  [[nodiscard]] const std::map<QString, int>& getIntegerParameter() const;
-  void setIntegerParameter(const std::map<QString, int>& intParams);
+  [[nodiscard]] const std::map<std::string, int>& getIntegerParameter() const;
+  void setIntegerParameter(const std::map<std::string, int>& intParams);
 
-  [[nodiscard]] const std::map<QString, double>& getDoubleParameter() const;
-  void setDoubleParameter(const std::map<QString, double>& doubleParams);
+  [[nodiscard]] const std::map<std::string, double>& getDoubleParameter() const;
+  void setDoubleParameter(const std::map<std::string, double>& doubleParams);
 
-  [[nodiscard]] const std::map<QString, QString>& getStringParameter() const;
-  void setStringParameter(const std::map<QString, QString>& stringParams);
+  [[nodiscard]] const std::map<std::string, std::string>& getStringParameter()
+      const;
+  void setStringParameter(
+      const std::map<std::string, std::string>& stringParams);
 
-  [[nodiscard]] const std::multimap<QString, QString>&
+  [[nodiscard]] const std::multimap<std::string, std::string>&
   getAvailableStringParameter() const;
   void setAvailableStringParameter(
-      const std::multimap<QString, QString>& stringParams);
+      const std::multimap<std::string, std::string>& stringParams);
 
  private:
   // ###############################
   // sensor configuration attributes
   // ###############################
 
-  QString name;
+  std::string name;
   bool isSaved{false};
 
-  QString pluginName;
-  QString sensorName;
+  std::string pluginName;
+  std::string sensorName;
   SensorType typeOfSensor;
 
   Accuracy accuracy;
   ConnectionConfig cConfig;
 
   // parameter selection
-  std::map<QString, int> integerParameter;
-  std::map<QString, double> doubleParameter;
-  std::map<QString, QString> stringParameter;
+  std::map<std::string, int> integerParameter;
+  std::map<std::string, double> doubleParameter;
+  std::map<std::string, std::string> stringParameter;
 
   // all available string parameter (specified by the sensor)
-  std::multimap<QString, QString> availableStringParameter;
+  std::multimap<std::string, std::string> availableStringParameter;
 };
 
 }  // namespace oi

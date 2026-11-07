@@ -1,5 +1,6 @@
 #include "point.h"
 
+#include <format>
 #include <map>
 #include <vector>
 
@@ -7,6 +8,7 @@
 #include "featurewrapper.h"
 #include "observation.h"
 #include "snapshot.h"
+#include "stringutil.h"
 
 using namespace oi;
 using namespace oi::math;
@@ -127,10 +129,10 @@ const double& Point::getDistance() const { return this->distance; }
  * \param displayDigits
  * \return
  */
-std::map<GeometryParameters, QString> Point::getUnknownParameters(
+std::map<GeometryParameters, std::string> Point::getUnknownParameters(
     const std::map<DimensionType, UnitType>& displayUnits,
     const std::map<DimensionType, int>& displayDigits) const {
-  std::map<GeometryParameters, QString> parameters;
+  std::map<GeometryParameters, std::string> parameters;
 
   parameters.insert_or_assign(
       GeometryParameters::eUnknownX,
@@ -253,14 +255,14 @@ void Point::recalc() {
  * through to the base rule unchanged.
  * \return
  */
-std::optional<QString> Point::getOwnerDescription() const {
+std::optional<std::string> Point::getOwnerDescription() const {
   if (!this->producerFunction.has_value() && !this->observations.empty()) {
     const oi::Guarded<Observation> firstObs = this->observations.front();
     if (!firstObs.isNull() && !firstObs->getStation().isNull()) {
-      return QString("its station \"%1\"")
-          .arg(firstObs->getStation()->getFeatureName());
+      return std::format("its station \"{}\"",
+                         firstObs->getStation()->getFeatureName());
     }
-    return QString("its station");
+    return std::string("its station");
   }
 
   return Geometry::getOwnerDescription();
@@ -300,7 +302,7 @@ bool Point::removeIntent(const MeasurementIntent& intent) {
  * \param roleName
  * \return
  */
-bool Point::hasIntent(int featureId, const QString& roleName) const {
+bool Point::hasIntent(int featureId, const std::string& roleName) const {
   return oi::contains(this->intents, MeasurementIntent(featureId, roleName));
 }
 
@@ -311,11 +313,10 @@ bool Point::hasIntent(int featureId, const QString& roleName) const {
  * \param showDiff
  * \return
  */
-QString Point::getDisplayDistance(const UnitType& type, const int& digits,
-                                  const bool& /*showDiff*/) const {
+std::string Point::getDisplayDistance(const UnitType& type, const int& digits,
+                                      const bool& /*showDiff*/) const {
   if (this->isSolved && this->distance > 0.) {
-    return QString::number(convertFromDefault(this->distance, type), 'f',
-                           digits);
+    return oi::number(convertFromDefault(this->distance, type), 'f', digits);
   }
-  return QString("");
+  return std::string("");
 }

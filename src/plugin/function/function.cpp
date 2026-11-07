@@ -1,6 +1,7 @@
 #include "function.h"
 
 #include <cmath>
+#include <format>
 #include <iterator>
 #include <map>
 #include <utility>
@@ -56,10 +57,10 @@ void propagateStatisticIfPresent(T& target, const T& source) {
  * "this function doesn't belong in this slot" rejection.
  */
 template <typename T>
-std::expected<void, QString> execAs(oi::Function* function, T* target,
-                                    const QString& typeName) {
+std::expected<void, std::string> execAs(oi::Function* function, T* target,
+                                        const std::string& typeName) {
   if (oi::Producer<T>* producer = dynamic_cast<oi::Producer<T>*>(function)) {
-    std::expected<T, QString> result = producer->exec();
+    std::expected<T, std::string> result = producer->exec();
     if (!result.has_value()) {
       return std::unexpected(result.error());
     }
@@ -69,7 +70,7 @@ std::expected<void, QString> execAs(oi::Function* function, T* target,
   }
 
   if (oi::Transform<T>* transform = dynamic_cast<oi::Transform<T>*>(function)) {
-    std::expected<T, QString> result = transform->exec(*target);
+    std::expected<T, std::string> result = transform->exec(*target);
     if (!result.has_value()) {
       return std::unexpected(result.error());
     }
@@ -78,8 +79,9 @@ std::expected<void, QString> execAs(oi::Function* function, T* target,
     return {};
   }
 
-  return std::unexpected(QString("Function \"%1\" not implemented for type %2")
-                             .arg(function->getMetaData().name, typeName));
+  return std::unexpected(
+      std::format("Function \"{}\" not implemented for type {}",
+                  function->getMetaData().name, typeName));
 }
 
 /*!
@@ -145,11 +147,11 @@ void Function::init() {}
  * \param feature
  * \return
  */
-std::expected<void, QString> Function::execChecked(
+std::expected<void, std::string> Function::execChecked(
     const oi::Guarded<FeatureWrapper>& feature) {
   this->applyDeterministicPipelineStages();
 
-  std::expected<void, QString> result = this->execByFeatureType(feature);
+  std::expected<void, std::string> result = this->execByFeatureType(feature);
 
   if (result.has_value() && this->applyResidualPipelineStages()) {
     result = this->execByFeatureType(feature);
@@ -182,10 +184,10 @@ bool Function::exec(const oi::Guarded<FeatureWrapper>& feature) {
  * \param feature
  * \return
  */
-std::expected<void, QString> Function::execByFeatureType(
+std::expected<void, std::string> Function::execByFeatureType(
     const oi::Guarded<FeatureWrapper>& feature) {
   if (feature.isNull()) {
-    return std::unexpected(QString("no feature to execute against"));
+    return std::unexpected(std::string("no feature to execute against"));
   }
 
   switch (feature->getFeatureTypeEnum()) {
@@ -317,8 +319,8 @@ std::expected<void, QString> Function::execByFeatureType(
   }
 
   return std::unexpected(
-      QString("Function \"%1\" not implemented for this feature type")
-          .arg(this->getMetaData().name));
+      std::format("Function \"{}\" not implemented for this feature type",
+                  this->getMetaData().name));
 }
 
 /*!
@@ -488,7 +490,7 @@ const PluginMetaData& Function::getMetaData() const { return this->metaData; }
  * \brief Function::getIntegerParameter
  * \return
  */
-const std::map<QString, int>& Function::getIntegerParameter() const {
+const std::map<std::string, int>& Function::getIntegerParameter() const {
   return this->integerParameters;
 }
 
@@ -496,7 +498,7 @@ const std::map<QString, int>& Function::getIntegerParameter() const {
  * \brief Function::getDoubleParameter
  * \return
  */
-const std::map<QString, double>& Function::getDoubleParameter() const {
+const std::map<std::string, double>& Function::getDoubleParameter() const {
   return this->doubleParameters;
 }
 
@@ -504,7 +506,8 @@ const std::map<QString, double>& Function::getDoubleParameter() const {
  * \brief Function::getStringParameter
  * \return
  */
-const std::multimap<QString, QString>& Function::getStringParameter() const {
+const std::multimap<std::string, std::string>& Function::getStringParameter()
+    const {
   return this->stringParameters;
 }
 
@@ -529,8 +532,8 @@ const ScalarInputParams& Function::getScalarInputParams() {
   if (!this->scalarInputParams.isValid) {
     this->scalarInputParams.doubleParameter = this->doubleParameters;
     this->scalarInputParams.intParameter = this->integerParameters;
-    std::vector<QString> keys = oi::keys(this->stringParameters);
-    for (const QString& key : std::as_const(keys)) {
+    std::vector<std::string> keys = oi::keys(this->stringParameters);
+    for (const std::string& key : std::as_const(keys)) {
       this->scalarInputParams.stringParameter.insert_or_assign(
           key, oi::value(this->stringParameters, key));
     }
@@ -574,7 +577,7 @@ void Function::unfixAllParameters() { this->fixedParameters.clear(); }
  * \brief Function::getResultProtocol
  * \return
  */
-const std::vector<QString>& Function::getResultProtocol() const {
+const std::vector<std::string>& Function::getResultProtocol() const {
   return this->resultProtocol;
 }
 
@@ -997,11 +1000,10 @@ bool Function::applyResidualPipelineStages() {
         current[i].shouldBeUsed = false;
         exclusions.push_back(PipelineExclusion(
             current[i].id,
-            QString("residual %1 exceeds %2 x sigma (stdev %3, threshold %4)")
-                .arg(residual.value())
-                .arg(sigmaMultiplier)
-                .arg(stdev)
-                .arg(threshold)));
+            std::format(
+                "residual {} exceeds {} x sigma (stdev {}, threshold {})",
+                oi::number(residual.value()), oi::number(sigmaMultiplier),
+                oi::number(stdev), oi::number(threshold))));
         changedHere = true;
       }
     }
@@ -1027,13 +1029,13 @@ std::optional<double> Function::residualMagnitude(int elementId) const {
     return std::nullopt;
   }
 
-  const QString vKey =
+  const std::string vKey =
       getObservationDisplayAttributesName(eObservationDisplayV);
   if (residual.corrections.contains(vKey)) {
     return oi::value(residual.corrections, vKey);
   }
 
-  const QString vrKey =
+  const std::string vrKey =
       getObservationDisplayAttributesName(eObservationDisplayVR);
   if (residual.corrections.contains(vrKey)) {
     return oi::value(residual.corrections, vrKey);

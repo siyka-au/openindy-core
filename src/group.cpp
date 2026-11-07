@@ -1,5 +1,6 @@
 #include "group.h"
 
+#include <format>
 #include <iterator>
 #include <vector>
 
@@ -11,9 +12,10 @@ using namespace oi;
 
 Group::Group() : Feature() {}
 
-Group::Group(const QString& name) : Feature() { this->name = name; }
+Group::Group(const std::string& name) : Feature() { this->name = name; }
 
-Group::Group(const QString& name, const FeatureTypes& constraint) : Feature() {
+Group::Group(const std::string& name, const FeatureTypes& constraint)
+    : Feature() {
   this->name = name;
   this->constraint = constraint;
 }
@@ -174,10 +176,10 @@ void Group::recalc() {
   this->isSolved = this->memberCount() > 0;
 }
 
-QString Group::getDisplayType() const {
+std::string Group::getDisplayType() const {
   if (this->constraint.has_value()) {
-    return QString("%1 group")
-        .arg(getFeatureTypeName(this->constraint.value()));
+    return std::format("{} group",
+                       getFeatureTypeName(this->constraint.value()));
   }
-  return QString("group");
+  return std::string("group");
 }

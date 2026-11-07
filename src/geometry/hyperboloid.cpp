@@ -6,6 +6,7 @@
 #include "containers.h"
 #include "featurewrapper.h"
 #include "snapshot.h"
+#include "stringutil.h"
 
 using namespace oi;
 using namespace oi::math;
@@ -126,10 +127,10 @@ void Hyperboloid::setHyperboloid(const Position& center, const Direction& axis,
  * \param displayDigits
  * \return
  */
-std::map<GeometryParameters, QString> Hyperboloid::getUnknownParameters(
+std::map<GeometryParameters, std::string> Hyperboloid::getUnknownParameters(
     const std::map<DimensionType, UnitType>& displayUnits,
     const std::map<DimensionType, int>& displayDigits) const {
-  std::map<GeometryParameters, QString> parameters;
+  std::map<GeometryParameters, std::string> parameters;
 
   parameters.insert_or_assign(
       GeometryParameters::eUnknownX,
@@ -249,12 +250,12 @@ void Hyperboloid::recalc() {
  * \param showDiff
  * \return
  */
-QString Hyperboloid::getDisplayA(const UnitType& type, const int& digits,
-                                 const bool& /*showDiff*/) const {
+std::string Hyperboloid::getDisplayA(const UnitType& type, const int& digits,
+                                     const bool& /*showDiff*/) const {
   if (this->isSolved) {
-    return QString::number(convertFromDefault(this->a, type), 'f', digits);
+    return oi::number(convertFromDefault(this->a, type), 'f', digits);
   }
-  return QString("");
+  return std::string("");
 }
 
 /*!
@@ -264,10 +265,10 @@ QString Hyperboloid::getDisplayA(const UnitType& type, const int& digits,
  * \param showDiff
  * \return
  */
-QString Hyperboloid::getDisplayC(const UnitType& type, const int& digits,
-                                 const bool& /*showDiff*/) const {
+std::string Hyperboloid::getDisplayC(const UnitType& type, const int& digits,
+                                     const bool& /*showDiff*/) const {
   if (this->isSolved) {
-    return QString::number(convertFromDefault(this->c, type), 'f', digits);
+    return oi::number(convertFromDefault(this->c, type), 'f', digits);
   }
-  return QString("");
+  return std::string("");
 }

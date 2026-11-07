@@ -1,7 +1,7 @@
 #ifndef GROUP_H
 #define GROUP_H
-#include <QtCore>
 #include <optional>
+#include <string>
 #include <vector>
 
 #include "core_export.h"
@@ -40,10 +40,10 @@ class OI_CORE_EXPORT Group : public Feature {
 
  public:
   explicit Group();
-  explicit Group(const QString& name);
+  explicit Group(const std::string& name);
 
   //! a group that will only accept members of one feature type
-  Group(const QString& name, const FeatureTypes& constraint);
+  Group(const std::string& name, const FeatureTypes& constraint);
 
   Group(const Group& copy);
   Group& operator=(const Group& copy);
@@ -105,7 +105,7 @@ class OI_CORE_EXPORT Group : public Feature {
   // display methods
   // ###############
 
-  [[nodiscard]] QString getDisplayType() const override;
+  [[nodiscard]] std::string getDisplayType() const override;
 
  protected:
   std::vector<oi::Guarded<FeatureWrapper>> members;

@@ -1,8 +1,12 @@
 #include "sensorworker.h"
 
+#include <format>
 #include <map>
 #include <utility>
 #include <vector>
+
+#include "containers.h"
+#include "value.h"
 
 using namespace oi;
 
@@ -50,8 +54,8 @@ void SensorWorker::run() {
       task();
     } catch (const std::exception& e) {
       this->out.onSensorMessage(
-          QString("sensor command failed with an exception: %1")
-              .arg(QString::fromUtf8(e.what())),
+          std::format("sensor command failed with an exception: {}",
+                      std::string(e.what())),
           MessageTypes::eErrorMessage, MessageDestinations::eConsoleMessage);
     } catch (...) {
       this->out.onSensorMessage("sensor command failed with an exception",
@@ -237,14 +241,14 @@ bool SensorWorker::getIsBusy() {
   return current->getIsBusy();
 }
 
-std::map<QString, QString> SensorWorker::getSensorStatus() {
+std::map<std::string, std::string> SensorWorker::getSensorStatus() {
   std::unique_lock driver(this->driverMutex, std::try_to_lock);
   if (!driver.owns_lock()) {
-    return std::map<QString, QString>();
+    return std::map<std::string, std::string>();
   }
   const oi::Guarded<Sensor> current = this->currentSensor();
   if (current.isNull() || !current->getConnectionState()) {
-    return std::map<QString, QString>();
+    return std::map<std::string, std::string>();
   }
   return current->getSensorStatus();
 }
@@ -277,9 +281,9 @@ std::vector<SensorFunctions> SensorWorker::getSupportedSensorActions() const {
              : this->snapshot->getSupportedSensorActions();
 }
 
-std::vector<QString> SensorWorker::getSelfDefinedActions() const {
+std::vector<std::string> SensorWorker::getSelfDefinedActions() const {
   const std::scoped_lock lock(this->snapshotMutex);
-  return this->snapshot == nullptr ? std::vector<QString>()
+  return this->snapshot == nullptr ? std::vector<std::string>()
                                    : this->snapshot->getSelfDefinedActions();
 }
 
@@ -313,14 +317,14 @@ void SensorWorker::setSensorConfiguration(const SensorConfiguration& sConfig) {
 // results
 // ####################################################################
 
-void SensorWorker::finished(bool success, const QString& msg,
+void SensorWorker::finished(bool success, const std::string& msg,
                             SensorAction action) {
   this->out.onCommandFinished(success, msg, action);
 }
 
 // measurementDone is reported after commandFinished and measurementFinished
 void SensorWorker::finishedMeasurement(
-    bool success, const QString& msg, SensorAction action, int geomId,
+    bool success, const std::string& msg, SensorAction action, int geomId,
     const std::vector<oi::Guarded<Reading>>& readings) {
   this->finished(success, msg, action);
   if (success) {
@@ -373,7 +377,7 @@ void SensorWorker::toggleSight() {
 void SensorWorker::compensation() {
   this->command([this] { this->runCompensation(); });
 }
-void SensorWorker::selfDefinedAction(const QString& action) {
+void SensorWorker::selfDefinedAction(const std::string& action) {
   this->command([this, action] { this->runSelfDefinedAction(action); });
 }
 void SensorWorker::search() {
@@ -408,7 +412,7 @@ void SensorWorker::runConnectSensor() {
   }
 
   // check wether the sensor is already connected
-  QString msg = SensorWorkerMessage::SENSOR_CONNECTED;
+  std::string msg = SensorWorkerMessage::SENSOR_CONNECTED;
   bool success = false;
 
   if (!sensor->isSensorAsync()) {
@@ -425,10 +429,10 @@ void SensorWorker::runConnectSensor() {
     }
     this->finished(success, msg);
   } else {
-    QJsonObject request;
-    request.insert("method", "connect");
-    QJsonObject status = sensor->performAsyncSensorCommand(request);
-    if (status.value("status").toString().compare("blocked") == 0) {
+    oi::ValueMap request;
+    request.insert_or_assign("method", "connect");
+    oi::ValueMap status = sensor->performAsyncSensorCommand(request);
+    if (oi::value(status, std::string("status")).toString() == "blocked") {
       this->finished(false, SensorWorkerMessage::CONNECTION_WAS_BLOCKED);
     }
   }
@@ -443,7 +447,7 @@ void SensorWorker::runDisconnectSensor() {
   }
 
   // check wether the sensor is already connected
-  QString msg = SensorWorkerMessage::SENSOR_DISCONNECTED;
+  std::string msg = SensorWorkerMessage::SENSOR_DISCONNECTED;
   bool success = false;
 
   if (!sensor->isSensorAsync()) {
@@ -459,10 +463,10 @@ void SensorWorker::runDisconnectSensor() {
       }
     }
   } else {
-    QJsonObject request;
-    request.insert("method", "disconnect");
-    QJsonObject status = sensor->performAsyncSensorCommand(request);
-    if (status.value("status").toString().compare("blocked") == 0) {
+    oi::ValueMap request;
+    request.insert_or_assign("method", "disconnect");
+    oi::ValueMap status = sensor->performAsyncSensorCommand(request);
+    if (oi::value(status, std::string("status")).toString() == "blocked") {
       this->finished(false, SensorWorkerMessage::CONNECTION_WAS_BLOCKED);
     }
   }
@@ -479,7 +483,7 @@ void SensorWorker::runMeasure(int geomId, const MeasurementConfig& mConfig) {
   }
 
   // check wether the sensor is already connected
-  QString msg = SensorWorkerMessage::FAILED_TO_MEASURE;
+  std::string msg = SensorWorkerMessage::FAILED_TO_MEASURE;
   bool success = false;
   std::vector<oi::Guarded<Reading>> readings;
 
@@ -500,13 +504,13 @@ void SensorWorker::runMeasure(int geomId, const MeasurementConfig& mConfig) {
     this->finishedMeasurement(success, msg, SensorAction::eSensorActionMeasure,
                               geomId, readings);
   } else {
-    QJsonObject request;
-    request.insert("method", "measure");
-    request.insert("geomId", geomId);
+    oi::ValueMap request;
+    request.insert_or_assign("method", "measure");
+    request.insert_or_assign("geomId", geomId);
 
     sensor->setMeasurementConfig(mConfig);
-    QJsonObject status = sensor->performAsyncSensorCommand(request);
-    if (status.value("status").toString().compare("blocked") == 0) {
+    oi::ValueMap status = sensor->performAsyncSensorCommand(request);
+    if (oi::value(status, std::string("status")).toString() == "blocked") {
       this->finished(false, SensorWorkerMessage::CONNECTION_WAS_BLOCKED);
     }
   }
@@ -524,7 +528,7 @@ void SensorWorker::runMovePolar(double azimuth, double zenith, double distance,
   }
 
   // check wether the sensor is already connected
-  QString msg = SensorWorkerMessage::FAILED_TO_MOVE_SENSOR;
+  std::string msg = SensorWorkerMessage::FAILED_TO_MOVE_SENSOR;
   bool success = false;
   std::vector<oi::Guarded<Reading>> readings;
   if (!sensor->getConnectionState()) {
@@ -575,7 +579,7 @@ void SensorWorker::runMoveCartesian(double x, double y, double z, bool measure,
 
   if (!sensor->isSensorAsync()) {
     // check wether the sensor is already connected
-    QString msg = SensorWorkerMessage::FAILED_TO_MOVE_SENSOR;
+    std::string msg = SensorWorkerMessage::FAILED_TO_MOVE_SENSOR;
     bool success = false;
     std::vector<oi::Guarded<Reading>> readings;
     if (!sensor->getConnectionState()) {
@@ -613,13 +617,13 @@ void SensorWorker::runMoveCartesian(double x, double y, double z, bool measure,
       this->out.onMeasurementFinished(geomId, readings);
     }
   } else {
-    QJsonObject request;
-    request.insert("method", "move (cartesian)");
-    request.insert("x", x);
-    request.insert("y", y);
-    request.insert("z", z);
-    QJsonObject status = sensor->performAsyncSensorCommand(request);
-    if (status.value("status").toString().compare("blocked") == 0) {
+    oi::ValueMap request;
+    request.insert_or_assign("method", "move (cartesian)");
+    request.insert_or_assign("x", x);
+    request.insert_or_assign("y", y);
+    request.insert_or_assign("z", z);
+    oi::ValueMap status = sensor->performAsyncSensorCommand(request);
+    if (oi::value(status, std::string("status")).toString() == "blocked") {
       this->finished(false, SensorWorkerMessage::CONNECTION_WAS_BLOCKED,
                      SensorAction::eSensorActionMove);
     }
@@ -636,7 +640,7 @@ void SensorWorker::runInitialize() {
 
   // check wether the sensor is already connected
   if (!sensor->isSensorAsync()) {
-    QString msg = SensorWorkerMessage::FAILED_TO_INITIALIZE_SENSOR;
+    std::string msg = SensorWorkerMessage::FAILED_TO_INITIALIZE_SENSOR;
     bool success = false;
     if (!sensor->getConnectionState()) {
       msg = SensorWorkerMessage::SENSOR_IS_NOT_CONNECTED;
@@ -651,10 +655,10 @@ void SensorWorker::runInitialize() {
 
     this->finished(success, msg);
   } else {
-    QJsonObject request;
-    request.insert("method", "initialize");
-    QJsonObject status = sensor->performAsyncSensorCommand(request);
-    if (status.value("status").toString().compare("blocked") == 0) {
+    oi::ValueMap request;
+    request.insert_or_assign("method", "initialize");
+    oi::ValueMap status = sensor->performAsyncSensorCommand(request);
+    if (oi::value(status, std::string("status")).toString() == "blocked") {
       this->finished(false, SensorWorkerMessage::CONNECTION_WAS_BLOCKED);
     }
   }
@@ -669,7 +673,7 @@ void SensorWorker::runMotorState() {
   }
 
   // check wether the sensor is already connected
-  QString msg = SensorWorkerMessage::FAILED_TO_CHANGE_MOTOR_STATE;
+  std::string msg = SensorWorkerMessage::FAILED_TO_CHANGE_MOTOR_STATE;
   bool success = false;
   if (!sensor->getConnectionState()) {
     msg = SensorWorkerMessage::SENSOR_IS_NOT_CONNECTED;
@@ -693,7 +697,7 @@ void SensorWorker::runHome() {
   }
 
   // check wether the sensor is already connected
-  QString msg = SensorWorkerMessage::FAILED_TO_SET_SENSOR_TO_HOME_POSITION;
+  std::string msg = SensorWorkerMessage::FAILED_TO_SET_SENSOR_TO_HOME_POSITION;
   bool success = false;
   if (!sensor->getConnectionState()) {
     msg = SensorWorkerMessage::SENSOR_IS_NOT_CONNECTED;
@@ -717,7 +721,7 @@ void SensorWorker::runToggleSight() {
   }
 
   // check wether the sensor is already connected
-  QString msg = SensorWorkerMessage::FAILED_TO_TOGGLE_SIGHT_ORIENTATION;
+  std::string msg = SensorWorkerMessage::FAILED_TO_TOGGLE_SIGHT_ORIENTATION;
   bool success = false;
 
   if (!sensor->isSensorAsync()) {
@@ -734,10 +738,10 @@ void SensorWorker::runToggleSight() {
 
     this->finished(success, msg);
   } else {
-    QJsonObject request;
-    request.insert("method", "toggle sight orientation");
-    QJsonObject status = sensor->performAsyncSensorCommand(request);
-    if (status.value("status").toString().compare("blocked") == 0) {
+    oi::ValueMap request;
+    request.insert_or_assign("method", "toggle sight orientation");
+    oi::ValueMap status = sensor->performAsyncSensorCommand(request);
+    if (oi::value(status, std::string("status")).toString() == "blocked") {
       this->finished(false, SensorWorkerMessage::CONNECTION_WAS_BLOCKED);
     }
   }
@@ -752,7 +756,7 @@ void SensorWorker::runCompensation() {
   }
 
   // check wether the sensor is already connected
-  QString msg = SensorWorkerMessage::FAILED_TO_START_COMPENSATION;
+  std::string msg = SensorWorkerMessage::FAILED_TO_START_COMPENSATION;
   bool success = false;
   if (!sensor->getConnectionState()) {
     msg = SensorWorkerMessage::SENSOR_IS_NOT_CONNECTED;
@@ -768,7 +772,7 @@ void SensorWorker::runCompensation() {
   this->finished(success, msg);
 }
 
-void SensorWorker::runSelfDefinedAction(const QString& action) {
+void SensorWorker::runSelfDefinedAction(const std::string& action) {
   const oi::Guarded<Sensor> sensor = this->currentSensor();
   // check sensor
   if (sensor.isNull()) {
@@ -777,7 +781,7 @@ void SensorWorker::runSelfDefinedAction(const QString& action) {
   }
 
   // check wether the sensor is already connected
-  QString msg = SensorWorkerMessage::FAILED_TO_DO_SELF_DEFINED_ACTION;
+  std::string msg = SensorWorkerMessage::FAILED_TO_DO_SELF_DEFINED_ACTION;
   bool success = false;
   if (!sensor->getConnectionState()) {
     msg = SensorWorkerMessage::SENSOR_IS_NOT_CONNECTED;
@@ -902,18 +906,17 @@ void SensorWorker::streamReading(std::uint64_t generation) {
 
   if (!sensor->isSensorAsync()) {
     // get real time reading
-    const std::map<QString, QVariant> reading =
-        sensor->readingStream(this->streamFormat);
+    const oi::ValueMap reading = sensor->readingStream(this->streamFormat);
     this->out.onRealTimeReading(reading);
 
     // next iteration
     this->scheduleReadingStream();
   } else {
     // the next iteration is scheduled when the sensor delivers a reading
-    QJsonObject request;
-    request.insert("method", "stream");
-    const QJsonObject status = sensor->performAsyncSensorCommand(request);
-    if (status.value("status").toString().compare("blocked") == 0) {
+    oi::ValueMap request;
+    request.insert_or_assign("method", "stream");
+    const oi::ValueMap status = sensor->performAsyncSensorCommand(request);
+    if (oi::value(status, std::string("status")).toString() == "blocked") {
       this->finished(false, SensorWorkerMessage::CONNECTION_WAS_BLOCKED);
     }
   }
@@ -967,25 +970,25 @@ void SensorWorker::streamStatus(std::uint64_t generation) {
 
 // these two touch no worker state: forwarded from the reporting thread
 void SensorWorker::onSensorStatus(const SensorStatus& status,
-                                  const QString& msg) {
+                                  const std::string& msg) {
   this->out.onSensorStatus(status, msg);
 }
 
-void SensorWorker::onSensorMessage(const QString& msg,
+void SensorWorker::onSensorMessage(const std::string& msg,
                                    const MessageTypes& msgType,
                                    const MessageDestinations& msgDest) {
   this->out.onSensorMessage(msg, msgType, msgDest);
 }
 
-void SensorWorker::onAsyncSensorResponse(const QJsonObject& response,
+void SensorWorker::onAsyncSensorResponse(const oi::ValueMap& response,
                                          SensorAction sensorAction) {
   this->dispatch([this, response, sensorAction] {
     bool success = false;
-    QString msg;
-    if (response.value("error") != QJsonValue::Undefined) {
-      msg = response.value("error").toObject().value("message").toString();
+    std::string msg;
+    if (response.contains("error")) {
+      msg = oi::value(response, std::string("error")).toString();
     } else {
-      msg = response.value("result").toString();
+      msg = oi::value(response, std::string("result")).toString();
       success = true;
     }
     this->finished(success, msg, sensorAction);
@@ -1006,8 +1009,7 @@ void SensorWorker::onAsyncMeasurementResult(
   });
 }
 
-void SensorWorker::onAsyncStreamResult(
-    const std::map<QString, QVariant>& reading) {
+void SensorWorker::onAsyncStreamResult(const oi::ValueMap& reading) {
   this->dispatch([this, reading] {
     this->out.onRealTimeReading(reading);
 
@@ -1017,4 +1019,5 @@ void SensorWorker::onAsyncStreamResult(
 }
 
 // nobody consumed these so far; the worker drops them as before
-void SensorWorker::onAsyncSensorNotification(const QJsonObject& /*response*/) {}
+void SensorWorker::onAsyncSensorNotification(const oi::ValueMap& /*response*/) {
+}

@@ -6,6 +6,7 @@
 
 #include "containers.h"
 #include "featurewrapper.h"
+#include "stringutil.h"
 
 using namespace oi;
 
@@ -95,11 +96,11 @@ void ScalarEntityMeasurementSeries::setSeriesValue(const double& seriesValue) {
  * \param displayDigits
  * \return
  */
-std::map<GeometryParameters, QString>
+std::map<GeometryParameters, std::string>
 ScalarEntityMeasurementSeries::getUnknownParameters(
     const std::map<DimensionType, UnitType>& displayUnits,
     const std::map<DimensionType, int>& displayDigits) const {
-  std::map<GeometryParameters, QString> parameters;
+  std::map<GeometryParameters, std::string> parameters;
 
   parameters.insert_or_assign(
       GeometryParameters::eUnknownMeasurementSeries,
@@ -155,11 +156,10 @@ void ScalarEntityMeasurementSeries::recalc() {
  * \param showDiff
  * \return
  */
-QString ScalarEntityMeasurementSeries::getDisplayMeasurementSeries(
+std::string ScalarEntityMeasurementSeries::getDisplayMeasurementSeries(
     const UnitType& type, const int& digits, const bool& /*showDiff*/) const {
   if (this->isSolved) {
-    return QString::number(convertFromDefault(this->seriesValue, type), 'f',
-                           digits);
+    return oi::number(convertFromDefault(this->seriesValue, type), 'f', digits);
   }
-  return QString("");
+  return std::string("");
 }

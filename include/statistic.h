@@ -20,8 +20,9 @@ class OI_CORE_EXPORT Residual {
   Residual() {}
 
   int elementId{-1};  // id of the element this residual belongs to
-  std::map<QString, double> corrections;  // the correction values (key: name)
-  DimensionType dimension;                // dimension of the correction values
+  std::map<std::string, double>
+      corrections;          // the correction values (key: name)
+  DimensionType dimension;  // dimension of the correction values
 };
 
 /*!

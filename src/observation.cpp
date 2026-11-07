@@ -1,5 +1,6 @@
 #include "observation.h"
 
+#include <format>
 #include <vector>
 
 #include "containers.h"
@@ -9,6 +10,7 @@
 #include "oijob.h"
 #include "snapshot.h"
 #include "station.h"
+#include "stringutil.h"
 
 #if defined(__GNUC__) && !defined(__clang__)
 #warning \
@@ -204,11 +206,11 @@ Observation::~Observation() {
  * all. See the class comment in observation.h.
  * \return
  */
-std::optional<QString> Observation::getOwnerDescription() const {
+std::optional<std::string> Observation::getOwnerDescription() const {
   if (!this->station.isNull()) {
-    return QString("its station \"%1\"").arg(this->station->getFeatureName());
+    return std::format("its station \"{}\"", this->station->getFeatureName());
   }
-  return QString("its station");
+  return std::string("its station");
 }
 
 /*!
@@ -383,7 +385,7 @@ std::vector<oi::Guarded<Geometry> > Observation::getTargetGeometries() const {
 void Observation::addTargetGeometry(
     const oi::Guarded<Geometry>& targetGeometry) {
   if (!targetGeometry.isNull()) {
-    const MeasurementIntent intent(targetGeometry->getId(), QString());
+    const MeasurementIntent intent(targetGeometry->getId(), std::string());
 
     // check if target geometry is already included
     if (this->hasIntent(intent.featureId, intent.roleName)) {
@@ -536,13 +538,13 @@ const bool& Observation::getIsDummyPoint() const { return this->isDummyPoint; }
  * \brief Observation::getDisplayId
  * \return
  */
-QString Observation::getDisplayId() const { return QString::number(this->id); }
+std::string Observation::getDisplayId() const { return oi::number(this->id); }
 
 /*!
  * \brief Observation::getDisplayStation
  * \return
  */
-QString Observation::getDisplayStation() const {
+std::string Observation::getDisplayStation() const {
   if (this->station.isNull()) {
     return "";
   }
@@ -553,8 +555,8 @@ QString Observation::getDisplayStation() const {
  * \brief Observation::getDisplayTargetGeometries
  * \return
  */
-QString Observation::getDisplayTargetGeometries() const {
-  QString result = "";
+std::string Observation::getDisplayTargetGeometries() const {
+  std::string result = "";
   for (const oi::Guarded<Geometry>& geometry :
        oi::snapshot(this->getTargetGeometries())) {
     if (geometry.isNull()) {
@@ -564,7 +566,7 @@ QString Observation::getDisplayTargetGeometries() const {
     if (result.compare("") == 0) {
       result.append(geometry->getFeatureName());
     } else {
-      result.append(QString(", %1").arg(geometry->getFeatureName()));
+      result.append(std::format(", {}", geometry->getFeatureName()));
     }
   }
   return result;
@@ -576,13 +578,13 @@ QString Observation::getDisplayTargetGeometries() const {
  * \param digits
  * \return
  */
-QString Observation::getDisplayX(const UnitType& type, const int& digits,
-                                 const bool& /*showDiff*/) const {
+std::string Observation::getDisplayX(const UnitType& type, const int& digits,
+                                     const bool& /*showDiff*/) const {
   if (this->isValid && this->isSolved) {
-    return QString::number(convertFromDefault(this->xyz.getAt(0), type), 'f',
-                           digits);
+    return oi::number(convertFromDefault(this->xyz.getAt(0), type), 'f',
+                      digits);
   }
-  return QString("");
+  return std::string("");
 }
 
 /*!
@@ -591,13 +593,13 @@ QString Observation::getDisplayX(const UnitType& type, const int& digits,
  * \param digits
  * \return
  */
-QString Observation::getDisplayY(const UnitType& type, const int& digits,
-                                 const bool& /*showDiff*/) const {
+std::string Observation::getDisplayY(const UnitType& type, const int& digits,
+                                     const bool& /*showDiff*/) const {
   if (this->isValid && this->isSolved) {
-    return QString::number(convertFromDefault(this->xyz.getAt(1), type), 'f',
-                           digits);
+    return oi::number(convertFromDefault(this->xyz.getAt(1), type), 'f',
+                      digits);
   }
-  return QString("");
+  return std::string("");
 }
 
 /*!
@@ -606,13 +608,13 @@ QString Observation::getDisplayY(const UnitType& type, const int& digits,
  * \param digits
  * \return
  */
-QString Observation::getDisplayZ(const UnitType& type, const int& digits,
-                                 const bool& /*showDiff*/) const {
+std::string Observation::getDisplayZ(const UnitType& type, const int& digits,
+                                     const bool& /*showDiff*/) const {
   if (this->isValid && this->isSolved) {
-    return QString::number(convertFromDefault(this->xyz.getAt(2), type), 'f',
-                           digits);
+    return oi::number(convertFromDefault(this->xyz.getAt(2), type), 'f',
+                      digits);
   }
-  return QString("");
+  return std::string("");
 }
 
 /*!
@@ -621,13 +623,13 @@ QString Observation::getDisplayZ(const UnitType& type, const int& digits,
  * \param digits
  * \return
  */
-QString Observation::getDisplaySigmaX(const UnitType& type,
-                                      const int& digits) const {
+std::string Observation::getDisplaySigmaX(const UnitType& type,
+                                          const int& digits) const {
   if (this->isValid && this->isSolved) {
-    return QString::number(convertFromDefault(this->sigmaXyz.getAt(0), type),
-                           'f', digits);
+    return oi::number(convertFromDefault(this->sigmaXyz.getAt(0), type), 'f',
+                      digits);
   }
-  return QString("");
+  return std::string("");
 }
 
 /*!
@@ -636,13 +638,13 @@ QString Observation::getDisplaySigmaX(const UnitType& type,
  * \param digits
  * \return
  */
-QString Observation::getDisplaySigmaY(const UnitType& type,
-                                      const int& digits) const {
+std::string Observation::getDisplaySigmaY(const UnitType& type,
+                                          const int& digits) const {
   if (this->isValid && this->isSolved) {
-    return QString::number(convertFromDefault(this->sigmaXyz.getAt(1), type),
-                           'f', digits);
+    return oi::number(convertFromDefault(this->sigmaXyz.getAt(1), type), 'f',
+                      digits);
   }
-  return QString("");
+  return std::string("");
 }
 
 /*!
@@ -651,13 +653,13 @@ QString Observation::getDisplaySigmaY(const UnitType& type,
  * \param digits
  * \return
  */
-QString Observation::getDisplaySigmaZ(const UnitType& type,
-                                      const int& digits) const {
+std::string Observation::getDisplaySigmaZ(const UnitType& type,
+                                          const int& digits) const {
   if (this->isValid && this->isSolved) {
-    return QString::number(convertFromDefault(this->sigmaXyz.getAt(2), type),
-                           'f', digits);
+    return oi::number(convertFromDefault(this->sigmaXyz.getAt(2), type), 'f',
+                      digits);
   }
-  return QString("");
+  return std::string("");
 }
 
 /*!
@@ -665,11 +667,11 @@ QString Observation::getDisplaySigmaZ(const UnitType& type,
  * \param digits
  * \return
  */
-QString Observation::getDisplayI(const int& digits) const {
+std::string Observation::getDisplayI(const int& digits) const {
   if (this->isValid && this->isSolved) {
-    return QString::number(this->ijk.getAt(0), 'f', digits);
+    return oi::number(this->ijk.getAt(0), 'f', digits);
   }
-  return QString("");
+  return std::string("");
 }
 
 /*!
@@ -677,11 +679,11 @@ QString Observation::getDisplayI(const int& digits) const {
  * \param digits
  * \return
  */
-QString Observation::getDisplayJ(const int& digits) const {
+std::string Observation::getDisplayJ(const int& digits) const {
   if (this->isValid && this->isSolved) {
-    return QString::number(this->ijk.getAt(1), 'f', digits);
+    return oi::number(this->ijk.getAt(1), 'f', digits);
   }
-  return QString("");
+  return std::string("");
 }
 
 /*!
@@ -689,11 +691,11 @@ QString Observation::getDisplayJ(const int& digits) const {
  * \param digits
  * \return
  */
-QString Observation::getDisplayK(const int& digits) const {
+std::string Observation::getDisplayK(const int& digits) const {
   if (this->isValid && this->isSolved) {
-    return QString::number(this->ijk.getAt(2), 'f', digits);
+    return oi::number(this->ijk.getAt(2), 'f', digits);
   }
-  return QString("");
+  return std::string("");
 }
 
 /*!
@@ -702,11 +704,11 @@ QString Observation::getDisplayK(const int& digits) const {
  * \param digits
  * \return
  */
-QString Observation::getDisplaySigmaI(const int& digits) const {
+std::string Observation::getDisplaySigmaI(const int& digits) const {
   if (this->isValid && this->isSolved) {
-    return QString::number(this->sigmaIjk.getAt(0), 'f', digits);
+    return oi::number(this->sigmaIjk.getAt(0), 'f', digits);
   }
-  return QString("");
+  return std::string("");
 }
 
 /*!
@@ -714,11 +716,11 @@ QString Observation::getDisplaySigmaI(const int& digits) const {
  * \param digits
  * \return
  */
-QString Observation::getDisplaySigmaJ(const int& digits) const {
+std::string Observation::getDisplaySigmaJ(const int& digits) const {
   if (this->isValid && this->isSolved) {
-    return QString::number(this->sigmaIjk.getAt(1), 'f', digits);
+    return oi::number(this->sigmaIjk.getAt(1), 'f', digits);
   }
-  return QString("");
+  return std::string("");
 }
 
 /*!
@@ -726,18 +728,18 @@ QString Observation::getDisplaySigmaJ(const int& digits) const {
  * \param digits
  * \return
  */
-QString Observation::getDisplaySigmaK(const int& digits) const {
+std::string Observation::getDisplaySigmaK(const int& digits) const {
   if (this->isValid && this->isSolved) {
-    return QString::number(this->sigmaIjk.getAt(2), 'f', digits);
+    return oi::number(this->sigmaIjk.getAt(2), 'f', digits);
   }
-  return QString("");
+  return std::string("");
 }
 
 /*!
  * \brief Observation::getDisplayIsValid
  * \return
  */
-QString Observation::getDisplayIsValid() const {
+std::string Observation::getDisplayIsValid() const {
   return this->isValid ? "true" : "false";
 }
 
@@ -745,6 +747,6 @@ QString Observation::getDisplayIsValid() const {
  * \brief Observation::getDisplayIsSolved
  * \return
  */
-QString Observation::getDisplayIsSolved() const {
+std::string Observation::getDisplayIsSolved() const {
   return this->isSolved ? "true" : "false";
 }

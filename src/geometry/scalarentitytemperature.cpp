@@ -6,6 +6,7 @@
 
 #include "containers.h"
 #include "featurewrapper.h"
+#include "stringutil.h"
 
 using namespace oi;
 
@@ -94,11 +95,11 @@ void ScalarEntityTemperature::setTemperature(const double& temperature) {
  * \param displayDigits
  * \return
  */
-std::map<GeometryParameters, QString>
+std::map<GeometryParameters, std::string>
 ScalarEntityTemperature::getUnknownParameters(
     const std::map<DimensionType, UnitType>& displayUnits,
     const std::map<DimensionType, int>& displayDigits) const {
-  std::map<GeometryParameters, QString> parameters;
+  std::map<GeometryParameters, std::string> parameters;
 
   parameters.insert_or_assign(
       GeometryParameters::eUnknownTemperature,
@@ -155,11 +156,10 @@ void ScalarEntityTemperature::recalc() {
  * \param showDiff
  * \return
  */
-QString ScalarEntityTemperature::getDisplayTemperature(
+std::string ScalarEntityTemperature::getDisplayTemperature(
     const UnitType& type, const int& digits, const bool& /*showDiff*/) const {
   if (this->isSolved) {
-    return QString::number(convertFromDefault(this->temperature, type), 'f',
-                           digits);
+    return oi::number(convertFromDefault(this->temperature, type), 'f', digits);
   }
-  return QString("");
+  return std::string("");
 }

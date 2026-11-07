@@ -5,16 +5,19 @@
 // Station, ...). It exists so the codec can restore private state directly,
 // the way the classes' own fromOpenIndyXML used to.
 
-#include <QJsonArray>
-#include <QJsonObject>
+#include <google/protobuf/json/json.h>
+#include <google/protobuf/struct.pb.h>
+
 #include <chrono>
 #include <cmath>
+#include <string>
 
 #include "access.h"
 #include "containers.h"
 #include "convert.h"
 #include "featurewrapper.h"
 #include "plugin/sensor/sensor.h"
+#include "stringutil.h"
 #include "wire.h"
 
 namespace oi::codec {
@@ -46,46 +49,77 @@ SensorFaces fromProto(oipb::SensorFace face) {
   }
 }
 
-// The bundle template is user-supplied JSON; its values are kept as text.
-std::string jsonText(const QJsonValue& value) {
-  if (value.isString()) {
-    return value.toString().toStdString();
+// The bundle template is user-supplied JSON text; its values are kept as text.
+std::string jsonText(const google::protobuf::Struct& object,
+                     const std::string& key) {
+  const auto found = object.fields().find(key);
+  if (found == object.fields().end()) {
+    return {};
   }
-  if (value.isDouble()) {
-    return QString::number(value.toDouble(), 'g', 17).toStdString();
+  const google::protobuf::Value& value = found->second;
+  if (value.has_string_value()) {
+    return value.string_value();
+  }
+  if (value.has_number_value()) {
+    return oi::number(value.number_value(), 'g', 17);
   }
   return {};
 }
 
-oipb::BundleTemplate bundleTemplateOf(const QJsonObject& json) {
+oipb::BundleTemplate bundleTemplateOf(const std::string& json) {
   oipb::BundleTemplate out;
-  out.set_name(jsonText(json.value("name")));
-  out.set_level_station(jsonText(json.value("levelStation")));
-  out.set_max_iterations(jsonText(json.value("maxIterations")));
-  for (const QJsonValue& parameter : json.value("parameters").toArray()) {
-    out.add_parameters(jsonText(parameter));
+  google::protobuf::Struct root;
+  if (!google::protobuf::json::JsonStringToMessage(json, &root).ok()) {
+    return out;
   }
-  const QJsonObject plugin = json.value("plugin").toObject();
-  out.mutable_plugin()->set_name(jsonText(plugin.value("name")));
-  out.mutable_plugin()->set_plugin(jsonText(plugin.value("pluginName")));
+  out.set_name(jsonText(root, "name"));
+  out.set_level_station(jsonText(root, "levelStation"));
+  out.set_max_iterations(jsonText(root, "maxIterations"));
+  const auto parameters = root.fields().find("parameters");
+  if (parameters != root.fields().end() &&
+      parameters->second.has_list_value()) {
+    for (const google::protobuf::Value& parameter :
+         parameters->second.list_value().values()) {
+      if (parameter.has_string_value()) {
+        out.add_parameters(parameter.string_value());
+      } else if (parameter.has_number_value()) {
+        out.add_parameters(oi::number(parameter.number_value(), 'g', 17));
+      } else {
+        out.add_parameters("");
+      }
+    }
+  }
+  const auto plugin = root.fields().find("plugin");
+  if (plugin != root.fields().end() && plugin->second.has_struct_value()) {
+    out.mutable_plugin()->set_name(
+        jsonText(plugin->second.struct_value(), "name"));
+    out.mutable_plugin()->set_plugin(
+        jsonText(plugin->second.struct_value(), "pluginName"));
+  } else {
+    out.mutable_plugin()->set_name("");
+    out.mutable_plugin()->set_plugin("");
+  }
   return out;
 }
 
-QJsonObject bundleTemplateToJson(const oipb::BundleTemplate& m) {
-  QJsonObject json;
-  json["name"] = QString::fromStdString(m.name());
-  json["levelStation"] = QString::fromStdString(m.level_station());
-  json["maxIterations"] = QString::fromStdString(m.max_iterations());
-  QJsonArray parameters;
+std::string bundleTemplateToJson(const oipb::BundleTemplate& m) {
+  google::protobuf::Struct root;
+  auto& fields = *root.mutable_fields();
+  fields["name"].set_string_value(m.name());
+  fields["levelStation"].set_string_value(m.level_station());
+  fields["maxIterations"].set_string_value(m.max_iterations());
+  auto* parameters = fields["parameters"].mutable_list_value();
   for (const std::string& p : m.parameters()) {
-    parameters.append(QString::fromStdString(p));
+    parameters->add_values()->set_string_value(p);
   }
-  json["parameters"] = parameters;
-  QJsonObject plugin;
-  plugin["name"] = QString::fromStdString(m.plugin().name());
-  plugin["pluginName"] = QString::fromStdString(m.plugin().plugin());
-  json["plugin"] = plugin;
-  return json;
+  auto& plugin = *fields["plugin"].mutable_struct_value()->mutable_fields();
+  plugin["name"].set_string_value(m.plugin().name());
+  plugin["pluginName"].set_string_value(m.plugin().plugin());
+  std::string out;
+  if (!google::protobuf::json::MessageToJsonString(root, &out).ok()) {
+    return {};
+  }
+  return out;
 }
 
 }  // namespace
@@ -99,8 +133,8 @@ void Access::encodeReading(const Reading& r, oipb::Reading* m) {
   *m->mutable_measured_at() = toTimestamp(r.measuredAt);
   m->set_imported(r.isImported());
   m->set_face(toProto(r.face));
-  m->set_sensor_config_name(r.sensorConfigName.toStdString());
-  if (!r.mConfig.getName().isEmpty()) {
+  m->set_sensor_config_name(r.sensorConfigName);
+  if (!r.mConfig.getName().empty()) {
     *m->mutable_measurement_config() = configRefOf(r.mConfig);
   }
 
@@ -157,11 +191,11 @@ void Access::encodeReading(const Reading& r, oipb::Reading* m) {
       auto* u = m->mutable_undefined();
       for (auto it = r.rUndefined.values.cbegin();
            it != r.rUndefined.values.cend(); ++it) {
-        (*u->mutable_values())[it->first.toStdString()] = it->second;
+        (*u->mutable_values())[it->first] = it->second;
       }
       for (auto it = r.rUndefined.sigmaValues.cbegin();
            it != r.rUndefined.sigmaValues.cend(); ++it) {
-        (*u->mutable_sigma_values())[it->first.toStdString()] = it->second;
+        (*u->mutable_sigma_values())[it->first] = it->second;
       }
       break;
     }
@@ -241,10 +275,10 @@ oi::Guarded<Reading> Access::decodeReading(const oipb::Reading& m) {
     case oipb::Reading::kUndefined: {
       ReadingUndefined v;
       for (const auto& [key, value] : m.undefined().values()) {
-        v.values.insert_or_assign(QString::fromStdString(key), value);
+        v.values.insert_or_assign((key), value);
       }
       for (const auto& [key, value] : m.undefined().sigma_values()) {
-        v.sigmaValues.insert_or_assign(QString::fromStdString(key), value);
+        v.sigmaValues.insert_or_assign((key), value);
       }
       v.isValid = true;
       reading = new Reading(v);
@@ -259,7 +293,7 @@ oi::Guarded<Reading> Access::decodeReading(const oipb::Reading& m) {
   reading->measuredAt = fromTimestamp(m.measured_at());
   reading->setImported(m.imported());
   reading->face = fromProto(m.face());
-  reading->sensorConfigName = QString::fromStdString(m.sensor_config_name());
+  reading->sensorConfigName = (m.sensor_config_name());
   if (m.has_measurement_config()) {
     reading->mConfig = configKeyOf(m.measurement_config());
   }
@@ -371,8 +405,8 @@ oipb::CoordinateSystem toProto(const CoordinateSystem& system) {
   if (!system.getBundlePlugin().isNull()) {
     *m.mutable_bundle_adjustment() = toProto(*system.getBundlePlugin());
   }
-  const QJsonObject bundleTemplate = system.getBundleTemplate();
-  if (!bundleTemplate.isEmpty()) {
+  const std::string& bundleTemplate = system.getBundleTemplate();
+  if (!bundleTemplate.empty()) {
     *m.mutable_bundle_template() = bundleTemplateOf(bundleTemplate);
   }
   for (const auto& trafo : system.getTransformationParameters()) {
@@ -417,7 +451,7 @@ oipb::Station toProto(const Station& station) {
     *m.add_used_sensors() = pluginRef(sensor.getMetaData());
   }
   const Sensor active = station.getSensor();
-  if (!active.getMetaData().name.isEmpty()) {
+  if (!active.getMetaData().name.empty()) {
     *m.mutable_active_sensor() = pluginRef(active.getMetaData());
   }
   m.set_position(idOf(station.getPosition().data()));

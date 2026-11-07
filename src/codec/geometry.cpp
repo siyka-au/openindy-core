@@ -226,7 +226,7 @@ void Access::encodeGeometry(const Geometry& g, oipb::Geometry* m) {
   // by name: a freshly created geometry has not had its config type resolved
   // yet (that happens when the project is linked), which makes the key
   // "invalid" although the name is there
-  if (!g.activeMeasurementConfig.getName().isEmpty()) {
+  if (!g.activeMeasurementConfig.getName().empty()) {
     *m->mutable_measurement_config() = configRefOf(g.activeMeasurementConfig);
   }
 
@@ -262,7 +262,7 @@ void Access::encodeGeometry(const Geometry& g, oipb::Geometry* m) {
     for (const MeasurementIntent& intent : point->intents) {
       auto* entry = shape->add_intents();
       entry->set_feature_id(intent.featureId);
-      entry->set_role(intent.roleName.toStdString());
+      entry->set_role(intent.roleName);
     }
   } else if (const auto* cloud = dynamic_cast<const PointCloud*>(&g)) {
     auto* shape = m->mutable_point_cloud();
@@ -361,8 +361,8 @@ oi::Guarded<Geometry> Access::decodeGeometry(const oipb::Geometry& m) {
       auto geometry = restoreBase<Point>(m);
       auto* point = static_cast<Point*>(geometry.data());
       for (const auto& intent : m.point().intents()) {
-        point->intents.push_back(MeasurementIntent(
-            intent.feature_id(), QString::fromStdString(intent.role())));
+        point->intents.push_back(
+            MeasurementIntent(intent.feature_id(), (intent.role())));
       }
       return geometry;
     }

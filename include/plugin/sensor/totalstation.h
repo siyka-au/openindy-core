@@ -51,7 +51,8 @@ class OI_CORE_EXPORT TotalStation : public Sensor {
   virtual bool move(const double& /*azimuth*/, const double& /*zenith*/,
                     const double& /*distance*/, const bool& /*isRelative*/) {
     this->sensorMessage(
-        QString("Total Station not implemented correctly: move method missing"),
+        std::string(
+            "Total Station not implemented correctly: move method missing"),
         MessageTypes::eCriticalMessage,
         MessageDestinations::eMessageBoxMessage);
     return false;
@@ -67,7 +68,8 @@ class OI_CORE_EXPORT TotalStation : public Sensor {
   virtual bool move(const double& /*x*/, const double& /*y*/,
                     const double& /*z*/) {
     this->sensorMessage(
-        QString("Total Station not implemented correctly: move method missing"),
+        std::string(
+            "Total Station not implemented correctly: move method missing"),
         MessageTypes::eCriticalMessage,
         MessageDestinations::eMessageBoxMessage);
     return false;
@@ -78,8 +80,8 @@ class OI_CORE_EXPORT TotalStation : public Sensor {
    * \return
    */
   virtual bool toggleSightOrientation() {
-    this->sensorMessage(QString("Total Station not implemented correctly: "
-                                "toggle sight method missing"),
+    this->sensorMessage(std::string("Total Station not implemented correctly: "
+                                    "toggle sight method missing"),
                         MessageTypes::eCriticalMessage,
                         MessageDestinations::eMessageBoxMessage);
     return false;

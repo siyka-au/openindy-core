@@ -6,6 +6,7 @@
 #include "containers.h"
 #include "featurewrapper.h"
 #include "snapshot.h"
+#include "stringutil.h"
 
 using namespace oi;
 using namespace oi::math;
@@ -128,10 +129,10 @@ void Torus::setTorus(const Position& center, const Direction& normal,
  * \param displayDigits
  * \return
  */
-std::map<GeometryParameters, QString> Torus::getUnknownParameters(
+std::map<GeometryParameters, std::string> Torus::getUnknownParameters(
     const std::map<DimensionType, UnitType>& displayUnits,
     const std::map<DimensionType, int>& displayDigits) const {
-  std::map<GeometryParameters, QString> parameters;
+  std::map<GeometryParameters, std::string> parameters;
 
   parameters.insert_or_assign(
       GeometryParameters::eUnknownX,
@@ -253,11 +254,11 @@ void Torus::recalc() {
  * \param showDiff
  * \return
  */
-QString Torus::getDisplayRadiusB(const UnitType& type, const int& digits,
-                                 const bool& /*showDiff*/) const {
+std::string Torus::getDisplayRadiusB(const UnitType& type, const int& digits,
+                                     const bool& /*showDiff*/) const {
   if (this->isSolved) {
-    return QString::number(convertFromDefault(this->radiusB.getRadius(), type),
-                           'f', digits);
+    return oi::number(convertFromDefault(this->radiusB.getRadius(), type), 'f',
+                      digits);
   }
-  return QString("");
+  return std::string("");
 }

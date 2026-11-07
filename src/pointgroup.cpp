@@ -8,9 +8,9 @@
 
 using namespace oi;
 
-PointGroup::PointGroup() : Group(QString(), FeatureTypes::ePointFeature) {}
+PointGroup::PointGroup() : Group(std::string(), FeatureTypes::ePointFeature) {}
 
-PointGroup::PointGroup(const QString& name)
+PointGroup::PointGroup(const std::string& name)
     : Group(name, FeatureTypes::ePointFeature) {}
 
 PointGroup::PointGroup(const PointGroup& copy) : Group(copy) {}
@@ -61,4 +61,6 @@ int PointGroup::collectionPointCount() const {
   return this->collectionPoints().size();
 }
 
-QString PointGroup::getDisplayType() const { return QString("point group"); }
+std::string PointGroup::getDisplayType() const {
+  return std::string("point group");
+}

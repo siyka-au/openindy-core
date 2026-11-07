@@ -1,14 +1,14 @@
 #ifndef MEASUREMENTCONFIG_H
 #define MEASUREMENTCONFIG_H
-#include <QString>
-#include <QVariant>
 #include <map>
+#include <string>
 #include <vector>
 
 #include "core_export.h"
 #include "sensortype.h"
 #include "types.h"
 #include "util.h"
+#include "value.h"
 
 namespace oi {
 
@@ -39,7 +39,7 @@ enum class ConfigTypes {
 class OI_CORE_EXPORT MeasurementConfigKey {
  public:
   MeasurementConfigKey() : configType(ConfigTypes::eUndefinded) {}
-  MeasurementConfigKey(QString name, ConfigTypes configType,
+  MeasurementConfigKey(std::string name, ConfigTypes configType,
                        SensorType sensorType = SensorType())
       : name(name), configType(configType), sensorType(sensorType) {}
   MeasurementConfigKey(const MeasurementConfigKey& copy)
@@ -76,7 +76,7 @@ class OI_CORE_EXPORT MeasurementConfigKey {
     }
   }
 
-  [[nodiscard]] const QString getName() const { return this->name; }
+  [[nodiscard]] const std::string getName() const { return this->name; }
 
   [[nodiscard]] ConfigTypes getConfigType() const { return this->configType; }
 
@@ -95,12 +95,11 @@ class OI_CORE_EXPORT MeasurementConfigKey {
     return ConfigTypes::eStandardConfig == this->configType;
   }
   [[nodiscard]] bool isValid() const {
-    return !this->name.isEmpty() &&
-           this->configType != ConfigTypes::eUndefinded;
+    return !this->name.empty() && this->configType != ConfigTypes::eUndefinded;
   }
 
  private:
-  QString name;
+  std::string name;
   ConfigTypes configType;
   SensorType sensorType;
 };
@@ -136,8 +135,8 @@ class OI_CORE_EXPORT MeasurementConfig {
   // get or set measurement config attributes
   // ########################################
 
-  [[nodiscard]] const QString& getName() const;
-  void setName(const QString& name);
+  [[nodiscard]] const std::string& getName() const;
+  void setName(const std::string& name);
   [[nodiscard]] MeasurementConfigKey getKey() const;
 
   [[nodiscard]] bool isUserConfig() const;
@@ -155,8 +154,8 @@ class OI_CORE_EXPORT MeasurementConfig {
   [[nodiscard]] const double& getDistanceInterval() const;
   void setDistanceInterval(const double& interval);
 
-  [[nodiscard]] const QVariant getTransientData(const QString key) const;
-  void setTransientData(const QString key, const QVariant value);
+  [[nodiscard]] const oi::Value getTransientData(const std::string key) const;
+  void setTransientData(const std::string key, const oi::Value value);
 
   void setMeasurementMode(const MeasurementModes mode);
   [[nodiscard]] MeasurementModes getMeasurementMode() const;
@@ -187,7 +186,7 @@ class OI_CORE_EXPORT MeasurementConfig {
   // #############################
   // measurement config attributes
   // #############################
-  QString name;
+  std::string name;
   ConfigTypes configType{ConfigTypes::eUndefinded};
 
   bool measureTwoSides;     // true if the sensor shall measure in both faces
@@ -196,7 +195,7 @@ class OI_CORE_EXPORT MeasurementConfig {
   double distanceInterval;  // distance interval in which the sensor shall
                             // measure [mm]
 
-  std::map<QString, QVariant> transientData;
+  oi::ValueMap transientData;
 
   MeasurementTypes measurementType;
   MeasurementModes measurementMode;

@@ -116,7 +116,7 @@ class OI_CORE_EXPORT Observation : public Point {
   const oi::Guarded<Reading>& getReading() const;
 
   // D19/D20: always station-owned, always read-only - see observation.cpp
-  std::optional<QString> getOwnerDescription() const override;
+  std::optional<std::string> getOwnerDescription() const override;
 
   // keeps the inherited Point-facing position correct regardless of
   // which of Observation's own xyz write paths ran last - see
@@ -140,32 +140,32 @@ class OI_CORE_EXPORT Observation : public Point {
   // display methods
   // ###############
 
-  QString getDisplayId() const;
-  QString getDisplayStation() const;
-  QString getDisplayTargetGeometries() const;
+  std::string getDisplayId() const;
+  std::string getDisplayStation() const;
+  std::string getDisplayTargetGeometries() const;
 
   // matches Geometry::getDisplayX/Y/Z's signature exactly (including the
   // showDiff param, unused here) so this is an ordinary override, not an
   // overload that hides the base one under -Woverloaded-virtual - and so
   // a 2-arg call (every existing call site) stays unambiguous rather than
   // resolving against two equally-viable candidates.
-  QString getDisplayX(const UnitType& type, const int& digits,
-                      const bool& showDiff = false) const override;
-  QString getDisplayY(const UnitType& type, const int& digits,
-                      const bool& showDiff = false) const override;
-  QString getDisplayZ(const UnitType& type, const int& digits,
-                      const bool& showDiff = false) const override;
-  QString getDisplaySigmaX(const UnitType& type, const int& digits) const;
-  QString getDisplaySigmaY(const UnitType& type, const int& digits) const;
-  QString getDisplaySigmaZ(const UnitType& type, const int& digits) const;
-  QString getDisplayI(const int& digits) const;
-  QString getDisplayJ(const int& digits) const;
-  QString getDisplayK(const int& digits) const;
-  QString getDisplaySigmaI(const int& digits) const;
-  QString getDisplaySigmaJ(const int& digits) const;
-  QString getDisplaySigmaK(const int& digits) const;
-  QString getDisplayIsValid() const;
-  QString getDisplayIsSolved() const override;
+  std::string getDisplayX(const UnitType& type, const int& digits,
+                          const bool& showDiff = false) const override;
+  std::string getDisplayY(const UnitType& type, const int& digits,
+                          const bool& showDiff = false) const override;
+  std::string getDisplayZ(const UnitType& type, const int& digits,
+                          const bool& showDiff = false) const override;
+  std::string getDisplaySigmaX(const UnitType& type, const int& digits) const;
+  std::string getDisplaySigmaY(const UnitType& type, const int& digits) const;
+  std::string getDisplaySigmaZ(const UnitType& type, const int& digits) const;
+  std::string getDisplayI(const int& digits) const;
+  std::string getDisplayJ(const int& digits) const;
+  std::string getDisplayK(const int& digits) const;
+  std::string getDisplaySigmaI(const int& digits) const;
+  std::string getDisplaySigmaJ(const int& digits) const;
+  std::string getDisplaySigmaK(const int& digits) const;
+  std::string getDisplayIsValid() const;
+  std::string getDisplayIsSolved() const override;
 
  private:
   // ####################################################

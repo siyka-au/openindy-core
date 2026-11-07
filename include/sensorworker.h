@@ -17,6 +17,7 @@
 #include "sensorsink.h"
 #include "sensorworkermessage.h"
 #include "stationobserver.h"
+#include "value.h"
 
 namespace oi {
 
@@ -99,14 +100,14 @@ class OI_CORE_EXPORT SensorWorker final : public SensorSink {
   [[nodiscard]] bool getIsSensorConnected();
   [[nodiscard]] bool getIsReadyForMeasurement();
   [[nodiscard]] bool getIsBusy();
-  [[nodiscard]] std::map<QString, QString> getSensorStatus();
+  [[nodiscard]] std::map<std::string, std::string> getSensorStatus();
 
   // static properties; answered from the snapshot
   [[nodiscard]] SensorType getActiveSensorType() const;
   [[nodiscard]] std::vector<ReadingTypes> getSupportedReadingTypes() const;
   [[nodiscard]] std::vector<ConnectionKind> getSupportedConnectionTypes() const;
   [[nodiscard]] std::vector<SensorFunctions> getSupportedSensorActions() const;
-  [[nodiscard]] std::vector<QString> getSelfDefinedActions() const;
+  [[nodiscard]] std::vector<std::string> getSelfDefinedActions() const;
   [[nodiscard]] SensorConfiguration getSensorConfiguration() const;
   void setSensorConfiguration(const SensorConfiguration& sConfig);
 
@@ -127,7 +128,7 @@ class OI_CORE_EXPORT SensorWorker final : public SensorSink {
   void home();
   void toggleSight();
   void compensation();
-  void selfDefinedAction(const QString& action);
+  void selfDefinedAction(const std::string& action);
   void search();
   void finishMeasurement();
 
@@ -149,16 +150,17 @@ class OI_CORE_EXPORT SensorWorker final : public SensorSink {
   // SensorSink: what the sensor reports itself
   // ##########################################
 
-  void onSensorStatus(const SensorStatus& status, const QString& msg) override;
-  void onSensorMessage(const QString& msg, const MessageTypes& msgType,
+  void onSensorStatus(const SensorStatus& status,
+                      const std::string& msg) override;
+  void onSensorMessage(const std::string& msg, const MessageTypes& msgType,
                        const MessageDestinations& msgDest) override;
-  void onAsyncSensorResponse(const QJsonObject& response,
+  void onAsyncSensorResponse(const oi::ValueMap& response,
                              SensorAction sensorAction) override;
   void onAsyncMeasurementResult(
       const int& geomId, const std::vector<oi::Guarded<Reading>>& measurements,
       SensorAction sensorAction) override;
-  void onAsyncStreamResult(const std::map<QString, QVariant>& reading) override;
-  void onAsyncSensorNotification(const QJsonObject& response) override;
+  void onAsyncStreamResult(const oi::ValueMap& reading) override;
+  void onAsyncSensorNotification(const oi::ValueMap& response) override;
 
  private:
   // queue
@@ -189,14 +191,14 @@ class OI_CORE_EXPORT SensorWorker final : public SensorSink {
   void runHome();
   void runToggleSight();
   void runCompensation();
-  void runSelfDefinedAction(const QString& action);
+  void runSelfDefinedAction(const std::string& action);
   void runSearch();
   void runResetSensor();
 
   // result helpers
-  void finished(bool success, const QString& msg,
+  void finished(bool success, const std::string& msg,
                 SensorAction action = SensorAction::eSensorActionUndefind);
-  void finishedMeasurement(bool success, const QString& msg,
+  void finishedMeasurement(bool success, const std::string& msg,
                            SensorAction action, int geomId,
                            const std::vector<oi::Guarded<Reading>>& readings);
 

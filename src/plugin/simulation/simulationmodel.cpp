@@ -45,7 +45,7 @@ void SimulationModel::setSimulationConfiguration(
  * \brief SimulationModel::getIntegerParameter
  * \return
  */
-const std::map<QString, int>& SimulationModel::getIntegerParameter() const {
+const std::map<std::string, int>& SimulationModel::getIntegerParameter() const {
   return this->integerParameters;
 }
 
@@ -53,7 +53,8 @@ const std::map<QString, int>& SimulationModel::getIntegerParameter() const {
  * \brief SimulationModel::getDoubleParameter
  * \return
  */
-const std::map<QString, double>& SimulationModel::getDoubleParameter() const {
+const std::map<std::string, double>& SimulationModel::getDoubleParameter()
+    const {
   return this->doubleParameters;
 }
 
@@ -61,8 +62,8 @@ const std::map<QString, double>& SimulationModel::getDoubleParameter() const {
  * \brief SimulationModel::getStringParameter
  * \return
  */
-const std::multimap<QString, QString>& SimulationModel::getStringParameter()
-    const {
+const std::multimap<std::string, std::string>&
+SimulationModel::getStringParameter() const {
   return this->stringParameters;
 }
 
@@ -70,7 +71,7 @@ const std::multimap<QString, QString>& SimulationModel::getStringParameter()
  * \brief SimulationModel::getSensorUncertainties
  * \return
  */
-const std::map<QString, UncertaintyComponent>&
+const std::map<std::string, UncertaintyComponent>&
 SimulationModel::getSensorUncertainties() const {
   return this->sensorUncertainties;
 }
@@ -79,7 +80,7 @@ SimulationModel::getSensorUncertainties() const {
  * \brief SimulationModel::getObjectUncertainties
  * \return
  */
-const std::map<QString, UncertaintyComponent>&
+const std::map<std::string, UncertaintyComponent>&
 SimulationModel::getObjectUncertainties() const {
   return objectUncertainties;
 }
@@ -88,7 +89,7 @@ SimulationModel::getObjectUncertainties() const {
  * \brief SimulationModel::getEnviromentUncertainties
  * \return
  */
-const std::map<QString, UncertaintyComponent>&
+const std::map<std::string, UncertaintyComponent>&
 SimulationModel::getEnviromentUncertainties() const {
   return environmentUncertainties;
 }
@@ -97,7 +98,7 @@ SimulationModel::getEnviromentUncertainties() const {
  * \brief SimulationModel::getHumanInfluence
  * \return
  */
-const std::map<QString, UncertaintyComponent>&
+const std::map<std::string, UncertaintyComponent>&
 SimulationModel::getHumanInfluence() const {
   return this->humanInfluence;
 }
@@ -115,7 +116,7 @@ bool SimulationModel::distort(const oi::Guarded<Reading>& /*r*/,
                               const OiMat& /*objectRelation*/,
                               const bool& /*newIterationStart*/) {
   this->sendMessage(
-      QString(
+      std::string(
           "Simulation Model not implemented correctly: distort method missing"),
       MessageTypes::eCriticalMessage, MessageDestinations::eMessageBoxMessage);
   return false;
@@ -129,7 +130,7 @@ bool SimulationModel::distort(const oi::Guarded<Reading>& /*r*/,
  */
 bool SimulationModel::analyseSimulationData(UncertaintyData& /*d*/) {
   this->sendMessage(
-      QString(
+      std::string(
           "Simulation Model not implemented correctly: analyse method missing"),
       MessageTypes::eCriticalMessage, MessageDestinations::eMessageBoxMessage);
   return false;
@@ -144,8 +145,8 @@ bool SimulationModel::analyseSimulationData(UncertaintyData& /*d*/) {
  */
 double SimulationModel::getCorrelationCoefficient(
     const std::vector<double>& /*x*/, const std::vector<double>& /*y*/) {
-  this->sendMessage(QString("Simulation Model not implemented correctly: "
-                            "correlation method missing"),
+  this->sendMessage(std::string("Simulation Model not implemented correctly: "
+                                "correlation method missing"),
                     MessageTypes::eCriticalMessage,
                     MessageDestinations::eMessageBoxMessage);
   return 0.0;

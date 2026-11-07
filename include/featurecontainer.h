@@ -1,7 +1,7 @@
 #ifndef FEATURECONTAINER_H
 #define FEATURECONTAINER_H
-#include <QString>
 #include <map>
+#include <string>
 #include <vector>
 
 #include "coordinatesystem.h"
@@ -50,8 +50,8 @@ class OI_CORE_EXPORT FeatureContainer {
   // getter to get a list of all feature ids, names, groups and measurement
   // configs
   [[nodiscard]] const std::vector<int>& getFeatureIdList() const;
-  [[nodiscard]] const std::vector<QString>& getFeatureNameList() const;
-  [[nodiscard]] const std::vector<QString>& getFeatureGroupList() const;
+  [[nodiscard]] const std::vector<std::string>& getFeatureNameList() const;
+  [[nodiscard]] const std::vector<std::string>& getFeatureGroupList() const;
   [[nodiscard]] const std::vector<MeasurementConfigKey>&
   getUsedMeasurementConfigs() const;
 
@@ -59,9 +59,9 @@ class OI_CORE_EXPORT FeatureContainer {
   [[nodiscard]] oi::Guarded<FeatureWrapper> getFeatureById(
       const int& featureId) const;
   [[nodiscard]] std::vector<oi::Guarded<FeatureWrapper>> getFeaturesByName(
-      const QString& name, const bool startWith = false) const;
+      const std::string& name, const bool startWith = false) const;
   [[nodiscard]] std::vector<oi::Guarded<FeatureWrapper>> getFeaturesByGroup(
-      const QString& group) const;
+      const std::string& group) const;
   [[nodiscard]] std::vector<oi::Guarded<FeatureWrapper>> getFeaturesByType(
       const FeatureTypes& type) const;
   [[nodiscard]] std::vector<oi::Guarded<Geometry>> getGeometriesByMConfig(
@@ -74,7 +74,7 @@ class OI_CORE_EXPORT FeatureContainer {
   [[nodiscard]] int getFeatureCount() const;
   [[nodiscard]] int getGeometryCount() const;
   [[nodiscard]] int getFeatureCount(const FeatureTypes& type) const;
-  [[nodiscard]] int getFeatureCount(const QString& group) const;
+  [[nodiscard]] int getFeatureCount(const std::string& group) const;
 
   // ######################
   // add or remove features
@@ -83,8 +83,8 @@ class OI_CORE_EXPORT FeatureContainer {
   bool addFeature(const oi::Guarded<FeatureWrapper>& feature);
   bool removeFeature(const int& featureId);
 
-  void checkAndClean(const int& featureId, const QString& name,
-                     const QString& group, const FeatureTypes& type);
+  void checkAndClean(const int& featureId, const std::string& name,
+                     const std::string& group, const FeatureTypes& type);
 
   void removeAll();
 
@@ -92,10 +92,10 @@ class OI_CORE_EXPORT FeatureContainer {
   // callbacks on feature changes to update keys of helper maps
   // ##########################################################
 
-  bool featureNameChanged(const int& featureId, const QString& oldName);
-  bool featureGroupChanged(const int& featureId, const QString& oldGroup);
+  bool featureNameChanged(const int& featureId, const std::string& oldName);
+  bool featureGroupChanged(const int& featureId, const std::string& oldGroup);
   bool geometryMeasurementConfigChanged(const int& featureId,
-                                        const QString& oldMConfig,
+                                        const std::string& oldMConfig,
                                         const MeasurementConfigKey oldIsSaved);
 
  private:
@@ -121,10 +121,10 @@ class OI_CORE_EXPORT FeatureContainer {
   // etc.)
   std::map<int, oi::Guarded<FeatureWrapper>>
       featuresIdMap;  // map of all features in OpenIndy with their id as key
-  std::multimap<QString, oi::Guarded<FeatureWrapper>>
+  std::multimap<std::string, oi::Guarded<FeatureWrapper>>
       featuresNameMap;  // map of all features in OpenIndy with their name as
                         // key
-  std::multimap<QString, oi::Guarded<FeatureWrapper>>
+  std::multimap<std::string, oi::Guarded<FeatureWrapper>>
       featuresGroupMap;  // map of all features in OpenIndy with their group as
                          // key
   std::multimap<FeatureTypes, oi::Guarded<FeatureWrapper>>
@@ -136,8 +136,8 @@ class OI_CORE_EXPORT FeatureContainer {
 
   // lists with ids, names, groups and measurement configs
   std::vector<int> featureIds;
-  std::vector<QString> featureNames;
-  std::vector<QString> featureGroups;
+  std::vector<std::string> featureNames;
+  std::vector<std::string> featureGroups;
   std::vector<MeasurementConfigKey> usedMConfigs;
 };
 

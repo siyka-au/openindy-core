@@ -1,5 +1,5 @@
-#include <QString>
 #include <QtTest>
+#include <string>
 
 #include "chooselalib.h"
 #include "constructfunction.h"
@@ -25,7 +25,7 @@ class FixedPositionFunction : public ConstructFunction, public Producer<Point> {
     this->applicableFor.push_back(FeatureTypes::ePointFeature);
   }
   double x = 0.0, y = 0.0, z = 0.0;
-  std::expected<Point, QString> exec() override {
+  std::expected<Point, std::string> exec() override {
     Point point;
     point.setPoint(Position(x, y, z));
     return point;
@@ -52,15 +52,16 @@ class CopyPointFunction : public ConstructFunction, public Producer<Point> {
     this->neededElements.push_back(param);
     this->applicableFor.push_back(FeatureTypes::ePointFeature);
   }
-  std::expected<Point, QString> exec() override {
+  std::expected<Point, std::string> exec() override {
     if (!this->inputElements.contains(0) ||
         this->inputElements[0].size() != 1) {
-      return std::unexpected(QString("CopyPointFunction: no input element"));
+      return std::unexpected(
+          std::string("CopyPointFunction: no input element"));
     }
     const InputElement& element = this->inputElements[0].front();
     if (element.point.isNull() || !element.point->getIsSolved()) {
       return std::unexpected(
-          QString("CopyPointFunction: input point not solved"));
+          std::string("CopyPointFunction: input point not solved"));
     }
     Point point;
     point.setPoint(element.point->getPosition());
@@ -133,7 +134,7 @@ void OwnedSubGeometryTest::
   QCOMPARE(child->getOwnerFeature().value().data(), owner.data());
   QVERIFY(oi::contains(owner->getOwnedSubGeometries(), child));
 
-  const std::optional<QString> description = child->getOwnerDescription();
+  const std::optional<std::string> description = child->getOwnerDescription();
   QVERIFY(description.has_value());
   QVERIFY(description->contains("Owner1"));
 

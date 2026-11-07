@@ -1,7 +1,7 @@
 #ifndef TORUS_H
 #define TORUS_H
-#include <QtCore>
 #include <map>
+#include <string>
 
 #include "core_export.h"
 #include "direction.h"
@@ -65,7 +65,7 @@ class OI_CORE_EXPORT Torus : public Geometry {
   // get or set unknown parameters
   // #############################
 
-  [[nodiscard]] std::map<GeometryParameters, QString> getUnknownParameters(
+  [[nodiscard]] std::map<GeometryParameters, std::string> getUnknownParameters(
       const std::map<DimensionType, UnitType>& displayUnits,
       const std::map<DimensionType, int>& displayDigits) const override;
   void applyUnknownParameters(
@@ -81,7 +81,7 @@ class OI_CORE_EXPORT Torus : public Geometry {
   // display methods
   // ###############
 
-  [[nodiscard]] QString getDisplayRadiusB(
+  [[nodiscard]] std::string getDisplayRadiusB(
       const UnitType& type, const int& digits,
       const bool& showDiff = false) const override;
 

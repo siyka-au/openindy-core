@@ -1,6 +1,6 @@
 #include <QCoreApplication>
-#include <QString>
 #include <QtTest>
+#include <string>
 #include <vector>
 
 #include "chooselalib.h"
@@ -104,7 +104,7 @@ void JobObserverTest::renameAndGroupAreReported() {
   QCOMPARE(rec.count("featureNameChanged"), 1);
   QCOMPARE(rec.count("featureAttributesChanged"), 1);
   QVERIFY(oi::contains(rec.calls,
-                       QString("featureNameChanged:%1:P1").arg(point.getId())));
+                       std::format("featureNameChanged:{}:P1", point.getId())));
 
   rec.calls.clear();
   point.setGroupName("G1");
@@ -161,7 +161,7 @@ void JobObserverTest::trafoParamChangesAreReported() {
   tp->setIsUsed(true);
   QCOMPARE(rec.count("trafoParamIsUsedChanged"), 1);
   QVERIFY(oi::contains(rec.calls,
-                       QString("trafoParamIsUsedChanged:%1").arg(tp->getId())));
+                       std::format("trafoParamIsUsedChanged:{}", tp->getId())));
   tp->setIsDatumTrafo(true);
   QCOMPARE(rec.count("trafoParamIsDatumChanged"), 1);
 }
@@ -174,9 +174,9 @@ void JobObserverTest::messageIsDelivered() {
   job.sendMessage("hello", MessageTypes::eWarningMessage);
   QCOMPARE(rec.count("sendMessage"), 1);
   QCOMPARE(rec.calls.back(),
-           QString("sendMessage:hello:%1:%2")
-               .arg(static_cast<int>(MessageTypes::eWarningMessage))
-               .arg(static_cast<int>(MessageDestinations::eConsoleMessage)));
+           std::format("sendMessage:hello:{}:{}",
+                       static_cast<int>(MessageTypes::eWarningMessage),
+                       static_cast<int>(MessageDestinations::eConsoleMessage)));
 
   // a failing operation reports through the same path
   rec.calls.clear();
@@ -192,9 +192,9 @@ void JobObserverTest::recalculationNotifications() {
   job.featureRecalculated(7);
   job.featuresRecalculated();
   job.trafoParamRecalculated(9);
-  QCOMPARE(rec.calls, (std::vector<QString>{"featureRecalculated:7",
-                                            "featuresRecalculated",
-                                            "trafoParamRecalculated:9"}));
+  QCOMPARE(rec.calls, (std::vector<std::string>{"featureRecalculated:7",
+                                                "featuresRecalculated",
+                                                "trafoParamRecalculated:9"}));
 }
 
 void JobObserverTest::recalcRequestsAreReported() {
@@ -316,4 +316,6 @@ void JobObserverTest::isSolvedIsDeliveredDeferred() {
 }
 
 QTEST_MAIN(JobObserverTest)
+#include <format>
+
 #include "tst_jobobserver.moc"

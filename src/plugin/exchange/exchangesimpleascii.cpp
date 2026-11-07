@@ -3,6 +3,8 @@
 #include <map>
 #include <vector>
 
+#include "value.h"
+
 using namespace oi;
 
 /*!
@@ -39,10 +41,10 @@ ExchangeSimpleAscii::getDefaultColumnOrder(
  * \param typeOfGeometry
  * \return
  */
-std::map<ExchangeSimpleAscii::ColumnType, std::vector<QVariant>>
+std::map<ExchangeSimpleAscii::ColumnType, std::vector<oi::Value>>
 ExchangeSimpleAscii::getFilePreview(
     const GeometryTypes& /*typeOfGeometry*/) const {
-  return std::map<ExchangeSimpleAscii::ColumnType, std::vector<QVariant>>();
+  return std::map<ExchangeSimpleAscii::ColumnType, std::vector<oi::Value>>();
 }
 
 /*!
@@ -61,7 +63,7 @@ ExchangeSimpleAscii::getPossibleColumns(
  * \brief ExchangeSimpleAscii::getSupportedDelimiters
  * \return
  */
-const std::vector<QString>& ExchangeSimpleAscii::getSupportedDelimiters()
+const std::vector<std::string>& ExchangeSimpleAscii::getSupportedDelimiters()
     const {
   return this->supportedDelimiters;
 }
@@ -129,7 +131,7 @@ void ExchangeSimpleAscii::setSkipFirstLine(const bool& skipFirstLine) {
  * \brief ExchangeSimpleAscii::getUsedDelimiter
  * \return
  */
-const QString& ExchangeSimpleAscii::getUsedDelimiter() const {
+const std::string& ExchangeSimpleAscii::getUsedDelimiter() const {
   return this->usedDelimiter;
 }
 
@@ -138,7 +140,7 @@ const QString& ExchangeSimpleAscii::getUsedDelimiter() const {
  * Set the delimiter that shall be used when parsing the file
  * \param usedDelimiter
  */
-void ExchangeSimpleAscii::setDelimiter(const QString& usedDelimiter) {
+void ExchangeSimpleAscii::setDelimiter(const std::string& usedDelimiter) {
   this->usedDelimiter = usedDelimiter;
 }
 

@@ -32,7 +32,7 @@ class OI_CORE_EXPORT Station : public Feature {
 
  public:
   explicit Station();
-  explicit Station(const QString& name);
+  explicit Station(const std::string& name);
 
   Station(const Station& copy);
 
@@ -88,7 +88,7 @@ class OI_CORE_EXPORT Station : public Feature {
   bool getIsSensorConnected();
   bool getIsReadyForMeasurement();
   bool getIsBusy();
-  std::map<QString, QString> getSensorStatus();
+  std::map<std::string, std::string> getSensorStatus();
 
   // sensor type
   [[nodiscard]] SensorType getActiveSensorType() const;
@@ -99,7 +99,7 @@ class OI_CORE_EXPORT Station : public Feature {
 
   // sensor actions
   [[nodiscard]] std::vector<SensorFunctions> getSupportedSensorActions() const;
-  [[nodiscard]] std::vector<QString> getSelfDefinedActions() const;
+  [[nodiscard]] std::vector<std::string> getSelfDefinedActions() const;
 
   // stream format
   ReadingTypes getStreamFormat();
@@ -115,20 +115,20 @@ class OI_CORE_EXPORT Station : public Feature {
   // display methods
   // ###############
 
-  [[nodiscard]] QString getDisplayX(
+  [[nodiscard]] std::string getDisplayX(
       const UnitType& type, const int& digits,
       const bool& showDiff = false) const override;
-  [[nodiscard]] QString getDisplayY(
+  [[nodiscard]] std::string getDisplayY(
       const UnitType& type, const int& digits,
       const bool& showDiff = false) const override;
-  [[nodiscard]] QString getDisplayZ(
+  [[nodiscard]] std::string getDisplayZ(
       const UnitType& type, const int& digits,
       const bool& showDiff = false) const override;
-  [[nodiscard]] QString getDisplayPrimaryI(
+  [[nodiscard]] std::string getDisplayPrimaryI(
       const int& digits, const bool& showDiff = false) const override;
-  [[nodiscard]] QString getDisplayPrimaryJ(
+  [[nodiscard]] std::string getDisplayPrimaryJ(
       const int& digits, const bool& showDiff = false) const override;
-  [[nodiscard]] QString getDisplayPrimaryK(
+  [[nodiscard]] std::string getDisplayPrimaryK(
       const int& digits, const bool& showDiff = false) const override;
 
   // ###############################
@@ -157,7 +157,7 @@ class OI_CORE_EXPORT Station : public Feature {
   void home();
   void toggleSight();
   void compensation();
-  void selfDefinedAction(const QString& action);
+  void selfDefinedAction(const std::string& action);
   void search();
 
   // ################
@@ -242,7 +242,7 @@ class OI_CORE_EXPORT Station : public Feature {
 
  protected:
   // keep the station system's name in step with the station's
-  void nameWasChanged(const QString& oldName) override;
+  void nameWasChanged(const std::string& oldName) override;
 
  private:
   // ##############
@@ -250,7 +250,7 @@ class OI_CORE_EXPORT Station : public Feature {
   // ##############
 
   // station attribute changes
-  void stationNameChanged(const int& featureId, const QString& oldName);
+  void stationNameChanged(const int& featureId, const std::string& oldName);
 
   // the sensor control with the observer that feeds the station's own
   // observer

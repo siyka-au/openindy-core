@@ -76,7 +76,7 @@ class OI_CORE_EXPORT SensorControl final {
   bool getIsSensorConnected();
   bool getIsReadyForMeasurement();
   bool getIsBusy();
-  std::map<QString, QString> getSensorStatus();
+  std::map<std::string, std::string> getSensorStatus();
 
   // sensor type
   SensorType getActiveSensorType();
@@ -87,7 +87,7 @@ class OI_CORE_EXPORT SensorControl final {
 
   // sensor actions
   std::vector<SensorFunctions> getSupportedSensorActions();
-  std::vector<QString> getSelfDefinedActions();
+  std::vector<std::string> getSelfDefinedActions();
 
   // sensor configuration
   SensorConfiguration getSensorConfiguration();
@@ -116,7 +116,7 @@ class OI_CORE_EXPORT SensorControl final {
   void home();
   void toggleSight();
   void compensation();
-  void selfDefinedAction(const QString& action);
+  void selfDefinedAction(const std::string& action);
   void search();
 
   // ################

@@ -145,10 +145,10 @@ void Plane::setPlane(const Direction& /*normal*/, const double& d) {
  * \param displayDigits
  * \return
  */
-std::map<GeometryParameters, QString> Plane::getUnknownParameters(
+std::map<GeometryParameters, std::string> Plane::getUnknownParameters(
     const std::map<DimensionType, UnitType>& displayUnits,
     const std::map<DimensionType, int>& displayDigits) const {
-  std::map<GeometryParameters, QString> parameters;
+  std::map<GeometryParameters, std::string> parameters;
 
   parameters.insert_or_assign(
       GeometryParameters::eUnknownX,

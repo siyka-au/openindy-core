@@ -4,26 +4,28 @@
 
 namespace oi {
 
-LocalPoint::LocalPoint(const QString& label, const OiVec& position,
+LocalPoint::LocalPoint(const std::string& label, const OiVec& position,
                        bool isMeasured)
     : m_label(label), m_position(position), m_isMeasured(isMeasured) {}
 
-const QString& LocalPoint::label() const { return this->m_label; }
+const std::string& LocalPoint::label() const { return this->m_label; }
 
 const OiVec& LocalPoint::position() const { return this->m_position; }
 
 bool LocalPoint::isMeasured() const { return this->m_isMeasured; }
 
 CalibratedConstellation::CalibratedConstellation(
-    const QString& name, const std::vector<LocalPoint>& points,
-    const QString& certificateId,
+    const std::string& name, const std::vector<LocalPoint>& points,
+    const std::string& certificateId,
     const std::optional<std::chrono::year_month_day>& calibratedAt)
     : m_name(name),
       m_points(points),
       m_certificateId(certificateId),
       m_calibratedAt(calibratedAt) {}
 
-const QString& CalibratedConstellation::name() const { return this->m_name; }
+const std::string& CalibratedConstellation::name() const {
+  return this->m_name;
+}
 
 const std::vector<LocalPoint>& CalibratedConstellation::points() const {
   return this->m_points;
@@ -50,7 +52,7 @@ std::vector<LocalPoint> CalibratedConstellation::derivedPoints() const {
 }
 
 std::optional<LocalPoint> CalibratedConstellation::pointByLabel(
-    const QString& label) const {
+    const std::string& label) const {
   for (const LocalPoint& p : this->m_points) {
     if (p.label() == label) {
       return p;
@@ -59,7 +61,7 @@ std::optional<LocalPoint> CalibratedConstellation::pointByLabel(
   return std::nullopt;
 }
 
-const QString& CalibratedConstellation::certificateId() const {
+const std::string& CalibratedConstellation::certificateId() const {
   return this->m_certificateId;
 }
 
@@ -69,7 +71,7 @@ CalibratedConstellation::calibratedAt() const {
 }
 
 bool CalibratedConstellation::isValid() const {
-  return !this->m_name.isEmpty() && this->m_points.size() >= 2;
+  return !this->m_name.empty() && this->m_points.size() >= 2;
 }
 
 }  // namespace oi

@@ -1,7 +1,7 @@
 #ifndef POINTCLOUD_H
 #define POINTCLOUD_H
-#include <QtCore>
 #include <array>
+#include <string>
 #include <vector>
 
 #include "core_export.h"

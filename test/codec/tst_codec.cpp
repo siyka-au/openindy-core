@@ -596,8 +596,8 @@ class TestFit : public FitFunction, public Producer<Point> {
     stringParameters.emplace("method", "robust");
   }
 
-  std::expected<Point, QString> exec() override {
-    return std::unexpected(QString("not used"));
+  std::expected<Point, std::string> exec() override {
+    return std::unexpected(std::string("not used"));
   }
 
   void declare(int position, std::vector<PipelineStage> stages) {
@@ -863,7 +863,7 @@ bool addToJob(OiJob& job, const oi::Guarded<T>& feature,
   return job.addFeature(wrapper);
 }
 
-oi::Guarded<Point> addPoint(OiJob& job, const QString& name, double x) {
+oi::Guarded<Point> addPoint(OiJob& job, const std::string& name, double x) {
   oi::Guarded<Point> point = new Point(Position(x, 2.0, 3.0));
   point->setFeatureName(name);
   point->setIsSolved(true);
@@ -1096,7 +1096,7 @@ TEST_CASE("the digest follows the content, not the save time or name") {
   TestHost host;
 
   codec::encodeProject(*w.job, host, "1.0");
-  const QString before = w.job->getDigest();
+  const std::string before = w.job->getDigest();
   codec::encodeProject(*w.job, host, "2.0");
   CHECK(w.job->getDigest() == before);
 
@@ -1116,7 +1116,7 @@ namespace {
 class TestConstruct : public ConstructFunction, public Producer<Point> {
  public:
   TestConstruct() { metaData.name = "TestConstruct"; }
-  std::expected<Point, QString> exec() override { return Point(); }
+  std::expected<Point, std::string> exec() override { return Point(); }
 };
 
 }  // namespace
@@ -1188,9 +1188,9 @@ SensorConfiguration sampleSensorConfig() {
   config.setIntegerParameter({{"count", 3}, {"negative", -42}});
   config.setDoubleParameter({{"gain", 0.125}, {"huge", 1e300}});
   config.setStringParameter({{"probe", "1.5''"}, {"empty", ""}});
-  std::multimap<QString, QString> ordered;
-  for (const QString& v :
-       {QString("third"), QString("second"), QString("first")}) {
+  std::multimap<std::string, std::string> ordered;
+  for (const std::string& v :
+       {std::string("third"), std::string("second"), std::string("first")}) {
     ordered.emplace("probe", v);
   }
   config.setAvailableStringParameter(ordered);
@@ -1325,7 +1325,7 @@ TEST_CASE("SensorConfiguration survives a JSON round trip, repeatedly") {
   CHECK(out->getName() == in.getName());
   CHECK(oi::value(out->getDoubleParameter(), "huge") == 1e300);
   CHECK(oi::values(out->getAvailableStringParameter(), "probe") ==
-        std::vector<QString>({"first", "second", "third"}));
+        std::vector<std::string>({"first", "second", "third"}));
   // the option order must not flip on every save
   CHECK(codec::encodeSensorConfiguration(*out) == once);
 }

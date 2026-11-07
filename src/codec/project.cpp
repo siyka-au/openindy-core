@@ -11,7 +11,6 @@
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 
-#include <QCryptographicHash>
 #include <algorithm>
 #include <chrono>
 #include <map>
@@ -27,6 +26,7 @@
 #include "plugin/sensor/sensor.h"
 #include "pointgroup.h"
 #include "project_codec.h"
+#include "sha256.h"
 #include "wire.h"
 
 namespace oi::codec {
@@ -48,10 +48,7 @@ std::string serialize(const oipb::Project& message) {
 
 std::string digestOf(const oipb::Project& body) {
   const std::string bytes = serialize(body);
-  QCryptographicHash hash(QCryptographicHash::Sha256);
-  hash.addData(
-      QByteArrayView(bytes.data(), static_cast<qsizetype>(bytes.size())));
-  return hash.result().toHex().toStdString();
+  return sha256Hex(bytes);
 }
 
 // The job holds features through FeatureWrapper, one wrapper per feature. (A
@@ -465,7 +462,7 @@ oi::Guarded<Function> Linker::buildFunction(
   auto& inputs = Access::inputs(*function);
   for (auto it = inputs.begin(); it != inputs.end(); ++it) {
     std::vector<InputElement>& list = it->second;
-    for (qsizetype i = list.size() - 1; i >= 0; --i) {
+    for (std::ptrdiff_t i = std::ssize(list) - 1; i >= 0; --i) {
       if (!resolveInput(list[i])) {
         oi::removeAt(list, i);
       }
@@ -937,11 +934,11 @@ std::string encodeProject(OiJob& job, const ProjectHost& host,
   }
 
   const std::string digest = digestOf(body);
-  job.setDigest(QString::fromStdString(digest));
+  job.setDigest((digest));
 
   oipb::Project project = std::move(body);
   project.set_format_version(kFormatVersion);
-  project.set_name(job.getJobName().toStdString());
+  project.set_name(job.getJobName());
   *project.mutable_saved_at() = toTimestamp(std::chrono::system_clock::now());
   project.set_app_version(appVersion);
   project.set_next_id(Access::nextId(job));
@@ -997,8 +994,8 @@ DecodeResult decodeProject(std::string_view bytes, ProjectHost& host) {
   if (project.next_id() > 0) {
     Access::setNextId(*job, project.next_id());
   }
-  job->setDigest(QString::fromStdString(project.digest()));
-  job->setLoadedProjectVersion(QString::fromStdString(project.app_version()));
+  job->setDigest((project.digest()));
+  job->setLoadedProjectVersion((project.app_version()));
 
   oi::value(staging.stations, project.active_station())
       ->getStation()

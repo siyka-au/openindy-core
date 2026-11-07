@@ -4,7 +4,6 @@
 // Internal. Access is the friend declared in the model classes (Element,
 // Feature, Station, ...). It exists so the codec can restore private state
 // directly, the way the classes' own fromOpenIndyXML used to.
-#include <QJsonObject>
 #include <map>
 #include <vector>
 
@@ -24,9 +23,9 @@ struct Access {
 
   static void restoreCommon(Feature& feature, const oipb::FeatureCommon& c) {
     feature.id = c.id();
-    feature.name = QString::fromStdString(c.name());
-    feature.group = QString::fromStdString(c.group());
-    feature.comment = QString::fromStdString(c.comment());
+    feature.name = (c.name());
+    feature.group = (c.group());
+    feature.comment = (c.comment());
     feature.isSolved = c.solved();
     feature.isActiveFeature = c.active();
   }
@@ -51,7 +50,7 @@ struct Access {
   }
 
   static void setBundleTemplate(CoordinateSystem& system,
-                                const QJsonObject& value) {
+                                const std::string& value) {
     system.bundleTemplate = value;
   }
 

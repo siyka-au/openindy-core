@@ -37,7 +37,7 @@ class CylinderApproximation {
   double approxAlpha{};
   double approxBeta{};
   double stdev{};
-  QString comment;
+  std::string comment;
 };
 
 enum class ApproximationTypes {
@@ -60,7 +60,7 @@ class OI_CORE_EXPORT FitFunction : public Function {
     // needed elements are only observations
     NeededElement element;
     element.typeOfElement = ElementTypes::eObservationElement;
-    element.description = QString(
+    element.description = std::string(
         "Select as many observations as you want to be used to fit the target "
         "geometry.");
     element.infinite = true;
@@ -80,7 +80,7 @@ class OI_CORE_EXPORT FitFunction : public Function {
 inline int dummyPointPosition(Function* function) {
   const std::vector<NeededElement>& needed = function->getNeededElements();
   for (int i = 0; i < std::ssize(needed); ++i) {
-    if (needed.at(i).roleName == QLatin1String("dummyPoint")) {
+    if (needed.at(i).roleName == "dummyPoint") {
       return i;
     }
   }
@@ -467,7 +467,7 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
     ApproximationTypes approximationType =
         ApproximationTypes::eFirstTwoPoints;  // default
     if (function->getScalarInputParams().stringParameter.size() > 0) {
-      QString value = oi::value(
+      std::string value = oi::value(
           function->getScalarInputParams().stringParameter, "approximation");
       if (value.compare("direction") == 0) {
         approximationType = ApproximationTypes::eDirection;
@@ -504,9 +504,9 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
     if (!this->approximateCylinder(function, cylinder, reducedInputObservations,
                                    approximationType)) {
       function->sendMessage(
-          QString("Error while generating approximations for cylinder "
-                  "parameters of cylinder %1")
-              .arg(cylinder.getFeatureName()),
+          std::format("Error while generating approximations for cylinder "
+                      "parameters of cylinder {}",
+                      cylinder.getFeatureName()),
           MessageTypes::eErrorMessage);
       return false;
     }
@@ -555,17 +555,16 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
     if (!this->fitCylinder(function, cylinder, reducedInputObservations,
                            allReducedInputObservations, bestApproximation)) {
       function->sendMessage(
-          QString("Error while fitting cylinder %1 with solution: %2")
-              .arg(cylinder.getFeatureName())
-              .arg(bestApproximation.comment),
+          std::format("Error while fitting cylinder {} with solution: {}",
+                      cylinder.getFeatureName(), bestApproximation.comment),
           MessageTypes::eErrorMessage);
       return false;
     }
 
-    function->sendMessage(QString("cylinder (%1) best solution: %2")
-                              .arg(cylinder.getFeatureName())
-                              .arg(bestApproximation.comment),
-                          MessageTypes::eInformationMessage);
+    function->sendMessage(
+        std::format("cylinder ({}) best solution: {}",
+                    cylinder.getFeatureName(), bestApproximation.comment),
+        MessageTypes::eInformationMessage);
 
     // transform cylinder position (centroid + rotation)
     Position cylinderPosition = cylinder.getPosition();
@@ -699,7 +698,7 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
           H.svd(U, d, V);
         } catch (const exception& e) {
           function->sendMessage(
-              QString("SVD error cylinder minimum solution: %1").arg(e.what()),
+              std::format("SVD error cylinder minimum solution: {}", e.what()),
               MessageTypes::eErrorMessage);
           return false;
         }
@@ -712,7 +711,7 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
           U.getCol(pn, i);  // get eigenvector i
 
           if (approximateCylinder(function, pn, inputObservations,
-                                  QString("eigenvector %1").arg(i))) {
+                                  std::format("eigenvector {}", i))) {
             foundOneVaildApproximation = true;
           }
         }
@@ -791,7 +790,7 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
 
   bool approximateCylinder(FitFunction* function, OiVec pn,
                            const std::vector<IdPoint>& inputObservations,
-                           QString label) {
+                           std::string label) {
     // get the number of observations
     int numPoints = inputObservations.size();
 
@@ -967,7 +966,7 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
       }
     } catch (const exception& e) {
       function->sendMessage(
-          QString("inv error cylinder minimum solution: %1").arg(e.what()),
+          std::format("inv error cylinder minimum solution: {}", e.what()),
           MessageTypes::eErrorMessage);
       return false;
     }
@@ -1170,13 +1169,13 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
       // solve the normal equation system
       try {
         if (!OiMat::solve(res, N, -1.0 * c)) {
-          function->sendMessage(QString("solve error cylinder fit"),
+          function->sendMessage(std::string("solve error cylinder fit"),
                                 MessageTypes::eErrorMessage);
           return false;
         }
       } catch (const exception& e) {
         function->sendMessage(
-            QString("solve error cylinder fit: %1").arg(e.what()),
+            std::format("solve error cylinder fit: {}", e.what()),
             MessageTypes::eErrorMessage);
         return false;
       }
@@ -1288,7 +1287,7 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
 
     if (numIterations >= 1000) {
       function->sendMessage(
-          QString("to many iterations: %1").arg(numIterations),
+          std::format("to many iterations: {}", numIterations),
           MessageTypes::eWarningMessage);
       return false;
     }
@@ -1486,6 +1485,8 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
 #ifndef CONCAT2
 #define CONCAT2(a, b) CONCAT(a, b)
 #endif
+
+#include <format>
 
 #include "pluginabi.h"
 

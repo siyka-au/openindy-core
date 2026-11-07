@@ -1,9 +1,8 @@
 #ifndef FEATURE_H
 #define FEATURE_H
-#include <QString>
-#include <QtCore>
 #include <map>
 #include <optional>
+#include <string>
 #include <type_traits>
 #include <vector>
 
@@ -43,14 +42,14 @@ class OI_CORE_EXPORT Feature : public Element {
   // get or set feature attributes
   // #############################
 
-  [[nodiscard]] const QString& getFeatureName() const;
-  void setFeatureName(const QString& name);
+  [[nodiscard]] const std::string& getFeatureName() const;
+  void setFeatureName(const std::string& name);
 
-  [[nodiscard]] const QString& getGroupName() const;
-  void setGroupName(const QString& group);
+  [[nodiscard]] const std::string& getGroupName() const;
+  void setGroupName(const std::string& group);
 
-  [[nodiscard]] const QString& getComment() const;
-  void setComment(const QString& comment);
+  [[nodiscard]] const std::string& getComment() const;
+  void setComment(const std::string& comment);
 
   [[nodiscard]] const bool& getIsUpdated() const;
   void setIsUpdated(const bool& isUpdated);
@@ -102,7 +101,7 @@ class OI_CORE_EXPORT Feature : public Element {
   // station-owned Observation will when it becomes a Point).
   // ###############################################################
 
-  [[nodiscard]] virtual std::optional<QString> getOwnerDescription() const;
+  [[nodiscard]] virtual std::optional<std::string> getOwnerDescription() const;
 
   // ###########################
   // reexecute the function list
@@ -115,118 +114,118 @@ class OI_CORE_EXPORT Feature : public Element {
   // ###############
 
   // general attributes
-  [[nodiscard]] virtual QString getDisplayType() const;
-  [[nodiscard]] virtual QString getDisplayIsSolved() const;
-  [[nodiscard]] virtual QString getDisplayIsUpdated() const;
-  [[nodiscard]] virtual QString getDisplayFunctions() const;
-  [[nodiscard]] virtual QString getDisplayUsedFor() const;
-  [[nodiscard]] virtual QString getDisplayPreviouslyNeeded() const;
-  [[nodiscard]] virtual QString getDisplayStDev(const UnitType& type,
-                                                const int& digits) const;
+  [[nodiscard]] virtual std::string getDisplayType() const;
+  [[nodiscard]] virtual std::string getDisplayIsSolved() const;
+  [[nodiscard]] virtual std::string getDisplayIsUpdated() const;
+  [[nodiscard]] virtual std::string getDisplayFunctions() const;
+  [[nodiscard]] virtual std::string getDisplayUsedFor() const;
+  [[nodiscard]] virtual std::string getDisplayPreviouslyNeeded() const;
+  [[nodiscard]] virtual std::string getDisplayStDev(const UnitType& type,
+                                                    const int& digits) const;
 
   // geometry specific attributes
-  [[nodiscard]] virtual QString getDisplayMeasurementConfig() const;
-  [[nodiscard]] virtual QString getDisplayObservations() const;
-  [[nodiscard]] virtual QString getDisplayIsCommon() const;
-  [[nodiscard]] virtual QString getDisplayIsActual() const;
+  [[nodiscard]] virtual std::string getDisplayMeasurementConfig() const;
+  [[nodiscard]] virtual std::string getDisplayObservations() const;
+  [[nodiscard]] virtual std::string getDisplayIsCommon() const;
+  [[nodiscard]] virtual std::string getDisplayIsActual() const;
 
   // unknown geometry parameters
-  [[nodiscard]] virtual QString getDisplayX(const UnitType& type,
-                                            const int& digits,
-                                            const bool& showDiff = false) const;
-  [[nodiscard]] virtual QString getDisplayY(const UnitType& type,
-                                            const int& digits,
-                                            const bool& showDiff = false) const;
-  [[nodiscard]] virtual QString getDisplayZ(const UnitType& type,
-                                            const int& digits,
-                                            const bool& showDiff = false) const;
-  [[nodiscard]] virtual QString getDisplayPrimaryI(
+  [[nodiscard]] virtual std::string getDisplayX(
+      const UnitType& type, const int& digits,
+      const bool& showDiff = false) const;
+  [[nodiscard]] virtual std::string getDisplayY(
+      const UnitType& type, const int& digits,
+      const bool& showDiff = false) const;
+  [[nodiscard]] virtual std::string getDisplayZ(
+      const UnitType& type, const int& digits,
+      const bool& showDiff = false) const;
+  [[nodiscard]] virtual std::string getDisplayPrimaryI(
       const int& digits, const bool& showDiff = false) const;
-  [[nodiscard]] virtual QString getDisplayPrimaryJ(
+  [[nodiscard]] virtual std::string getDisplayPrimaryJ(
       const int& digits, const bool& showDiff = false) const;
-  [[nodiscard]] virtual QString getDisplayPrimaryK(
+  [[nodiscard]] virtual std::string getDisplayPrimaryK(
       const int& digits, const bool& showDiff = false) const;
-  [[nodiscard]] virtual QString getDisplayRadiusA(
+  [[nodiscard]] virtual std::string getDisplayRadiusA(
       const UnitType& type, const int& digits,
       const bool& showDiff = false) const;
-  [[nodiscard]] virtual QString getDisplayRadiusB(
+  [[nodiscard]] virtual std::string getDisplayRadiusB(
       const UnitType& type, const int& digits,
       const bool& showDiff = false) const;
-  [[nodiscard]] virtual QString getDisplaySecondaryI(
+  [[nodiscard]] virtual std::string getDisplaySecondaryI(
       const int& digits, const bool& showDiff = false) const;
-  [[nodiscard]] virtual QString getDisplaySecondaryJ(
+  [[nodiscard]] virtual std::string getDisplaySecondaryJ(
       const int& digits, const bool& showDiff = false) const;
-  [[nodiscard]] virtual QString getDisplaySecondaryK(
+  [[nodiscard]] virtual std::string getDisplaySecondaryK(
       const int& digits, const bool& showDiff = false) const;
-  [[nodiscard]] virtual QString getDisplayAperture(
+  [[nodiscard]] virtual std::string getDisplayAperture(
       const UnitType& type, const int& digits,
       const bool& showDiff = false) const;
-  [[nodiscard]] virtual QString getDisplayA(const UnitType& type,
-                                            const int& digits,
-                                            const bool& showDiff = false) const;
-  [[nodiscard]] virtual QString getDisplayB(const UnitType& type,
-                                            const int& digits,
-                                            const bool& showDiff = false) const;
-  [[nodiscard]] virtual QString getDisplayC(const UnitType& type,
-                                            const int& digits,
-                                            const bool& showDiff = false) const;
-  [[nodiscard]] virtual QString getDisplayAngle(
+  [[nodiscard]] virtual std::string getDisplayA(
       const UnitType& type, const int& digits,
       const bool& showDiff = false) const;
-  [[nodiscard]] virtual QString getDisplayDistance(
+  [[nodiscard]] virtual std::string getDisplayB(
       const UnitType& type, const int& digits,
       const bool& showDiff = false) const;
-  [[nodiscard]] virtual QString getDisplayMeasurementSeries(
+  [[nodiscard]] virtual std::string getDisplayC(
       const UnitType& type, const int& digits,
       const bool& showDiff = false) const;
-  [[nodiscard]] virtual QString getDisplayTemperature(
+  [[nodiscard]] virtual std::string getDisplayAngle(
       const UnitType& type, const int& digits,
       const bool& showDiff = false) const;
-  [[nodiscard]] virtual QString getDisplayLength(
+  [[nodiscard]] virtual std::string getDisplayDistance(
       const UnitType& type, const int& digits,
       const bool& showDiff = false) const;
-  [[nodiscard]] virtual QString getDisplayFormError(const UnitType& type,
-                                                    const int& digits) const;
+  [[nodiscard]] virtual std::string getDisplayMeasurementSeries(
+      const UnitType& type, const int& digits,
+      const bool& showDiff = false) const;
+  [[nodiscard]] virtual std::string getDisplayTemperature(
+      const UnitType& type, const int& digits,
+      const bool& showDiff = false) const;
+  [[nodiscard]] virtual std::string getDisplayLength(
+      const UnitType& type, const int& digits,
+      const bool& showDiff = false) const;
+  [[nodiscard]] virtual std::string getDisplayFormError(
+      const UnitType& type, const int& digits) const;
 
   // coordinate system specific
-  [[nodiscard]] virtual QString getDisplayExpansionOriginX(
+  [[nodiscard]] virtual std::string getDisplayExpansionOriginX(
       const UnitType& type, const int& digits) const;
-  [[nodiscard]] virtual QString getDisplayExpansionOriginY(
+  [[nodiscard]] virtual std::string getDisplayExpansionOriginY(
       const UnitType& type, const int& digits) const;
-  [[nodiscard]] virtual QString getDisplayExpansionOriginZ(
+  [[nodiscard]] virtual std::string getDisplayExpansionOriginZ(
       const UnitType& type, const int& digits) const;
-  [[nodiscard]] virtual QString getDisplayXAxisI(const int& digits) const;
-  [[nodiscard]] virtual QString getDisplayXAxisJ(const int& digits) const;
-  [[nodiscard]] virtual QString getDisplayXAxisK(const int& digits) const;
-  [[nodiscard]] virtual QString getDisplayYAxisI(const int& digits) const;
-  [[nodiscard]] virtual QString getDisplayYAxisJ(const int& digits) const;
-  [[nodiscard]] virtual QString getDisplayYAxisK(const int& digits) const;
-  [[nodiscard]] virtual QString getDisplayZAxisI(const int& digits) const;
-  [[nodiscard]] virtual QString getDisplayZAxisJ(const int& digits) const;
-  [[nodiscard]] virtual QString getDisplayZAxisK(const int& digits) const;
+  [[nodiscard]] virtual std::string getDisplayXAxisI(const int& digits) const;
+  [[nodiscard]] virtual std::string getDisplayXAxisJ(const int& digits) const;
+  [[nodiscard]] virtual std::string getDisplayXAxisK(const int& digits) const;
+  [[nodiscard]] virtual std::string getDisplayYAxisI(const int& digits) const;
+  [[nodiscard]] virtual std::string getDisplayYAxisJ(const int& digits) const;
+  [[nodiscard]] virtual std::string getDisplayYAxisK(const int& digits) const;
+  [[nodiscard]] virtual std::string getDisplayZAxisI(const int& digits) const;
+  [[nodiscard]] virtual std::string getDisplayZAxisJ(const int& digits) const;
+  [[nodiscard]] virtual std::string getDisplayZAxisK(const int& digits) const;
 
   // trafo param specific
-  [[nodiscard]] virtual QString getDisplayStartSystem() const;
-  [[nodiscard]] virtual QString getDisplayDestinationSystem() const;
-  [[nodiscard]] virtual QString getDisplayTranslationX(const UnitType& type,
-                                                       const int& digits) const;
-  [[nodiscard]] virtual QString getDisplayTranslationY(const UnitType& type,
-                                                       const int& digits) const;
-  [[nodiscard]] virtual QString getDisplayTranslationZ(const UnitType& type,
-                                                       const int& digits) const;
-  [[nodiscard]] virtual QString getDisplayRotationX(const UnitType& type,
-                                                    const int& digits) const;
-  [[nodiscard]] virtual QString getDisplayRotationY(const UnitType& type,
-                                                    const int& digits) const;
-  [[nodiscard]] virtual QString getDisplayRotationZ(const UnitType& type,
-                                                    const int& digits) const;
-  [[nodiscard]] virtual QString getDisplayScaleX(const int& digits) const;
-  [[nodiscard]] virtual QString getDisplayScaleY(const int& digits) const;
-  [[nodiscard]] virtual QString getDisplayScaleZ(const int& digits) const;
-  [[nodiscard]] virtual QString getDisplayIsUsed() const;
-  [[nodiscard]] virtual QString getDisplayValidTime() const;
-  [[nodiscard]] virtual QString getDisplayIsMovement() const;
-  [[nodiscard]] virtual QString getDisplayIsDatumTransformation() const;
+  [[nodiscard]] virtual std::string getDisplayStartSystem() const;
+  [[nodiscard]] virtual std::string getDisplayDestinationSystem() const;
+  [[nodiscard]] virtual std::string getDisplayTranslationX(
+      const UnitType& type, const int& digits) const;
+  [[nodiscard]] virtual std::string getDisplayTranslationY(
+      const UnitType& type, const int& digits) const;
+  [[nodiscard]] virtual std::string getDisplayTranslationZ(
+      const UnitType& type, const int& digits) const;
+  [[nodiscard]] virtual std::string getDisplayRotationX(
+      const UnitType& type, const int& digits) const;
+  [[nodiscard]] virtual std::string getDisplayRotationY(
+      const UnitType& type, const int& digits) const;
+  [[nodiscard]] virtual std::string getDisplayRotationZ(
+      const UnitType& type, const int& digits) const;
+  [[nodiscard]] virtual std::string getDisplayScaleX(const int& digits) const;
+  [[nodiscard]] virtual std::string getDisplayScaleY(const int& digits) const;
+  [[nodiscard]] virtual std::string getDisplayScaleZ(const int& digits) const;
+  [[nodiscard]] virtual std::string getDisplayIsUsed() const;
+  [[nodiscard]] virtual std::string getDisplayValidTime() const;
+  [[nodiscard]] virtual std::string getDisplayIsMovement() const;
+  [[nodiscard]] virtual std::string getDisplayIsDatumTransformation() const;
 
  public:
   // ###################################################################
@@ -251,7 +250,7 @@ class OI_CORE_EXPORT Feature : public Element {
  protected:
   // called (unless signals are blocked) after the name changed, before the
   // observer is told - lets a subclass react to its own rename
-  virtual void nameWasChanged(const QString& /*oldName*/) {}
+  virtual void nameWasChanged(const std::string& /*oldName*/) {}
 
   // tell the observer, if there is one (and notifications are not
   // blocked, see blockSignals)
@@ -272,7 +271,8 @@ class OI_CORE_EXPORT Feature : public Element {
   // without it ownership would be convention only.
   // ###############################################################
 
-  [[nodiscard]] bool rejectIfNotEditable(const QString& attemptedEdit) const;
+  [[nodiscard]] bool rejectIfNotEditable(
+      const std::string& attemptedEdit) const;
 
   // ######################################
   // update feature id when the job was set
@@ -287,9 +287,9 @@ class OI_CORE_EXPORT Feature : public Element {
   FeatureObserver* observer{nullptr};  // not owned, never copied
   bool notificationsBlocked{false};    // see blockSignals
 
-  QString name;
-  QString group;
-  QString comment;
+  std::string name;
+  std::string group;
+  std::string comment;
 
   bool isSolved{
       false};  // true of the feature is solved in the current disply system

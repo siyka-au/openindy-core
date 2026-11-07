@@ -1,5 +1,5 @@
-#include <QString>
 #include <QtTest>
+#include <string>
 #include <vector>
 
 #include "bundleadjustment.h"
@@ -20,8 +20,8 @@ namespace {
 
 class RecordingSink : public MessageSink {
  public:
-  std::vector<QString> messages;
-  void onMessage(const QString& msg, const MessageTypes& /*type*/,
+  std::vector<std::string> messages;
+  void onMessage(const std::string& msg, const MessageTypes& /*type*/,
                  const MessageDestinations& /*dest*/) override {
     this->messages.push_back(msg);
   }
@@ -43,15 +43,15 @@ class RecordingFunctionObserver : public FunctionObserver {
 
 class RecordingExchangeObserver : public ExchangeObserver {
  public:
-  std::vector<QString> events;
-  void onProgress(int percent, const QString& message) override {
-    this->events.push_back(QString("progress:%1:%2").arg(percent).arg(message));
+  std::vector<std::string> events;
+  void onProgress(int percent, const std::string& message) override {
+    this->events.push_back(std::format("progress:{}:{}", percent, message));
   }
   void onImportFinished(bool success) override {
-    this->events.push_back(QString("import:%1").arg(success));
+    this->events.push_back(std::format("import:{}", static_cast<int>(success)));
   }
   void onExportFinished(bool success) override {
-    this->events.push_back(QString("export:%1").arg(success));
+    this->events.push_back(std::format("export:{}", static_cast<int>(success)));
   }
 };
 
@@ -65,7 +65,7 @@ class ChattyFunction : public ConstructFunction, public Producer<Point> {
     this->neededElements.push_back(param);
     this->applicableFor.push_back(FeatureTypes::ePointFeature);
   }
-  std::expected<Point, QString> exec() override {
+  std::expected<Point, std::string> exec() override {
     emit this->sendMessage("chatty exec", MessageTypes::eInformationMessage);
     Point point;
     point.setPoint(Position(1.0, 2.0, 3.0));
@@ -143,15 +143,15 @@ void MessageSinkTest::
                         MessageTypes::eWarningMessage);
   QVERIFY(oi::contains(
       rec.calls,
-      QString("sendMessage:hello from the function:%1:%2")
-          .arg(static_cast<int>(MessageTypes::eWarningMessage))
-          .arg(static_cast<int>(MessageDestinations::eConsoleMessage))));
+      std::format("sendMessage:hello from the function:{}:{}",
+                  static_cast<int>(MessageTypes::eWarningMessage),
+                  static_cast<int>(MessageDestinations::eConsoleMessage))));
 
   // a message sent from inside exec reaches the job as well
   rec.calls.clear();
   f.point->recalc();
   QVERIFY2(rec.joined().contains("sendMessage:chatty exec"),
-           qPrintable(rec.joined()));
+           (rec.joined()).c_str());
 }
 
 void MessageSinkTest::removingAFunctionFromTheJobStopsItReportingToTheJob() {
@@ -214,7 +214,7 @@ void MessageSinkTest::aFunctionWithoutSinkDropsMessages() {
   function.sendMessage("heard", MessageTypes::eInformationMessage);
   function.setMessageSink(nullptr);
   function.sendMessage("not heard", MessageTypes::eInformationMessage);
-  QCOMPARE(sink.messages, std::vector<QString>{"heard"});
+  QCOMPARE(sink.messages, std::vector<std::string>{"heard"});
 }
 
 void MessageSinkTest::aBundleAdjustmentReportsToItsJob() {
@@ -282,18 +282,18 @@ void MessageSinkTest::exchangeReportsMessagesProgressAndCompletion() {
   exchange.setObserver(&observer);
 
   exchange.importOiData();
-  QCOMPARE(sink.messages, std::vector<QString>{"importing"});
+  QCOMPARE(sink.messages, std::vector<std::string>{"importing"});
   QCOMPARE(observer.events,
-           (std::vector<QString>{"progress:50:half", "import:1"}));
+           (std::vector<std::string>{"progress:50:half", "import:1"}));
 
   observer.events.clear();
   exchange.exportOiData();
-  QCOMPARE(observer.events, std::vector<QString>{"export:0"});
+  QCOMPARE(observer.events, std::vector<std::string>{"export:0"});
 
   // without an observer nothing happens (and nothing crashes)
   exchange.setObserver(nullptr);
   exchange.importOiData();
-  QCOMPARE(observer.events, std::vector<QString>{"export:0"});
+  QCOMPARE(observer.events, std::vector<std::string>{"export:0"});
 }
 
 void MessageSinkTest::functionObserverSeesInputElementAndParameterChanges() {
@@ -333,4 +333,6 @@ void MessageSinkTest::functionObserverIsToldWhenTheFunctionIsDestroyed() {
 }
 
 QTEST_GUILESS_MAIN(MessageSinkTest)
+#include <format>
+
 #include "tst_messagesink.moc"

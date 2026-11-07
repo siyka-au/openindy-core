@@ -4,6 +4,7 @@
 
 #include "containers.h"
 #include "snapshot.h"
+#include "stringutil.h"
 
 using namespace oi;
 
@@ -105,7 +106,7 @@ const std::vector<int>& FeatureContainer::getFeatureIdList() const {
  * \brief FeatureContainer::getFeatureNameList
  * \return
  */
-const std::vector<QString>& FeatureContainer::getFeatureNameList() const {
+const std::vector<std::string>& FeatureContainer::getFeatureNameList() const {
   return this->featureNames;
 }
 
@@ -113,7 +114,7 @@ const std::vector<QString>& FeatureContainer::getFeatureNameList() const {
  * \brief FeatureContainer::getFeatureGroupList
  * \return
  */
-const std::vector<QString>& FeatureContainer::getFeatureGroupList() const {
+const std::vector<std::string>& FeatureContainer::getFeatureGroupList() const {
   return this->featureGroups;
 }
 
@@ -144,14 +145,14 @@ oi::Guarded<FeatureWrapper> FeatureContainer::getFeatureById(
  * \return
  */
 std::vector<oi::Guarded<FeatureWrapper> > FeatureContainer::getFeaturesByName(
-    const QString& name, const bool startWith) const {
+    const std::string& name, const bool startWith) const {
   if (startWith) {
     std::vector<oi::Guarded<FeatureWrapper> > result;
     for (const oi::Guarded<FeatureWrapper>& feature :
          oi::snapshot(this->featuresList)) {
       if (!feature.isNull() && !feature->getFeature().isNull() &&
-          feature->getFeature()->getFeatureName().startsWith(
-              name, Qt::CaseInsensitive)) {
+          oi::startsWithIgnoreCase(feature->getFeature()->getFeatureName(),
+                                   name)) {
         result.push_back(feature);
       }
     }
@@ -167,7 +168,7 @@ std::vector<oi::Guarded<FeatureWrapper> > FeatureContainer::getFeaturesByName(
  * \return
  */
 std::vector<oi::Guarded<FeatureWrapper> > FeatureContainer::getFeaturesByGroup(
-    const QString& group) const {
+    const std::string& group) const {
   return oi::values(this->featuresGroupMap, group);
 }
 
@@ -221,7 +222,7 @@ int FeatureContainer::getFeatureCount(const FeatureTypes& type) const {
  * \param group
  * \return
  */
-int FeatureContainer::getFeatureCount(const QString& group) const {
+int FeatureContainer::getFeatureCount(const std::string& group) const {
   return this->featuresGroupMap.count(group);
 }
 
@@ -385,8 +386,9 @@ bool FeatureContainer::removeFeature(const int& featureId) {
  * \param group
  * \param type
  */
-void FeatureContainer::checkAndClean(const int& featureId, const QString& name,
-                                     const QString& group,
+void FeatureContainer::checkAndClean(const int& featureId,
+                                     const std::string& name,
+                                     const std::string& group,
                                      const FeatureTypes& type) {
   if (!this->featuresIdMap.contains(featureId)) {
     return;
@@ -491,7 +493,7 @@ void FeatureContainer::removeAll() {
  * \return
  */
 bool FeatureContainer::featureNameChanged(const int& featureId,
-                                          const QString& oldName) {
+                                          const std::string& oldName) {
   // check if the feature exists
   if (!this->featuresIdMap.contains(featureId)) {
     return false;
@@ -535,7 +537,7 @@ bool FeatureContainer::featureNameChanged(const int& featureId,
  * \return
  */
 bool FeatureContainer::featureGroupChanged(const int& featureId,
-                                           const QString& oldGroup) {
+                                           const std::string& oldGroup) {
   // check if the feature exists
   if (!this->featuresIdMap.contains(featureId)) {
     return false;
@@ -596,7 +598,7 @@ bool FeatureContainer::featureGroupChanged(const int& featureId,
  * \return
  */
 bool FeatureContainer::geometryMeasurementConfigChanged(
-    const int& featureId, const QString& oldMConfig,
+    const int& featureId, const std::string& oldMConfig,
     const MeasurementConfigKey oldKey) {
   // check if the feature exists
   if (!this->featuresIdMap.contains(featureId)) {

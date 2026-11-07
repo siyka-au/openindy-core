@@ -22,7 +22,8 @@ class OI_CORE_EXPORT ExchangeDefinedFormat : public ExchangeInterface {
   // methods to get or set further information
   // #########################################
 
-  [[nodiscard]] const std::vector<QString>& getSupportedFileExtensions() const;
+  [[nodiscard]] const std::vector<std::string>& getSupportedFileExtensions()
+      const;
 
   [[nodiscard]] const std::vector<ElementTypes>& getUsedElements() const;
   void setUsedElements(const std::vector<ElementTypes>& usedElementTypes);
@@ -35,7 +36,7 @@ class OI_CORE_EXPORT ExchangeDefinedFormat : public ExchangeInterface {
   std::vector<ElementTypes>
       usedElementTypes;  // types of elements that shall be im- or exported
 
-  std::vector<QString> supportedFileExtensions;
+  std::vector<std::string> supportedFileExtensions;
 };
 
 }  // namespace oi

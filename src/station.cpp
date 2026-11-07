@@ -12,6 +12,8 @@
 #include "sensor.h"
 #include "sensorcontrol.h"
 #include "snapshot.h"
+#include "stringutil.h"
+#include "value.h"
 
 using namespace oi;
 
@@ -38,7 +40,7 @@ Station::Station() : Feature(), isActiveStation(false) {
  * \brief Station::Station
  * \param name
  */
-Station::Station(const QString& name) : Feature(), isActiveStation(false) {
+Station::Station(const std::string& name) : Feature(), isActiveStation(false) {
   // set up feature wrapper
   if (!this->selfFeature.isNull()) {
     this->selfFeature->setStation(this);
@@ -432,10 +434,10 @@ bool Station::getIsBusy() {
  * \brief Station::getSensorStatus
  * \return
  */
-std::map<QString, QString> Station::getSensorStatus() {
+std::map<std::string, std::string> Station::getSensorStatus() {
   // check sensor control
   if (!this->sensorControl) {
-    return std::map<QString, QString>();
+    return std::map<std::string, std::string>();
   }
 
   return this->sensorControl->getSensorStatus();
@@ -497,10 +499,10 @@ std::vector<SensorFunctions> Station::getSupportedSensorActions() const {
  * \brief Station::getSelfDefinedActions
  * \return
  */
-std::vector<QString> Station::getSelfDefinedActions() const {
+std::vector<std::string> Station::getSelfDefinedActions() const {
   // check sensor control
   if (!this->sensorControl) {
-    return std::vector<QString>();
+    return std::vector<std::string>();
   }
 
   return this->sensorControl->getSelfDefinedActions();
@@ -544,12 +546,12 @@ void Station::recalc() { Feature::recalc(); }
  * \param showDiff
  * \return
  */
-QString Station::getDisplayX(const UnitType& type, const int& digits,
-                             const bool& showDiff) const {
+std::string Station::getDisplayX(const UnitType& type, const int& digits,
+                                 const bool& showDiff) const {
   if (!this->position.isNull()) {
     return this->position->getDisplayX(type, digits, showDiff);
   }
-  return QString("-/-");
+  return std::string("-/-");
 }
 
 /*!
@@ -559,12 +561,12 @@ QString Station::getDisplayX(const UnitType& type, const int& digits,
  * \param showDiff
  * \return
  */
-QString Station::getDisplayY(const UnitType& type, const int& digits,
-                             const bool& showDiff) const {
+std::string Station::getDisplayY(const UnitType& type, const int& digits,
+                                 const bool& showDiff) const {
   if (!this->position.isNull()) {
     return this->position->getDisplayY(type, digits, showDiff);
   }
-  return QString("-/-");
+  return std::string("-/-");
 }
 
 /*!
@@ -574,12 +576,12 @@ QString Station::getDisplayY(const UnitType& type, const int& digits,
  * \param showDiff
  * \return
  */
-QString Station::getDisplayZ(const UnitType& type, const int& digits,
-                             const bool& showDiff) const {
+std::string Station::getDisplayZ(const UnitType& type, const int& digits,
+                                 const bool& showDiff) const {
   if (!this->position.isNull()) {
     return this->position->getDisplayZ(type, digits, showDiff);
   }
-  return QString("-/-");
+  return std::string("-/-");
 }
 
 /*!
@@ -588,9 +590,9 @@ QString Station::getDisplayZ(const UnitType& type, const int& digits,
  * \param showDiff
  * \return
  */
-QString Station::getDisplayPrimaryI(const int& digits,
-                                    const bool& /*showDiff*/) const {
-  return QString::number(this->zAxis.getVector().getAt(0), 'f', digits);
+std::string Station::getDisplayPrimaryI(const int& digits,
+                                        const bool& /*showDiff*/) const {
+  return oi::number(this->zAxis.getVector().getAt(0), 'f', digits);
 }
 
 /*!
@@ -599,9 +601,9 @@ QString Station::getDisplayPrimaryI(const int& digits,
  * \param showDiff
  * \return
  */
-QString Station::getDisplayPrimaryJ(const int& digits,
-                                    const bool& /*showDiff*/) const {
-  return QString::number(this->zAxis.getVector().getAt(1), 'f', digits);
+std::string Station::getDisplayPrimaryJ(const int& digits,
+                                        const bool& /*showDiff*/) const {
+  return oi::number(this->zAxis.getVector().getAt(1), 'f', digits);
 }
 
 /*!
@@ -610,9 +612,9 @@ QString Station::getDisplayPrimaryJ(const int& digits,
  * \param showDiff
  * \return
  */
-QString Station::getDisplayPrimaryK(const int& digits,
-                                    const bool& /*showDiff*/) const {
-  return QString::number(this->zAxis.getVector().getAt(2), 'f', digits);
+std::string Station::getDisplayPrimaryK(const int& digits,
+                                        const bool& /*showDiff*/) const {
+  return oi::number(this->zAxis.getVector().getAt(2), 'f', digits);
 }
 
 /*!
@@ -690,7 +692,7 @@ void Station::setUpFeatureId() {
  * \param oldName
  */
 void Station::stationNameChanged(const int& /*featureId*/,
-                                 const QString& /*oldName*/) {
+                                 const std::string& /*oldName*/) {
   if (!this->stationSystem.isNull()) {
     this->stationSystem->setFeatureName(this->name);
   }
@@ -701,7 +703,7 @@ void Station::stationNameChanged(const int& /*featureId*/,
  * Keeps the station system's name in step (used to be a self-connection of
  * Feature::featureNameChanged)
  */
-void Station::nameWasChanged(const QString& oldName) {
+void Station::nameWasChanged(const std::string& oldName) {
   this->stationNameChanged(this->id, oldName);
 }
 
@@ -814,12 +816,13 @@ class Station::SensorResults final : public StationObserver {
  public:
   explicit SensorResults(Station& station) : station(station) {}
 
-  void onRealTimeReading(const std::map<QString, QVariant>& reading) override {
+  void onRealTimeReading(const oi::ValueMap& reading) override {
     if (auto* o = this->observer()) {
       o->onRealTimeReading(reading);
     }
   }
-  void onRealTimeStatus(const std::map<QString, QString>& status) override {
+  void onRealTimeStatus(
+      const std::map<std::string, std::string>& status) override {
     if (auto* o = this->observer()) {
       o->onRealTimeStatus(status);
     }
@@ -839,7 +842,7 @@ class Station::SensorResults final : public StationObserver {
       o->onIsReadyForMeasurement(isReady);
     }
   }
-  void onCommandFinished(bool success, const QString& msg,
+  void onCommandFinished(bool success, const std::string& msg,
                          SensorAction action) override {
     if (auto* o = this->observer()) {
       o->onCommandFinished(success, msg, action);
@@ -858,13 +861,13 @@ class Station::SensorResults final : public StationObserver {
       o->onMeasurementDone(success);
     }
   }
-  void onSensorMessage(const QString& msg, MessageTypes msgType,
+  void onSensorMessage(const std::string& msg, MessageTypes msgType,
                        MessageDestinations msgDest) override {
     if (auto* o = this->observer()) {
       o->onSensorMessage(msg, msgType, msgDest);
     }
   }
-  void onSensorStatus(SensorStatus status, const QString& msg) override {
+  void onSensorStatus(SensorStatus status, const std::string& msg) override {
     if (auto* o = this->observer()) {
       o->onSensorStatus(status, msg);
     }
@@ -968,7 +971,7 @@ void Station::compensation() {
   }
 }
 
-void Station::selfDefinedAction(const QString& action) {
+void Station::selfDefinedAction(const std::string& action) {
   if (this->sensorControl) {
     this->sensorControl->selfDefinedAction(action);
   }

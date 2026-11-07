@@ -49,8 +49,8 @@ class OI_CORE_EXPORT ExchangeInterface : public oi::Trackable {
   [[nodiscard]] const bool& getExportObservations() const;
   void setExportObservations(const bool& exportObservations);
 
-  [[nodiscard]] const QString& getGroupName() const;
-  void setGroupName(const QString& groupName);
+  [[nodiscard]] const std::string& getGroupName() const;
+  void setGroupName(const std::string& groupName);
 
   [[nodiscard]] const oi::Guarded<CoordinateSystem>& getNominalSystem() const;
   void setNominalSystem(const oi::Guarded<CoordinateSystem>& nominalSystem);
@@ -85,7 +85,7 @@ class OI_CORE_EXPORT ExchangeInterface : public oi::Trackable {
     return this->exchangeObserver;
   }
 
-  void sendMessage(const QString& msg, const MessageTypes& msgType,
+  void sendMessage(const std::string& msg, const MessageTypes& msgType,
                    const MessageDestinations& msgDest =
                        MessageDestinations::eConsoleMessage) {
     if (this->messageSink != nullptr) {
@@ -93,7 +93,7 @@ class OI_CORE_EXPORT ExchangeInterface : public oi::Trackable {
     }
   }
   void updateProgress(const int& progress,
-                      const QString& msg) {  // 0 <= progress <= 100
+                      const std::string& msg) {  // 0 <= progress <= 100
     if (this->exchangeObserver != nullptr) {
       this->exchangeObserver->onProgress(progress, msg);
     }
@@ -118,7 +118,7 @@ class OI_CORE_EXPORT ExchangeInterface : public oi::Trackable {
 
   bool exportObservations{};  // true if only the observations of the selected
                               // geometries shall be exported
-  QString groupName;  // group that the imported nominals shall be added to
+  std::string groupName;  // group that the imported nominals shall be added to
   oi::Guarded<CoordinateSystem>
       nominalSystem;  // nominal coordinate system the imported geometries are
                       // referenced to

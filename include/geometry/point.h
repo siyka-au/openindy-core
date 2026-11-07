@@ -1,7 +1,7 @@
 #ifndef POINT_H
 #define POINT_H
-#include <QtCore>
 #include <map>
+#include <string>
 #include <vector>
 
 #include "core_export.h"
@@ -56,7 +56,7 @@ class OI_CORE_EXPORT Point : public Geometry {
   // get or set unknown parameters
   // #############################
 
-  [[nodiscard]] std::map<GeometryParameters, QString> getUnknownParameters(
+  [[nodiscard]] std::map<GeometryParameters, std::string> getUnknownParameters(
       const std::map<DimensionType, UnitType>& displayUnits,
       const std::map<DimensionType, int>& displayDigits) const override;
   void applyUnknownParameters(
@@ -77,7 +77,7 @@ class OI_CORE_EXPORT Point : public Geometry {
   // point.cpp for the rule.
   // ###############################################################
 
-  [[nodiscard]] std::optional<QString> getOwnerDescription() const override;
+  [[nodiscard]] std::optional<std::string> getOwnerDescription() const override;
 
   // ###############################################################
   // D12: what this point was shot for, stamped at acquisition (or by
@@ -89,11 +89,12 @@ class OI_CORE_EXPORT Point : public Geometry {
   [[nodiscard]] const std::vector<MeasurementIntent>& getIntents() const;
   void addIntent(const MeasurementIntent& intent);
   bool removeIntent(const MeasurementIntent& intent);
-  [[nodiscard]] bool hasIntent(int featureId, const QString& roleName) const;
+  [[nodiscard]] bool hasIntent(int featureId,
+                               const std::string& roleName) const;
 
-  [[nodiscard]] QString getDisplayDistance(const UnitType& type,
-                                           const int& digits,
-                                           const bool& showDiff) const override;
+  [[nodiscard]] std::string getDisplayDistance(
+      const UnitType& type, const int& digits,
+      const bool& showDiff) const override;
   double distance;  // depends on function
 
  protected:

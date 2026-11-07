@@ -81,7 +81,7 @@ MeasurementTypes fromProto(oipb::MeasurementType type) {
 
 oipb::MeasurementConfig toProto(const MeasurementConfig& config) {
   oipb::MeasurementConfig message;
-  message.set_name(config.getName().toStdString());
+  message.set_name(config.getName());
   message.set_mode(toProto(config.getMeasurementMode()));
   message.set_type(toProto(config.getMeasurementType()));
   message.set_measure_two_sides(config.getMeasureTwoSides());
@@ -89,7 +89,7 @@ oipb::MeasurementConfig toProto(const MeasurementConfig& config) {
   message.set_time_interval(config.getTimeInterval());
   message.set_distance_interval(config.getDistanceInterval());
   if (config.getSensorType().isValid()) {
-    message.set_sensor_type(config.getSensorType().id().toStdString());
+    message.set_sensor_type(config.getSensorType().id());
   }
   return message;
 }
@@ -100,7 +100,7 @@ std::optional<MeasurementConfig> fromProto(
     return std::nullopt;
   }
   MeasurementConfig config;
-  config.setName(QString::fromStdString(message.name()));
+  config.setName((message.name()));
   config.setMeasurementMode(fromProto(message.mode()));
   config.setMeasurementType(fromProto(message.type()));
   config.setMeasureTwoSides(message.measure_two_sides());
@@ -110,9 +110,8 @@ std::optional<MeasurementConfig> fromProto(
   if (message.has_sensor_type()) {
     // an id this build does not know leaves the config ungated rather than
     // failing the whole project
-    config.setSensorType(
-        SensorTypeRegistry::byId(QString::fromStdString(message.sensor_type()))
-            .value_or(SensorType()));
+    config.setSensorType(SensorTypeRegistry::byId((message.sensor_type()))
+                             .value_or(SensorType()));
   }
   return config;
 }

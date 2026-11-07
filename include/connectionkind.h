@@ -1,6 +1,6 @@
 #ifndef CONNECTIONKIND_H
 #define CONNECTIONKIND_H
-#include <QString>
+#include <string>
 #include <vector>
 
 #include "core_export.h"
@@ -25,17 +25,17 @@ namespace oi {
 class OI_CORE_EXPORT ConnectionKind {
  public:
   ConnectionKind() = default;
-  ConnectionKind(const QString& id, const QString& displayName);
+  ConnectionKind(const std::string& id, const std::string& displayName);
 
   static const ConnectionKind& network();
   static const ConnectionKind& serial();
 
   static std::vector<ConnectionKind> knownKinds();
   static ConnectionKind byId(
-      const QString& id);  // returns an invalid kind if unknown
+      const std::string& id);  // returns an invalid kind if unknown
 
-  [[nodiscard]] const QString& id() const;
-  [[nodiscard]] const QString& displayName() const;
+  [[nodiscard]] const std::string& id() const;
+  [[nodiscard]] const std::string& displayName() const;
 
   [[nodiscard]] bool isValid() const;
 
@@ -43,8 +43,8 @@ class OI_CORE_EXPORT ConnectionKind {
   bool operator!=(const ConnectionKind& other) const;
 
  private:
-  QString m_id;
-  QString m_displayName;
+  std::string m_id;
+  std::string m_displayName;
 };
 
 }  // namespace oi

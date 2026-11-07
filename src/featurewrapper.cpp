@@ -32,7 +32,7 @@ bool FeatureWrapper::operator==(const FeatureWrapper& other) {
  * \brief FeatureWrapper::getFeatureTypeString
  * \return
  */
-QString FeatureWrapper::getFeatureTypeString() const {
+std::string FeatureWrapper::getFeatureTypeString() const {
   return getFeatureTypeName(this->typeOfFeature);
 }
 

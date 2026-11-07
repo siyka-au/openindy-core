@@ -1,11 +1,11 @@
 #ifndef OIJOB_H
 #define OIJOB_H
-#include <QString>
 #include <algorithm>
 #include <filesystem>
 #include <memory>
 #include <mutex>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "core_export.h"
@@ -52,22 +52,22 @@ class OI_CORE_EXPORT OiJob : public oi::Trackable,
   // get or set meta information of a job
   // ####################################
 
-  [[nodiscard]] const QString& getJobName() const;
-  void setJobName(const QString& jobName);
+  [[nodiscard]] const std::string& getJobName() const;
+  void setJobName(const std::string& jobName);
 
   // the file the job is saved to (empty: not saved yet)
   [[nodiscard]] const std::filesystem::path& getJobFile() const;
   void setJobFile(std::filesystem::path jobFile);
 
-  void setDigest(const QString&);
-  [[nodiscard]] const QString& getDigest() const;
+  void setDigest(const std::string&);
+  [[nodiscard]] const std::string& getDigest() const;
 
   [[nodiscard]] CompatibilyCheckResult checkCompatibilty() const;
-  void setLoadedProjectVersion(const QString& loadedVersion);
+  void setLoadedProjectVersion(const std::string& loadedVersion);
 
   int generateUniqueId();
 
-  bool validateFeatureName(const QString& name, const FeatureTypes& type);
+  bool validateFeatureName(const std::string& name, const FeatureTypes& type);
 
   // ###########################################
   // methods to access the current feature state
@@ -77,12 +77,12 @@ class OI_CORE_EXPORT OiJob : public oi::Trackable,
   [[nodiscard]] int getFeatureCount() const;
   [[nodiscard]] int getGeometryCount() const;
   [[nodiscard]] int getFeatureCount(const FeatureTypes& type) const;
-  [[nodiscard]] int getFeatureCount(const QString& group) const;
+  [[nodiscard]] int getFeatureCount(const std::string& group) const;
 
   // access a list of all feature ids and names
   [[nodiscard]] const std::vector<int>& getFeatureIdList() const;
-  [[nodiscard]] const std::vector<QString>& getFeatureNameList() const;
-  [[nodiscard]] const std::vector<QString>& getFeatureGroupList() const;
+  [[nodiscard]] const std::vector<std::string>& getFeatureNameList() const;
+  [[nodiscard]] const std::vector<std::string>& getFeatureGroupList() const;
   [[nodiscard]] const std::vector<MeasurementConfigKey>&
   getUsedMeasurementConfigs() const;
 
@@ -106,9 +106,9 @@ class OI_CORE_EXPORT OiJob : public oi::Trackable,
   [[nodiscard]] oi::Guarded<FeatureWrapper> getFeatureById(
       const int& featureId) const;
   [[nodiscard]] std::vector<oi::Guarded<FeatureWrapper>> getFeaturesByName(
-      const QString& name, const bool startWith = false) const;
+      const std::string& name, const bool startWith = false) const;
   [[nodiscard]] std::vector<oi::Guarded<FeatureWrapper>> getFeaturesByGroup(
-      const QString& group) const;
+      const std::string& group) const;
   [[nodiscard]] std::vector<oi::Guarded<FeatureWrapper>> getFeaturesByType(
       const FeatureTypes& type) const;
   [[nodiscard]] std::vector<oi::Guarded<Geometry>> getGeometriesByMConfig(
@@ -123,11 +123,11 @@ class OI_CORE_EXPORT OiJob : public oi::Trackable,
       const;
   [[nodiscard]] const oi::Guarded<oi::BundleAdjustment>&
   getActiveBundleAdjustment() const;
-  [[nodiscard]] const QJsonObject getActiveBundleTemplate() const;
+  [[nodiscard]] std::string getActiveBundleTemplate() const;
 
   // get or set feature groups
-  [[nodiscard]] const QString& getActiveGroup() const;
-  bool setActiveGroup(const QString& group);
+  [[nodiscard]] const std::string& getActiveGroup() const;
+  bool setActiveGroup(const std::string& group);
 
   // ######################
   // add or remove features
@@ -200,7 +200,7 @@ class OI_CORE_EXPORT OiJob : public oi::Trackable,
   // uses at acquisition time, so hand-tagging and field acquisition are
   // the same operation (domain-model.md S3).
   void tagPoint(const oi::Guarded<Point>& point, int featureId,
-                const QString& roleName);
+                const std::string& roleName);
 
   // remove input elements from a feature's function
   void removeInputElement(const oi::Guarded<FeatureWrapper>& target,
@@ -253,7 +253,7 @@ class OI_CORE_EXPORT OiJob : public oi::Trackable,
   // eResidualOutlierRejectionStage instead of clobbering it.
   void excludeElement(const oi::Guarded<FeatureWrapper>& target,
                       const int& functionIndex, const int& neededElementIndex,
-                      const int& elementId, const QString& reason,
+                      const int& elementId, const std::string& reason,
                       const bool& recalc);
 
   void createTemplateFromJob();
@@ -263,7 +263,7 @@ class OI_CORE_EXPORT OiJob : public oi::Trackable,
   // report job issues and recalculation results (used to be signals)
   // ###################################################################
 
-  void sendMessage(const QString& msg, const MessageTypes& msgType,
+  void sendMessage(const std::string& msg, const MessageTypes& msgType,
                    const MessageDestinations& msgDest =
                        MessageDestinations::eConsoleMessage) const;
 
@@ -303,8 +303,8 @@ class OI_CORE_EXPORT OiJob : public oi::Trackable,
   void setActiveCoordinateSystem(const int& featureId);
 
   // feature specific attributes changed
-  void setFeatureName(const int& featureId, const QString& oldName);
-  void setFeatureGroup(const int& featureId, const QString& oldGroup);
+  void setFeatureName(const int& featureId, const std::string& oldName);
+  void setFeatureGroup(const int& featureId, const std::string& oldGroup);
   void setFeatureComment(const int& featureId);
   void setFeatureIsUpdated(const int& featureId);  // currently not connected
   void setFeatureIsSolved(const int& featureId);
@@ -321,7 +321,7 @@ class OI_CORE_EXPORT OiJob : public oi::Trackable,
   void setGeometryStatistic(const int& featureId);
   void setGeometrySimulationData(const int& featureId);
   void setGeometryMeasurementConfig(const int& featureId,
-                                    const QString& oldMConfig,
+                                    const std::string& oldMConfig,
                                     const MeasurementConfigKey oldKey);
 
   // coordinate system specific attributes changed
@@ -341,8 +341,9 @@ class OI_CORE_EXPORT OiJob : public oi::Trackable,
   void setTrafoParamIsDatum(const int& featureId);
 
   // element deleted
-  void elementAboutToBeDeleted(const int& elementId, const QString& name,
-                               const QString& group, const FeatureTypes& type);
+  void elementAboutToBeDeleted(const int& elementId, const std::string& name,
+                               const std::string& group,
+                               const FeatureTypes& type);
 
  private:
   // calls `callback` on every registered observer. Iterates over a copy and
@@ -385,7 +386,7 @@ class OI_CORE_EXPORT OiJob : public oi::Trackable,
 
   // MessageSink: messages of the functions and bundle adjustments of this job
   // are reported like the job's own
-  void onMessage(const QString& msg, const MessageTypes& type,
+  void onMessage(const std::string& msg, const MessageTypes& type,
                  const MessageDestinations& dest) override;
 
   // ##########################################################
@@ -393,13 +394,13 @@ class OI_CORE_EXPORT OiJob : public oi::Trackable,
   // into the job's handlers (and from there into its signals)
   // ##########################################################
 
-  void onElementAboutToBeDeleted(const int& elementId, const QString& name,
-                                 const QString& group,
+  void onElementAboutToBeDeleted(const int& elementId, const std::string& name,
+                                 const std::string& group,
                                  const FeatureTypes& type) override;
   void onFeatureNameChanged(const int& featureId,
-                            const QString& oldName) override;
+                            const std::string& oldName) override;
   void onFeatureGroupChanged(const int& featureId,
-                             const QString& oldGroup) override;
+                             const std::string& oldGroup) override;
   void onFeatureCommentChanged(const int& featureId) override;
   void onFeatureIsSolvedChanged(const int& featureId) override;
   void onFeatureFunctionListChanged(const int& featureId) override;
@@ -413,7 +414,7 @@ class OI_CORE_EXPORT OiJob : public oi::Trackable,
   void onGeomStatisticChanged(const int& featureId) override;
   void onGeomSimulationDataChanged(const int& featureId) override;
   void onGeomMeasurementConfigChanged(
-      const int& featureId, const QString& oldMConfig,
+      const int& featureId, const std::string& oldMConfig,
       const MeasurementConfigKey oldKey) override;
   void onGroupMembersChanged(const int& featureId) override;
   void onTransformationParameterChanged(const int& tpId) override;
@@ -433,8 +434,8 @@ class OI_CORE_EXPORT OiJob : public oi::Trackable,
   // helper methods
   // ##############
 
-  [[nodiscard]] std::vector<QString> createFeatureNames(const QString& name,
-                                                        const int& count) const;
+  [[nodiscard]] std::vector<std::string> createFeatureNames(
+      const std::string& name, const int& count) const;
   [[nodiscard]] oi::Guarded<FeatureWrapper> createFeatureWrapper(
       const FeatureTypes& type) const;
   bool checkAndSetUpNewFeature(const oi::Guarded<FeatureWrapper>& feature,
@@ -480,11 +481,11 @@ class OI_CORE_EXPORT OiJob : public oi::Trackable,
   // meta information of a job
   // #########################
 
-  QString jobName;                // the name under that the job is saved
+  std::string jobName;            // the name under that the job is saved
   std::filesystem::path jobFile;  // the file where the job is saved
 
   // the last calculated digest of the job content
-  QString digest;
+  std::string digest;
 
   // ################################
   // active features and active group
@@ -497,7 +498,7 @@ class OI_CORE_EXPORT OiJob : public oi::Trackable,
   oi::Guarded<CoordinateSystem> activeBundleSystem;
 
   // active group
-  QString activeGroup;
+  std::string activeGroup;
 
   // ################################
   // feature container and current id
@@ -513,7 +514,7 @@ class OI_CORE_EXPORT OiJob : public oi::Trackable,
   void enableOrDisableGeometryObservations(const int& featureId, bool enable,
                                            oi::Guarded<Station> station);
 
-  QString loadedVersion;
+  std::string loadedVersion;
 };
 
 }  // namespace oi

@@ -1,7 +1,7 @@
 #ifndef BUNDLEADJUSTMENT_H
 #define BUNDLEADJUSTMENT_H
-#include <QString>
 #include <map>
+#include <string>
 #include <vector>
 
 #include "core_export.h"
@@ -129,10 +129,10 @@ class OI_CORE_EXPORT BundleAdjustment : public oi::Trackable {
   [[nodiscard]] const PluginMetaData& getMetaData() const;
 
   // available scalar parameters
-  [[nodiscard]] const std::map<QString, int>& getIntegerParameter() const;
-  [[nodiscard]] const std::map<QString, double>& getDoubleParameter() const;
-  [[nodiscard]] const std::multimap<QString, QString>& getStringParameter()
-      const;
+  [[nodiscard]] const std::map<std::string, int>& getIntegerParameter() const;
+  [[nodiscard]] const std::map<std::string, double>& getDoubleParameter() const;
+  [[nodiscard]] const std::multimap<std::string, std::string>&
+  getStringParameter() const;
 
   // scalar input parameters
   const ScalarInputParams& getScalarInputParams();
@@ -183,7 +183,7 @@ class OI_CORE_EXPORT BundleAdjustment : public oi::Trackable {
     return this->messageSink;
   }
 
-  void sendMessage(const QString& msg, const MessageTypes& msgType,
+  void sendMessage(const std::string& msg, const MessageTypes& msgType,
                    const MessageDestinations& msgDest =
                        MessageDestinations::eConsoleMessage) {
     if (this->messageSink != nullptr) {
@@ -210,9 +210,9 @@ class OI_CORE_EXPORT BundleAdjustment : public oi::Trackable {
   PluginMetaData metaData;
 
   // the needed scalar input parameters including default values
-  std::map<QString, int> integerParameters;
-  std::map<QString, double> doubleParameters;
-  std::multimap<QString, QString> stringParameters;
+  std::map<std::string, int> integerParameters;
+  std::map<std::string, double> doubleParameters;
+  std::multimap<std::string, std::string> stringParameters;
 
   // user defined scalar input parameters
   ScalarInputParams scalarInputParams;

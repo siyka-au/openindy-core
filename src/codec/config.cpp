@@ -176,8 +176,8 @@ oi::BaudRate baudFromProto(int32_t v) {
   }
 }
 
-std::string str(const QString& s) { return s.toStdString(); }
-QString qstr(const std::string& s) { return QString::fromStdString(s); }
+std::string str(const std::string& s) { return s; }
+std::string qstr(const std::string& s) { return (s); }
 
 template <typename Message>
 std::string toJson(const Message& message) {
@@ -268,10 +268,10 @@ oipb::SensorConfiguration toProto(const SensorConfiguration& config) {
   const auto& available = config.getAvailableStringParameter();
   for (auto group = available.cbegin(); group != available.cend();
        group = available.upper_bound(group->first)) {
-    const QString& key = group->first;
+    const std::string& key = group->first;
     oipb::StringParameterOptions* entry = m.add_available_string_parameters();
     entry->set_name(str(key));
-    for (const QString& value : oi::values(available, key)) {
+    for (const std::string& value : oi::values(available, key)) {
       entry->add_options(str(value));
     }
   }
@@ -319,17 +319,17 @@ std::optional<SensorConfiguration> fromProto(
   }
   config.setAccuracy(a);
 
-  std::map<QString, int> ints;
+  std::map<std::string, int> ints;
   for (const auto& entry : m.integer_parameters()) {
     ints.insert_or_assign(qstr(entry.name()), entry.value());
   }
   config.setIntegerParameter(ints);
-  std::map<QString, double> doubles;
+  std::map<std::string, double> doubles;
   for (const auto& entry : m.double_parameters()) {
     doubles.insert_or_assign(qstr(entry.name()), entry.value());
   }
   config.setDoubleParameter(doubles);
-  std::map<QString, QString> strings;
+  std::map<std::string, std::string> strings;
   for (const auto& entry : m.string_parameters()) {
     strings.insert_or_assign(qstr(entry.name()), qstr(entry.value()));
   }
@@ -338,7 +338,7 @@ std::optional<SensorConfiguration> fromProto(
   // oi::values(multimap, key) lists the most recently inserted value first,
   // so insert in reverse to get the options back in the order they were
   // written.
-  std::multimap<QString, QString> available;
+  std::multimap<std::string, std::string> available;
   for (const auto& entry : m.available_string_parameters()) {
     for (int i = entry.options_size() - 1; i >= 0; --i) {
       available.emplace(qstr(entry.name()), qstr(entry.options(i)));

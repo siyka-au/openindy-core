@@ -1,6 +1,5 @@
 #ifndef COORDINATESYSTEM_H
 #define COORDINATESYSTEM_H
-#include <QJsonObject>
 #include <map>
 #include <vector>
 
@@ -100,8 +99,9 @@ class OI_CORE_EXPORT CoordinateSystem : public Feature {
   bool removeNominal(const int& featureId);
 
   // bundle template
-  [[nodiscard]] const QJsonObject& getBundleTemplate() const;
-  void setBundleTemplate(const QJsonObject& bundleTemplate);
+  // the bundle template as JSON text; the model keeps it opaque
+  [[nodiscard]] const std::string& getBundleTemplate() const;
+  void setBundleTemplate(const std::string& bundleTemplate);
 
   // bundle adjustment
   [[nodiscard]] const oi::Guarded<BundleAdjustment>& getBundlePlugin() const;
@@ -117,37 +117,37 @@ class OI_CORE_EXPORT CoordinateSystem : public Feature {
   // display methods
   // ###############
 
-  [[nodiscard]] QString getDisplayX(
+  [[nodiscard]] std::string getDisplayX(
       const UnitType& type, const int& digits,
       const bool& showDiff = false) const override;
-  [[nodiscard]] QString getDisplayY(
+  [[nodiscard]] std::string getDisplayY(
       const UnitType& type, const int& digits,
       const bool& showDiff = false) const override;
-  [[nodiscard]] QString getDisplayZ(
+  [[nodiscard]] std::string getDisplayZ(
       const UnitType& type, const int& digits,
       const bool& showDiff = false) const override;
-  [[nodiscard]] QString getDisplayPrimaryI(
+  [[nodiscard]] std::string getDisplayPrimaryI(
       const int& digits, const bool& showDiff = false) const override;
-  [[nodiscard]] QString getDisplayPrimaryJ(
+  [[nodiscard]] std::string getDisplayPrimaryJ(
       const int& digits, const bool& showDiff = false) const override;
-  [[nodiscard]] QString getDisplayPrimaryK(
+  [[nodiscard]] std::string getDisplayPrimaryK(
       const int& digits, const bool& showDiff = false) const override;
 
-  [[nodiscard]] QString getDisplayExpansionOriginX(
+  [[nodiscard]] std::string getDisplayExpansionOriginX(
       const UnitType& type, const int& digits) const override;
-  [[nodiscard]] QString getDisplayExpansionOriginY(
+  [[nodiscard]] std::string getDisplayExpansionOriginY(
       const UnitType& type, const int& digits) const override;
-  [[nodiscard]] QString getDisplayExpansionOriginZ(
+  [[nodiscard]] std::string getDisplayExpansionOriginZ(
       const UnitType& type, const int& digits) const override;
-  [[nodiscard]] QString getDisplayXAxisI(const int& digits) const override;
-  [[nodiscard]] QString getDisplayXAxisJ(const int& digits) const override;
-  [[nodiscard]] QString getDisplayXAxisK(const int& digits) const override;
-  [[nodiscard]] QString getDisplayYAxisI(const int& digits) const override;
-  [[nodiscard]] QString getDisplayYAxisJ(const int& digits) const override;
-  [[nodiscard]] QString getDisplayYAxisK(const int& digits) const override;
-  [[nodiscard]] QString getDisplayZAxisI(const int& digits) const override;
-  [[nodiscard]] QString getDisplayZAxisJ(const int& digits) const override;
-  [[nodiscard]] QString getDisplayZAxisK(const int& digits) const override;
+  [[nodiscard]] std::string getDisplayXAxisI(const int& digits) const override;
+  [[nodiscard]] std::string getDisplayXAxisJ(const int& digits) const override;
+  [[nodiscard]] std::string getDisplayXAxisK(const int& digits) const override;
+  [[nodiscard]] std::string getDisplayYAxisI(const int& digits) const override;
+  [[nodiscard]] std::string getDisplayYAxisJ(const int& digits) const override;
+  [[nodiscard]] std::string getDisplayYAxisK(const int& digits) const override;
+  [[nodiscard]] std::string getDisplayZAxisI(const int& digits) const override;
+  [[nodiscard]] std::string getDisplayZAxisJ(const int& digits) const override;
+  [[nodiscard]] std::string getDisplayZAxisK(const int& digits) const override;
 
  protected:
   // ######################################
@@ -189,7 +189,7 @@ class OI_CORE_EXPORT CoordinateSystem : public Feature {
   oi::Guarded<Station> station;
 
   // the bundle plugin that is used to solve the bundle
-  QJsonObject bundleTemplate;
+  std::string bundleTemplate;
   oi::Guarded<BundleAdjustment> bundlePlugin;
 
   // #######################################

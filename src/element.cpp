@@ -1,6 +1,7 @@
 #include "element.h"
 
 #include "containers.h"
+#include "value.h"
 
 using namespace oi;
 
@@ -40,11 +41,11 @@ int Element::getId() const { return this->id; }
  */
 bool Element::isNull() { return isNullObject; }
 
-void Element::setTransientAttribute(const QString& name,
-                                    const QVariant& value) {
+void Element::setTransientAttribute(const std::string& name,
+                                    const oi::Value& value) {
   this->transientAttributes.insert_or_assign(name, value);
 }
 
-QVariant Element::getTransientAttribute(const QString& name) const {
+oi::Value Element::getTransientAttribute(const std::string& name) const {
   return oi::value(this->transientAttributes, name);
 }

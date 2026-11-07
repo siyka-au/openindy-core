@@ -1,8 +1,7 @@
 #ifndef TYPES_H
 #define TYPES_H
-#include <QString>
-#include <QtCore/QtGlobal>
 #include <map>
+#include <string>
 #include <vector>
 
 #include "core_export.h"
@@ -550,9 +549,9 @@ class ScalarInputParams {
   ScalarInputParams() {}
 
   bool isValid{false};
-  std::map<QString, double> doubleParameter;
-  std::map<QString, int> intParameter;
-  std::map<QString, QString> stringParameter;
+  std::map<std::string, double> doubleParameter;
+  std::map<std::string, int> intParameter;
+  std::map<std::string, std::string> stringParameter;
 };
 
 enum class SensorStatus {

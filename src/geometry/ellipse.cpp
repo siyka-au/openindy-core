@@ -6,6 +6,7 @@
 #include "containers.h"
 #include "featurewrapper.h"
 #include "snapshot.h"
+#include "stringutil.h"
 
 using namespace oi;
 using namespace oi::math;
@@ -144,10 +145,10 @@ void Ellipse::setEllipse(const Position& center, const Direction& normal,
  * \param displayDigits
  * \return
  */
-std::map<GeometryParameters, QString> Ellipse::getUnknownParameters(
+std::map<GeometryParameters, std::string> Ellipse::getUnknownParameters(
     const std::map<DimensionType, UnitType>& displayUnits,
     const std::map<DimensionType, int>& displayDigits) const {
-  std::map<GeometryParameters, QString> parameters;
+  std::map<GeometryParameters, std::string> parameters;
 
   parameters.insert_or_assign(
       GeometryParameters::eUnknownX,
@@ -294,13 +295,12 @@ void Ellipse::recalc() {
  * \param showDiff
  * \return
  */
-QString Ellipse::getDisplaySecondaryI(const int& digits,
-                                      const bool& /*showDiff*/) const {
+std::string Ellipse::getDisplaySecondaryI(const int& digits,
+                                          const bool& /*showDiff*/) const {
   if (this->isSolved) {
-    return QString::number(this->semiMajorAxis.getVector().getAt(0), 'f',
-                           digits);
+    return oi::number(this->semiMajorAxis.getVector().getAt(0), 'f', digits);
   }
-  return QString("");
+  return std::string("");
 }
 
 /*!
@@ -309,13 +309,12 @@ QString Ellipse::getDisplaySecondaryI(const int& digits,
  * \param showDiff
  * \return
  */
-QString Ellipse::getDisplaySecondaryJ(const int& digits,
-                                      const bool& /*showDiff*/) const {
+std::string Ellipse::getDisplaySecondaryJ(const int& digits,
+                                          const bool& /*showDiff*/) const {
   if (this->isSolved) {
-    return QString::number(this->semiMajorAxis.getVector().getAt(1), 'f',
-                           digits);
+    return oi::number(this->semiMajorAxis.getVector().getAt(1), 'f', digits);
   }
-  return QString("");
+  return std::string("");
 }
 
 /*!
@@ -324,13 +323,12 @@ QString Ellipse::getDisplaySecondaryJ(const int& digits,
  * \param showDiff
  * \return
  */
-QString Ellipse::getDisplaySecondaryK(const int& digits,
-                                      const bool& /*showDiff*/) const {
+std::string Ellipse::getDisplaySecondaryK(const int& digits,
+                                          const bool& /*showDiff*/) const {
   if (this->isSolved) {
-    return QString::number(this->semiMajorAxis.getVector().getAt(2), 'f',
-                           digits);
+    return oi::number(this->semiMajorAxis.getVector().getAt(2), 'f', digits);
   }
-  return QString("");
+  return std::string("");
 }
 
 /*!
@@ -340,12 +338,12 @@ QString Ellipse::getDisplaySecondaryK(const int& digits,
  * \param showDiff
  * \return
  */
-QString Ellipse::getDisplayA(const UnitType& type, const int& digits,
-                             const bool& /*showDiff*/) const {
+std::string Ellipse::getDisplayA(const UnitType& type, const int& digits,
+                                 const bool& /*showDiff*/) const {
   if (this->isSolved) {
-    return QString::number(convertFromDefault(this->a, type), 'f', digits);
+    return oi::number(convertFromDefault(this->a, type), 'f', digits);
   }
-  return QString("");
+  return std::string("");
 }
 
 /*!
@@ -355,10 +353,10 @@ QString Ellipse::getDisplayA(const UnitType& type, const int& digits,
  * \param showDiff
  * \return
  */
-QString Ellipse::getDisplayB(const UnitType& type, const int& digits,
-                             const bool& /*showDiff*/) const {
+std::string Ellipse::getDisplayB(const UnitType& type, const int& digits,
+                                 const bool& /*showDiff*/) const {
   if (this->isSolved) {
-    return QString::number(convertFromDefault(this->b, type), 'f', digits);
+    return oi::number(convertFromDefault(this->b, type), 'f', digits);
   }
-  return QString("");
+  return std::string("");
 }

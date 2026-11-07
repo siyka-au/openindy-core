@@ -8,6 +8,7 @@
 #include "observation.h"
 #include "sensor.h"
 #include "snapshot.h"
+#include "stringutil.h"
 
 using namespace oi;
 using namespace oi::math;
@@ -577,13 +578,13 @@ void Reading::setObservation(const oi::Guarded<Observation>& observation) {
  * \brief Reading::getDisplayId
  * \return
  */
-QString Reading::getDisplayId() const { return QString::number(this->id); }
+std::string Reading::getDisplayId() const { return oi::number(this->id); }
 
 /*!
  * \brief Reading::getDisplayType
  * \return
  */
-QString Reading::getDisplayType() const {
+std::string Reading::getDisplayType() const {
   return getReadingTypeName(this->typeOfReading);
 }
 
@@ -591,16 +592,15 @@ QString Reading::getDisplayType() const {
  * \brief Reading::getDisplayTime
  * \return
  */
-QString Reading::getDisplayTime() const {
+std::string Reading::getDisplayTime() const {
   const auto seconds =
       std::chrono::floor<std::chrono::seconds>(this->measuredAt);
   try {
-    return QString::fromStdString(std::format(
-        "{:%F %T}",
-        std::chrono::zoned_time{std::chrono::current_zone(), seconds}));
+    return (std::format("{:%F %T}", std::chrono::zoned_time{
+                                        std::chrono::current_zone(), seconds}));
   } catch (const std::exception&) {
     // no time zone database available: show UTC rather than nothing
-    return QString::fromStdString(std::format("{:%F %T} UTC", seconds));
+    return (std::format("{:%F %T} UTC", seconds));
   }
 }
 
@@ -608,7 +608,7 @@ QString Reading::getDisplayTime() const {
  * \brief Reading::getDisplaySensorConfigName
  * \return
  */
-QString Reading::getDisplaySensorConfigName() const {
+std::string Reading::getDisplaySensorConfigName() const {
   return this->sensorConfigName;
 }
 
@@ -616,7 +616,7 @@ QString Reading::getDisplaySensorConfigName() const {
  * \brief Reading::getDisplayMeasurementConfigName
  * \return
  */
-QString Reading::getDisplayMeasurementConfigName() const {
+std::string Reading::getDisplayMeasurementConfigName() const {
   return this->mConfig.getName();
 }
 
@@ -624,7 +624,7 @@ QString Reading::getDisplayMeasurementConfigName() const {
  * \brief Reading::getDisplaySide
  * \return
  */
-QString Reading::getDisplaySide() const {
+std::string Reading::getDisplaySide() const {
   switch (this->face) {
     case SensorFaces::eFrontSide:
       return "FS";
@@ -643,16 +643,16 @@ QString Reading::getDisplaySide() const {
  * \param digits
  * \return
  */
-QString Reading::getDisplayAzimuth(const UnitType& type,
-                                   const int& digits) const {
+std::string Reading::getDisplayAzimuth(const UnitType& type,
+                                       const int& digits) const {
   if (this->rPolar.isValid) {
-    return QString::number(convertFromDefault(this->rPolar.azimuth, type), 'f',
-                           digits);
+    return oi::number(convertFromDefault(this->rPolar.azimuth, type), 'f',
+                      digits);
   } else if (this->rDirection.isValid) {
-    return QString::number(convertFromDefault(this->rDirection.azimuth, type),
-                           'f', digits);
+    return oi::number(convertFromDefault(this->rDirection.azimuth, type), 'f',
+                      digits);
   }
-  return QString("");
+  return std::string("");
 }
 
 /*!
@@ -661,16 +661,16 @@ QString Reading::getDisplayAzimuth(const UnitType& type,
  * \param digits
  * \return
  */
-QString Reading::getDisplayZenith(const UnitType& type,
-                                  const int& digits) const {
+std::string Reading::getDisplayZenith(const UnitType& type,
+                                      const int& digits) const {
   if (this->rPolar.isValid) {
-    return QString::number(convertFromDefault(this->rPolar.zenith, type), 'f',
-                           digits);
+    return oi::number(convertFromDefault(this->rPolar.zenith, type), 'f',
+                      digits);
   } else if (this->rDirection.isValid) {
-    return QString::number(convertFromDefault(this->rDirection.zenith, type),
-                           'f', digits);
+    return oi::number(convertFromDefault(this->rDirection.zenith, type), 'f',
+                      digits);
   }
-  return QString("");
+  return std::string("");
 }
 
 /*!
@@ -679,16 +679,16 @@ QString Reading::getDisplayZenith(const UnitType& type,
  * \param digits
  * \return
  */
-QString Reading::getDisplayDistance(const UnitType& type,
-                                    const int& digits) const {
+std::string Reading::getDisplayDistance(const UnitType& type,
+                                        const int& digits) const {
   if (this->rPolar.isValid) {
-    return QString::number(convertFromDefault(this->rPolar.distance, type), 'f',
-                           digits);
+    return oi::number(convertFromDefault(this->rPolar.distance, type), 'f',
+                      digits);
   } else if (this->rDistance.isValid) {
-    return QString::number(convertFromDefault(this->rDistance.distance, type),
-                           'f', digits);
+    return oi::number(convertFromDefault(this->rDistance.distance, type), 'f',
+                      digits);
   }
-  return QString("");
+  return std::string("");
 }
 
 /*!
@@ -697,15 +697,16 @@ QString Reading::getDisplayDistance(const UnitType& type,
  * \param digits
  * \return
  */
-QString Reading::getDisplayX(const UnitType& type, const int& digits) const {
+std::string Reading::getDisplayX(const UnitType& type,
+                                 const int& digits) const {
   if (this->rCartesian.isValid) {
-    return QString::number(
-        convertFromDefault(this->rCartesian.xyz.getAt(0), type), 'f', digits);
+    return oi::number(convertFromDefault(this->rCartesian.xyz.getAt(0), type),
+                      'f', digits);
   } else if (this->rCartesian6D.isValid) {
-    return QString::number(
-        convertFromDefault(this->rCartesian6D.xyz.getAt(0), type), 'f', digits);
+    return oi::number(convertFromDefault(this->rCartesian6D.xyz.getAt(0), type),
+                      'f', digits);
   }
-  return QString("");
+  return std::string("");
 }
 
 /*!
@@ -714,15 +715,16 @@ QString Reading::getDisplayX(const UnitType& type, const int& digits) const {
  * \param digits
  * \return
  */
-QString Reading::getDisplayY(const UnitType& type, const int& digits) const {
+std::string Reading::getDisplayY(const UnitType& type,
+                                 const int& digits) const {
   if (this->rCartesian.isValid) {
-    return QString::number(
-        convertFromDefault(this->rCartesian.xyz.getAt(1), type), 'f', digits);
+    return oi::number(convertFromDefault(this->rCartesian.xyz.getAt(1), type),
+                      'f', digits);
   } else if (this->rCartesian6D.isValid) {
-    return QString::number(
-        convertFromDefault(this->rCartesian6D.xyz.getAt(1), type), 'f', digits);
+    return oi::number(convertFromDefault(this->rCartesian6D.xyz.getAt(1), type),
+                      'f', digits);
   }
-  return QString("");
+  return std::string("");
 }
 
 /*!
@@ -731,15 +733,16 @@ QString Reading::getDisplayY(const UnitType& type, const int& digits) const {
  * \param digits
  * \return
  */
-QString Reading::getDisplayZ(const UnitType& type, const int& digits) const {
+std::string Reading::getDisplayZ(const UnitType& type,
+                                 const int& digits) const {
   if (this->rCartesian.isValid) {
-    return QString::number(
-        convertFromDefault(this->rCartesian.xyz.getAt(2), type), 'f', digits);
+    return oi::number(convertFromDefault(this->rCartesian.xyz.getAt(2), type),
+                      'f', digits);
   } else if (this->rCartesian6D.isValid) {
-    return QString::number(
-        convertFromDefault(this->rCartesian6D.xyz.getAt(2), type), 'f', digits);
+    return oi::number(convertFromDefault(this->rCartesian6D.xyz.getAt(2), type),
+                      'f', digits);
   }
-  return QString("");
+  return std::string("");
 }
 
 /*!
@@ -748,13 +751,13 @@ QString Reading::getDisplayZ(const UnitType& type, const int& digits) const {
  * \param digits
  * \return
  */
-QString Reading::getDisplayI(const int& digits) const {
+std::string Reading::getDisplayI(const int& digits) const {
   if (this->rLevel.isValid) {
-    return QString::number(rLevel.i, 'f', digits);
+    return oi::number(rLevel.i, 'f', digits);
   } else if (this->rCartesian6D.isValid) {
-    return QString::number(this->rCartesian6D.ijk.getAt(0), 'f', digits);
+    return oi::number(this->rCartesian6D.ijk.getAt(0), 'f', digits);
   }
-  return QString("");
+  return std::string("");
 }
 
 /*!
@@ -763,13 +766,13 @@ QString Reading::getDisplayI(const int& digits) const {
  * \param digits
  * \return
  */
-QString Reading::getDisplayJ(const int& digits) const {
+std::string Reading::getDisplayJ(const int& digits) const {
   if (this->rLevel.isValid) {
-    return QString::number(this->rLevel.j, 'f', digits);
+    return oi::number(this->rLevel.j, 'f', digits);
   } else if (this->rCartesian6D.isValid) {
-    return QString::number(this->rCartesian6D.ijk.getAt(1), 'f', digits);
+    return oi::number(this->rCartesian6D.ijk.getAt(1), 'f', digits);
   }
-  return QString("");
+  return std::string("");
 }
 
 /*!
@@ -778,13 +781,13 @@ QString Reading::getDisplayJ(const int& digits) const {
  * \param digits
  * \return
  */
-QString Reading::getDisplayK(const int& digits) const {
+std::string Reading::getDisplayK(const int& digits) const {
   if (this->rLevel.isValid) {
-    return QString::number(this->rLevel.k, 'f', digits);
+    return oi::number(this->rLevel.k, 'f', digits);
   } else if (this->rCartesian6D.isValid) {
-    return QString::number(this->rCartesian6D.ijk.getAt(2), 'f', digits);
+    return oi::number(this->rCartesian6D.ijk.getAt(2), 'f', digits);
   }
-  return QString("");
+  return std::string("");
 }
 
 /*!
@@ -793,13 +796,13 @@ QString Reading::getDisplayK(const int& digits) const {
  * \param digits
  * \return
  */
-QString Reading::getDisplayTemperature(const UnitType& type,
-                                       const int& digits) const {
+std::string Reading::getDisplayTemperature(const UnitType& type,
+                                           const int& digits) const {
   if (this->rTemperature.isValid) {
-    return QString::number(
-        convertFromDefault(this->rTemperature.temperature, type), 'f', digits);
+    return oi::number(convertFromDefault(this->rTemperature.temperature, type),
+                      'f', digits);
   }
-  return QString("");
+  return std::string("");
 }
 
 /*!
@@ -808,16 +811,16 @@ QString Reading::getDisplayTemperature(const UnitType& type,
  * \param digits
  * \return
  */
-QString Reading::getDisplaySigmaAzimuth(const UnitType& type,
-                                        const int& digits) const {
+std::string Reading::getDisplaySigmaAzimuth(const UnitType& type,
+                                            const int& digits) const {
   if (this->rPolar.isValid) {
-    return QString::number(convertFromDefault(this->rPolar.sigmaAzimuth, type),
-                           'f', digits);
+    return oi::number(convertFromDefault(this->rPolar.sigmaAzimuth, type), 'f',
+                      digits);
   } else if (this->rDirection.isValid) {
-    return QString::number(
-        convertFromDefault(this->rDirection.sigmaAzimuth, type), 'f', digits);
+    return oi::number(convertFromDefault(this->rDirection.sigmaAzimuth, type),
+                      'f', digits);
   }
-  return QString("");
+  return std::string("");
 }
 
 /*!
@@ -826,16 +829,16 @@ QString Reading::getDisplaySigmaAzimuth(const UnitType& type,
  * \param digits
  * \return
  */
-QString Reading::getDisplaySigmaZenith(const UnitType& type,
-                                       const int& digits) const {
+std::string Reading::getDisplaySigmaZenith(const UnitType& type,
+                                           const int& digits) const {
   if (this->rPolar.isValid) {
-    return QString::number(convertFromDefault(this->rPolar.sigmaZenith, type),
-                           'f', digits);
+    return oi::number(convertFromDefault(this->rPolar.sigmaZenith, type), 'f',
+                      digits);
   } else if (this->rDirection.isValid) {
-    return QString::number(
-        convertFromDefault(this->rDirection.sigmaZenith, type), 'f', digits);
+    return oi::number(convertFromDefault(this->rDirection.sigmaZenith, type),
+                      'f', digits);
   }
-  return QString("");
+  return std::string("");
 }
 
 /*!
@@ -844,16 +847,16 @@ QString Reading::getDisplaySigmaZenith(const UnitType& type,
  * \param digits
  * \return
  */
-QString Reading::getDisplaySigmaDistance(const UnitType& type,
-                                         const int& digits) const {
+std::string Reading::getDisplaySigmaDistance(const UnitType& type,
+                                             const int& digits) const {
   if (this->rPolar.isValid) {
-    return QString::number(convertFromDefault(this->rPolar.sigmaDistance, type),
-                           'f', digits);
+    return oi::number(convertFromDefault(this->rPolar.sigmaDistance, type), 'f',
+                      digits);
   } else if (this->rDistance.isValid) {
-    return QString::number(
-        convertFromDefault(this->rDistance.sigmaDistance, type), 'f', digits);
+    return oi::number(convertFromDefault(this->rDistance.sigmaDistance, type),
+                      'f', digits);
   }
-  return QString("");
+  return std::string("");
 }
 
 /*!
@@ -862,18 +865,18 @@ QString Reading::getDisplaySigmaDistance(const UnitType& type,
  * \param digits
  * \return
  */
-QString Reading::getDisplaySigmaX(const UnitType& type,
-                                  const int& digits) const {
+std::string Reading::getDisplaySigmaX(const UnitType& type,
+                                      const int& digits) const {
   if (this->rCartesian.isValid) {
-    return QString::number(
+    return oi::number(
         convertFromDefault(this->rCartesian.sigmaXyz.getAt(0), type), 'f',
         digits);
   } else if (this->rCartesian6D.isValid) {
-    return QString::number(
+    return oi::number(
         convertFromDefault(this->rCartesian6D.sigmaXyz.getAt(0), type), 'f',
         digits);
   }
-  return QString("");
+  return std::string("");
 }
 
 /*!
@@ -882,14 +885,14 @@ QString Reading::getDisplaySigmaX(const UnitType& type,
  * \param digits
  * \return
  */
-QString Reading::getDisplaySigmaY(const UnitType& type,
-                                  const int& digits) const {
+std::string Reading::getDisplaySigmaY(const UnitType& type,
+                                      const int& digits) const {
   if (this->rCartesian.isValid) {
-    return QString::number(
+    return oi::number(
         convertFromDefault(this->rCartesian.sigmaXyz.getAt(1), type), 'f',
         digits);
   }
-  return QString("");
+  return std::string("");
 }
 
 /*!
@@ -898,14 +901,14 @@ QString Reading::getDisplaySigmaY(const UnitType& type,
  * \param digits
  * \return
  */
-QString Reading::getDisplaySigmaZ(const UnitType& type,
-                                  const int& digits) const {
+std::string Reading::getDisplaySigmaZ(const UnitType& type,
+                                      const int& digits) const {
   if (this->rCartesian.isValid) {
-    return QString::number(
+    return oi::number(
         convertFromDefault(this->rCartesian.sigmaXyz.getAt(2), type), 'f',
         digits);
   }
-  return QString("");
+  return std::string("");
 }
 
 /*!
@@ -914,11 +917,11 @@ QString Reading::getDisplaySigmaZ(const UnitType& type,
  * \param digits
  * \return
  */
-QString Reading::getDisplaySigmaI(const int& digits) const {
+std::string Reading::getDisplaySigmaI(const int& digits) const {
   if (this->rLevel.isValid) {
-    return QString::number(this->rLevel.sigmaI, 'f', digits);
+    return oi::number(this->rLevel.sigmaI, 'f', digits);
   }
-  return QString("");
+  return std::string("");
 }
 
 /*!
@@ -927,11 +930,11 @@ QString Reading::getDisplaySigmaI(const int& digits) const {
  * \param digits
  * \return
  */
-QString Reading::getDisplaySigmaJ(const int& digits) const {
+std::string Reading::getDisplaySigmaJ(const int& digits) const {
   if (this->rLevel.isValid) {
-    return QString::number(this->rLevel.sigmaJ, 'f', digits);
+    return oi::number(this->rLevel.sigmaJ, 'f', digits);
   }
-  return QString("");
+  return std::string("");
 }
 
 /*!
@@ -940,11 +943,11 @@ QString Reading::getDisplaySigmaJ(const int& digits) const {
  * \param digits
  * \return
  */
-QString Reading::getDisplaySigmaK(const int& digits) const {
+std::string Reading::getDisplaySigmaK(const int& digits) const {
   if (this->rLevel.isValid) {
-    return QString::number(this->rLevel.sigmaK, 'f', digits);
+    return oi::number(this->rLevel.sigmaK, 'f', digits);
   }
-  return QString("");
+  return std::string("");
 }
 
 /*!
@@ -953,13 +956,13 @@ QString Reading::getDisplaySigmaK(const int& digits) const {
  * \param digits
  * \return
  */
-QString Reading::getDisplaySigmaTemperature(const UnitType& type,
-                                            const int& digits) const {
+std::string Reading::getDisplaySigmaTemperature(const UnitType& type,
+                                                const int& digits) const {
   if (this->rTemperature.isValid) {
-    return QString::number(
-        convertFromDefault(this->rTemperature.temperature, type), 'f', digits);
+    return oi::number(convertFromDefault(this->rTemperature.temperature, type),
+                      'f', digits);
   }
-  return QString("");
+  return std::string("");
 }
 
 /*!

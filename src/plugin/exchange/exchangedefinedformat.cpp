@@ -18,8 +18,8 @@ ExchangeDefinedFormat::~ExchangeDefinedFormat() {}
  * \brief ExchangeDefinedFormat::getSupportedFileExtensions
  * \return
  */
-const std::vector<QString>& ExchangeDefinedFormat::getSupportedFileExtensions()
-    const {
+const std::vector<std::string>&
+ExchangeDefinedFormat::getSupportedFileExtensions() const {
   return this->supportedFileExtensions;
 }
 

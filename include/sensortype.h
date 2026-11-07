@@ -1,7 +1,7 @@
 #ifndef SENSORTYPE_H
 #define SENSORTYPE_H
-#include <QString>
 #include <optional>
+#include <string>
 #include <vector>
 
 #include "core_export.h"
@@ -26,17 +26,17 @@ namespace oi {
 class OI_CORE_EXPORT SensorType {
  public:
   SensorType() = default;
-  SensorType(const QString& id, const QString& displayName,
-             const QString& iconKey = QString());
+  SensorType(const std::string& id, const std::string& displayName,
+             const std::string& iconKey = std::string());
 
   //! derives a type from a plugin interface id such as
   //! "de.openIndy.plugin.sensor.laserTracker.v1"; returns an invalid type
   //! for the bare sensor interface or anything unparseable
-  static SensorType fromInterfaceId(const QString& interfaceId);
+  static SensorType fromInterfaceId(const std::string& interfaceId);
 
-  [[nodiscard]] const QString& id() const;
-  [[nodiscard]] const QString& displayName() const;
-  [[nodiscard]] const QString& iconKey() const;
+  [[nodiscard]] const std::string& id() const;
+  [[nodiscard]] const std::string& displayName() const;
+  [[nodiscard]] const std::string& iconKey() const;
 
   [[nodiscard]] bool isValid() const;
 
@@ -44,9 +44,9 @@ class OI_CORE_EXPORT SensorType {
   bool operator!=(const SensorType& other) const;
 
  private:
-  QString m_id;
-  QString m_displayName;
-  QString m_iconKey;
+  std::string m_id;
+  std::string m_displayName;
+  std::string m_iconKey;
 };
 
 /*!
@@ -59,7 +59,7 @@ class OI_CORE_EXPORT SensorTypeRegistry {
  public:
   static void registerType(const SensorType& type);
 
-  static std::optional<SensorType> byId(const QString& id);
+  static std::optional<SensorType> byId(const std::string& id);
 
   static std::vector<SensorType> all();
 

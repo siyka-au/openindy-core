@@ -1,6 +1,6 @@
-#include <QString>
 #include <QtTest>
 #include <map>
+#include <string>
 
 #include "containers.h"
 #include "measurementconfig.h"
@@ -50,10 +50,10 @@ void MeasurementConfigTest::sameNameDifferentSensorTypeDoNotCollide() {
 
   QCOMPARE(configs.size(), 2);
   QCOMPARE(oi::value(configs, trackerFastPoint.getKey()).getSensorType().id(),
-           QString("laserTracker"));
+           std::string("laserTracker"));
   QCOMPARE(
       oi::value(configs, totalStationFastPoint.getKey()).getSensorType().id(),
-      QString("totalStation"));
+      std::string("totalStation"));
 }
 
 void MeasurementConfigTest::sameNameSameSensorTypeAreEqual() {

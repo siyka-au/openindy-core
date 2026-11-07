@@ -1,7 +1,7 @@
 #ifndef FEATUREATTRIBUTES_H
 #define FEATUREATTRIBUTES_H
 
-#include <QString>
+#include <string>
 #include <utility>
 
 #include "core_export.h"
@@ -21,8 +21,8 @@ class OI_CORE_EXPORT FeatureAttributes {
 
   // general attributes
   FeatureTypes typeOfFeature;
-  QString name;
-  QString group;
+  std::string name;
+  std::string group;
   int count{0};
 
   // only when typeOfFeature specifies a geometry. D17: there is no
@@ -33,16 +33,17 @@ class OI_CORE_EXPORT FeatureAttributes {
   // nominalSystem is only meaningful - and only required - when the
   // chosen function is a nominal producer; leave it empty otherwise.
   bool isCommon{false};
-  QString nominalSystem;
-  QString measurementConfigName;
+  std::string nominalSystem;
+  std::string measurementConfigName;
   MeasurementConfig measurementConfig;
 
   // function
-  std::pair<QString, QString> functionPlugin;  // T1 = function, T2 = file path
+  std::pair<std::string, std::string>
+      functionPlugin;  // T1 = function, T2 = file path
 
   // only when typeOfFeature specifies a trafo param
-  QString startSystem;
-  QString destinationSystem;
+  std::string startSystem;
+  std::string destinationSystem;
 
   // only when typeOfFeature specifies a coordinate system
   bool isBundleSystem{false};

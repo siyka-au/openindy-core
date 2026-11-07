@@ -44,50 +44,48 @@ class TypeNamesTest : public QObject {
 };
 
 void TypeNamesTest::persistedElementTokensAreUnchanged() {
-  const std::map<ElementTypes, QString> golden = {
-      {ElementTypes::eCircleElement, QStringLiteral("circle")},
-      {ElementTypes::eConeElement, QStringLiteral("cone")},
-      {ElementTypes::eCylinderElement, QStringLiteral("cylinder")},
-      {ElementTypes::eEllipseElement, QStringLiteral("ellipse")},
-      {ElementTypes::eEllipsoidElement, QStringLiteral("ellipsoid")},
-      {ElementTypes::eHyperboloidElement, QStringLiteral("hyperboloid")},
-      {ElementTypes::eLineElement, QStringLiteral("line")},
-      {ElementTypes::eNurbsElement, QStringLiteral("nurbs")},
-      {ElementTypes::eParaboloidElement, QStringLiteral("paraboloid")},
-      {ElementTypes::ePlaneElement, QStringLiteral("plane")},
-      {ElementTypes::ePointElement, QStringLiteral("point")},
-      {ElementTypes::ePointCloudElement, QStringLiteral("point cloud")},
-      {ElementTypes::eScalarEntityAngleElement, QStringLiteral("angle")},
-      {ElementTypes::eScalarEntityDistanceElement, QStringLiteral("distance")},
+  const std::map<ElementTypes, std::string> golden = {
+      {ElementTypes::eCircleElement, std::string("circle")},
+      {ElementTypes::eConeElement, std::string("cone")},
+      {ElementTypes::eCylinderElement, std::string("cylinder")},
+      {ElementTypes::eEllipseElement, std::string("ellipse")},
+      {ElementTypes::eEllipsoidElement, std::string("ellipsoid")},
+      {ElementTypes::eHyperboloidElement, std::string("hyperboloid")},
+      {ElementTypes::eLineElement, std::string("line")},
+      {ElementTypes::eNurbsElement, std::string("nurbs")},
+      {ElementTypes::eParaboloidElement, std::string("paraboloid")},
+      {ElementTypes::ePlaneElement, std::string("plane")},
+      {ElementTypes::ePointElement, std::string("point")},
+      {ElementTypes::ePointCloudElement, std::string("point cloud")},
+      {ElementTypes::eScalarEntityAngleElement, std::string("angle")},
+      {ElementTypes::eScalarEntityDistanceElement, std::string("distance")},
       {ElementTypes::eScalarEntityMeasurementSeriesElement,
-       QStringLiteral("measurement series")},
+       std::string("measurement series")},
       {ElementTypes::eScalarEntityTemperatureElement,
-       QStringLiteral("temperature")},
-      {ElementTypes::eSlottedHoleElement, QStringLiteral("slotted hole")},
-      {ElementTypes::eSphereElement, QStringLiteral("sphere")},
-      {ElementTypes::eTorusElement, QStringLiteral("torus")},
-      {ElementTypes::eDirectionElement, QStringLiteral("direction")},
-      {ElementTypes::ePositionElement, QStringLiteral("position")},
-      {ElementTypes::eRadiusElement, QStringLiteral("radius")},
+       std::string("temperature")},
+      {ElementTypes::eSlottedHoleElement, std::string("slotted hole")},
+      {ElementTypes::eSphereElement, std::string("sphere")},
+      {ElementTypes::eTorusElement, std::string("torus")},
+      {ElementTypes::eDirectionElement, std::string("direction")},
+      {ElementTypes::ePositionElement, std::string("position")},
+      {ElementTypes::eRadiusElement, std::string("radius")},
       {ElementTypes::eCoordinateSystemElement,
-       QStringLiteral("coordinate system")},
-      {ElementTypes::eStationElement, QStringLiteral("station")},
+       std::string("coordinate system")},
+      {ElementTypes::eStationElement, std::string("station")},
       {ElementTypes::eTrafoParamElement,
-       QStringLiteral("transformation parameters")},
-      {ElementTypes::eObservationElement, QStringLiteral("observation")},
+       std::string("transformation parameters")},
+      {ElementTypes::eObservationElement, std::string("observation")},
       {ElementTypes::eReadingCartesianElement,
-       QStringLiteral("cartesian reading")},
-      {ElementTypes::eReadingPolarElement, QStringLiteral("polar reading")},
-      {ElementTypes::eReadingDistanceElement,
-       QStringLiteral("distance reading")},
+       std::string("cartesian reading")},
+      {ElementTypes::eReadingPolarElement, std::string("polar reading")},
+      {ElementTypes::eReadingDistanceElement, std::string("distance reading")},
       {ElementTypes::eReadingDirectionElement,
-       QStringLiteral("direction reading")},
+       std::string("direction reading")},
       {ElementTypes::eReadingTemperatureElement,
-       QStringLiteral("temperature reading")},
-      {ElementTypes::eReadingLevelElement, QStringLiteral("level reading")},
-      {ElementTypes::eLevelElement, QStringLiteral("level")},
-      {ElementTypes::ePointCollectionElement,
-       QStringLiteral("point collection")},
+       std::string("temperature reading")},
+      {ElementTypes::eReadingLevelElement, std::string("level reading")},
+      {ElementTypes::eLevelElement, std::string("level")},
+      {ElementTypes::ePointCollectionElement, std::string("point collection")},
   };
   for (auto it = golden.cbegin(); it != golden.cend(); ++it) {
     QCOMPARE(getElementTypeName(it->first), it->second);
@@ -97,49 +95,47 @@ void TypeNamesTest::persistedElementTokensAreUnchanged() {
 void TypeNamesTest::persistedElementPluralTokensAreUnchanged() {
   // the plural map participates in getElementTypeEnum's reverse lookup, so
   // these are persisted identifiers too, not just prettier labels
-  const std::map<ElementTypes, QString> golden = {
-      {ElementTypes::eCircleElement, QStringLiteral("circles")},
-      {ElementTypes::eConeElement, QStringLiteral("cones")},
-      {ElementTypes::eCylinderElement, QStringLiteral("cylinders")},
-      {ElementTypes::eEllipseElement, QStringLiteral("ellipses")},
-      {ElementTypes::eEllipsoidElement, QStringLiteral("ellipsoids")},
-      {ElementTypes::eHyperboloidElement, QStringLiteral("hyperboloids")},
-      {ElementTypes::eLineElement, QStringLiteral("lines")},
-      {ElementTypes::eNurbsElement, QStringLiteral("nurbs")},
-      {ElementTypes::eParaboloidElement, QStringLiteral("paraboloids")},
-      {ElementTypes::ePlaneElement, QStringLiteral("planes")},
-      {ElementTypes::ePointElement, QStringLiteral("points")},
-      {ElementTypes::ePointCloudElement, QStringLiteral("point clouds")},
-      {ElementTypes::eScalarEntityAngleElement, QStringLiteral("angles")},
-      {ElementTypes::eScalarEntityDistanceElement, QStringLiteral("distances")},
+  const std::map<ElementTypes, std::string> golden = {
+      {ElementTypes::eCircleElement, std::string("circles")},
+      {ElementTypes::eConeElement, std::string("cones")},
+      {ElementTypes::eCylinderElement, std::string("cylinders")},
+      {ElementTypes::eEllipseElement, std::string("ellipses")},
+      {ElementTypes::eEllipsoidElement, std::string("ellipsoids")},
+      {ElementTypes::eHyperboloidElement, std::string("hyperboloids")},
+      {ElementTypes::eLineElement, std::string("lines")},
+      {ElementTypes::eNurbsElement, std::string("nurbs")},
+      {ElementTypes::eParaboloidElement, std::string("paraboloids")},
+      {ElementTypes::ePlaneElement, std::string("planes")},
+      {ElementTypes::ePointElement, std::string("points")},
+      {ElementTypes::ePointCloudElement, std::string("point clouds")},
+      {ElementTypes::eScalarEntityAngleElement, std::string("angles")},
+      {ElementTypes::eScalarEntityDistanceElement, std::string("distances")},
       {ElementTypes::eScalarEntityMeasurementSeriesElement,
-       QStringLiteral("measurement series")},
+       std::string("measurement series")},
       {ElementTypes::eScalarEntityTemperatureElement,
-       QStringLiteral("temperatures")},
-      {ElementTypes::eSlottedHoleElement, QStringLiteral("slotted holes")},
-      {ElementTypes::eSphereElement, QStringLiteral("spheres")},
-      {ElementTypes::eTorusElement, QStringLiteral("tori")},
-      {ElementTypes::eDirectionElement, QStringLiteral("directions")},
-      {ElementTypes::ePositionElement, QStringLiteral("positions")},
-      {ElementTypes::eRadiusElement, QStringLiteral("radii")},
+       std::string("temperatures")},
+      {ElementTypes::eSlottedHoleElement, std::string("slotted holes")},
+      {ElementTypes::eSphereElement, std::string("spheres")},
+      {ElementTypes::eTorusElement, std::string("tori")},
+      {ElementTypes::eDirectionElement, std::string("directions")},
+      {ElementTypes::ePositionElement, std::string("positions")},
+      {ElementTypes::eRadiusElement, std::string("radii")},
       {ElementTypes::eCoordinateSystemElement,
-       QStringLiteral("coordinate systems")},
-      {ElementTypes::eStationElement, QStringLiteral("stations")},
+       std::string("coordinate systems")},
+      {ElementTypes::eStationElement, std::string("stations")},
       {ElementTypes::eTrafoParamElement,
-       QStringLiteral("transformation parameters")},
-      {ElementTypes::eObservationElement, QStringLiteral("observations")},
+       std::string("transformation parameters")},
+      {ElementTypes::eObservationElement, std::string("observations")},
       {ElementTypes::eReadingCartesianElement,
-       QStringLiteral("cartesian readings")},
-      {ElementTypes::eReadingPolarElement, QStringLiteral("polar readings")},
-      {ElementTypes::eReadingDistanceElement,
-       QStringLiteral("distance readings")},
+       std::string("cartesian readings")},
+      {ElementTypes::eReadingPolarElement, std::string("polar readings")},
+      {ElementTypes::eReadingDistanceElement, std::string("distance readings")},
       {ElementTypes::eReadingDirectionElement,
-       QStringLiteral("direction readings")},
+       std::string("direction readings")},
       {ElementTypes::eReadingTemperatureElement,
-       QStringLiteral("temperature readings")},
-      {ElementTypes::eReadingLevelElement, QStringLiteral("level readings")},
-      {ElementTypes::ePointCollectionElement,
-       QStringLiteral("point collections")},
+       std::string("temperature readings")},
+      {ElementTypes::eReadingLevelElement, std::string("level readings")},
+      {ElementTypes::ePointCollectionElement, std::string("point collections")},
   };
   for (auto it = golden.cbegin(); it != golden.cend(); ++it) {
     QCOMPARE(getElementTypePluralName(it->first), it->second);
@@ -147,36 +143,36 @@ void TypeNamesTest::persistedElementPluralTokensAreUnchanged() {
 }
 
 void TypeNamesTest::persistedFeatureTokensAreUnchanged() {
-  const std::map<FeatureTypes, QString> golden = {
-      {FeatureTypes::eCircleFeature, QStringLiteral("circle")},
-      {FeatureTypes::eConeFeature, QStringLiteral("cone")},
-      {FeatureTypes::eCylinderFeature, QStringLiteral("cylinder")},
-      {FeatureTypes::eEllipseFeature, QStringLiteral("ellipse")},
-      {FeatureTypes::eEllipsoidFeature, QStringLiteral("ellipsoid")},
-      {FeatureTypes::eHyperboloidFeature, QStringLiteral("hyperboloid")},
-      {FeatureTypes::eLineFeature, QStringLiteral("line")},
-      {FeatureTypes::eNurbsFeature, QStringLiteral("nurbs")},
-      {FeatureTypes::eParaboloidFeature, QStringLiteral("paraboloid")},
-      {FeatureTypes::ePlaneFeature, QStringLiteral("plane")},
-      {FeatureTypes::ePointFeature, QStringLiteral("point")},
-      {FeatureTypes::ePointCloudFeature, QStringLiteral("point cloud")},
-      {FeatureTypes::eScalarEntityAngleFeature, QStringLiteral("angle")},
-      {FeatureTypes::eScalarEntityDistanceFeature, QStringLiteral("distance")},
+  const std::map<FeatureTypes, std::string> golden = {
+      {FeatureTypes::eCircleFeature, std::string("circle")},
+      {FeatureTypes::eConeFeature, std::string("cone")},
+      {FeatureTypes::eCylinderFeature, std::string("cylinder")},
+      {FeatureTypes::eEllipseFeature, std::string("ellipse")},
+      {FeatureTypes::eEllipsoidFeature, std::string("ellipsoid")},
+      {FeatureTypes::eHyperboloidFeature, std::string("hyperboloid")},
+      {FeatureTypes::eLineFeature, std::string("line")},
+      {FeatureTypes::eNurbsFeature, std::string("nurbs")},
+      {FeatureTypes::eParaboloidFeature, std::string("paraboloid")},
+      {FeatureTypes::ePlaneFeature, std::string("plane")},
+      {FeatureTypes::ePointFeature, std::string("point")},
+      {FeatureTypes::ePointCloudFeature, std::string("point cloud")},
+      {FeatureTypes::eScalarEntityAngleFeature, std::string("angle")},
+      {FeatureTypes::eScalarEntityDistanceFeature, std::string("distance")},
       {FeatureTypes::eScalarEntityMeasurementSeriesFeature,
-       QStringLiteral("measurement series")},
+       std::string("measurement series")},
       {FeatureTypes::eScalarEntityTemperatureFeature,
-       QStringLiteral("temperature")},
-      {FeatureTypes::eSlottedHoleFeature, QStringLiteral("slotted hole")},
-      {FeatureTypes::eSphereFeature, QStringLiteral("sphere")},
-      {FeatureTypes::eTorusFeature, QStringLiteral("torus")},
+       std::string("temperature")},
+      {FeatureTypes::eSlottedHoleFeature, std::string("slotted hole")},
+      {FeatureTypes::eSphereFeature, std::string("sphere")},
+      {FeatureTypes::eTorusFeature, std::string("torus")},
       {FeatureTypes::eCoordinateSystemFeature,
-       QStringLiteral("coordinate system")},
-      {FeatureTypes::eStationFeature, QStringLiteral("station")},
+       std::string("coordinate system")},
+      {FeatureTypes::eStationFeature, std::string("station")},
       {FeatureTypes::eTrafoParamFeature,
-       QStringLiteral("transformation parameters")},
-      {FeatureTypes::eLevelFeature, QStringLiteral("level")},
-      {FeatureTypes::eGroupFeature, QStringLiteral("group")},
-      {FeatureTypes::ePointGroupFeature, QStringLiteral("point group")},
+       std::string("transformation parameters")},
+      {FeatureTypes::eLevelFeature, std::string("level")},
+      {FeatureTypes::eGroupFeature, std::string("group")},
+      {FeatureTypes::ePointGroupFeature, std::string("point group")},
   };
   for (auto it = golden.cbegin(); it != golden.cend(); ++it) {
     QCOMPARE(getFeatureTypeName(it->first), it->second);
@@ -184,30 +180,29 @@ void TypeNamesTest::persistedFeatureTokensAreUnchanged() {
 }
 
 void TypeNamesTest::persistedGeometryTokensAreUnchanged() {
-  const std::map<GeometryTypes, QString> golden = {
-      {GeometryTypes::eCircleGeometry, QStringLiteral("circle")},
-      {GeometryTypes::eConeGeometry, QStringLiteral("cone")},
-      {GeometryTypes::eCylinderGeometry, QStringLiteral("cylinder")},
-      {GeometryTypes::eEllipseGeometry, QStringLiteral("ellipse")},
-      {GeometryTypes::eEllipsoidGeometry, QStringLiteral("ellipsoid")},
-      {GeometryTypes::eHyperboloidGeometry, QStringLiteral("hyperboloid")},
-      {GeometryTypes::eLineGeometry, QStringLiteral("line")},
-      {GeometryTypes::eNurbsGeometry, QStringLiteral("nurbs")},
-      {GeometryTypes::eParaboloidGeometry, QStringLiteral("paraboloid")},
-      {GeometryTypes::ePlaneGeometry, QStringLiteral("plane")},
-      {GeometryTypes::ePointGeometry, QStringLiteral("point")},
-      {GeometryTypes::ePointCloudGeometry, QStringLiteral("point cloud")},
-      {GeometryTypes::eScalarEntityAngleGeometry, QStringLiteral("angle")},
-      {GeometryTypes::eScalarEntityDistanceGeometry,
-       QStringLiteral("distance")},
+  const std::map<GeometryTypes, std::string> golden = {
+      {GeometryTypes::eCircleGeometry, std::string("circle")},
+      {GeometryTypes::eConeGeometry, std::string("cone")},
+      {GeometryTypes::eCylinderGeometry, std::string("cylinder")},
+      {GeometryTypes::eEllipseGeometry, std::string("ellipse")},
+      {GeometryTypes::eEllipsoidGeometry, std::string("ellipsoid")},
+      {GeometryTypes::eHyperboloidGeometry, std::string("hyperboloid")},
+      {GeometryTypes::eLineGeometry, std::string("line")},
+      {GeometryTypes::eNurbsGeometry, std::string("nurbs")},
+      {GeometryTypes::eParaboloidGeometry, std::string("paraboloid")},
+      {GeometryTypes::ePlaneGeometry, std::string("plane")},
+      {GeometryTypes::ePointGeometry, std::string("point")},
+      {GeometryTypes::ePointCloudGeometry, std::string("point cloud")},
+      {GeometryTypes::eScalarEntityAngleGeometry, std::string("angle")},
+      {GeometryTypes::eScalarEntityDistanceGeometry, std::string("distance")},
       {GeometryTypes::eScalarEntityMeasurementSeriesGeometry,
-       QStringLiteral("measurement series")},
+       std::string("measurement series")},
       {GeometryTypes::eScalarEntityTemperatureGeometry,
-       QStringLiteral("temperature")},
-      {GeometryTypes::eSlottedHoleGeometry, QStringLiteral("slotted hole")},
-      {GeometryTypes::eSphereGeometry, QStringLiteral("sphere")},
-      {GeometryTypes::eTorusGeometry, QStringLiteral("torus")},
-      {GeometryTypes::ePlaneLevelGeometry, QStringLiteral("level")},
+       std::string("temperature")},
+      {GeometryTypes::eSlottedHoleGeometry, std::string("slotted hole")},
+      {GeometryTypes::eSphereGeometry, std::string("sphere")},
+      {GeometryTypes::eTorusGeometry, std::string("torus")},
+      {GeometryTypes::ePlaneLevelGeometry, std::string("level")},
   };
   for (auto it = golden.cbegin(); it != golden.cend(); ++it) {
     QCOMPARE(getGeometryTypeName(it->first), it->second);
@@ -220,24 +215,24 @@ void TypeNamesTest::persistedGeometryTokensAreUnchanged() {
  */
 void TypeNamesTest::everyTokenRoundTripsBackToItsEnum() {
   for (const ElementTypes& type : getAvailableElementTypes()) {
-    const QString token = getElementTypeName(type);
-    if (token.isEmpty()) {
+    const std::string token = getElementTypeName(type);
+    if (token.empty()) {
       continue;
     }
     QCOMPARE(getElementTypeEnum(token), type);
   }
 
   for (const FeatureTypes& type : getAvailableFeatureTypes()) {
-    const QString token = getFeatureTypeName(type);
-    if (token.isEmpty()) {
+    const std::string token = getFeatureTypeName(type);
+    if (token.empty()) {
       continue;
     }
     QCOMPARE(getFeatureTypeEnum(token), type);
   }
 
   for (const GeometryTypes& type : getAvailableGeometryTypes()) {
-    const QString token = getGeometryTypeName(type);
-    if (token.isEmpty()) {
+    const std::string token = getGeometryTypeName(type);
+    if (token.empty()) {
       continue;
     }
     QCOMPARE(getGeometryTypeEnum(token), type);
@@ -250,30 +245,33 @@ void TypeNamesTest::everyTokenRoundTripsBackToItsEnum() {
  */
 void TypeNamesTest::displayNamesExistForEveryTypeThatHasAToken() {
   for (const ElementTypes& type : getAvailableElementTypes()) {
-    if (getElementTypeName(type).isEmpty()) {
+    if (getElementTypeName(type).empty()) {
       continue;
     }
-    QVERIFY2(!getElementTypeDisplayName(type).isEmpty(),
-             qPrintable(QString("element type %1 has no display name")
-                            .arg(getElementTypeName(type))));
+    QVERIFY2(!getElementTypeDisplayName(type).empty(),
+             (std::format("element type {} has no display name",
+                          getElementTypeName(type)))
+                 .c_str());
   }
 
   for (const FeatureTypes& type : getAvailableFeatureTypes()) {
-    if (getFeatureTypeName(type).isEmpty()) {
+    if (getFeatureTypeName(type).empty()) {
       continue;
     }
-    QVERIFY2(!getFeatureTypeDisplayName(type).isEmpty(),
-             qPrintable(QString("feature type %1 has no display name")
-                            .arg(getFeatureTypeName(type))));
+    QVERIFY2(!getFeatureTypeDisplayName(type).empty(),
+             (std::format("feature type {} has no display name",
+                          getFeatureTypeName(type)))
+                 .c_str());
   }
 
   for (const GeometryTypes& type : getAvailableGeometryTypes()) {
-    if (getGeometryTypeName(type).isEmpty()) {
+    if (getGeometryTypeName(type).empty()) {
       continue;
     }
-    QVERIFY2(!getGeometryTypeDisplayName(type).isEmpty(),
-             qPrintable(QString("geometry type %1 has no display name")
-                            .arg(getGeometryTypeName(type))));
+    QVERIFY2(!getGeometryTypeDisplayName(type).empty(),
+             (std::format("geometry type {} has no display name",
+                          getGeometryTypeName(type)))
+                 .c_str());
   }
 }
 
@@ -287,16 +285,16 @@ void TypeNamesTest::displayNamesExistForEveryTypeThatHasAToken() {
  */
 void TypeNamesTest::displayNamesAreNotAcceptedByTheReverseLookup() {
   for (const FeatureTypes& type : getAvailableFeatureTypes()) {
-    const QString display = getFeatureTypeDisplayName(type);
-    if (display.isEmpty() || display == getFeatureTypeName(type)) {
+    const std::string display = getFeatureTypeDisplayName(type);
+    if (display.empty() || display == getFeatureTypeName(type)) {
       continue;
     }
     QCOMPARE(getFeatureTypeEnum(display), FeatureTypes::eUndefinedFeature);
   }
 
   for (const GeometryTypes& type : getAvailableGeometryTypes()) {
-    const QString display = getGeometryTypeDisplayName(type);
-    if (display.isEmpty() || display == getGeometryTypeName(type)) {
+    const std::string display = getGeometryTypeDisplayName(type);
+    if (display.empty() || display == getGeometryTypeName(type)) {
       continue;
     }
     QCOMPARE(getGeometryTypeEnum(display), GeometryTypes::eUndefinedGeometry);
@@ -304,4 +302,6 @@ void TypeNamesTest::displayNamesAreNotAcceptedByTheReverseLookup() {
 }
 
 QTEST_APPLESS_MAIN(TypeNamesTest)
+#include <format>
+
 #include "tst_typenames.moc"

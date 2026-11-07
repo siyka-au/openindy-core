@@ -1,6 +1,7 @@
-#include <QString>
 #include <QtTest>
 #include <chrono>
+#include <format>
+#include <string>
 
 #include "chooselalib.h"
 #include "convert.h"
@@ -9,11 +10,7 @@
 
 #define COMPARE_DOUBLE(actual, expected, threshold) \
   QVERIFY2(std::abs(actual - expected) < threshold, \
-           QString("actual: %1, expected: %2")      \
-               .arg(actual)                         \
-               .arg(expected)                       \
-               .toLatin1()                          \
-               .data());
+           std::format("actual: {}, expected: {}", actual, expected).c_str());
 
 using namespace oi;
 

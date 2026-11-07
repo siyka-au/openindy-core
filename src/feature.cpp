@@ -1,6 +1,7 @@
 #include "feature.h"
 
 #include <expected>
+#include <format>
 #include <iterator>
 #include <stdexcept>
 #include <vector>
@@ -139,7 +140,7 @@ const oi::Guarded<FeatureWrapper>& Feature::getFeatureWrapper() const {
  * user-owned; see Geometry::getOwnerDescription for the fit-owned case.
  * \return
  */
-std::optional<QString> Feature::getOwnerDescription() const {
+std::optional<std::string> Feature::getOwnerDescription() const {
   return std::nullopt;
 }
 
@@ -152,16 +153,17 @@ std::optional<QString> Feature::getOwnerDescription() const {
  * message
  * \return true if the edit was rejected
  */
-bool Feature::rejectIfNotEditable(const QString& attemptedEdit) const {
-  const std::optional<QString> owner = this->getOwnerDescription();
+bool Feature::rejectIfNotEditable(const std::string& attemptedEdit) const {
+  const std::optional<std::string> owner = this->getOwnerDescription();
   if (!owner.has_value()) {
     return false;
   }
 
   if (!this->job.isNull()) {
     this->job->sendMessage(
-        QString("Cannot edit %1 of \"%2\": it is owned by %3 and is read-only.")
-            .arg(attemptedEdit, this->name, *owner),
+        std::format(
+            "Cannot edit {} of \"{}\": it is owned by {} and is read-only.",
+            attemptedEdit, this->name, *owner),
         MessageTypes::eErrorMessage, MessageDestinations::eMessageBoxMessage);
   }
 
@@ -172,13 +174,13 @@ bool Feature::rejectIfNotEditable(const QString& attemptedEdit) const {
  * \brief Feature::getFeatureName
  * \return
  */
-const QString& Feature::getFeatureName() const { return this->name; }
+const std::string& Feature::getFeatureName() const { return this->name; }
 
 /*!
  * \brief Feature::setFeatureName
  * \param name
  */
-void Feature::setFeatureName(const QString& name) {
+void Feature::setFeatureName(const std::string& name) {
   // check if old name = new name
   if (this->name.compare(name) == 0) {
     return;
@@ -193,7 +195,7 @@ void Feature::setFeatureName(const QString& name) {
   }
 
   // set the new name
-  QString oldName = this->name;
+  std::string oldName = this->name;
   this->name = name;
   if (!this->signalsBlocked()) {
     this->nameWasChanged(oldName);
@@ -205,15 +207,15 @@ void Feature::setFeatureName(const QString& name) {
  * \brief Feature::getGroupName
  * \return
  */
-const QString& Feature::getGroupName() const { return this->group; }
+const std::string& Feature::getGroupName() const { return this->group; }
 
 /*!
  * \brief Feature::setGroupName
  * \param group
  */
-void Feature::setGroupName(const QString& group) {
+void Feature::setGroupName(const std::string& group) {
   if (group.compare(this->group) != 0) {
-    QString oldGroup = this->group;
+    std::string oldGroup = this->group;
     this->group = group;
     this->notify(&FeatureObserver::onFeatureGroupChanged, this->id, oldGroup);
   }
@@ -223,13 +225,13 @@ void Feature::setGroupName(const QString& group) {
  * \brief Feature::getComment
  * \return
  */
-const QString& Feature::getComment() const { return this->comment; }
+const std::string& Feature::getComment() const { return this->comment; }
 
 /*!
  * \brief Feature::setComment
  * \param comment
  */
-void Feature::setComment(const QString& comment) {
+void Feature::setComment(const std::string& comment) {
   if (comment.compare(this->comment) != 0) {
     this->comment = comment;
     this->notify(&FeatureObserver::onFeatureCommentChanged, this->id);
@@ -345,17 +347,17 @@ void Feature::addFunction(const oi::Guarded<Function>& function) {
   } else if (transformCapable) {
     attachAsProducer = false;
   } else {
-    const QString reason =
+    const std::string reason =
         (producerCapable && this->producerFunction.has_value())
-            ? QString(
-                  "Function \"%1\" cannot be attached to \"%2\": a producer is "
-                  "already set (%3)")
-                  .arg(function->getMetaData().name, this->getFeatureName(),
-                       this->producerFunction.value()->getMetaData().name)
-            : QString(
-                  "Function \"%1\" cannot be attached to \"%2\": it implements "
-                  "neither Producer<T> nor Transform<T> for this feature type")
-                  .arg(function->getMetaData().name, this->getFeatureName());
+            ? std::format(
+                  "Function \"{}\" cannot be attached to \"{}\": a producer is "
+                  "already set ({})",
+                  function->getMetaData().name, this->getFeatureName(),
+                  this->producerFunction.value()->getMetaData().name)
+            : std::format(
+                  "Function \"{}\" cannot be attached to \"{}\": it implements "
+                  "neither Producer<T> nor Transform<T> for this feature type",
+                  function->getMetaData().name, this->getFeatureName());
     function->sendMessage(reason, MessageTypes::eCriticalMessage,
                           MessageDestinations::eMessageBoxMessage);
     return;
@@ -604,7 +606,7 @@ bool Feature::removePreviouslyNeeded(
  * \brief Feature::recalc
  * Stage 7d/D21 (domain-model.md S7): run the producer once to obtain (or
  * refresh) this feature's value, then run each transform on the result in
- * order - std::expected<void, QString> propagating a reason on failure
+ * order - std::expected<void, std::string> propagating a reason on failure
  * instead of the old "iterate one list, break on first bool false". No
  * bool-return survives at this boundary: both producerFunction and every
  * transformFunctions entry are run through Function::execChecked(), never
@@ -623,7 +625,7 @@ void Feature::recalc() {
       return;
     }
 
-    std::expected<void, QString> result =
+    std::expected<void, std::string> result =
         this->producerFunction.value()->execChecked(this->selfFeature);
 
     if (result.has_value()) {
@@ -631,8 +633,8 @@ void Feature::recalc() {
            oi::snapshot(this->transformFunctions)) {
         if (transform.isNull()) {
           result = std::unexpected(
-              QString("a transform function on \"%1\" is no longer valid")
-                  .arg(this->getFeatureName()));
+              std::format("a transform function on \"{}\" is no longer valid",
+                          this->getFeatureName()));
           break;
         }
         result = transform->execChecked(this->selfFeature);
@@ -646,16 +648,11 @@ void Feature::recalc() {
 
   } catch (const std::exception& e) {
     throw std::runtime_error(
-        QString("can not calculate feature: \"%1\", error: %2")
-            .arg(this->getFeatureName())
-            .arg(e.what())
-            .toLocal8Bit()
-            .data());
+        std::format("can not calculate feature: \"{}\", error: {}",
+                    this->getFeatureName(), e.what()));
   } catch (...) {
-    throw std::runtime_error(QString("can not calculate feature: \"%1\"")
-                                 .arg(this->getFeatureName())
-                                 .toLocal8Bit()
-                                 .data());
+    throw std::runtime_error(std::format("can not calculate feature: \"{}\"",
+                                         this->getFeatureName()));
   }
 }
 
@@ -663,18 +660,18 @@ void Feature::recalc() {
  * \brief Feature::getDisplayType
  * \return
  */
-QString Feature::getDisplayType() const {
+std::string Feature::getDisplayType() const {
   if (!this->selfFeature.isNull()) {
     return this->selfFeature->getFeatureTypeString();
   }
-  return QString("-/-");
+  return std::string("-/-");
 }
 
 /*!
  * \brief Feature::getDisplayIsSolved
  * \return
  */
-QString Feature::getDisplayIsSolved() const {
+std::string Feature::getDisplayIsSolved() const {
   return this->isSolved ? "true" : "false";
 }
 
@@ -682,7 +679,7 @@ QString Feature::getDisplayIsSolved() const {
  * \brief Feature::getDisplayIsUpdated
  * \return
  */
-QString Feature::getDisplayIsUpdated() const {
+std::string Feature::getDisplayIsUpdated() const {
   return this->isUpdated ? "true" : "false";
 }
 
@@ -690,8 +687,8 @@ QString Feature::getDisplayIsUpdated() const {
  * \brief Feature::getDisplayFunctions
  * \return
  */
-QString Feature::getDisplayFunctions() const {
-  QString display = "";
+std::string Feature::getDisplayFunctions() const {
+  std::string display = "";
   const std::vector<oi::Guarded<Function> > functions = this->getFunctions();
   for (int i = 0; i < std::ssize(functions); i++) {
     oi::Guarded<Function> function = functions.at(i);
@@ -707,8 +704,8 @@ QString Feature::getDisplayFunctions() const {
  * \brief Feature::getDisplayUsedFor
  * \return
  */
-QString Feature::getDisplayUsedFor() const {
-  QString display = "";
+std::string Feature::getDisplayUsedFor() const {
+  std::string display = "";
   for (int i = 0; i < std::ssize(this->usedForList); i++) {
     oi::Guarded<FeatureWrapper> feature = this->usedForList.at(i);
     if (!feature.isNull() && !feature->getFeature().isNull()) {
@@ -723,8 +720,8 @@ QString Feature::getDisplayUsedFor() const {
  * \brief Feature::getDisplayPreviouslyNeeded
  * \return
  */
-QString Feature::getDisplayPreviouslyNeeded() const {
-  QString display = "";
+std::string Feature::getDisplayPreviouslyNeeded() const {
+  std::string display = "";
   for (int i = 0; i < std::ssize(this->previouslyNeededList); i++) {
     oi::Guarded<FeatureWrapper> feature = this->previouslyNeededList.at(i);
     if (!feature.isNull() && !feature->getFeature().isNull()) {
@@ -741,34 +738,38 @@ QString Feature::getDisplayPreviouslyNeeded() const {
  * \param digits
  * \return
  */
-QString Feature::getDisplayStDev(const UnitType& /*type*/,
-                                 const int& /*digits*/) const {
-  return QString("-/-");
+std::string Feature::getDisplayStDev(const UnitType& /*type*/,
+                                     const int& /*digits*/) const {
+  return std::string("-/-");
 }
 
 /*!
  * \brief Feature::getDisplayMeasurementConfig
  * \return
  */
-QString Feature::getDisplayMeasurementConfig() const { return QString("-/-"); }
+std::string Feature::getDisplayMeasurementConfig() const {
+  return std::string("-/-");
+}
 
 /*!
  * \brief Feature::getDisplayObservations
  * \return
  */
-QString Feature::getDisplayObservations() const { return QString("-/-"); }
+std::string Feature::getDisplayObservations() const {
+  return std::string("-/-");
+}
 
 /*!
  * \brief Feature::getDisplayIsCommon
  * \return
  */
-QString Feature::getDisplayIsCommon() const { return QString("-/-"); }
+std::string Feature::getDisplayIsCommon() const { return std::string("-/-"); }
 
 /*!
  * \brief Feature::getDisplayIsActual
  * \return
  */
-QString Feature::getDisplayIsActual() const { return QString("-/-"); }
+std::string Feature::getDisplayIsActual() const { return std::string("-/-"); }
 
 /*!
  * \brief Feature::getDisplayX
@@ -777,9 +778,10 @@ QString Feature::getDisplayIsActual() const { return QString("-/-"); }
  * \param showDiff
  * \return
  */
-QString Feature::getDisplayX(const UnitType& /*type*/, const int& /*digits*/,
-                             const bool& /*showDiff*/) const {
-  return QString("-/-");
+std::string Feature::getDisplayX(const UnitType& /*type*/,
+                                 const int& /*digits*/,
+                                 const bool& /*showDiff*/) const {
+  return std::string("-/-");
 }
 
 /*!
@@ -789,9 +791,10 @@ QString Feature::getDisplayX(const UnitType& /*type*/, const int& /*digits*/,
  * \param showDiff
  * \return
  */
-QString Feature::getDisplayY(const UnitType& /*type*/, const int& /*digits*/,
-                             const bool& /*showDiff*/) const {
-  return QString("-/-");
+std::string Feature::getDisplayY(const UnitType& /*type*/,
+                                 const int& /*digits*/,
+                                 const bool& /*showDiff*/) const {
+  return std::string("-/-");
 }
 
 /*!
@@ -801,9 +804,10 @@ QString Feature::getDisplayY(const UnitType& /*type*/, const int& /*digits*/,
  * \param showDiff
  * \return
  */
-QString Feature::getDisplayZ(const UnitType& /*type*/, const int& /*digits*/,
-                             const bool& /*showDiff*/) const {
-  return QString("-/-");
+std::string Feature::getDisplayZ(const UnitType& /*type*/,
+                                 const int& /*digits*/,
+                                 const bool& /*showDiff*/) const {
+  return std::string("-/-");
 }
 
 /*!
@@ -812,9 +816,9 @@ QString Feature::getDisplayZ(const UnitType& /*type*/, const int& /*digits*/,
  * \param showDiff
  * \return
  */
-QString Feature::getDisplayPrimaryI(const int& /*digits*/,
-                                    const bool& /*showDiff*/) const {
-  return QString("-/-");
+std::string Feature::getDisplayPrimaryI(const int& /*digits*/,
+                                        const bool& /*showDiff*/) const {
+  return std::string("-/-");
 }
 
 /*!
@@ -823,9 +827,9 @@ QString Feature::getDisplayPrimaryI(const int& /*digits*/,
  * \param showDiff
  * \return
  */
-QString Feature::getDisplayPrimaryJ(const int& /*digits*/,
-                                    const bool& /*showDiff*/) const {
-  return QString("-/-");
+std::string Feature::getDisplayPrimaryJ(const int& /*digits*/,
+                                        const bool& /*showDiff*/) const {
+  return std::string("-/-");
 }
 
 /*!
@@ -834,9 +838,9 @@ QString Feature::getDisplayPrimaryJ(const int& /*digits*/,
  * \param showDiff
  * \return
  */
-QString Feature::getDisplayPrimaryK(const int& /*digits*/,
-                                    const bool& /*showDiff*/) const {
-  return QString("-/-");
+std::string Feature::getDisplayPrimaryK(const int& /*digits*/,
+                                        const bool& /*showDiff*/) const {
+  return std::string("-/-");
 }
 
 /*!
@@ -846,10 +850,10 @@ QString Feature::getDisplayPrimaryK(const int& /*digits*/,
  * \param showDiff
  * \return
  */
-QString Feature::getDisplayRadiusA(const UnitType& /*type*/,
-                                   const int& /*digits*/,
-                                   const bool& /*showDiff*/) const {
-  return QString("-/-");
+std::string Feature::getDisplayRadiusA(const UnitType& /*type*/,
+                                       const int& /*digits*/,
+                                       const bool& /*showDiff*/) const {
+  return std::string("-/-");
 }
 
 /*!
@@ -859,10 +863,10 @@ QString Feature::getDisplayRadiusA(const UnitType& /*type*/,
  * \param showDiff
  * \return
  */
-QString Feature::getDisplayRadiusB(const UnitType& /*type*/,
-                                   const int& /*digits*/,
-                                   const bool& /*showDiff*/) const {
-  return QString("-/-");
+std::string Feature::getDisplayRadiusB(const UnitType& /*type*/,
+                                       const int& /*digits*/,
+                                       const bool& /*showDiff*/) const {
+  return std::string("-/-");
 }
 
 /*!
@@ -871,9 +875,9 @@ QString Feature::getDisplayRadiusB(const UnitType& /*type*/,
  * \param showDiff
  * \return
  */
-QString Feature::getDisplaySecondaryI(const int& /*digits*/,
-                                      const bool& /*showDiff*/) const {
-  return QString("-/-");
+std::string Feature::getDisplaySecondaryI(const int& /*digits*/,
+                                          const bool& /*showDiff*/) const {
+  return std::string("-/-");
 }
 
 /*!
@@ -882,9 +886,9 @@ QString Feature::getDisplaySecondaryI(const int& /*digits*/,
  * \param showDiff
  * \return
  */
-QString Feature::getDisplaySecondaryJ(const int& /*digits*/,
-                                      const bool& /*showDiff*/) const {
-  return QString("-/-");
+std::string Feature::getDisplaySecondaryJ(const int& /*digits*/,
+                                          const bool& /*showDiff*/) const {
+  return std::string("-/-");
 }
 
 /*!
@@ -893,9 +897,9 @@ QString Feature::getDisplaySecondaryJ(const int& /*digits*/,
  * \param showDiff
  * \return
  */
-QString Feature::getDisplaySecondaryK(const int& /*digits*/,
-                                      const bool& /*showDiff*/) const {
-  return QString("-/-");
+std::string Feature::getDisplaySecondaryK(const int& /*digits*/,
+                                          const bool& /*showDiff*/) const {
+  return std::string("-/-");
 }
 
 /*!
@@ -905,10 +909,10 @@ QString Feature::getDisplaySecondaryK(const int& /*digits*/,
  * \param showDiff
  * \return
  */
-QString Feature::getDisplayAperture(const UnitType& /*type*/,
-                                    const int& /*digits*/,
-                                    const bool& /*showDiff*/) const {
-  return QString("-/-");
+std::string Feature::getDisplayAperture(const UnitType& /*type*/,
+                                        const int& /*digits*/,
+                                        const bool& /*showDiff*/) const {
+  return std::string("-/-");
 }
 
 /*!
@@ -918,9 +922,10 @@ QString Feature::getDisplayAperture(const UnitType& /*type*/,
  * \param showDiff
  * \return
  */
-QString Feature::getDisplayA(const UnitType& /*type*/, const int& /*digits*/,
-                             const bool& /*showDiff*/) const {
-  return QString("-/-");
+std::string Feature::getDisplayA(const UnitType& /*type*/,
+                                 const int& /*digits*/,
+                                 const bool& /*showDiff*/) const {
+  return std::string("-/-");
 }
 
 /*!
@@ -930,9 +935,10 @@ QString Feature::getDisplayA(const UnitType& /*type*/, const int& /*digits*/,
  * \param showDiff
  * \return
  */
-QString Feature::getDisplayB(const UnitType& /*type*/, const int& /*digits*/,
-                             const bool& /*showDiff*/) const {
-  return QString("-/-");
+std::string Feature::getDisplayB(const UnitType& /*type*/,
+                                 const int& /*digits*/,
+                                 const bool& /*showDiff*/) const {
+  return std::string("-/-");
 }
 
 /*!
@@ -942,9 +948,10 @@ QString Feature::getDisplayB(const UnitType& /*type*/, const int& /*digits*/,
  * \param showDiff
  * \return
  */
-QString Feature::getDisplayC(const UnitType& /*type*/, const int& /*digits*/,
-                             const bool& /*showDiff*/) const {
-  return QString("-/-");
+std::string Feature::getDisplayC(const UnitType& /*type*/,
+                                 const int& /*digits*/,
+                                 const bool& /*showDiff*/) const {
+  return std::string("-/-");
 }
 
 /*!
@@ -954,10 +961,10 @@ QString Feature::getDisplayC(const UnitType& /*type*/, const int& /*digits*/,
  * \param showDiff
  * \return
  */
-QString Feature::getDisplayAngle(const UnitType& /*type*/,
-                                 const int& /*digits*/,
-                                 const bool& /*showDiff*/) const {
-  return QString("-/-");
+std::string Feature::getDisplayAngle(const UnitType& /*type*/,
+                                     const int& /*digits*/,
+                                     const bool& /*showDiff*/) const {
+  return std::string("-/-");
 }
 
 /*!
@@ -967,10 +974,10 @@ QString Feature::getDisplayAngle(const UnitType& /*type*/,
  * \param showDiff
  * \return
  */
-QString Feature::getDisplayDistance(const UnitType& /*type*/,
-                                    const int& /*digits*/,
-                                    const bool& /*showDiff*/) const {
-  return QString("-/-");
+std::string Feature::getDisplayDistance(const UnitType& /*type*/,
+                                        const int& /*digits*/,
+                                        const bool& /*showDiff*/) const {
+  return std::string("-/-");
 }
 
 /*!
@@ -980,10 +987,10 @@ QString Feature::getDisplayDistance(const UnitType& /*type*/,
  * \param showDiff
  * \return
  */
-QString Feature::getDisplayMeasurementSeries(const UnitType& /*type*/,
-                                             const int& /*digits*/,
-                                             const bool& /*showDiff*/) const {
-  return QString("-/-");
+std::string Feature::getDisplayMeasurementSeries(
+    const UnitType& /*type*/, const int& /*digits*/,
+    const bool& /*showDiff*/) const {
+  return std::string("-/-");
 }
 
 /*!
@@ -993,10 +1000,10 @@ QString Feature::getDisplayMeasurementSeries(const UnitType& /*type*/,
  * \param showDiff
  * \return
  */
-QString Feature::getDisplayTemperature(const UnitType& /*type*/,
-                                       const int& /*digits*/,
-                                       const bool& /*showDiff*/) const {
-  return QString("-/-");
+std::string Feature::getDisplayTemperature(const UnitType& /*type*/,
+                                           const int& /*digits*/,
+                                           const bool& /*showDiff*/) const {
+  return std::string("-/-");
 }
 
 /*!
@@ -1006,10 +1013,10 @@ QString Feature::getDisplayTemperature(const UnitType& /*type*/,
  * \param showDiff
  * \return
  */
-QString Feature::getDisplayLength(const UnitType& /*type*/,
-                                  const int& /*digits*/,
-                                  const bool& /*showDiff*/) const {
-  return QString("-/-");
+std::string Feature::getDisplayLength(const UnitType& /*type*/,
+                                      const int& /*digits*/,
+                                      const bool& /*showDiff*/) const {
+  return std::string("-/-");
 }
 
 /*!
@@ -1018,9 +1025,9 @@ QString Feature::getDisplayLength(const UnitType& /*type*/,
  * \param digits
  * \return
  */
-QString Feature::getDisplayExpansionOriginX(const UnitType& /*type*/,
-                                            const int& /*digits*/) const {
-  return QString("-/-");
+std::string Feature::getDisplayExpansionOriginX(const UnitType& /*type*/,
+                                                const int& /*digits*/) const {
+  return std::string("-/-");
 }
 
 /*!
@@ -1029,9 +1036,9 @@ QString Feature::getDisplayExpansionOriginX(const UnitType& /*type*/,
  * \param digits
  * \return
  */
-QString Feature::getDisplayExpansionOriginY(const UnitType& /*type*/,
-                                            const int& /*digits*/) const {
-  return QString("-/-");
+std::string Feature::getDisplayExpansionOriginY(const UnitType& /*type*/,
+                                                const int& /*digits*/) const {
+  return std::string("-/-");
 }
 
 /*!
@@ -1040,9 +1047,9 @@ QString Feature::getDisplayExpansionOriginY(const UnitType& /*type*/,
  * \param digits
  * \return
  */
-QString Feature::getDisplayExpansionOriginZ(const UnitType& /*type*/,
-                                            const int& /*digits*/) const {
-  return QString("-/-");
+std::string Feature::getDisplayExpansionOriginZ(const UnitType& /*type*/,
+                                                const int& /*digits*/) const {
+  return std::string("-/-");
 }
 
 /*!
@@ -1050,8 +1057,8 @@ QString Feature::getDisplayExpansionOriginZ(const UnitType& /*type*/,
  * \param digits
  * \return
  */
-QString Feature::getDisplayXAxisI(const int& /*digits*/) const {
-  return QString("-/-");
+std::string Feature::getDisplayXAxisI(const int& /*digits*/) const {
+  return std::string("-/-");
 }
 
 /*!
@@ -1059,8 +1066,8 @@ QString Feature::getDisplayXAxisI(const int& /*digits*/) const {
  * \param digits
  * \return
  */
-QString Feature::getDisplayXAxisJ(const int& /*digits*/) const {
-  return QString("-/-");
+std::string Feature::getDisplayXAxisJ(const int& /*digits*/) const {
+  return std::string("-/-");
 }
 
 /*!
@@ -1068,8 +1075,8 @@ QString Feature::getDisplayXAxisJ(const int& /*digits*/) const {
  * \param digits
  * \return
  */
-QString Feature::getDisplayXAxisK(const int& /*digits*/) const {
-  return QString("-/-");
+std::string Feature::getDisplayXAxisK(const int& /*digits*/) const {
+  return std::string("-/-");
 }
 
 /*!
@@ -1077,8 +1084,8 @@ QString Feature::getDisplayXAxisK(const int& /*digits*/) const {
  * \param digits
  * \return
  */
-QString Feature::getDisplayYAxisI(const int& /*digits*/) const {
-  return QString("-/-");
+std::string Feature::getDisplayYAxisI(const int& /*digits*/) const {
+  return std::string("-/-");
 }
 
 /*!
@@ -1086,8 +1093,8 @@ QString Feature::getDisplayYAxisI(const int& /*digits*/) const {
  * \param digits
  * \return
  */
-QString Feature::getDisplayYAxisJ(const int& /*digits*/) const {
-  return QString("-/-");
+std::string Feature::getDisplayYAxisJ(const int& /*digits*/) const {
+  return std::string("-/-");
 }
 
 /*!
@@ -1095,8 +1102,8 @@ QString Feature::getDisplayYAxisJ(const int& /*digits*/) const {
  * \param digits
  * \return
  */
-QString Feature::getDisplayYAxisK(const int& /*digits*/) const {
-  return QString("-/-");
+std::string Feature::getDisplayYAxisK(const int& /*digits*/) const {
+  return std::string("-/-");
 }
 
 /*!
@@ -1104,8 +1111,8 @@ QString Feature::getDisplayYAxisK(const int& /*digits*/) const {
  * \param digits
  * \return
  */
-QString Feature::getDisplayZAxisI(const int& /*digits*/) const {
-  return QString("-/-");
+std::string Feature::getDisplayZAxisI(const int& /*digits*/) const {
+  return std::string("-/-");
 }
 
 /*!
@@ -1113,8 +1120,8 @@ QString Feature::getDisplayZAxisI(const int& /*digits*/) const {
  * \param digits
  * \return
  */
-QString Feature::getDisplayZAxisJ(const int& /*digits*/) const {
-  return QString("-/-");
+std::string Feature::getDisplayZAxisJ(const int& /*digits*/) const {
+  return std::string("-/-");
 }
 
 /*!
@@ -1122,21 +1129,25 @@ QString Feature::getDisplayZAxisJ(const int& /*digits*/) const {
  * \param digits
  * \return
  */
-QString Feature::getDisplayZAxisK(const int& /*digits*/) const {
-  return QString("-/-");
+std::string Feature::getDisplayZAxisK(const int& /*digits*/) const {
+  return std::string("-/-");
 }
 
 /*!
  * \brief Feature::getDisplayStartSystem
  * \return
  */
-QString Feature::getDisplayStartSystem() const { return QString("-/-"); }
+std::string Feature::getDisplayStartSystem() const {
+  return std::string("-/-");
+}
 
 /*!
  * \brief Feature::getDisplayDestinationSystem
  * \return
  */
-QString Feature::getDisplayDestinationSystem() const { return QString("-/-"); }
+std::string Feature::getDisplayDestinationSystem() const {
+  return std::string("-/-");
+}
 
 /*!
  * \brief Feature::getDisplayTranslationX
@@ -1144,9 +1155,9 @@ QString Feature::getDisplayDestinationSystem() const { return QString("-/-"); }
  * \param digits
  * \return
  */
-QString Feature::getDisplayTranslationX(const UnitType& /*type*/,
-                                        const int& /*digits*/) const {
-  return QString("-/-");
+std::string Feature::getDisplayTranslationX(const UnitType& /*type*/,
+                                            const int& /*digits*/) const {
+  return std::string("-/-");
 }
 
 /*!
@@ -1155,9 +1166,9 @@ QString Feature::getDisplayTranslationX(const UnitType& /*type*/,
  * \param digits
  * \return
  */
-QString Feature::getDisplayTranslationY(const UnitType& /*type*/,
-                                        const int& /*digits*/) const {
-  return QString("-/-");
+std::string Feature::getDisplayTranslationY(const UnitType& /*type*/,
+                                            const int& /*digits*/) const {
+  return std::string("-/-");
 }
 
 /*!
@@ -1166,9 +1177,9 @@ QString Feature::getDisplayTranslationY(const UnitType& /*type*/,
  * \param digits
  * \return
  */
-QString Feature::getDisplayTranslationZ(const UnitType& /*type*/,
-                                        const int& /*digits*/) const {
-  return QString("-/-");
+std::string Feature::getDisplayTranslationZ(const UnitType& /*type*/,
+                                            const int& /*digits*/) const {
+  return std::string("-/-");
 }
 
 /*!
@@ -1177,9 +1188,9 @@ QString Feature::getDisplayTranslationZ(const UnitType& /*type*/,
  * \param digits
  * \return
  */
-QString Feature::getDisplayRotationX(const UnitType& /*type*/,
-                                     const int& /*digits*/) const {
-  return QString("-/-");
+std::string Feature::getDisplayRotationX(const UnitType& /*type*/,
+                                         const int& /*digits*/) const {
+  return std::string("-/-");
 }
 
 /*!
@@ -1188,9 +1199,9 @@ QString Feature::getDisplayRotationX(const UnitType& /*type*/,
  * \param digits
  * \return
  */
-QString Feature::getDisplayRotationY(const UnitType& /*type*/,
-                                     const int& /*digits*/) const {
-  return QString("-/-");
+std::string Feature::getDisplayRotationY(const UnitType& /*type*/,
+                                         const int& /*digits*/) const {
+  return std::string("-/-");
 }
 
 /*!
@@ -1199,9 +1210,9 @@ QString Feature::getDisplayRotationY(const UnitType& /*type*/,
  * \param digits
  * \return
  */
-QString Feature::getDisplayRotationZ(const UnitType& /*type*/,
-                                     const int& /*digits*/) const {
-  return QString("-/-");
+std::string Feature::getDisplayRotationZ(const UnitType& /*type*/,
+                                         const int& /*digits*/) const {
+  return std::string("-/-");
 }
 
 /*!
@@ -1209,8 +1220,8 @@ QString Feature::getDisplayRotationZ(const UnitType& /*type*/,
  * \param digits
  * \return
  */
-QString Feature::getDisplayScaleX(const int& /*digits*/) const {
-  return QString("-/-");
+std::string Feature::getDisplayScaleX(const int& /*digits*/) const {
+  return std::string("-/-");
 }
 
 /*!
@@ -1218,8 +1229,8 @@ QString Feature::getDisplayScaleX(const int& /*digits*/) const {
  * \param digits
  * \return
  */
-QString Feature::getDisplayScaleY(const int& /*digits*/) const {
-  return QString("-/-");
+std::string Feature::getDisplayScaleY(const int& /*digits*/) const {
+  return std::string("-/-");
 }
 
 /*!
@@ -1227,34 +1238,34 @@ QString Feature::getDisplayScaleY(const int& /*digits*/) const {
  * \param digits
  * \return
  */
-QString Feature::getDisplayScaleZ(const int& /*digits*/) const {
-  return QString("-/-");
+std::string Feature::getDisplayScaleZ(const int& /*digits*/) const {
+  return std::string("-/-");
 }
 
 /*!
  * \brief Feature::getDisplayIsUsed
  * \return
  */
-QString Feature::getDisplayIsUsed() const { return QString("-/-"); }
+std::string Feature::getDisplayIsUsed() const { return std::string("-/-"); }
 
 /*!
  * \brief Feature::getDisplayValidTime
  * \return
  */
-QString Feature::getDisplayValidTime() const { return QString("-/-"); }
+std::string Feature::getDisplayValidTime() const { return std::string("-/-"); }
 
 /*!
  * \brief Feature::getDisplayIsMovement
  * \return
  */
-QString Feature::getDisplayIsMovement() const { return QString("-/-"); }
+std::string Feature::getDisplayIsMovement() const { return std::string("-/-"); }
 
 /*!
  * \brief Feature::getDisplayIsDatumTransformation
  * \return
  */
-QString Feature::getDisplayIsDatumTransformation() const {
-  return QString("-/-");
+std::string Feature::getDisplayIsDatumTransformation() const {
+  return std::string("-/-");
 }
 
 /*!
@@ -1264,9 +1275,9 @@ QString Feature::getDisplayIsDatumTransformation() const {
  * \param showDiff
  * \return
  */
-QString Feature::getDisplayFormError(const UnitType& /*type*/,
-                                     const int& /*digits*/) const {
-  return QString("-/-");
+std::string Feature::getDisplayFormError(const UnitType& /*type*/,
+                                         const int& /*digits*/) const {
+  return std::string("-/-");
 }
 
 /*!

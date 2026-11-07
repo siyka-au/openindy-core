@@ -44,7 +44,7 @@ class OI_CORE_EXPORT FeatureWrapper : public oi::Trackable {
   // type information
   // ################
 
-  [[nodiscard]] QString getFeatureTypeString() const;
+  [[nodiscard]] std::string getFeatureTypeString() const;
   [[nodiscard]] const FeatureTypes& getFeatureTypeEnum() const;
 
   // ###################

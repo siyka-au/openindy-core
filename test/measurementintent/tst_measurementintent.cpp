@@ -1,6 +1,6 @@
-#include <QString>
 #include <QtTest>
 #include <cmath>
+#include <string>
 #include <vector>
 
 #include "chooselalib.h"
@@ -27,7 +27,7 @@ namespace {
 // would otherwise be rejected at attach time.
 class FakeConsumer : public ConstructFunction, public Producer<Point> {
  public:
-  explicit FakeConsumer(const QString& roleName = "default")
+  explicit FakeConsumer(const std::string& roleName = "default")
       : ConstructFunction() {
     this->metaData.name = "FakeConsumer";
     NeededElement param;
@@ -37,7 +37,7 @@ class FakeConsumer : public ConstructFunction, public Producer<Point> {
     this->neededElements.push_back(param);
     this->applicableFor.push_back(FeatureTypes::ePointFeature);
   }
-  std::expected<Point, QString> exec() override { return Point(); }
+  std::expected<Point, std::string> exec() override { return Point(); }
 };
 
 }  // namespace
@@ -155,7 +155,7 @@ void MeasurementIntentTest::pointWithObservationsIsStationOwned() {
   obs->setStation(station);
   point->addObservation(obs);
 
-  const std::optional<QString> owner = point->getOwnerDescription();
+  const std::optional<std::string> owner = point->getOwnerDescription();
   QVERIFY2(owner.has_value(),
            "a point carrying observations must be read-only");
   QVERIFY2(owner->contains("S1"),

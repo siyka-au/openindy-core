@@ -1,7 +1,7 @@
 #ifndef MESSAGESINK_H
 #define MESSAGESINK_H
 
-#include <QString>
+#include <string>
 
 #include "core_export.h"
 #include "types.h"
@@ -33,7 +33,7 @@ class OI_CORE_EXPORT MessageSink {
   MessageSink(MessageSink&&) = delete;
   MessageSink& operator=(MessageSink&&) = delete;
 
-  virtual void onMessage(const QString& msg, const MessageTypes& type,
+  virtual void onMessage(const std::string& msg, const MessageTypes& type,
                          const MessageDestinations& dest) = 0;
 };
 

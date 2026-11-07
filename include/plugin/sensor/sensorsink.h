@@ -1,13 +1,13 @@
 #ifndef SENSORSINK_H
 #define SENSORSINK_H
-#include <QJsonObject>
-#include <QString>
 #include <map>
+#include <string>
 #include <vector>
 
 #include "core_export.h"
 #include "guarded.h"
 #include "types.h"
+#include "value.h"
 
 namespace oi {
 
@@ -41,17 +41,17 @@ class OI_CORE_EXPORT SensorSink {
   SensorSink& operator=(SensorSink&&) = delete;
 
   virtual void onSensorStatus(const SensorStatus& status,
-                              const QString& msg) = 0;
-  virtual void onSensorMessage(const QString& msg, const MessageTypes& msgType,
+                              const std::string& msg) = 0;
+  virtual void onSensorMessage(const std::string& msg,
+                               const MessageTypes& msgType,
                                const MessageDestinations& msgDest) = 0;
-  virtual void onAsyncSensorResponse(const QJsonObject& response,
+  virtual void onAsyncSensorResponse(const oi::ValueMap& response,
                                      SensorAction sensorAction) = 0;
   virtual void onAsyncMeasurementResult(
       const int& geomId, const std::vector<oi::Guarded<Reading>>& measurements,
       SensorAction sensorAction) = 0;
-  virtual void onAsyncStreamResult(
-      const std::map<QString, QVariant>& reading) = 0;
-  virtual void onAsyncSensorNotification(const QJsonObject& response) = 0;
+  virtual void onAsyncStreamResult(const oi::ValueMap& reading) = 0;
+  virtual void onAsyncSensorNotification(const oi::ValueMap& response) = 0;
 };
 
 }  // namespace oi

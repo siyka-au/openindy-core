@@ -1,8 +1,7 @@
 #ifndef SLOTTEDHOLE_H
 #define SLOTTEDHOLE_H
-#include <QtCore>
-#include <QtMath>
 #include <map>
+#include <string>
 
 #include "core_export.h"
 #include "direction.h"
@@ -83,7 +82,7 @@ class OI_CORE_EXPORT SlottedHole : public Geometry {
   // get or set unknown parameters
   // #############################
 
-  [[nodiscard]] std::map<GeometryParameters, QString> getUnknownParameters(
+  [[nodiscard]] std::map<GeometryParameters, std::string> getUnknownParameters(
       const std::map<DimensionType, UnitType>& displayUnits,
       const std::map<DimensionType, int>& displayDigits) const override;
   void applyUnknownParameters(
@@ -99,31 +98,31 @@ class OI_CORE_EXPORT SlottedHole : public Geometry {
   // display methods
   // ###############
 
-  [[nodiscard]] QString getDisplayX(
+  [[nodiscard]] std::string getDisplayX(
       const UnitType& type, const int& digits,
       const bool& showDiff = false) const override;
-  [[nodiscard]] QString getDisplayY(
+  [[nodiscard]] std::string getDisplayY(
       const UnitType& type, const int& digits,
       const bool& showDiff = false) const override;
-  [[nodiscard]] QString getDisplayZ(
+  [[nodiscard]] std::string getDisplayZ(
       const UnitType& type, const int& digits,
       const bool& showDiff = false) const override;
-  [[nodiscard]] QString getDisplayPrimaryI(
+  [[nodiscard]] std::string getDisplayPrimaryI(
       const int& digits, const bool& showDiff = false) const override;
-  [[nodiscard]] QString getDisplayPrimaryJ(
+  [[nodiscard]] std::string getDisplayPrimaryJ(
       const int& digits, const bool& showDiff = false) const override;
-  [[nodiscard]] QString getDisplayPrimaryK(
+  [[nodiscard]] std::string getDisplayPrimaryK(
       const int& digits, const bool& showDiff = false) const override;
-  [[nodiscard]] QString getDisplayRadiusA(
+  [[nodiscard]] std::string getDisplayRadiusA(
       const UnitType& type, const int& digits,
       const bool& showDiff = false) const override;
-  [[nodiscard]] QString getDisplaySecondaryI(
+  [[nodiscard]] std::string getDisplaySecondaryI(
       const int& digits, const bool& showDiff = false) const override;
-  [[nodiscard]] QString getDisplaySecondaryJ(
+  [[nodiscard]] std::string getDisplaySecondaryJ(
       const int& digits, const bool& showDiff = false) const override;
-  [[nodiscard]] QString getDisplaySecondaryK(
+  [[nodiscard]] std::string getDisplaySecondaryK(
       const int& digits, const bool& showDiff = false) const override;
-  [[nodiscard]] QString getDisplayLength(
+  [[nodiscard]] std::string getDisplayLength(
       const UnitType& type, const int& digits,
       const bool& showDiff = false) const override;
 
