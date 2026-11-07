@@ -46,6 +46,8 @@ Direction directionOf(const oipb::Vec3& v) {
   return Direction(v.x(), v.y(), v.z());
 }
 
+}  // namespace
+
 oipb::FeatureKind toProto(FeatureTypes type) {
   switch (type) {
     case FeatureTypes::eCircleFeature:
@@ -161,6 +163,8 @@ std::optional<FeatureTypes> fromProto(oipb::FeatureKind kind) {
   }
   return std::nullopt;
 }
+
+namespace {
 
 void encodeStatistic(const Statistic& s, oipb::GeometryStatistic* m) {
   m->set_valid(s.getIsValid());

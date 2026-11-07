@@ -32,6 +32,12 @@ namespace oi::codec {
 [[nodiscard]] std::optional<MeasurementConfig> fromProto(
     const openindy::v1::MeasurementConfig& message);
 
+/*! The wire numbering of the feature types is independent of the model's. */
+[[nodiscard]] openindy::v1::FeatureKind toProto(FeatureTypes type);
+/*! Empty for unspecified and for numbers this version does not know. */
+[[nodiscard]] std::optional<FeatureTypes> fromProto(
+    openindy::v1::FeatureKind kind);
+
 [[nodiscard]] openindy::v1::SensorConfiguration toProto(
     const SensorConfiguration& config);
 
