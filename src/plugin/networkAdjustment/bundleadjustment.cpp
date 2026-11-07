@@ -92,7 +92,6 @@ const ScalarInputParams& BundleAdjustment::getScalarInputParams() {
 void BundleAdjustment::setScalarInputParams(const ScalarInputParams& params) {
   this->scalarInputParams = params;
   this->scalarInputParams.isValid = true;
-  emit this->scalarInputParametersChanged();
 }
 
 /*!
@@ -109,7 +108,6 @@ const QList<BundleStation>& BundleAdjustment::getInputStations() const {
  */
 void BundleAdjustment::setInputStations(const QList<BundleStation>& stations) {
   this->stations = stations;
-  emit this->inputStationsChanged();
 }
 
 /*!
@@ -126,7 +124,6 @@ const BundleStation& BundleAdjustment::getBaseStation() const {
  */
 void BundleAdjustment::setBaseStation(const BundleStation& station) {
   this->baseSystem = station;
-  emit this->baseStationChanged();
 }
 
 /*!
@@ -144,7 +141,6 @@ const QPointer<CoordinateSystem>& BundleAdjustment::getBundleSystem() const {
 void BundleAdjustment::setBundleSystem(
     const QPointer<CoordinateSystem>& system) {
   this->bundleSystem = system;
-  emit this->bundleSystemChanged();
 }
 
 /*!
@@ -166,7 +162,6 @@ void BundleAdjustment::setCurrentJob(const QPointer<OiJob>& job) {
   // set and connect new job
   this->currentJob = job;
   this->connectJob();
-  emit this->jobChanged();
 }
 
 /*!
@@ -219,8 +214,7 @@ void BundleAdjustment::connectJob() {
     return;
   }
 
-  QObject::connect(this, &BundleAdjustment::sendMessage, this->currentJob,
-                   &OiJob::sendMessage, Qt::AutoConnection);
+  this->messageSink = this->currentJob.data();
 }
 
 /*!
@@ -232,6 +226,7 @@ void BundleAdjustment::disconnectJob() {
     return;
   }
 
-  QObject::disconnect(this, &BundleAdjustment::sendMessage, this->currentJob,
-                      &OiJob::sendMessage);
+  if (this->messageSink == this->currentJob.data()) {
+    this->messageSink = nullptr;
+  }
 }

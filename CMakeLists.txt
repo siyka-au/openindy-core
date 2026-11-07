@@ -169,12 +169,14 @@ add_library(OpenIndyCore SHARED
     include/geometry/torus.h
     include/plugin/exchange/exchangedefinedformat.h
     include/plugin/exchange/exchangeinterface.h
+    include/plugin/exchange/exchangeobserver.h
     include/plugin/exchange/exchangesimpleascii.h
     include/plugin/plugin.h
     include/plugin/pluginmetadata.h
     include/plugin/function/constructfunction.h
     include/plugin/function/fitfunction.h
     include/plugin/function/function.h
+    include/plugin/function/functionobserver.h
     include/plugin/function/pipelinestage.h
     include/plugin/function/producertransform.h
     include/plugin/function/generatefeaturefunction.h
@@ -196,6 +198,7 @@ add_library(OpenIndyCore SHARED
     include/featureattributes.h
     include/featureobserver.h
     include/jobobserver.h
+    include/messagesink.h
     include/featurecontainer.h
     include/featurewrapper.h
     include/geometry.h
@@ -384,6 +387,16 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 endif()
 
 add_test(NAME jobobserver COMMAND tst_jobobserver)
+
+add_executable(tst_messagesink test/messagesink/tst_messagesink.cpp)
+target_link_libraries(tst_messagesink PRIVATE Qt6::Test OpenIndyCore OpenIndyMath)
+target_include_directories(tst_messagesink PRIVATE test/common)
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(tst_messagesink PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+
+add_test(NAME messagesink COMMAND tst_messagesink)
 
 add_executable(tst_ownedsubgeometry test/ownedsubgeometry/tst_ownedsubgeometry.cpp)
 target_link_libraries(tst_ownedsubgeometry PRIVATE Qt6::Test OpenIndyCore OpenIndyMath)

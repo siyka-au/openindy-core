@@ -996,8 +996,7 @@ void OiJob::addFunction(const QPointer<Function>& function) {
   }
 
   // connect the function
-  QObject::connect(function.data(), &Function::sendMessage, this,
-                   &OiJob::sendMessage, Qt::AutoConnection);
+  this->adoptFunction(function.data());
 
   // add the function to the active feature
   this->activeFeature->getFeature()->addFunction(function);
@@ -1065,8 +1064,7 @@ bool OiJob::addOwnedSubGeometry(const QPointer<FeatureWrapper>& owner,
   }
 
   // connect the function the same way OiJob::addFunction does
-  QObject::connect(producerFunction.data(), &Function::sendMessage, this,
-                   &OiJob::sendMessage, Qt::AutoConnection);
+  this->adoptFunction(producerFunction.data());
 
   // attach the function - mints its id, appends to functionList
   subGeometry->getGeometry()->addFunction(producerFunction);
@@ -2700,6 +2698,19 @@ void OiJob::detachFeature(const QPointer<FeatureWrapper>& feature) {
     feature->getFeature()->setObserver(nullptr);
   }
 
+  // functions and the bundle adjustment report to this job: stop that
+  for (const QPointer<Function>& function :
+       oi::snapshot(feature->getFeature()->getFunctions())) {
+    this->releaseFunction(function.data());
+  }
+  if (!feature->getCoordinateSystem().isNull()) {
+    const QPointer<BundleAdjustment> bundle =
+        feature->getCoordinateSystem()->getBundlePlugin();
+    if (!bundle.isNull() && bundle->getMessageSink() == this) {
+      bundle->setMessageSink(nullptr);
+    }
+  }
+
   // station connects
   if (feature->getFeatureTypeEnum() == FeatureTypes::eStationFeature) {
     QObject::disconnect(feature->getStation().data(),
@@ -2713,6 +2724,23 @@ void OiJob::detachFeature(const QPointer<FeatureWrapper>& feature) {
       feature->getStation()->getCoordinateSystem()->setObserver(nullptr);
     }
   }
+}
+
+void OiJob::adoptFunction(Function* function) {
+  if (function != nullptr) {
+    function->setMessageSink(this);
+  }
+}
+
+void OiJob::releaseFunction(Function* function) {
+  if (function != nullptr && function->getMessageSink() == this) {
+    function->setMessageSink(nullptr);
+  }
+}
+
+void OiJob::onMessage(const QString& msg, const MessageTypes& type,
+                      const MessageDestinations& dest) {
+  this->sendMessage(msg, type, dest);
 }
 
 // ###########################################################################
@@ -3728,8 +3756,7 @@ void OiJob::addFeaturesFromXml(
     // pass the job instance to the feature
     feature->getFeature()->job = this;
     for (QPointer<Function> function : feature->getFeature()->getFunctions()) {
-      QObject::connect(function.data(), &Function::sendMessage, this,
-                       &OiJob::sendMessage, Qt::AutoConnection);
+      this->adoptFunction(function.data());
     }
 
     if (!feature->getStation().isNull()) {

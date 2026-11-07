@@ -22,6 +22,7 @@
 #include "featureobserver.h"
 #include "function.h"
 #include "jobobserver.h"
+#include "messagesink.h"
 #include "types.h"
 #include "util.h"
 
@@ -42,7 +43,9 @@ enum class CompatibilyCheckResult {
  * \brief The OiJob class
  * Represents an OpenIndy job (holds all features and active states)
  */
-class OI_CORE_EXPORT OiJob : public QObject, public FeatureObserver {
+class OI_CORE_EXPORT OiJob : public QObject,
+                             public FeatureObserver,
+                             public MessageSink {
   friend class ::ProjectExchanger;
   friend struct codec::Access;  // the protobuf codec (see src/codec)
   Q_OBJECT
@@ -363,6 +366,16 @@ class OI_CORE_EXPORT OiJob : public QObject, public FeatureObserver {
 
   void attachFeature(const QPointer<FeatureWrapper>& feature);
   void detachFeature(const QPointer<FeatureWrapper>& feature);
+
+  // make this job the message sink of a function it owns (and take it back);
+  // a function must never be left pointing at a job that is gone
+  void adoptFunction(Function* function);
+  void releaseFunction(Function* function);
+
+  // MessageSink: messages of the functions and bundle adjustments of this job
+  // are reported like the job's own
+  void onMessage(const QString& msg, const MessageTypes& type,
+                 const MessageDestinations& dest) override;
 
   // ##########################################################
   // FeatureObserver: relay the feature model's notifications

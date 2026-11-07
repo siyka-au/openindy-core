@@ -174,23 +174,25 @@ class OI_CORE_EXPORT BundleAdjustment : public QObject {
   virtual void clear();
   virtual void clearResults();
 
- signals:
+  // #################################################
+  // report bundle issues to the host (formerly a signal)
+  // #################################################
 
-  // ################################################
-  // signals to inform OpenIndy about function issues
-  // ################################################
+  // messages go to the sink if there is one (non-owning; see MessageSink for
+  // its lifetime rules), otherwise they are dropped. setCurrentJob makes the
+  // job the sink, as it used to connect to the job's message slot.
+  void setMessageSink(MessageSink* sink) { this->messageSink = sink; }
+  [[nodiscard]] MessageSink* getMessageSink() const {
+    return this->messageSink;
+  }
 
-  // messaging
   void sendMessage(const QString& msg, const MessageTypes& msgType,
                    const MessageDestinations& msgDest =
-                       MessageDestinations::eConsoleMessage);
-
-  // input parameters changed
-  void scalarInputParametersChanged();
-  void inputStationsChanged();
-  void baseStationChanged();
-  void bundleSystemChanged();
-  void jobChanged();
+                       MessageDestinations::eConsoleMessage) {
+    if (this->messageSink != nullptr) {
+      this->messageSink->onMessage(msg, msgType, msgDest);
+    }
+  }
 
  private:
   // ###########
@@ -199,6 +201,8 @@ class OI_CORE_EXPORT BundleAdjustment : public QObject {
 
   void connectJob();
   void disconnectJob();
+
+  MessageSink* messageSink = nullptr;  // non-owning
 
  protected:
   // ###########################

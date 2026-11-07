@@ -19,10 +19,6 @@ class OI_CORE_EXPORT GenerateFeatureFunction : public Function {
       : Function(parent) {}
 
   ~GenerateFeatureFunction() override {}
-
- signals:
-  void addFeature(const QPointer<FeatureWrapper>& feature);
-  void addFeatures(const QList<QPointer<FeatureWrapper> >& features);
 };
 
 }  // namespace oi

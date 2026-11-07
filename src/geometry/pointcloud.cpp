@@ -85,8 +85,6 @@ bool PointCloud::addSegment(const QPointer<FeatureWrapper>& segment) {
 
   this->detectedSegments.append(segment);
 
-  emit this->pcSegmentAdded(segment);
-
   return true;
 }
 

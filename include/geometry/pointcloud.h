@@ -99,9 +99,6 @@ class OI_CORE_EXPORT PointCloud : public Geometry, public PointCollection {
   // display methods
   // ###############
 
- signals:
-  void pcSegmentAdded(const QPointer<FeatureWrapper>& segment);
-
  private:
   // ######################
   // point cloud attributes

@@ -8,7 +8,9 @@
 
 #include "coordinatesystem.h"
 #include "core_export.h"
+#include "exchangeobserver.h"
 #include "featurewrapper.h"
+#include "messagesink.h"
 #include "pluginmetadata.h"
 
 namespace oi {
@@ -66,19 +68,48 @@ class OI_CORE_EXPORT ExchangeInterface : public QObject {
   virtual void importOiData();
   virtual void exportOiData();
 
- signals:
+  // ################################################
+  // report exchange issues to the host (formerly signals)
+  // ################################################
 
-  // ################################################
-  // signals to inform OpenIndy about exchange issues
-  // ################################################
+  // messages go to the sink, progress and completion to the observer; both
+  // are optional, non-owning, and must outlive the exchange (or be removed
+  // first). They are called synchronously on the thread the exchange runs
+  // on, which is usually not the host's UI thread.
+  void setMessageSink(MessageSink* sink) { this->messageSink = sink; }
+  [[nodiscard]] MessageSink* getMessageSink() const {
+    return this->messageSink;
+  }
+  void setObserver(ExchangeObserver* observer) {
+    this->exchangeObserver = observer;
+  }
+  [[nodiscard]] ExchangeObserver* getObserver() const {
+    return this->exchangeObserver;
+  }
 
   void sendMessage(const QString& msg, const MessageTypes& msgType,
                    const MessageDestinations& msgDest =
-                       MessageDestinations::eConsoleMessage);
+                       MessageDestinations::eConsoleMessage) {
+    if (this->messageSink != nullptr) {
+      this->messageSink->onMessage(msg, msgType, msgDest);
+    }
+  }
   void updateProgress(const int& progress,
-                      const QString& msg);  // 0 <= progress <= 100
-  void importFinished(const bool& success);
-  void exportFinished(const bool& success);
+                      const QString& msg) {  // 0 <= progress <= 100
+    if (this->exchangeObserver != nullptr) {
+      this->exchangeObserver->onProgress(progress, msg);
+    }
+  }
+  void importFinished(const bool& success) {
+    if (this->exchangeObserver != nullptr) {
+      this->exchangeObserver->onImportFinished(success);
+    }
+  }
+  void exportFinished(const bool& success) {
+    if (this->exchangeObserver != nullptr) {
+      this->exchangeObserver->onExportFinished(success);
+    }
+  }
 
  protected:
   // ###########################
@@ -101,6 +132,10 @@ class OI_CORE_EXPORT ExchangeInterface : public QObject {
 
   PluginMetaData metaData;
   QList<GeometryTypes> supportedGeometries;
+
+ private:
+  MessageSink* messageSink = nullptr;            // non-owning
+  ExchangeObserver* exchangeObserver = nullptr;  // non-owning
 };
 
 }  // namespace oi

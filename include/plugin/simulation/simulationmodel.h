@@ -9,6 +9,7 @@
 
 #include "core_export.h"
 #include "direction.h"
+#include "messagesink.h"
 #include "pluginmetadata.h"
 #include "position.h"
 #include "radius.h"
@@ -195,15 +196,24 @@ class OI_CORE_EXPORT SimulationModel : public QObject {
   virtual double getCorrelationCoefficient(const QList<double>& x,
                                            const QList<double>& y);
 
- signals:
+  // ##################################################
+  // report simulation issues to the host (formerly a signal)
+  // ##################################################
 
-  // ##################################################
-  // signals to inform OpenIndy about simulation issues
-  // ##################################################
+  // messages go to the sink if there is one (non-owning; see MessageSink for
+  // its lifetime rules), otherwise they are dropped
+  void setMessageSink(MessageSink* sink) { this->messageSink = sink; }
+  [[nodiscard]] MessageSink* getMessageSink() const {
+    return this->messageSink;
+  }
 
   void sendMessage(const QString& msg, const MessageTypes& msgType,
                    const MessageDestinations& msgDest =
-                       MessageDestinations::eConsoleMessage);
+                       MessageDestinations::eConsoleMessage) {
+    if (this->messageSink != nullptr) {
+      this->messageSink->onMessage(msg, msgType, msgDest);
+    }
+  }
 
  protected:
   // ###########################
@@ -224,6 +234,9 @@ class OI_CORE_EXPORT SimulationModel : public QObject {
   QMap<QString, UncertaintyComponent> objectUncertainties;
   QMap<QString, UncertaintyComponent> environmentUncertainties;
   QMap<QString, UncertaintyComponent> humanInfluence;
+
+ private:
+  MessageSink* messageSink = nullptr;  // non-owning
 };
 
 }  // namespace oi

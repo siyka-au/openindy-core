@@ -21,8 +21,10 @@
 #include "ellipse.h"
 #include "ellipsoid.h"
 #include "featurewrapper.h"
+#include "functionobserver.h"
 #include "hyperboloid.h"
 #include "line.h"
+#include "messagesink.h"
 #include "nurbs.h"
 #include "observation.h"
 #include "paraboloid.h"
@@ -354,18 +356,32 @@ class OI_CORE_EXPORT Function : public QObject {
   virtual void clear();
   virtual void clearResults();
 
- signals:
+  // #####################################################
+  // report function issues and changes to the host (formerly signals)
+  // #####################################################
 
-  // ################################################
-  // signals to inform OpenIndy about function issues
-  // ################################################
+  // messages go to the sink if there is one (non-owning; see MessageSink for
+  // its lifetime rules), otherwise they are dropped
+  void setMessageSink(MessageSink* sink) { this->messageSink = sink; }
+  [[nodiscard]] MessageSink* getMessageSink() const {
+    return this->messageSink;
+  }
 
   void sendMessage(const QString& msg, const MessageTypes& msgType,
                    const MessageDestinations& msgDest =
-                       MessageDestinations::eConsoleMessage);
+                       MessageDestinations::eConsoleMessage) {
+    if (this->messageSink != nullptr) {
+      this->messageSink->onMessage(msg, msgType, msgDest);
+    }
+  }
 
-  void inputElementsChanged();
-  void scalarInputParametersChanged();
+  // change notifications go to the observer if there is one (non-owning)
+  void setObserver(FunctionObserver* observer) {
+    this->functionObserver = observer;
+  }
+  [[nodiscard]] FunctionObserver* getObserver() const {
+    return this->functionObserver;
+  }
 
  protected:
   // #################################
@@ -425,6 +441,15 @@ class OI_CORE_EXPORT Function : public QObject {
                           double v, double vi, double vj, double vk);
 
  private:
+  MessageSink* messageSink = nullptr;            // non-owning
+  FunctionObserver* functionObserver = nullptr;  // non-owning
+
+  void notifyInputElementsChanged() {
+    if (this->functionObserver != nullptr) {
+      this->functionObserver->onInputElementsChanged();
+    }
+  }
+
   // the pre-Stage-7b switch-on-feature-type dispatch, run once (or, for
   // a residual-based pipeline stage, twice - see execChecked()). Stage
   // 7d/D21: this is now also the producer/transform dispatch boundary -

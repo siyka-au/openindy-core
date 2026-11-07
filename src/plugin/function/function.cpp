@@ -106,7 +106,11 @@ Function::Function(QObject* parent) : QObject(parent), supportsWeights(false) {}
 /*!
  * \brief Function::~Function
  */
-Function::~Function() {}
+Function::~Function() {
+  if (this->functionObserver != nullptr) {
+    this->functionObserver->onFunctionDestroyed(this);
+  }
+}
 
 /*!
  * \brief Function::init
@@ -508,7 +512,9 @@ const QMultiMap<QString, QString>& Function::getStringParameter() const {
 void Function::setScalarInputParams(const ScalarInputParams& params) {
   this->scalarInputParams = params;
   this->scalarInputParams.isValid = true;
-  emit this->scalarInputParametersChanged();
+  if (this->functionObserver != nullptr) {
+    this->functionObserver->onScalarInputParametersChanged();
+  }
 }
 
 /*!
@@ -675,7 +681,7 @@ void Function::addInputElement(const InputElement& element,
     this->inputElements.insert(position, elements);
   }
 
-  emit this->inputElementsChanged();
+  this->notifyInputElementsChanged();
 }
 
 /*!
@@ -686,7 +692,7 @@ void Function::addInputElement(const InputElement& element,
 void Function::removeInputElement(const int& id, const int& position) {
   if (this->inputElements.contains(position)) {
     this->inputElements[position].removeOne(InputElement(id));
-    emit this->inputElementsChanged();
+    this->notifyInputElementsChanged();
   }
 }
 
@@ -697,7 +703,7 @@ void Function::removeInputElement(const int& id, const int& position) {
 void Function::removeInputElement(const int& id) {
   for (int i = 0; i < this->inputElements.size(); i++) {
     this->inputElements[i].removeOne(InputElement(id));
-    emit this->inputElementsChanged();
+    this->notifyInputElementsChanged();
   }
 }
 
@@ -712,7 +718,7 @@ void Function::replaceInputElement(const InputElement& element,
     int index = this->inputElements[position].indexOf(element);
     if (index > -1) {
       this->inputElements[position].replace(index, element);
-      emit this->inputElementsChanged();
+      this->notifyInputElementsChanged();
     }
   }
 }
@@ -764,7 +770,7 @@ void Function::setShouldBeUsed(const int& position, const int& id,
     int index = this->inputElements[position].indexOf(InputElement(id));
     if (index > -1) {
       this->inputElements[position][index].shouldBeUsed = state;
-      emit this->inputElementsChanged();
+      this->notifyInputElementsChanged();
     }
   }
 }
@@ -793,7 +799,7 @@ void Function::setPipeline(const int& position,
     return;
   }
   this->neededElements[position].pipeline = stages;
-  emit this->inputElementsChanged();
+  this->notifyInputElementsChanged();
 }
 
 /*!
@@ -807,7 +813,7 @@ void Function::addPipelineStage(const int& position,
     return;
   }
   this->neededElements[position].pipeline.append(stage);
-  emit this->inputElementsChanged();
+  this->notifyInputElementsChanged();
 }
 
 /*!
@@ -819,7 +825,7 @@ void Function::clearPipeline(const int& position) {
     return;
   }
   this->neededElements[position].pipeline.clear();
-  emit this->inputElementsChanged();
+  this->notifyInputElementsChanged();
 }
 
 /*!
@@ -1038,7 +1044,7 @@ void Function::clear() {
   this->resultProtocol.clear();
   this->statistic.setIsValid(false);
 
-  emit this->inputElementsChanged();
+  this->notifyInputElementsChanged();
 }
 
 /*!
