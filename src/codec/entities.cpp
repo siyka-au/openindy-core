@@ -381,8 +381,8 @@ oipb::TrafoParam toProto(const TrafoParam& trafo) {
   return m;
 }
 
-oi::Guarded<TrafoParam> createTrafoParam(const oipb::TrafoParam& message) {
-  oi::Guarded<TrafoParam> trafo = new TrafoParam();
+std::unique_ptr<TrafoParam> createTrafoParam(const oipb::TrafoParam& message) {
+  auto trafo = std::make_unique<TrafoParam>();
   Access::restoreCommon(*trafo, message.feature());
   Access::restoreTrafo(*trafo, message);
   return trafo;
@@ -427,9 +427,9 @@ oipb::CoordinateSystem toProto(const CoordinateSystem& system) {
   return m;
 }
 
-oi::Guarded<CoordinateSystem> createCoordinateSystem(
+std::unique_ptr<CoordinateSystem> createCoordinateSystem(
     const oipb::CoordinateSystem& message) {
-  oi::Guarded<CoordinateSystem> system = new CoordinateSystem();
+  auto system = std::make_unique<CoordinateSystem>();
   Access::restoreCommon(*system, message.feature());
   Access::restoreSystem(*system, message);
   if (message.has_bundle_template()) {
@@ -459,8 +459,8 @@ oipb::Station toProto(const Station& station) {
   return m;
 }
 
-oi::Guarded<Station> createStation(const oipb::Station& message) {
-  oi::Guarded<Station> station = new Station();
+std::unique_ptr<Station> createStation(const oipb::Station& message) {
+  auto station = std::make_unique<Station>();
   Access::restoreCommon(*station, message.feature());
   Access::restoreStation(*station, message);
   return station;

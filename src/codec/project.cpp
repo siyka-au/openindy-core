@@ -51,57 +51,6 @@ std::string digestOf(const oipb::Project& body) {
   return sha256Hex(bytes);
 }
 
-// The job holds features through FeatureWrapper, one wrapper per feature. (A
-// feature also carries a wrapper of its own, but the job and the features'
-// reference lists have always used separately created ones.)
-template <class T>
-bool wrapAs(oi::Guarded<FeatureWrapper>& wrapper, Feature* feature,
-            void (FeatureWrapper::*set)(const oi::Guarded<T>&)) {
-  if (auto* typed = dynamic_cast<T*>(feature)) {
-    wrapper = new FeatureWrapper();
-    (wrapper.data()->*set)(typed);
-    return true;
-  }
-  return false;
-}
-
-oi::Guarded<FeatureWrapper> wrap(Feature* feature) {
-  oi::Guarded<FeatureWrapper> wrapper;
-  // a point group is a group, so it has to be asked first
-  const bool known =
-      wrapAs<Station>(wrapper, feature, &FeatureWrapper::setStation) ||
-      wrapAs<CoordinateSystem>(wrapper, feature,
-                               &FeatureWrapper::setCoordinateSystem) ||
-      wrapAs<TrafoParam>(wrapper, feature, &FeatureWrapper::setTrafoParam) ||
-      wrapAs<PointGroup>(wrapper, feature, &FeatureWrapper::setPointGroup) ||
-      wrapAs<Group>(wrapper, feature, &FeatureWrapper::setGroup) ||
-      wrapAs<Circle>(wrapper, feature, &FeatureWrapper::setCircle) ||
-      wrapAs<Cone>(wrapper, feature, &FeatureWrapper::setCone) ||
-      wrapAs<Cylinder>(wrapper, feature, &FeatureWrapper::setCylinder) ||
-      wrapAs<Ellipse>(wrapper, feature, &FeatureWrapper::setEllipse) ||
-      wrapAs<Ellipsoid>(wrapper, feature, &FeatureWrapper::setEllipsoid) ||
-      wrapAs<Hyperboloid>(wrapper, feature, &FeatureWrapper::setHyperboloid) ||
-      wrapAs<Line>(wrapper, feature, &FeatureWrapper::setLine) ||
-      wrapAs<Nurbs>(wrapper, feature, &FeatureWrapper::setNurbs) ||
-      wrapAs<Paraboloid>(wrapper, feature, &FeatureWrapper::setParaboloid) ||
-      wrapAs<Plane>(wrapper, feature, &FeatureWrapper::setPlane) ||
-      wrapAs<Point>(wrapper, feature, &FeatureWrapper::setPoint) ||
-      wrapAs<PointCloud>(wrapper, feature, &FeatureWrapper::setPointCloud) ||
-      wrapAs<ScalarEntityAngle>(wrapper, feature,
-                                &FeatureWrapper::setScalarEntityAngle) ||
-      wrapAs<ScalarEntityDistance>(wrapper, feature,
-                                   &FeatureWrapper::setScalarEntityDistance) ||
-      wrapAs<ScalarEntityMeasurementSeries>(
-          wrapper, feature,
-          &FeatureWrapper::setScalarEntityMeasurementSeries) ||
-      wrapAs<ScalarEntityTemperature>(
-          wrapper, feature, &FeatureWrapper::setScalarEntityTemperature) ||
-      wrapAs<SlottedHole>(wrapper, feature, &FeatureWrapper::setSlottedHole) ||
-      wrapAs<Sphere>(wrapper, feature, &FeatureWrapper::setSphere) ||
-      wrapAs<Torus>(wrapper, feature, &FeatureWrapper::setTorus);
-  return known ? wrapper : oi::Guarded<FeatureWrapper>();
-}
-
 bool isScalarEntity(const FeatureWrapper& wrapper) {
   switch (wrapper.getFeatureTypeEnum()) {
     case FeatureTypes::eScalarEntityAngleFeature:
@@ -222,7 +171,13 @@ struct Staging {
   std::map<int, oi::Guarded<FeatureWrapper>> groups;
   std::vector<oi::Guarded<Function>>
       functions;  // not yet attached to a feature
-  bool released = false;
+
+  // The owner of every staged feature until it is handed on (to the job,
+  // or to the station that owns its position and system). The maps above
+  // are lookup handles only, so a decode that fails midway frees whatever
+  // was built by construction.
+  std::vector<std::unique_ptr<Feature>> owned;
+  bool released = false;  // functions and observations have been adopted
 
   Staging() = default;
   Staging(const Staging&) = delete;
@@ -240,17 +195,24 @@ struct Staging {
     for (const auto& [id, observation] : observations) {
       delete observation.data();
     }
-    for (const auto* map :
-         {&stations, &systems, &trafos, &geometries, &groups}) {
-      for (const auto& [id, wrapper] : *map) {
-        if (wrapper.isNull()) {
-          continue;
-        }
-        const oi::Guarded<FeatureWrapper> keep = wrapper;
-        delete keep->getFeature().data();
-        delete keep.data();
-      }
+  }
+
+  // Hands a staged feature on; null when it was already taken.
+  [[nodiscard]] std::unique_ptr<Feature> take(
+      const oi::Guarded<FeatureWrapper>& wrapper) {
+    if (wrapper.isNull()) {
+      return nullptr;
     }
+    const Feature* const raw = wrapper->getFeature().data();
+    const auto it = std::find_if(
+        owned.begin(), owned.end(),
+        [raw](const std::unique_ptr<Feature>& f) { return f.get() == raw; });
+    if (it == owned.end()) {
+      return nullptr;
+    }
+    std::unique_ptr<Feature> result = std::move(*it);
+    owned.erase(it);
+    return result;
   }
 
   // Any feature by id, restricted to the kinds a given reference may name.
@@ -349,21 +311,18 @@ bool Linker::create() {
 
   // Every duplicate id is dropped (the first one wins) rather than silently
   // replacing an entity other entities already refer to.
-  const auto add = [](std::map<int, oi::Guarded<FeatureWrapper>>& into, int id,
-                      const oi::Guarded<Feature>& feature) {
-    if (feature.isNull()) {
-      return;
+  const auto add = [this](std::map<int, oi::Guarded<FeatureWrapper>>& into,
+                          int id, std::unique_ptr<Feature> feature) {
+    if (!feature || into.contains(id)) {
+      return;  // the duplicate is freed here
     }
-    if (into.contains(id)) {
-      delete feature.data();
-      return;
-    }
-    const oi::Guarded<FeatureWrapper> wrapper = wrap(feature);
-    if (wrapper.isNull()) {
-      delete feature.data();
+    const oi::Guarded<FeatureWrapper> wrapper = feature->getFeatureWrapper();
+    if (wrapper.isNull() ||
+        wrapper->getFeatureTypeEnum() == FeatureTypes::eUndefinedFeature) {
       return;
     }
     into.insert_or_assign(id, wrapper);
+    staging_.owned.push_back(std::move(feature));
   };
 
   for (const auto& message : project_.stations()) {
@@ -695,7 +654,11 @@ void Linker::linkStations() {
       const oi::Guarded<Point> point =
           oi::value(staging_.geometries, message.position())->getPoint();
       if (!point.isNull()) {
+        // the station owns its position from here on (it deletes it)
         Access::setStationPosition(*station, point);
+        [[maybe_unused]] Feature* const handedOver =
+            staging_.take(oi::value(staging_.geometries, message.position()))
+                .release();
       }
     }
     if (staging_.systems.contains(message.coordinate_system())) {
@@ -703,7 +666,12 @@ void Linker::linkStations() {
           oi::value(staging_.systems, message.coordinate_system())
               ->getCoordinateSystem();
       if (!system.isNull()) {
+        // the station owns its system from here on (it deletes it)
         Access::setStationSystem(*station, system);
+        [[maybe_unused]] Feature* const handedOver =
+            staging_
+                .take(oi::value(staging_.systems, message.coordinate_system()))
+                .release();
       }
     }
 
@@ -984,11 +952,20 @@ DecodeResult decodeProject(std::string_view bytes, ProjectHost& host) {
   }
 
   oi::Guarded<OiJob> job = new OiJob();
-  Access::adopt(*job, oi::values(staging.stations));
-  Access::adopt(*job, oi::values(staging.systems));
-  Access::adopt(*job, oi::values(staging.trafos));
-  Access::adopt(*job, geometries);
-  Access::adopt(*job, oi::values(staging.groups));
+  const auto adoptAll = [&](const auto& wrappers) {
+    std::vector<std::unique_ptr<Feature>> features;
+    for (const oi::Guarded<FeatureWrapper>& wrapper : wrappers) {
+      if (auto feature = staging.take(wrapper)) {
+        features.push_back(std::move(feature));
+      }
+    }
+    Access::adopt(*job, std::move(features));
+  };
+  adoptAll(oi::values(staging.stations));
+  adoptAll(oi::values(staging.systems));
+  adoptAll(oi::values(staging.trafos));
+  adoptAll(geometries);
+  adoptAll(oi::values(staging.groups));
   staging.released = true;
 
   if (project.next_id() > 0) {

@@ -127,11 +127,11 @@ void MessageSinkTest::initTestCase() {
 
 MessageSinkTest::Fixture MessageSinkTest::addActivePoint(OiJob& job) {
   Fixture f;
-  f.point = new Point();
-  f.wrapper = new FeatureWrapper();
-  f.wrapper->setPoint(f.point);
+  auto point = std::make_unique<Point>();
+  f.point = point.get();
+  f.wrapper = f.point->getFeatureWrapper();
   f.point->setFeatureName("P1");
-  const bool added = job.addFeature(f.wrapper);
+  const bool added = !job.addFeature(std::move(point)).isNull();
   assert(added);
   static_cast<void>(added);
   f.point->setActiveFeatureState(true);
@@ -252,12 +252,12 @@ void MessageSinkTest::aBundleAdjustmentOutlivingItsJobIsDetached() {
   oi::Guarded<BundleAdjustment> bundle = new BundleAdjustment();
   {
     OiJob job;
-    oi::Guarded<CoordinateSystem> system = new CoordinateSystem(true);
+    auto own_system = std::make_unique<oi::CoordinateSystem>(true);
+    oi::Guarded<CoordinateSystem> system = own_system.get();
+    oi::Guarded<oi::FeatureWrapper> wrapper = system->getFeatureWrapper();
     system->setFeatureName("Bundle01");
     system->setBundlePlugin(bundle);
-    oi::Guarded<FeatureWrapper> wrapper = new FeatureWrapper();
-    wrapper->setCoordinateSystem(system);
-    REQUIRE(job.addFeature(wrapper));
+    REQUIRE(job.addFeature(std::move(own_system)));
     bundle->setCurrentJob(&job);
     OI_COMPARE(bundle->getMessageSink(), static_cast<MessageSink*>(&job));
     REQUIRE(!bundle->runBundle());

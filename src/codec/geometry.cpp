@@ -186,8 +186,8 @@ void decodeStatistic(const oipb::GeometryStatistic& m, Statistic* s) {
 
 // Builds a geometry of type T and restores the state every geometry shares.
 template <class T>
-oi::Guarded<Geometry> Access::restoreBase(const oipb::Geometry& m) {
-  oi::Guarded<T> created = new T();
+std::unique_ptr<Geometry> Access::restoreBase(const oipb::Geometry& m) {
+  auto created = std::make_unique<T>();
   // Address the shared members through Geometry: SlottedHole declares its own
   // `radius`, which would otherwise hide the base one.
   Geometry& geometry = *created;
@@ -309,20 +309,20 @@ void Access::encodeGeometry(const Geometry& g, oipb::Geometry* m) {
   }
 }
 
-oi::Guarded<Geometry> Access::decodeGeometry(const oipb::Geometry& m) {
+std::unique_ptr<Geometry> Access::decodeGeometry(const oipb::Geometry& m) {
   switch (m.shape_case()) {
     case oipb::Geometry::kCircle:
       return restoreBase<Circle>(m);
     case oipb::Geometry::kCone: {
       auto geometry = restoreBase<Cone>(m);
-      static_cast<Cone*>(geometry.data())->aperture = m.cone().aperture();
+      static_cast<Cone*>(geometry.get())->aperture = m.cone().aperture();
       return geometry;
     }
     case oipb::Geometry::kCylinder:
       return restoreBase<Cylinder>(m);
     case oipb::Geometry::kEllipse: {
       auto geometry = restoreBase<Ellipse>(m);
-      auto* ellipse = static_cast<Ellipse*>(geometry.data());
+      auto* ellipse = static_cast<Ellipse*>(geometry.get());
       ellipse->a = m.ellipse().a();
       ellipse->b = m.ellipse().b();
       ellipse->semiMajorAxis = directionOf(m.ellipse().semi_major_axis());
@@ -330,14 +330,14 @@ oi::Guarded<Geometry> Access::decodeGeometry(const oipb::Geometry& m) {
     }
     case oipb::Geometry::kEllipsoid: {
       auto geometry = restoreBase<Ellipsoid>(m);
-      auto* ellipsoid = static_cast<Ellipsoid*>(geometry.data());
+      auto* ellipsoid = static_cast<Ellipsoid*>(geometry.get());
       ellipsoid->a = m.ellipsoid().a();
       ellipsoid->b = m.ellipsoid().b();
       return geometry;
     }
     case oipb::Geometry::kHyperboloid: {
       auto geometry = restoreBase<Hyperboloid>(m);
-      auto* hyperboloid = static_cast<Hyperboloid*>(geometry.data());
+      auto* hyperboloid = static_cast<Hyperboloid*>(geometry.get());
       hyperboloid->a = m.hyperboloid().a();
       hyperboloid->c = m.hyperboloid().c();
       return geometry;
@@ -348,18 +348,17 @@ oi::Guarded<Geometry> Access::decodeGeometry(const oipb::Geometry& m) {
       return restoreBase<Nurbs>(m);
     case oipb::Geometry::kParaboloid: {
       auto geometry = restoreBase<Paraboloid>(m);
-      static_cast<Paraboloid*>(geometry.data())->a = m.paraboloid().a();
+      static_cast<Paraboloid*>(geometry.get())->a = m.paraboloid().a();
       return geometry;
     }
     case oipb::Geometry::kPlane: {
       auto geometry = restoreBase<Plane>(m);
-      static_cast<Plane*>(geometry.data())->d =
-          m.plane().distance_from_origin();
+      static_cast<Plane*>(geometry.get())->d = m.plane().distance_from_origin();
       return geometry;
     }
     case oipb::Geometry::kPoint: {
       auto geometry = restoreBase<Point>(m);
-      auto* point = static_cast<Point*>(geometry.data());
+      auto* point = static_cast<Point*>(geometry.get());
       for (const auto& intent : m.point().intents()) {
         point->intents.push_back(
             MeasurementIntent(intent.feature_id(), (intent.role())));
@@ -368,7 +367,7 @@ oi::Guarded<Geometry> Access::decodeGeometry(const oipb::Geometry& m) {
     }
     case oipb::Geometry::kPointCloud: {
       auto geometry = restoreBase<PointCloud>(m);
-      auto* cloud = static_cast<PointCloud*>(geometry.data());
+      auto* cloud = static_cast<PointCloud*>(geometry.get());
       const auto& shape = m.point_cloud();
       const int count = shape.coordinates_size() / 3;
       for (int i = 0; i < count; ++i) {
@@ -388,31 +387,31 @@ oi::Guarded<Geometry> Access::decodeGeometry(const oipb::Geometry& m) {
     }
     case oipb::Geometry::kScalarAngle: {
       auto geometry = restoreBase<ScalarEntityAngle>(m);
-      static_cast<ScalarEntityAngle*>(geometry.data())->angle =
+      static_cast<ScalarEntityAngle*>(geometry.get())->angle =
           m.scalar_angle().angle();
       return geometry;
     }
     case oipb::Geometry::kScalarDistance: {
       auto geometry = restoreBase<ScalarEntityDistance>(m);
-      static_cast<ScalarEntityDistance*>(geometry.data())->distance =
+      static_cast<ScalarEntityDistance*>(geometry.get())->distance =
           m.scalar_distance().distance();
       return geometry;
     }
     case oipb::Geometry::kScalarMeasurementSeries: {
       auto geometry = restoreBase<ScalarEntityMeasurementSeries>(m);
-      static_cast<ScalarEntityMeasurementSeries*>(geometry.data())
-          ->seriesValue = m.scalar_measurement_series().series_value();
+      static_cast<ScalarEntityMeasurementSeries*>(geometry.get())->seriesValue =
+          m.scalar_measurement_series().series_value();
       return geometry;
     }
     case oipb::Geometry::kScalarTemperature: {
       auto geometry = restoreBase<ScalarEntityTemperature>(m);
-      static_cast<ScalarEntityTemperature*>(geometry.data())->temperature =
+      static_cast<ScalarEntityTemperature*>(geometry.get())->temperature =
           m.scalar_temperature().temperature();
       return geometry;
     }
     case oipb::Geometry::kSlottedHole: {
       auto geometry = restoreBase<SlottedHole>(m);
-      auto* hole = static_cast<SlottedHole*>(geometry.data());
+      auto* hole = static_cast<SlottedHole*>(geometry.get());
       const auto& shape = m.slotted_hole();
       hole->center = positionOf(shape.center());
       hole->normal = directionOf(shape.normal());
@@ -427,7 +426,7 @@ oi::Guarded<Geometry> Access::decodeGeometry(const oipb::Geometry& m) {
       return restoreBase<Sphere>(m);
     case oipb::Geometry::kTorus: {
       auto geometry = restoreBase<Torus>(m);
-      static_cast<Torus*>(geometry.data())
+      static_cast<Torus*>(geometry.get())
           ->radiusB.setRadius(m.torus().radius_b());
       return geometry;
     }
@@ -446,12 +445,12 @@ void Access::encodeGroup(const Group& g, oipb::Group* m) {
   m->set_point_group(dynamic_cast<const PointGroup*>(&g) != nullptr);
 }
 
-oi::Guarded<Group> Access::decodeGroup(const oipb::Group& m) {
-  oi::Guarded<Group> group;
+std::unique_ptr<Group> Access::decodeGroup(const oipb::Group& m) {
+  std::unique_ptr<Group> group;
   if (m.point_group()) {
-    group = new PointGroup();
+    group = std::make_unique<PointGroup>();
   } else {
-    group = new Group();
+    group = std::make_unique<Group>();
   }
   restoreCommon(*group, m.common());
   if (!m.point_group()) {
@@ -466,7 +465,7 @@ oipb::Geometry toProto(const Geometry& geometry) {
   return m;
 }
 
-oi::Guarded<Geometry> createGeometry(const oipb::Geometry& message) {
+std::unique_ptr<Geometry> createGeometry(const oipb::Geometry& message) {
   return Access::decodeGeometry(message);
 }
 
@@ -476,7 +475,7 @@ oipb::Group toProto(const Group& group) {
   return m;
 }
 
-oi::Guarded<Group> createGroup(const oipb::Group& message) {
+std::unique_ptr<Group> createGroup(const oipb::Group& message) {
   return Access::decodeGroup(message);
 }
 

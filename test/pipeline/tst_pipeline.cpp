@@ -115,7 +115,7 @@ class PipelineTest {
   void addingANewOutlierLaterReTriggersTheFilterOnRecalc();
 
  private:
-  oi::Guarded<FeatureWrapper> makeTargetPoint(const std::string& name);
+  std::unique_ptr<Point> makeTargetPoint(const std::string& name);
   oi::Guarded<Point> makeCandidate(double x, oi::Guarded<OiJob> job);
 };
 
@@ -123,21 +123,20 @@ void PipelineTest::initTestCase() {
   ChooseLALib::setLinearAlgebra(ChooseLALib::LinearAlgebraLibrary::Armadillo);
 }
 
-oi::Guarded<FeatureWrapper> PipelineTest::makeTargetPoint(
-    const std::string& name) {
-  oi::Guarded<Point> point = new Point();
+std::unique_ptr<Point> PipelineTest::makeTargetPoint(const std::string& name) {
+  auto point = std::make_unique<Point>();
   point->setFeatureName(name);
-  oi::Guarded<FeatureWrapper> wrapper = new FeatureWrapper();
-  wrapper->setPoint(point);
-  return wrapper;
+  return point;
 }
 
 oi::Guarded<Point> PipelineTest::makeCandidate(double x,
                                                oi::Guarded<OiJob> job) {
-  oi::Guarded<Point> point = new Point();
-  oi::Guarded<FeatureWrapper> wrapper = new FeatureWrapper();
-  wrapper->setPoint(point);
-  job->addFeature(wrapper);
+  auto own_point = std::make_unique<oi::Point>();
+  oi::Guarded<Point> point = own_point.get();
+  // a job rejects an unnamed feature, and a duplicate name
+  static int candidateCount = 0;
+  point->setFeatureName(std::format("Candidate{}", ++candidateCount));
+  REQUIRE(job->addFeature(std::move(own_point)));
   point->setPoint(Position(x, 0.0, 0.0));
   return point;
 }
@@ -151,8 +150,9 @@ oi::Guarded<Point> PipelineTest::makeCandidate(double x,
  */
 void PipelineTest::undeclaredPipelineLeavesShouldBeUsedUntouched() {
   oi::Guarded<OiJob> job = new OiJob();
-  oi::Guarded<FeatureWrapper> target = this->makeTargetPoint("Target1");
-  REQUIRE(job->addFeature(target));
+  oi::Guarded<FeatureWrapper> target =
+      job->addFeature(this->makeTargetPoint("Target1"));
+  REQUIRE(target);
 
   oi::Guarded<FakeAverageFit> function = new FakeAverageFit();
   target->getPoint()->addFunction(function);
@@ -184,8 +184,9 @@ void PipelineTest::undeclaredPipelineLeavesShouldBeUsedUntouched() {
 
 void PipelineTest::explicitListStageKeepsOnlyListedIdsAndRecordsReasons() {
   oi::Guarded<OiJob> job = new OiJob();
-  oi::Guarded<FeatureWrapper> target = this->makeTargetPoint("Target2");
-  REQUIRE(job->addFeature(target));
+  oi::Guarded<FeatureWrapper> target =
+      job->addFeature(this->makeTargetPoint("Target2"));
+  REQUIRE(target);
 
   oi::Guarded<FakeAverageFit> function = new FakeAverageFit();
   target->getPoint()->addFunction(function);
@@ -222,8 +223,9 @@ void PipelineTest::explicitListStageKeepsOnlyListedIdsAndRecordsReasons() {
 
 void PipelineTest::excludeStageDropsSpecificIdWithReason() {
   oi::Guarded<OiJob> job = new OiJob();
-  oi::Guarded<FeatureWrapper> target = this->makeTargetPoint("Target3");
-  REQUIRE(job->addFeature(target));
+  oi::Guarded<FeatureWrapper> target =
+      job->addFeature(this->makeTargetPoint("Target3"));
+  REQUIRE(target);
 
   oi::Guarded<FakeAverageFit> function = new FakeAverageFit();
   target->getPoint()->addFunction(function);
@@ -265,8 +267,9 @@ void PipelineTest::excludeStageDropsSpecificIdWithReason() {
  */
 void PipelineTest::residualOutlierRejectionExcludesTheOutlierAndConverges() {
   oi::Guarded<OiJob> job = new OiJob();
-  oi::Guarded<FeatureWrapper> target = this->makeTargetPoint("Target4");
-  REQUIRE(job->addFeature(target));
+  oi::Guarded<FeatureWrapper> target =
+      job->addFeature(this->makeTargetPoint("Target4"));
+  REQUIRE(target);
 
   oi::Guarded<FakeAverageFit> function = new FakeAverageFit();
   target->getPoint()->addFunction(function);
@@ -333,8 +336,9 @@ void PipelineTest::residualOutlierRejectionExcludesTheOutlierAndConverges() {
  */
 void PipelineTest::omittingTheFilterLeavesTheResultSkewedByTheOutlier() {
   oi::Guarded<OiJob> job = new OiJob();
-  oi::Guarded<FeatureWrapper> target = this->makeTargetPoint("Target5");
-  REQUIRE(job->addFeature(target));
+  oi::Guarded<FeatureWrapper> target =
+      job->addFeature(this->makeTargetPoint("Target5"));
+  REQUIRE(target);
 
   oi::Guarded<FakeAverageFit> function = new FakeAverageFit();
   target->getPoint()->addFunction(function);
@@ -370,8 +374,9 @@ void PipelineTest::omittingTheFilterLeavesTheResultSkewedByTheOutlier() {
  */
 void PipelineTest::addingANewOutlierLaterReTriggersTheFilterOnRecalc() {
   oi::Guarded<OiJob> job = new OiJob();
-  oi::Guarded<FeatureWrapper> target = this->makeTargetPoint("Target6");
-  REQUIRE(job->addFeature(target));
+  oi::Guarded<FeatureWrapper> target =
+      job->addFeature(this->makeTargetPoint("Target6"));
+  REQUIRE(target);
 
   oi::Guarded<FakeAverageFit> function = new FakeAverageFit();
   target->getPoint()->addFunction(function);

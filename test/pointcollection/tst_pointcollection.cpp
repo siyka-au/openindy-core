@@ -17,11 +17,18 @@ namespace {
 
 // a solved Point wrapped for group membership, which is how every real
 // point reaches a group
+// the features the tests build and never hand to a job live here, so that
+// the test does not leak them
+std::vector<std::unique_ptr<Feature>>& pool() {
+  static std::vector<std::unique_ptr<Feature>> features;
+  return features;
+}
+
 oi::Guarded<FeatureWrapper> makePoint(double x, double y, double z, int id) {
-  oi::Guarded<Point> point = new Point(id, Position(x, y, z));
+  auto point = std::make_unique<Point>(id, Position(x, y, z));
   point->setIsSolved(true);
-  oi::Guarded<FeatureWrapper> wrapper = new FeatureWrapper();
-  wrapper->setPoint(point);
+  oi::Guarded<FeatureWrapper> wrapper = point->getFeatureWrapper();
+  pool().push_back(std::move(point));
   return wrapper;
 }
 
@@ -90,9 +97,9 @@ void PointCollectionTest::pointInManyGroupsIsStoredOnce() {
 }
 
 void PointCollectionTest::constraintRejectsWrongType() {
-  oi::Guarded<PointCloud> cloud = new PointCloud();
-  oi::Guarded<FeatureWrapper> cloudWrapper = new FeatureWrapper();
-  cloudWrapper->setPointCloud(cloud);
+  auto cloud = std::make_unique<PointCloud>();
+  oi::Guarded<FeatureWrapper> cloudWrapper = cloud->getFeatureWrapper();
+  pool().push_back(std::move(cloud));
 
   PointGroup group("points only");
   OI_REQUIRE2(!group.addMember(cloudWrapper),
@@ -118,7 +125,8 @@ void PointCollectionTest::duplicateAndSelfMembershipRejected() {
 
   // a group containing itself would recurse forever on traversal
   Group outer("outer");
-  oi::Guarded<FeatureWrapper> selfWrapper = new FeatureWrapper();
+  FeatureWrapper untyped;  // a wrapper that wraps nothing
+  oi::Guarded<FeatureWrapper> selfWrapper = &untyped;
   OI_REQUIRE2(!outer.addMember(selfWrapper),
               "a null-typed wrapper must be rejected outright");
 }
@@ -132,8 +140,10 @@ void PointCollectionTest::compactDropsDeletedMembers() {
   REQUIRE(group.addMember(discard));
   OI_COMPARE(group.memberCount(), 2);
 
-  delete discard->getPoint().data();
-  delete discard.data();
+  const Feature* const doomed = discard->getFeature().data();
+  std::erase_if(pool(), [doomed](const std::unique_ptr<Feature>& f) {
+    return f.get() == doomed;
+  });
 
   // memberCount already ignores the dead reference; compact() removes it
   OI_COMPARE(group.memberCount(), 1);
@@ -172,10 +182,10 @@ void PointCollectionTest::unsolvedPointsAreNotPartOfTheCollection() {
   PointGroup group("wall");
   group.addMember(makePoint(0.0, 0.0, 0.0, 1));
 
-  oi::Guarded<Point> unsolved = new Point(2, Position(5.0, 5.0, 5.0));
+  auto unsolved = std::make_unique<Point>(2, Position(5.0, 5.0, 5.0));
   unsolved->setIsSolved(false);
-  oi::Guarded<FeatureWrapper> unsolvedWrapper = new FeatureWrapper();
-  unsolvedWrapper->setPoint(unsolved);
+  oi::Guarded<FeatureWrapper> unsolvedWrapper = unsolved->getFeatureWrapper();
+  pool().push_back(std::move(unsolved));
   REQUIRE(group.addMember(unsolvedWrapper));
 
   // it is a member, but it has no trustworthy position yet - feeding it to

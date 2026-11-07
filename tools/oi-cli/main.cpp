@@ -103,16 +103,16 @@ oi::Guarded<oi::OiJob> makeFixtureJob() {
   oi::Guarded<oi::OiJob> job = new oi::OiJob();
 
   // a project always has an active station
-  oi::Guarded<oi::Station> station = new oi::Station();
+  auto own_station = std::make_unique<oi::Station>();
+  oi::Guarded<oi::Station> station = own_station.get();
+  oi::Guarded<oi::FeatureWrapper> stationWrapper = station->getFeatureWrapper();
   station->setFeatureName("STATION01");
-  oi::Guarded<oi::FeatureWrapper> stationWrapper = new oi::FeatureWrapper();
-  stationWrapper->setStation(station);
-  job->addFeature(stationWrapper);
-  oi::Guarded<oi::CoordinateSystem> part = new oi::CoordinateSystem();
+  job->addFeature(std::move(own_station));
+  auto own_part = std::make_unique<oi::CoordinateSystem>();
+  oi::Guarded<oi::CoordinateSystem> part = own_part.get();
+  oi::Guarded<oi::FeatureWrapper> partWrapper = part->getFeatureWrapper();
   part->setFeatureName("PART");
-  oi::Guarded<oi::FeatureWrapper> partWrapper = new oi::FeatureWrapper();
-  partWrapper->setCoordinateSystem(part);
-  job->addFeature(partWrapper);
+  job->addFeature(std::move(own_part));
   station->setActiveStationState(true);
   station->getCoordinateSystem()->setActiveCoordinateSystemState(true);
 
@@ -120,12 +120,12 @@ oi::Guarded<oi::OiJob> makeFixtureJob() {
   const double ys[] = {0.0, 0.0, 1.0, 1.0, 2.5, 2.0};
   for (int i = 0; i < 6; ++i) {
     const double z = 0.5 + 0.1 * xs[i] - 0.05 * ys[i];
-    oi::Guarded<oi::Point> point = new oi::Point(oi::Position(xs[i], ys[i], z));
+    auto own_point = std::make_unique<oi::Point>(oi::Position(xs[i], ys[i], z));
+    oi::Guarded<oi::Point> point = own_point.get();
+    oi::Guarded<oi::FeatureWrapper> wrapper = point->getFeatureWrapper();
     point->setFeatureName(std::format("P{}", i + 1));
     point->setIsSolved(true);
-    oi::Guarded<oi::FeatureWrapper> wrapper = new oi::FeatureWrapper();
-    wrapper->setPoint(point);
-    job->addFeature(wrapper);
+    job->addFeature(std::move(own_point));
   }
   return job;
 }
@@ -202,10 +202,10 @@ int runProject(const std::string& pluginPath, const std::string& projectPath,
     element.point = point;
     fit->addInputElement(element, 0);
   }
-  oi::Guarded<oi::Plane> plane = new oi::Plane();
+  auto own_plane = std::make_unique<oi::Plane>();
+  oi::Guarded<oi::Plane> plane = own_plane.get();
+  oi::Guarded<oi::FeatureWrapper> planeWrapper = plane->getFeatureWrapper();
   plane->setFeatureName(kFittedName);
-  oi::Guarded<oi::FeatureWrapper> planeWrapper = new oi::FeatureWrapper();
-  planeWrapper->setPlane(plane);
 
   PrintingSink sink;
   const auto result =
@@ -227,7 +227,7 @@ int runProject(const std::string& pluginPath, const std::string& projectPath,
     }
   }
   plane->setIsSolved(true);
-  if (!job.addFeature(planeWrapper)) {
+  if (!job.addFeature(std::move(own_plane))) {
     return fail("cannot add the fitted plane to the job");
   }
   const int featureCount = job.getFeatureCount();

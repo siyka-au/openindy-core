@@ -8,12 +8,18 @@
 
 using namespace oi;
 
-PointGroup::PointGroup() : Group(std::string(), FeatureTypes::ePointFeature) {}
+PointGroup::PointGroup() : Group(std::string(), FeatureTypes::ePointFeature) {
+  this->selfFeature->setPointGroup(this);
+}
 
 PointGroup::PointGroup(const std::string& name)
-    : Group(name, FeatureTypes::ePointFeature) {}
+    : Group(name, FeatureTypes::ePointFeature) {
+  this->selfFeature->setPointGroup(this);
+}
 
-PointGroup::PointGroup(const PointGroup& copy) : Group(copy) {}
+PointGroup::PointGroup(const PointGroup& copy) : Group(copy) {
+  this->selfFeature->setPointGroup(this);
+}
 
 PointGroup& PointGroup::operator=(const PointGroup& copy) {
   Group::operator=(copy);

@@ -2,6 +2,7 @@
 #define EXCHANGEINTERFACE_H
 #include <iosfwd>
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "coordinatesystem.h"
@@ -46,6 +47,11 @@ class OI_CORE_EXPORT ExchangeInterface : public oi::Trackable {
   [[nodiscard]] const std::vector<oi::Guarded<FeatureWrapper>>& getFeatures()
       const;
   void setFeatures(const std::vector<oi::Guarded<FeatureWrapper>>& features);
+
+  // The features an import created. The exchange owns them until the host
+  // takes them (typically to hand them to OiJob::addFeatures); getFeatures()
+  // keeps non-owning handles to them, which read null once a feature is gone.
+  [[nodiscard]] std::vector<std::unique_ptr<Feature>> takeImportedFeatures();
 
   [[nodiscard]] const bool& getExportObservations() const;
   void setExportObservations(const bool& exportObservations);
@@ -121,9 +127,14 @@ class OI_CORE_EXPORT ExchangeInterface : public oi::Trackable {
       nominalSystem;  // nominal coordinate system the imported geometries are
                       // referenced to
 
+  // An importing plugin hands each feature it creates to the exchange here.
+  void addImportedFeature(std::unique_ptr<Feature> feature);
+
   std::iostream* stream{nullptr};  // non-owning, see setStream
   std::vector<oi::Guarded<FeatureWrapper>>
       features;  // the features that shall be exported or were imported
+  std::vector<std::unique_ptr<Feature>>
+      importedFeatures;  // owner of the imported ones until they are taken
 
   PluginMetaData metaData;
   std::vector<GeometryTypes> supportedGeometries;

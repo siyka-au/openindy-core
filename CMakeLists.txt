@@ -389,6 +389,15 @@ endif()
 
 add_test(NAME ownership COMMAND tst_ownership)
 
+add_executable(tst_featurestorage test/featurestorage/tst_featurestorage.cpp)
+target_link_libraries(tst_featurestorage PRIVATE Catch2::Catch2WithMain OpenIndyCore OpenIndyMath)
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(tst_featurestorage PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+
+add_test(NAME featurestorage COMMAND tst_featurestorage)
+
 add_executable(tst_featureobserver test/featureobserver/tst_featureobserver.cpp)
 target_link_libraries(tst_featureobserver PRIVATE Catch2::Catch2WithMain OpenIndyCore OpenIndyMath)
 target_include_directories(tst_featureobserver PRIVATE test/common)

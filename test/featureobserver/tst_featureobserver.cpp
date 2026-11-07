@@ -203,9 +203,9 @@ void FeatureObserverTest::groupMemberAdded() {
 
 void FeatureObserverTest::stationSystemObservationAdded() {
   OiJob job;
-  Station* station = new Station("S1");
-  oi::Guarded<FeatureWrapper> wrapper = station->getFeatureWrapper();
-  REQUIRE(job.addFeature(wrapper));
+  auto ownedStation = std::make_unique<Station>("S1");
+  Station* station = ownedStation.get();
+  REQUIRE(job.addFeature(std::move(ownedStation)));
 
   RecordingJobObserver spy;
   spy.attach(&job);
@@ -270,10 +270,11 @@ void FeatureObserverTest::destroyingTheFeatureTellsTheObserverOnce() {
 
 void FeatureObserverTest::observerIsClearedWhenFeatureIsRemovedFromJob() {
   OiJob job;
-  Point* point = new Point();
+  auto own_point = std::make_unique<Point>();
+  Point* point = own_point.get();
   point->setFeatureName("P1");
   oi::Guarded<Point> guard(point);
-  REQUIRE(job.addFeature(point->getFeatureWrapper()));
+  REQUIRE(job.addFeature(std::move(own_point)));
   OI_COMPARE(point->getObserver(), static_cast<FeatureObserver*>(&job));
   OI_COMPARE(job.getFeatureCount(), 1);
 
@@ -285,42 +286,34 @@ void FeatureObserverTest::observerIsClearedWhenFeatureIsRemovedFromJob() {
 }
 
 void FeatureObserverTest::observerIsClearedWhenJobIsDestroyed() {
-  Point* point = new Point();
+  auto own_point = std::make_unique<Point>();
+  Point* point = own_point.get();
   point->setFeatureName("P1");
   oi::Guarded<Point> guard(point);
   RecordingObserver rec;
 
   {
     OiJob job;
-    REQUIRE(job.addFeature(point->getFeatureWrapper()));
+    REQUIRE(job.addFeature(std::move(own_point)));
     OI_COMPARE(point->getObserver(), static_cast<FeatureObserver*>(&job));
   }
 
-  // the job's destruction deletes only the feature's wrapper, so the feature
-  // outlives it (and is deliberately leaked here: its wrapper is gone) -
-  // nothing may still point at the dead job
-  REQUIRE(!guard.isNull());
-  {
-    REQUIRE(point->getObserver() == nullptr);
-    point->setFeatureName("after");  // would call into a dead job otherwise
-    point->setComment("after");
-    point->setIsSolved(true);
-    point->setObserver(&rec);
-    point->setFeatureName("after2");
-    OI_COMPARE(rec.count("featureName"), 1);
-    point->setObserver(nullptr);
-  }
-  // let any queued delivery run: it must not reach the destroyed job
+  // the job owns its features: destroying it destroys them, after letting
+  // go of them, so nothing ever calls into the dead job and the feature is
+  // not leaked
+  REQUIRE(guard.isNull());
+  OI_COMPARE(rec.count("elementAboutToBeDeleted"), 0);
 }
 
 void FeatureObserverTest::stationSystemObserverIsClearedWhenJobIsDestroyed() {
-  Station* station = new Station("S1");
+  auto own_station = std::make_unique<Station>("S1");
+  Station* station = own_station.get();
   oi::Guarded<Station> guard(station);
   oi::Guarded<CoordinateSystem> system = station->getCoordinateSystem();
   REQUIRE(!system.isNull());
   {
     OiJob job;
-    REQUIRE(job.addFeature(station->getFeatureWrapper()));
+    REQUIRE(job.addFeature(std::move(own_station)));
     REQUIRE(system->getObserver() != nullptr);
   }
   if (!guard.isNull() && !system.isNull()) {
@@ -331,9 +324,10 @@ void FeatureObserverTest::stationSystemObserverIsClearedWhenJobIsDestroyed() {
 
 void FeatureObserverTest::jobRelaysIntoItsOwnSignals() {
   OiJob job;
-  Point point;
+  auto own_point = std::make_unique<Point>();
+  Point& point = *own_point;
   point.setFeatureName("P1");
-  REQUIRE(job.addFeature(point.getFeatureWrapper()));
+  REQUIRE(job.addFeature(std::move(own_point)));
 
   RecordingJobObserver rec;
   rec.attach(&job);
@@ -357,9 +351,10 @@ void FeatureObserverTest::jobDeliversIsSolvedDeferred() {
   QueuedExecutor executor;
   OiJob job;
   job.setExecutor(&executor);
-  Point point;
+  auto own_point = std::make_unique<Point>();
+  Point& point = *own_point;
   point.setFeatureName("P1");
-  REQUIRE(job.addFeature(point.getFeatureWrapper()));
+  REQUIRE(job.addFeature(std::move(own_point)));
 
   RecordingJobObserver spy;
   spy.attach(&job);

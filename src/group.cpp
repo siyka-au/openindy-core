@@ -10,20 +10,25 @@
 
 using namespace oi;
 
-Group::Group() : Feature() {}
+Group::Group() : Feature() { this->selfFeature->setGroup(this); }
 
-Group::Group(const std::string& name) : Feature() { this->name = name; }
+Group::Group(const std::string& name) : Feature() {
+  this->name = name;
+  this->selfFeature->setGroup(this);
+}
 
 Group::Group(const std::string& name, const FeatureTypes& constraint)
     : Feature() {
   this->name = name;
   this->constraint = constraint;
+  this->selfFeature->setGroup(this);
 }
 
 Group::Group(const Group& copy)
     : Feature(copy), constraint(copy.constraint), members(copy.members) {
   // members are references, so a copied group references the same
   // features - it does not clone them. That is the whole contract.
+  this->selfFeature->setGroup(this);
 }
 
 Group& Group::operator=(const Group& copy) {

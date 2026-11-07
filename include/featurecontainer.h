@@ -1,6 +1,7 @@
 #ifndef FEATURECONTAINER_H
 #define FEATURECONTAINER_H
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -80,7 +81,13 @@ class OI_CORE_EXPORT FeatureContainer {
   // add or remove features
   // ######################
 
-  bool addFeature(const oi::Guarded<FeatureWrapper>& feature);
+  /*!
+   * Takes ownership of the feature and registers it under its own wrapper
+   * (Feature::getFeatureWrapper()). Returns that wrapper, or null when the
+   * feature is invalid or its id is already taken; the feature is then
+   * destroyed here, so a failed add never leaks.
+   */
+  oi::Guarded<FeatureWrapper> addFeature(std::unique_ptr<Feature> feature);
   bool removeFeature(const int& featureId);
 
   void checkAndClean(const int& featureId, const std::string& name,
@@ -102,6 +109,12 @@ class OI_CORE_EXPORT FeatureContainer {
   // ######################
   // feature lists and maps
   // ######################
+
+  // The one owner of every feature in the job. Everything below (and every
+  // other reference in the core) is a non-owning oi::Guarded handle. A
+  // feature owns its wrapper, so destroying the unique_ptr ends the whole
+  // lifetime and nulls every handle.
+  std::vector<std::unique_ptr<Feature>> ownedFeatures;
 
   // feature lists (useful to provide lists of features by category (geometries,
   // stations etc.))

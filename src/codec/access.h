@@ -115,9 +115,9 @@ struct Access {
 
   // ---- Geometry (geometry.cpp) ----
   template <class T>
-  static oi::Guarded<Geometry> restoreBase(const oipb::Geometry& m);
+  static std::unique_ptr<Geometry> restoreBase(const oipb::Geometry& m);
   static void encodeGeometry(const Geometry& g, oipb::Geometry* m);
-  static oi::Guarded<Geometry> decodeGeometry(const oipb::Geometry& m);
+  static std::unique_ptr<Geometry> decodeGeometry(const oipb::Geometry& m);
 
   // ---- Function (functions.cpp) ----
   static void encodeFunction(const Function& f, oipb::FunctionRecord* m);
@@ -198,14 +198,13 @@ struct Access {
 
   static int nextId(const OiJob& job) { return job.nextId; }
   static void setNextId(OiJob& job, int next) { job.nextId = next; }
-  static void adopt(OiJob& job,
-                    const std::vector<oi::Guarded<FeatureWrapper>>& f) {
-    job.addFeaturesFromXml(f);
+  static void adopt(OiJob& job, std::vector<std::unique_ptr<Feature>> f) {
+    job.addFeaturesFromXml(std::move(f));
   }
 
   // ---- Group (geometry.cpp) ----
   static void encodeGroup(const Group& g, oipb::Group* m);
-  static oi::Guarded<Group> decodeGroup(const oipb::Group& m);
+  static std::unique_ptr<Group> decodeGroup(const oipb::Group& m);
 };
 
 }  // namespace oi::codec

@@ -850,18 +850,18 @@ void SensorWorkerTest::stationsOfAJobUseTheJobsExecutor() {
   OiJob job;
 
   // a station that was added before the executor was set ...
-  oi::Guarded<Station> early = new Station("S1");
-  oi::Guarded<FeatureWrapper> earlyFeature = new FeatureWrapper();
-  earlyFeature->setStation(early);
-  job.addFeature(earlyFeature);
+  auto own_early = std::make_unique<oi::Station>("S1");
+  oi::Guarded<Station> early = own_early.get();
+  oi::Guarded<oi::FeatureWrapper> earlyFeature = early->getFeatureWrapper();
+  job.addFeature(std::move(own_early));
   job.setExecutor(&executor);
   OI_COMPARE(job.getExecutor(), &executor);
 
   // ... and one added afterwards
-  oi::Guarded<Station> late = new Station("S2");
-  oi::Guarded<FeatureWrapper> lateFeature = new FeatureWrapper();
-  lateFeature->setStation(late);
-  job.addFeature(lateFeature);
+  auto own_late = std::make_unique<oi::Station>("S2");
+  oi::Guarded<Station> late = own_late.get();
+  oi::Guarded<oi::FeatureWrapper> lateFeature = late->getFeatureWrapper();
+  job.addFeature(std::move(own_late));
 
   for (const oi::Guarded<Station>& station : {early, late}) {
     OI_COMPARE(station->getSensorControl()->getExecutor(), &executor);
@@ -891,10 +891,10 @@ void SensorWorkerTest::stationReportsActiveStationAndSensorChangesToTheJob() {
   RecordingJobObserver jobObserver;
   jobObserver.attach(&job);
 
-  oi::Guarded<Station> station = new Station("S1");
-  oi::Guarded<FeatureWrapper> feature = new FeatureWrapper();
-  feature->setStation(station);
-  job.addFeature(feature);
+  auto own_station = std::make_unique<oi::Station>("S1");
+  oi::Guarded<Station> station = own_station.get();
+  oi::Guarded<oi::FeatureWrapper> feature = station->getFeatureWrapper();
+  job.addFeature(std::move(own_station));
 
   station->setActiveStationState(true);
   OI_COMPARE(job.getActiveStation().data(), station.data());

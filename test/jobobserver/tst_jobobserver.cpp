@@ -63,10 +63,11 @@ void JobObserverTest::addAndRemoveFeatureNotifySetChanges() {
   RecordingJobObserver rec;
   rec.attach(&job);
 
-  Point* point = new Point();
+  auto own_point = std::make_unique<Point>();
+  Point* point = own_point.get();
   point->setFeatureName("P");
   point->setFeatureName("P1");
-  REQUIRE(job.addFeature(point->getFeatureWrapper()));
+  REQUIRE(job.addFeature(std::move(own_point)));
   OI_COMPARE(rec.count("featureSetChanged"), 1);
   OI_COMPARE(rec.count("geometrySetChanged"), 1);
   OI_COMPARE(rec.count("stationSetChanged"), 0);
@@ -78,9 +79,10 @@ void JobObserverTest::addAndRemoveFeatureNotifySetChanges() {
   OI_COMPARE(rec.count("featureSetChanged"), 1);
   OI_COMPARE(rec.count("recalcFeatureSet"), 1);
 
-  Station* station = new Station("S1");
+  auto own_station = std::make_unique<Station>("S1");
+  Station* station = own_station.get();
   rec.calls.clear();
-  REQUIRE(job.addFeature(station->getFeatureWrapper()));
+  REQUIRE(job.addFeature(std::move(own_station)));
   OI_COMPARE(rec.count("featureSetChanged"), 1);
   OI_COMPARE(rec.count("stationSetChanged"), 1);
   OI_COMPARE(rec.count("coordSystemSetChanged"), 0);
@@ -92,10 +94,11 @@ void JobObserverTest::renameAndGroupAreReported() {
   RecordingJobObserver rec;
   rec.attach(&job);
 
-  Point point;
+  auto own_point = std::make_unique<Point>();
+  Point& point = *own_point;
   point.setFeatureName("point");
   point.setFeatureName("P1");
-  REQUIRE(job.addFeature(point.getFeatureWrapper()));
+  REQUIRE(job.addFeature(std::move(own_point)));
   rec.calls.clear();
 
   point.setFeatureName("renamed");
@@ -120,15 +123,17 @@ void JobObserverTest::activeFeatureStationAndSystemChanges() {
   RecordingJobObserver rec;
   rec.attach(&job);
 
-  Point point;
+  auto own_point = std::make_unique<Point>();
+  Point& point = *own_point;
   point.setFeatureName("point");
-  REQUIRE(job.addFeature(point.getFeatureWrapper()));
+  REQUIRE(job.addFeature(std::move(own_point)));
   rec.calls.clear();
   point.setActiveFeatureState(true);
   OI_COMPARE(rec.count("activeFeatureChanged"), 1);
 
-  Station* station = new Station("S1");
-  REQUIRE(job.addFeature(station->getFeatureWrapper()));
+  auto own_station = std::make_unique<Station>("S1");
+  Station* station = own_station.get();
+  REQUIRE(job.addFeature(std::move(own_station)));
   rec.calls.clear();
   station->setActiveStationState(true);
   OI_COMPARE(rec.count("activeStationChanged"), 1);
@@ -143,16 +148,19 @@ void JobObserverTest::trafoParamChangesAreReported() {
   RecordingJobObserver rec;
   rec.attach(&job);
 
-  Station* s1 = new Station("S1");
-  Station* s2 = new Station("S2");
-  REQUIRE(job.addFeature(s1->getFeatureWrapper()));
-  REQUIRE(job.addFeature(s2->getFeatureWrapper()));
-  TrafoParam* tp = new TrafoParam();
+  auto own_s1 = std::make_unique<Station>("S1");
+  Station* s1 = own_s1.get();
+  auto own_s2 = std::make_unique<Station>("S2");
+  Station* s2 = own_s2.get();
+  REQUIRE(job.addFeature(std::move(own_s1)));
+  REQUIRE(job.addFeature(std::move(own_s2)));
+  auto own_tp = std::make_unique<TrafoParam>();
+  TrafoParam* tp = own_tp.get();
   tp->setFeatureName("T1");
   REQUIRE(tp->setCoordinateSystems(s1->getCoordinateSystem(),
                                    s2->getCoordinateSystem()));
   rec.calls.clear();
-  REQUIRE(job.addFeature(tp->getFeatureWrapper()));
+  REQUIRE(job.addFeature(std::move(own_tp)));
   OI_COMPARE(rec.count("trafoParamSetChanged"), 1);
   rec.calls.clear();
 
@@ -201,9 +209,10 @@ void JobObserverTest::recalcRequestsAreReported() {
   RecordingJobObserver rec;
   rec.attach(&job);
 
-  Point* point = new Point();
+  auto own_point = std::make_unique<Point>();
+  Point* point = own_point.get();
   point->setFeatureName("P");
-  REQUIRE(job.addFeature(point->getFeatureWrapper()));
+  REQUIRE(job.addFeature(std::move(own_point)));
   rec.calls.clear();
   REQUIRE(job.removeFeature(point->getId()));
   OI_COMPARE(rec.count("recalcFeatureSet"), 1);
@@ -215,9 +224,10 @@ void JobObserverTest::multipleObserversAreAllNotified() {
   a.attach(&job);
   b.attach(&job);
 
-  Point point;
+  auto own_point = std::make_unique<Point>();
+  Point& point = *own_point;
   point.setFeatureName("point");
-  REQUIRE(job.addFeature(point.getFeatureWrapper()));
+  REQUIRE(job.addFeature(std::move(own_point)));
   OI_COMPARE(a.count("featureSetChanged"), 1);
   OI_COMPARE(b.count("featureSetChanged"), 1);
   OI_COMPARE(a.calls, b.calls);
@@ -259,13 +269,14 @@ void JobObserverTest::observerMayRemoveItselfInCallback() {
   job.addObserver(&self);
   after.attach(&job);
 
-  Point p1, p2;
-  p1.setFeatureName("p1");
-  p2.setFeatureName("p2");
-  REQUIRE(job.addFeature(p1.getFeatureWrapper()));
+  auto p1 = std::make_unique<Point>();
+  auto p2 = std::make_unique<Point>();
+  p1->setFeatureName("p1");
+  p2->setFeatureName("p2");
+  REQUIRE(job.addFeature(std::move(p1)));
   OI_COMPARE(self.calls, 1);
   OI_COMPARE(after.count("featureSetChanged"), 1);  // still reached
-  REQUIRE(job.addFeature(p2.getFeatureWrapper()));
+  REQUIRE(job.addFeature(std::move(p2)));
   OI_COMPARE(self.calls, 1);  // gone
   OI_COMPARE(after.count("featureSetChanged"), 2);
 }
@@ -279,9 +290,10 @@ void JobObserverTest::observerRemovedByAnotherIsSkipped() {
   job.addObserver(&first);
   victim.attach(&job);
 
-  Point p;
+  auto own_p = std::make_unique<Point>();
+  Point& p = *own_p;
   p.setFeatureName("p");
-  REQUIRE(job.addFeature(p.getFeatureWrapper()));
+  REQUIRE(job.addFeature(std::move(own_p)));
   OI_COMPARE(victim.count("featureSetChanged"), 0);
 }
 
@@ -303,9 +315,10 @@ void JobObserverTest::isSolvedIsDeliveredDeferred() {
   job.setExecutor(&executor);
   RecordingJobObserver rec;
   rec.attach(&job);
-  Point point;
+  auto own_point = std::make_unique<Point>();
+  Point& point = *own_point;
   point.setFeatureName("point");
-  REQUIRE(job.addFeature(point.getFeatureWrapper()));
+  REQUIRE(job.addFeature(std::move(own_point)));
   rec.calls.clear();
 
   point.setIsSolved(true);

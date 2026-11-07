@@ -105,17 +105,17 @@ void OwnedSubGeometryTest::
     generatingAnOwnedAccessorAttachesFunctionBindsInputAndMarksOwnership() {
   oi::Guarded<OiJob> job = this->makeJob();
 
-  oi::Guarded<Point> owner = new Point();
-  oi::Guarded<FeatureWrapper> ownerWrapper = new FeatureWrapper();
-  ownerWrapper->setPoint(owner);
+  auto own_owner = std::make_unique<oi::Point>();
+  oi::Guarded<Point> owner = own_owner.get();
+  oi::Guarded<oi::FeatureWrapper> ownerWrapper = owner->getFeatureWrapper();
   owner->setFeatureName("Owner1");
-  REQUIRE(job->addFeature(ownerWrapper));
+  REQUIRE(job->addFeature(std::move(own_owner)));
 
-  oi::Guarded<Point> child = new Point();
-  oi::Guarded<FeatureWrapper> childWrapper = new FeatureWrapper();
-  childWrapper->setPoint(child);
+  auto own_child = std::make_unique<oi::Point>();
+  oi::Guarded<Point> child = own_child.get();
+  oi::Guarded<oi::FeatureWrapper> childWrapper = child->getFeatureWrapper();
   child->setFeatureName("Child1");
-  REQUIRE(job->addFeature(childWrapper));
+  REQUIRE(job->addFeature(std::move(own_child)));
 
   oi::Guarded<CopyPointFunction> function = new CopyPointFunction();
   REQUIRE(job->addOwnedSubGeometry(ownerWrapper, childWrapper, function, 0));
@@ -164,11 +164,11 @@ void OwnedSubGeometryTest::
     ownerRecalcOnlyDirtiesOwnedChildWhenItsValueActuallyChanges() {
   oi::Guarded<OiJob> job = this->makeJob();
 
-  oi::Guarded<Point> owner = new Point();
-  oi::Guarded<FeatureWrapper> ownerWrapper = new FeatureWrapper();
-  ownerWrapper->setPoint(owner);
+  auto own_owner = std::make_unique<oi::Point>();
+  oi::Guarded<Point> owner = own_owner.get();
+  oi::Guarded<oi::FeatureWrapper> ownerWrapper = owner->getFeatureWrapper();
   owner->setFeatureName("Owner2");
-  REQUIRE(job->addFeature(ownerWrapper));
+  REQUIRE(job->addFeature(std::move(own_owner)));
 
   oi::Guarded<FixedPositionFunction> ownerFn = new FixedPositionFunction();
   ownerFn->x = 1.0;
@@ -176,11 +176,11 @@ void OwnedSubGeometryTest::
   ownerFn->z = 3.0;
   owner->addFunction(ownerFn);
 
-  oi::Guarded<Point> child = new Point();
-  oi::Guarded<FeatureWrapper> childWrapper = new FeatureWrapper();
-  childWrapper->setPoint(child);
+  auto own_child = std::make_unique<oi::Point>();
+  oi::Guarded<Point> child = own_child.get();
+  oi::Guarded<oi::FeatureWrapper> childWrapper = child->getFeatureWrapper();
   child->setFeatureName("Child2");
-  REQUIRE(job->addFeature(childWrapper));
+  REQUIRE(job->addFeature(std::move(own_child)));
 
   REQUIRE(job->addOwnedSubGeometry(ownerWrapper, childWrapper,
                                    new CopyPointFunction(), 0));
@@ -222,17 +222,17 @@ void OwnedSubGeometryTest::
 void OwnedSubGeometryTest::aSecondFeatureCanReferenceTheOwnedChildAsInput() {
   oi::Guarded<OiJob> job = this->makeJob();
 
-  oi::Guarded<Point> owner = new Point();
-  oi::Guarded<FeatureWrapper> ownerWrapper = new FeatureWrapper();
-  ownerWrapper->setPoint(owner);
+  auto own_owner = std::make_unique<oi::Point>();
+  oi::Guarded<Point> owner = own_owner.get();
+  oi::Guarded<oi::FeatureWrapper> ownerWrapper = owner->getFeatureWrapper();
   owner->setFeatureName("Owner3");
-  REQUIRE(job->addFeature(ownerWrapper));
+  REQUIRE(job->addFeature(std::move(own_owner)));
 
-  oi::Guarded<Point> child = new Point();
-  oi::Guarded<FeatureWrapper> childWrapper = new FeatureWrapper();
-  childWrapper->setPoint(child);
+  auto own_child = std::make_unique<oi::Point>();
+  oi::Guarded<Point> child = own_child.get();
+  oi::Guarded<oi::FeatureWrapper> childWrapper = child->getFeatureWrapper();
   child->setFeatureName("Child3");
-  REQUIRE(job->addFeature(childWrapper));
+  REQUIRE(job->addFeature(std::move(own_child)));
 
   REQUIRE(job->addOwnedSubGeometry(ownerWrapper, childWrapper,
                                    new CopyPointFunction(), 0));
@@ -241,11 +241,12 @@ void OwnedSubGeometryTest::aSecondFeatureCanReferenceTheOwnedChildAsInput() {
   // an owned accessor is just an ordinary feature to the input
   // machinery, no special-casing needed (domain-model.md S6: "no new
   // addressing syntax")
-  oi::Guarded<Point> consumer = new Point();
-  oi::Guarded<FeatureWrapper> consumerWrapper = new FeatureWrapper();
-  consumerWrapper->setPoint(consumer);
+  auto own_consumer = std::make_unique<oi::Point>();
+  oi::Guarded<Point> consumer = own_consumer.get();
+  oi::Guarded<oi::FeatureWrapper> consumerWrapper =
+      consumer->getFeatureWrapper();
   consumer->setFeatureName("Consumer3");
-  REQUIRE(job->addFeature(consumerWrapper));
+  REQUIRE(job->addFeature(std::move(own_consumer)));
 
   oi::Guarded<CopyPointFunction> consumerFn = new CopyPointFunction();
   consumer->addFunction(consumerFn);
@@ -260,17 +261,17 @@ void OwnedSubGeometryTest::aSecondFeatureCanReferenceTheOwnedChildAsInput() {
 void OwnedSubGeometryTest::removingTheOwnerCascadesToItsOwnedChild() {
   oi::Guarded<OiJob> job = this->makeJob();
 
-  oi::Guarded<Point> owner = new Point();
-  oi::Guarded<FeatureWrapper> ownerWrapper = new FeatureWrapper();
-  ownerWrapper->setPoint(owner);
+  auto own_owner = std::make_unique<oi::Point>();
+  oi::Guarded<Point> owner = own_owner.get();
+  oi::Guarded<oi::FeatureWrapper> ownerWrapper = owner->getFeatureWrapper();
   owner->setFeatureName("Owner4");
-  REQUIRE(job->addFeature(ownerWrapper));
+  REQUIRE(job->addFeature(std::move(own_owner)));
 
-  oi::Guarded<Point> child = new Point();
-  oi::Guarded<FeatureWrapper> childWrapper = new FeatureWrapper();
-  childWrapper->setPoint(child);
+  auto own_child = std::make_unique<oi::Point>();
+  oi::Guarded<Point> child = own_child.get();
+  oi::Guarded<oi::FeatureWrapper> childWrapper = child->getFeatureWrapper();
   child->setFeatureName("Child4");
-  REQUIRE(job->addFeature(childWrapper));
+  REQUIRE(job->addFeature(std::move(own_child)));
 
   REQUIRE(job->addOwnedSubGeometry(ownerWrapper, childWrapper,
                                    new CopyPointFunction(), 0));

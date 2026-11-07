@@ -17,7 +17,10 @@ using namespace oi;
 /*!
  * \brief Feature::Feature
  */
-Feature::Feature() : Element() { this->selfFeature = new FeatureWrapper(); }
+Feature::Feature()
+    : Element(),
+      ownedWrapper(std::make_unique<FeatureWrapper>()),
+      selfFeature(ownedWrapper.get()) {}
 
 /*!
  * \brief Feature::Feature
@@ -31,7 +34,8 @@ Feature::Feature(const Feature& copy)
       isSolved(copy.isSolved),
       isUpdated(copy.isUpdated),
       name(copy.name),
-      selfFeature(new FeatureWrapper()) {
+      ownedWrapper(std::make_unique<FeatureWrapper>()),
+      selfFeature(ownedWrapper.get()) {
   // copy attributes
 
   // copy functions (usedFor is not copied)
@@ -120,10 +124,7 @@ Feature::~Feature() {
                this->selfFeature->getFeatureTypeEnum());
   this->observer = nullptr;
 
-  // delete self feature wrapper
-  if (!this->selfFeature.isNull()) {
-    delete this->selfFeature.data();
-  }
+  // ownedWrapper (the self wrapper) is destroyed after this body
 }
 
 /*!

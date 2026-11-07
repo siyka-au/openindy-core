@@ -1,6 +1,7 @@
 #include "exchangeinterface.h"
 
 #include <map>
+#include <utility>
 #include <vector>
 
 using namespace oi;
@@ -68,6 +69,19 @@ ExchangeInterface::getFeatures() const {
 void ExchangeInterface::setFeatures(
     const std::vector<oi::Guarded<FeatureWrapper> >& features) {
   this->features = features;
+}
+
+std::vector<std::unique_ptr<Feature> >
+ExchangeInterface::takeImportedFeatures() {
+  return std::exchange(this->importedFeatures, {});
+}
+
+void ExchangeInterface::addImportedFeature(std::unique_ptr<Feature> feature) {
+  if (!feature || feature->getFeatureWrapper().isNull()) {
+    return;
+  }
+  this->features.push_back(feature->getFeatureWrapper());
+  this->importedFeatures.push_back(std::move(feature));
 }
 
 /*!

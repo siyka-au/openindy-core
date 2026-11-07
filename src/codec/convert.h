@@ -6,6 +6,7 @@
 // once it exists). This header is internal to the OpenIndyCodec library and
 // its tests.
 
+#include <memory>
 #include <optional>
 
 #include "coordinatesystem.h"
@@ -67,18 +68,18 @@ namespace oi::codec {
     const openindy::v1::Observation& message);
 
 [[nodiscard]] openindy::v1::TrafoParam toProto(const TrafoParam& trafoParam);
-[[nodiscard]] oi::Guarded<TrafoParam> createTrafoParam(
+[[nodiscard]] std::unique_ptr<TrafoParam> createTrafoParam(
     const openindy::v1::TrafoParam& message);
 
 [[nodiscard]] openindy::v1::CoordinateSystem toProto(
     const CoordinateSystem& system);
-[[nodiscard]] oi::Guarded<CoordinateSystem> createCoordinateSystem(
+[[nodiscard]] std::unique_ptr<CoordinateSystem> createCoordinateSystem(
     const openindy::v1::CoordinateSystem& message);
 
 [[nodiscard]] openindy::v1::Station toProto(const Station& station);
 /*! The new station comes with its own default position and station system;
  *  the linking pass replaces them with the saved ones. */
-[[nodiscard]] oi::Guarded<Station> createStation(
+[[nodiscard]] std::unique_ptr<Station> createStation(
     const openindy::v1::Station& message);
 
 /*! Writes any of the 19 concrete geometry types (not an Observation, which
@@ -86,13 +87,13 @@ namespace oi::codec {
 [[nodiscard]] openindy::v1::Geometry toProto(const Geometry& geometry);
 /*! Null if the message has no shape. The geometry's references (observations,
  *  nominal system, realised nominal, owner) are left for the linking pass. */
-[[nodiscard]] oi::Guarded<Geometry> createGeometry(
+[[nodiscard]] std::unique_ptr<Geometry> createGeometry(
     const openindy::v1::Geometry& message);
 
 [[nodiscard]] openindy::v1::Group toProto(const Group& group);
 /*! A plain Group or a PointGroup, as the message says. Members are left for
  *  the linking pass. */
-[[nodiscard]] oi::Guarded<Group> createGroup(
+[[nodiscard]] std::unique_ptr<Group> createGroup(
     const openindy::v1::Group& message);
 
 /*! A function's identity and the user-facing state that makes a project

@@ -452,8 +452,12 @@ void FeatureWrapper::setGroup(const oi::Guarded<Group>& group) {
  * \param pointGroup
  */
 void FeatureWrapper::setPointGroup(const oi::Guarded<PointGroup>& pointGroup) {
+  // a PointGroup is built on a Group, whose constructor has already tagged
+  // the wrapper as a plain group: that is upgraded here
   if (!pointGroup.isNull() &&
-      this->typeOfFeature == FeatureTypes::eUndefinedFeature) {
+      (this->typeOfFeature == FeatureTypes::eUndefinedFeature ||
+       (this->typeOfFeature == FeatureTypes::eGroupFeature &&
+        this->feature.data() == pointGroup.data()))) {
     this->feature = pointGroup;
     // a PointGroup is-a Group, so both handles resolve - a consumer that
     // only cares about grouping doesn't need to know which kind it got

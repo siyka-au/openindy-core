@@ -524,15 +524,18 @@ bool OiJob::setActiveGroup(const std::string& group) {
  * \param feature
  * \return
  */
-bool OiJob::addFeature(const oi::Guarded<FeatureWrapper>& feature) {
+oi::Guarded<FeatureWrapper> OiJob::addFeature(
+    std::unique_ptr<Feature> newFeature) {
   // check if feature is valid
-  if (feature.isNull() || feature->getFeature().isNull()) {
-    return false;
+  if (!newFeature || newFeature->getFeatureWrapper().isNull()) {
+    return {};
   }
+  const oi::Guarded<FeatureWrapper> feature = newFeature->getFeatureWrapper();
 
-  // check attributes and set up relations
-  if (!this->checkAndSetUpNewFeature(feature)) {
-    return false;
+  // check attributes and set up relations; a rejected feature is destroyed
+  // when newFeature goes out of scope
+  if (!this->checkAndSetUpNewFeature(newFeature)) {
+    return {};
   }
 
   // register the job as the feature's observer
@@ -558,7 +561,7 @@ bool OiJob::addFeature(const oi::Guarded<FeatureWrapper>& feature) {
     this->notifyObservers(&JobObserver::onGeometrySetChanged);
   }
 
-  return true;
+  return feature;
 }
 
 /*!
@@ -662,8 +665,12 @@ std::vector<oi::Guarded<FeatureWrapper> > OiJob::addFeatures(
     // here)
     if (getIsGeometry(fAttr.typeOfFeature)) {
       // create and check feature
-      oi::Guarded<FeatureWrapper> feature =
-          this->createFeatureWrapper(fAttr.typeOfFeature);
+      std::unique_ptr<Feature> created =
+          this->createFeature(fAttr.typeOfFeature);
+      if (!created) {
+        continue;
+      }
+      const oi::Guarded<FeatureWrapper> feature = created->getFeatureWrapper();
       if (feature.isNull() || feature->getGeometry().isNull()) {
         continue;
       }
@@ -690,7 +697,9 @@ std::vector<oi::Guarded<FeatureWrapper> > OiJob::addFeatures(
       }
 
       // add and connect feature
-      this->featureContainer.addFeature(feature);
+      if (this->featureContainer.addFeature(std::move(created)).isNull()) {
+        continue;
+      }
       this->attachFeature(feature);
 
       // add feature to result list
@@ -700,8 +709,12 @@ std::vector<oi::Guarded<FeatureWrapper> > OiJob::addFeatures(
     // create non-geometry feature
     if (!getIsGeometry(fAttr.typeOfFeature)) {
       // create and check feature
-      oi::Guarded<FeatureWrapper> feature =
-          this->createFeatureWrapper(fAttr.typeOfFeature);
+      std::unique_ptr<Feature> created =
+          this->createFeature(fAttr.typeOfFeature);
+      if (!created) {
+        continue;
+      }
+      const oi::Guarded<FeatureWrapper> feature = created->getFeatureWrapper();
       if (feature.isNull() || feature->getFeature().isNull()) {
         continue;
       }
@@ -749,7 +762,9 @@ std::vector<oi::Guarded<FeatureWrapper> > OiJob::addFeatures(
       }
 
       // add and connect feature
-      this->featureContainer.addFeature(feature);
+      if (this->featureContainer.addFeature(std::move(created)).isNull()) {
+        continue;
+      }
       this->attachFeature(feature);
 
       // add feature to result list
@@ -781,18 +796,20 @@ std::vector<oi::Guarded<FeatureWrapper> > OiJob::addFeatures(
  * \param features
  * \return
  */
-bool OiJob::addFeatures(
-    const std::vector<oi::Guarded<FeatureWrapper> >& features, bool overwrite) {
+bool OiJob::addFeatures(std::vector<std::unique_ptr<Feature> > features,
+                        bool overwrite) {
   std::vector<FeatureTypes> addedFeatureTypes;
 
-  for (const oi::Guarded<FeatureWrapper>& feature : std::as_const(features)) {
+  for (std::unique_ptr<Feature>& newFeature : features) {
     // check if feature is valid
-    if (feature.isNull() || feature->getFeature().isNull()) {
+    if (!newFeature || newFeature->getFeatureWrapper().isNull()) {
       continue;
     }
+    const oi::Guarded<FeatureWrapper> feature = newFeature->getFeatureWrapper();
 
-    // check attributes and set up relations
-    if (!this->checkAndSetUpNewFeature(feature, overwrite)) {
+    // check attributes and set up relations; a rejected feature is destroyed
+    // together with the vector
+    if (!this->checkAndSetUpNewFeature(newFeature, overwrite)) {
       continue;
     }
 
@@ -848,6 +865,23 @@ bool OiJob::removeFeature(const int& featureId) {
   // D19 applied to functions (Stage 7h): deleting the owner deletes what
   // it owns, so it cannot dangle
   this->removeOwnedSubGeometries(feature);
+
+  // the transformation parameter sets of a system go with it (they are
+  // features of the job, no longer owned by the system)
+  {
+    oi::Guarded<CoordinateSystem> system = feature->getCoordinateSystem();
+    if (system.isNull() && !feature->getStation().isNull()) {
+      system = feature->getStation()->getCoordinateSystem();
+    }
+    if (!system.isNull()) {
+      for (const oi::Guarded<TrafoParam>& trafo :
+           oi::snapshot(system->getTransformationParameters())) {
+        if (!trafo.isNull()) {
+          this->removeFeature(trafo->getId());
+        }
+      }
+    }
+  }
 
   // possibly reset active group
   if (feature->getFeature()->getGroupName().compare("") != 0 &&
@@ -1884,8 +1918,11 @@ void OiJob::addMeasurementResults(
   // own observations, via the ordinary dependency graph - which is
   // exactly why the point is registered as a dependency below before
   // anything is recalculated.
-  oi::Guarded<FeatureWrapper> pointFeature =
-      this->createFeatureWrapper(FeatureTypes::ePointFeature);
+  std::unique_ptr<Feature> createdPoint =
+      this->createFeature(FeatureTypes::ePointFeature);
+  const oi::Guarded<FeatureWrapper> pointFeature =
+      createdPoint ? createdPoint->getFeatureWrapper()
+                   : oi::Guarded<FeatureWrapper>();
   if (pointFeature.isNull() || pointFeature->getPoint().isNull()) {
     this->sendMessage(
         "Measurement rejected: could not create the resulting point",
@@ -1897,7 +1934,7 @@ void OiJob::addMeasurementResults(
   pointFeature->getFeature()->name =
       std::format("P{}", pointFeature->getFeature()->getId());
 
-  this->featureContainer.addFeature(pointFeature);
+  this->featureContainer.addFeature(std::move(createdPoint));
   this->attachFeature(pointFeature);
 
   oi::Guarded<Point> point = pointFeature->getPoint();
@@ -2961,145 +2998,67 @@ std::vector<std::string> OiJob::createFeatureNames(const std::string& name,
 }
 
 /*!
- * \brief OiJob::createFeatureWrapper
- * Create a feature wrapper containing a feature of the given type
+ * \brief OiJob::createFeature
+ * Create a feature of the given type (null for a type that cannot be created).
+ * The caller owns it until it is handed to addFeature. The feature carries its
+ * own FeatureWrapper (getFeatureWrapper()), tagged with its type.
  * \param type
  * \return
  */
-oi::Guarded<FeatureWrapper> OiJob::createFeatureWrapper(
-    const FeatureTypes& type) const {
-  oi::Guarded<FeatureWrapper> feature = new FeatureWrapper();
-
+std::unique_ptr<Feature> OiJob::createFeature(const FeatureTypes& type) const {
   switch (type) {
-    case FeatureTypes::eStationFeature: {
-      Station* station = new Station();
-      feature->setStation(station);
-      break;
-    }
-    case FeatureTypes::eTrafoParamFeature: {
-      TrafoParam* trafoParam = new TrafoParam();
-      feature->setTrafoParam(trafoParam);
-      break;
-    }
-    case FeatureTypes::eCoordinateSystemFeature: {
-      CoordinateSystem* coordSystem = new CoordinateSystem();
-      feature->setCoordinateSystem(coordSystem);
-      break;
-    }
-    case FeatureTypes::eCircleFeature: {
-      Circle* circle = new Circle();
-      feature->setCircle(circle);
-      break;
-    }
-    case FeatureTypes::eConeFeature: {
-      Cone* cone = new Cone();
-      feature->setCone(cone);
-      break;
-    }
-    case FeatureTypes::eCylinderFeature: {
-      Cylinder* cylinder = new Cylinder();
-      feature->setCylinder(cylinder);
-      break;
-    }
-    case FeatureTypes::eEllipseFeature: {
-      Ellipse* ellipse = new Ellipse();
-      feature->setEllipse(ellipse);
-      break;
-    }
-    case FeatureTypes::eEllipsoidFeature: {
-      Ellipsoid* ellipsoid = new Ellipsoid();
-      feature->setEllipsoid(ellipsoid);
-      break;
-    }
-    case FeatureTypes::eHyperboloidFeature: {
-      Hyperboloid* hyperboloid = new Hyperboloid();
-      feature->setHyperboloid(hyperboloid);
-      break;
-    }
-    case FeatureTypes::eLineFeature: {
-      Line* line = new Line();
-      feature->setLine(line);
-      break;
-    }
-    case FeatureTypes::eNurbsFeature: {
-      Nurbs* nurbs = new Nurbs();
-      feature->setNurbs(nurbs);
-      break;
-    }
-    case FeatureTypes::eParaboloidFeature: {
-      Paraboloid* paraboloid = new Paraboloid();
-      feature->setParaboloid(paraboloid);
-      break;
-    }
-    case FeatureTypes::ePlaneFeature: {
-      Plane* plane = new Plane();
-      feature->setPlane(plane);
-      break;
-    }
-    case FeatureTypes::ePointFeature: {
-      Point* point = new Point();
-      feature->setPoint(point);
-      break;
-    }
-    case FeatureTypes::ePointCloudFeature: {
-      PointCloud* pointCloud = new PointCloud();
-      feature->setPointCloud(pointCloud);
-      break;
-    }
-    case FeatureTypes::eGroupFeature: {
-      // organisational, never nominal: a group holds references and is
+    case FeatureTypes::eStationFeature:
+      return std::make_unique<Station>();
+    case FeatureTypes::eTrafoParamFeature:
+      return std::make_unique<TrafoParam>();
+    case FeatureTypes::eCoordinateSystemFeature:
+      return std::make_unique<CoordinateSystem>();
+    case FeatureTypes::eCircleFeature:
+      return std::make_unique<Circle>();
+    case FeatureTypes::eConeFeature:
+      return std::make_unique<Cone>();
+    case FeatureTypes::eCylinderFeature:
+      return std::make_unique<Cylinder>();
+    case FeatureTypes::eEllipseFeature:
+      return std::make_unique<Ellipse>();
+    case FeatureTypes::eEllipsoidFeature:
+      return std::make_unique<Ellipsoid>();
+    case FeatureTypes::eHyperboloidFeature:
+      return std::make_unique<Hyperboloid>();
+    case FeatureTypes::eLineFeature:
+      return std::make_unique<Line>();
+    case FeatureTypes::eNurbsFeature:
+      return std::make_unique<Nurbs>();
+    case FeatureTypes::eParaboloidFeature:
+      return std::make_unique<Paraboloid>();
+    case FeatureTypes::ePlaneFeature:
+      return std::make_unique<Plane>();
+    case FeatureTypes::ePointFeature:
+      return std::make_unique<Point>();
+    case FeatureTypes::ePointCloudFeature:
+      return std::make_unique<PointCloud>();
+    case FeatureTypes::eGroupFeature:
       // neither measured nor solved, so isNominal has no meaning for it
-      Group* group = new Group();
-      feature->setGroup(group);
-      break;
-    }
-    case FeatureTypes::ePointGroupFeature: {
-      PointGroup* pointGroup = new PointGroup();
-      feature->setPointGroup(pointGroup);
-      break;
-    }
-    case FeatureTypes::eScalarEntityAngleFeature: {
-      ScalarEntityAngle* angle = new ScalarEntityAngle();
-      feature->setScalarEntityAngle(angle);
-      break;
-    }
-    case FeatureTypes::eScalarEntityDistanceFeature: {
-      ScalarEntityDistance* distance = new ScalarEntityDistance();
-      feature->setScalarEntityDistance(distance);
-      break;
-    }
-    case FeatureTypes::eScalarEntityMeasurementSeriesFeature: {
-      ScalarEntityMeasurementSeries* measurementSeries =
-          new ScalarEntityMeasurementSeries();
-      feature->setScalarEntityMeasurementSeries(measurementSeries);
-      break;
-    }
-    case FeatureTypes::eScalarEntityTemperatureFeature: {
-      ScalarEntityTemperature* temperature = new ScalarEntityTemperature();
-      feature->setScalarEntityTemperature(temperature);
-      break;
-    }
-    case FeatureTypes::eSlottedHoleFeature: {
-      SlottedHole* slottedHole = new SlottedHole();
-      feature->setSlottedHole(slottedHole);
-      break;
-    }
-    case FeatureTypes::eSphereFeature: {
-      Sphere* sphere = new Sphere();
-      feature->setSphere(sphere);
-      break;
-    }
-    case FeatureTypes::eTorusFeature: {
-      Torus* torus = new Torus();
-      feature->setTorus(torus);
-      break;
-    }
-    default: {
-      delete feature.data();
-    }
+      return std::make_unique<Group>();
+    case FeatureTypes::ePointGroupFeature:
+      return std::make_unique<PointGroup>();
+    case FeatureTypes::eScalarEntityMeasurementSeriesFeature:
+      return std::make_unique<ScalarEntityMeasurementSeries>();
+    case FeatureTypes::eScalarEntityAngleFeature:
+      return std::make_unique<ScalarEntityAngle>();
+    case FeatureTypes::eScalarEntityDistanceFeature:
+      return std::make_unique<ScalarEntityDistance>();
+    case FeatureTypes::eScalarEntityTemperatureFeature:
+      return std::make_unique<ScalarEntityTemperature>();
+    case FeatureTypes::eSlottedHoleFeature:
+      return std::make_unique<SlottedHole>();
+    case FeatureTypes::eSphereFeature:
+      return std::make_unique<Sphere>();
+    case FeatureTypes::eTorusFeature:
+      return std::make_unique<Torus>();
+    default:
+      return nullptr;
   }
-
-  return feature;
 }
 
 /*!
@@ -3108,8 +3067,10 @@ oi::Guarded<FeatureWrapper> OiJob::createFeatureWrapper(
  * \param feature
  * \return
  */
-bool OiJob::checkAndSetUpNewFeature(const oi::Guarded<FeatureWrapper>& feature,
+bool OiJob::checkAndSetUpNewFeature(std::unique_ptr<Feature>& newFeature,
                                     bool overwrite) {
+  const oi::Guarded<FeatureWrapper> feature = newFeature->getFeatureWrapper();
+
   // pass the job to the feature
   feature->getFeature()->setJob(this);
 
@@ -3178,7 +3139,7 @@ bool OiJob::checkAndSetUpNewFeature(const oi::Guarded<FeatureWrapper>& feature,
 
     // a new system cannot have nominals
     if (feature->getCoordinateSystem()->getNominals().size() > 0) {
-      return true;
+      return false;
     }
 
   } else if (feature->getFeatureTypeEnum() == FeatureTypes::eStationFeature) {
@@ -3251,7 +3212,9 @@ bool OiJob::checkAndSetUpNewFeature(const oi::Guarded<FeatureWrapper>& feature,
   }
 
   // add the feature to the internal lists and maps
-  this->featureContainer.addFeature(feature);
+  if (this->featureContainer.addFeature(std::move(newFeature)).isNull()) {
+    return false;
+  }
 
   // add to the nominal system's own list, if it named one
   if (!nominalSystem.isNull()) {
@@ -3783,14 +3746,16 @@ void OiJob::resetDependencies(const InputElement& element,
  * \param features
  */
 void OiJob::addFeaturesFromXml(
-    const std::vector<oi::Guarded<FeatureWrapper> >& features) {
-  for (const oi::Guarded<FeatureWrapper>& feature : oi::snapshot(features)) {
+    std::vector<std::unique_ptr<Feature> > features) {
+  for (std::unique_ptr<Feature>& newFeature : features) {
     // check if feature is valid
-    if (feature.isNull() || feature->getFeature().isNull()) {
+    if (!newFeature || newFeature->getFeatureWrapper().isNull()) {
       continue;
     }
+    const oi::Guarded<FeatureWrapper> feature = newFeature->getFeatureWrapper();
 
-    // check if the feature is a station system
+    // a station system belongs to its station, not to the job: the caller
+    // must not hand one over (it would be destroyed with the vector)
     if (!feature->getCoordinateSystem().isNull() &&
         feature->getCoordinateSystem()->getIsStationSystem()) {
       continue;
@@ -3830,8 +3795,10 @@ void OiJob::addFeaturesFromXml(
     // register the job as the feature's observer
     this->attachFeature(feature);
 
-    // add the feature
-    this->featureContainer.addFeature(feature);
+    // add the feature (the container owns it from here on)
+    if (this->featureContainer.addFeature(std::move(newFeature)).isNull()) {
+      continue;
+    }
 
     // save active feature
     if (feature->getFeature()->getIsActiveFeature()) {

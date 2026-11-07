@@ -1,5 +1,6 @@
 #include "featurecontainer.h"
 
+#include <algorithm>
 #include <vector>
 
 #include "containers.h"
@@ -231,16 +232,22 @@ int FeatureContainer::getFeatureCount(const std::string& group) const {
  * \param feature
  * \return
  */
-bool FeatureContainer::addFeature(const oi::Guarded<FeatureWrapper>& feature) {
+oi::Guarded<FeatureWrapper> FeatureContainer::addFeature(
+    std::unique_ptr<Feature> owned) {
   // if the feature is not valid
-  if (feature.isNull() || feature->getFeature().isNull()) {
-    return false;
+  if (!owned || owned->getFeatureWrapper().isNull() ||
+      owned->getFeatureWrapper()->getFeature().isNull()) {
+    return {};
+  }
+  const oi::Guarded<FeatureWrapper> feature = owned->getFeatureWrapper();
+
+  // if the feature already exists it is not added (and `owned` frees it)
+  if (this->featuresIdMap.contains(feature->getFeature()->getId())) {
+    return {};
   }
 
-  // if the feature already exists it is not added
-  if (this->featuresIdMap.contains(feature->getFeature()->getId())) {
-    return false;
-  }
+  // from here on the container owns the feature
+  this->ownedFeatures.push_back(std::move(owned));
 
   // add the feature to the feature lists and maps
   this->featuresList.push_back(feature);
@@ -259,12 +266,11 @@ bool FeatureContainer::addFeature(const oi::Guarded<FeatureWrapper>& feature) {
     case FeatureTypes::eStationFeature:
       this->stationsList.push_back(feature->getStation());
       if (!feature->getStation()->getCoordinateSystem().isNull()) {
-        oi::Guarded<FeatureWrapper> stationSystem = new FeatureWrapper();
-        stationSystem->setCoordinateSystem(
-            feature->getStation()->getCoordinateSystem());
+        // the station system is reachable by id through its own wrapper
+        // (it used to get a separately allocated one that nothing freed)
         this->featuresIdMap.insert_or_assign(
             feature->getStation()->getCoordinateSystem()->getId(),
-            stationSystem);
+            feature->getStation()->getCoordinateSystem()->getFeatureWrapper());
       }
       break;
     case FeatureTypes::eTrafoParamFeature:
@@ -300,7 +306,7 @@ bool FeatureContainer::addFeature(const oi::Guarded<FeatureWrapper>& feature) {
         feature->getGeometry()->getMeasurementConfig());
   }
 
-  return true;
+  return feature;
 }
 
 /*!
@@ -371,9 +377,23 @@ bool FeatureContainer::removeFeature(const int& featureId) {
                   feature->getGeometry()->getMeasurementConfig());
   }
 
-  // delete the feature
-  delete feature->getFeature().data();
-  delete feature.data();
+  // the station system's id entry goes with its station
+  if (!feature->getStation().isNull() &&
+      !feature->getStation()->getCoordinateSystem().isNull()) {
+    this->featuresIdMap.erase(
+        feature->getStation()->getCoordinateSystem()->getId());
+  }
+
+  // destroy the feature: take it out of the owner first, so that handles
+  // read null (and the container is consistent) while it is torn down
+  const Feature* const raw = feature->getFeature().data();
+  const auto it = std::find_if(
+      this->ownedFeatures.begin(), this->ownedFeatures.end(),
+      [raw](const std::unique_ptr<Feature>& f) { return f.get() == raw; });
+  if (it != this->ownedFeatures.end()) {
+    const std::unique_ptr<Feature> doomed = std::move(*it);
+    this->ownedFeatures.erase(it);
+  }
 
   return true;
 }
@@ -457,16 +477,12 @@ void FeatureContainer::checkAndClean(const int& featureId,
  * Remove and delete all features
  */
 void FeatureContainer::removeAll() {
-  // delete all features
-  for (const oi::Guarded<FeatureWrapper>& feature :
-       oi::snapshot(this->featuresList)) {
-    if (!feature.isNull()) {
-      if (feature->getFeature().isNull()) {
-        delete feature->getFeature().data();
-      }
-      delete feature.data();
-    }
+  // delete all features, one at a time and in insertion order (a feature
+  // being destroyed tells its observer and detaches from its neighbours)
+  for (std::unique_ptr<Feature>& feature : this->ownedFeatures) {
+    feature.reset();
   }
+  this->ownedFeatures.clear();
 
   // clear all lists and maps
   this->featuresList.clear();

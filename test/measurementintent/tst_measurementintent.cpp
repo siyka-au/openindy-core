@@ -83,10 +83,10 @@ oi::Guarded<OiJob> MeasurementIntentTest::makeJobWithActiveStation(
     oi::Guarded<Station>& outStation) {
   oi::Guarded<OiJob> job = new OiJob();
 
-  oi::Guarded<Station> station = new Station("S1");
-  oi::Guarded<FeatureWrapper> stationFeature = new FeatureWrapper();
-  stationFeature->setStation(station);
-  job->addFeature(stationFeature);
+  auto own_station = std::make_unique<oi::Station>("S1");
+  oi::Guarded<Station> station = own_station.get();
+  oi::Guarded<oi::FeatureWrapper> stationFeature = station->getFeatureWrapper();
+  job->addFeature(std::move(own_station));
 
   // Station::activeStationChanged is connected (OiJob::attachFeature) to
   // OiJob::setActiveStation - this is the ordinary way a station becomes
@@ -174,11 +174,12 @@ void MeasurementIntentTest::measuringAlwaysCreatesExactlyOneNewPoint() {
   oi::Guarded<Station> station;
   oi::Guarded<OiJob> job = makeJobWithActiveStation(station);
 
-  oi::Guarded<Point> targetPoint = new Point();
-  oi::Guarded<FeatureWrapper> targetFeature = new FeatureWrapper();
-  targetFeature->setPoint(targetPoint);
+  auto own_targetPoint = std::make_unique<oi::Point>();
+  oi::Guarded<Point> targetPoint = own_targetPoint.get();
+  oi::Guarded<oi::FeatureWrapper> targetFeature =
+      targetPoint->getFeatureWrapper();
   targetFeature->getFeature()->setFeatureName("target");
-  job->addFeature(targetFeature);
+  job->addFeature(std::move(own_targetPoint));
 
   const int featureCountBefore = job->getFeaturesList().size();
 
@@ -198,11 +199,12 @@ void MeasurementIntentTest::measuredPointHasObservationsDerivedPointDoesNot() {
   oi::Guarded<Station> station;
   oi::Guarded<OiJob> job = makeJobWithActiveStation(station);
 
-  oi::Guarded<Point> targetPoint = new Point();
-  oi::Guarded<FeatureWrapper> targetFeature = new FeatureWrapper();
-  targetFeature->setPoint(targetPoint);
+  auto own_targetPoint = std::make_unique<oi::Point>();
+  oi::Guarded<Point> targetPoint = own_targetPoint.get();
+  oi::Guarded<oi::FeatureWrapper> targetFeature =
+      targetPoint->getFeatureWrapper();
   targetFeature->getFeature()->setFeatureName("target");
-  job->addFeature(targetFeature);
+  job->addFeature(std::move(own_targetPoint));
 
   std::vector<oi::Guarded<Reading> > readings;
   readings = {makeCartesianReading(1.0, 2.0, 3.0),
@@ -237,11 +239,12 @@ void MeasurementIntentTest::
   oi::Guarded<Station> station;
   oi::Guarded<OiJob> job = makeJobWithActiveStation(station);
 
-  oi::Guarded<Point> targetPoint = new Point();
-  oi::Guarded<FeatureWrapper> targetFeature = new FeatureWrapper();
-  targetFeature->setPoint(targetPoint);
+  auto own_targetPoint = std::make_unique<oi::Point>();
+  oi::Guarded<Point> targetPoint = own_targetPoint.get();
+  oi::Guarded<oi::FeatureWrapper> targetFeature =
+      targetPoint->getFeatureWrapper();
   targetFeature->getFeature()->setFeatureName("target");
-  job->addFeature(targetFeature);
+  job->addFeature(std::move(own_targetPoint));
 
   oi::Guarded<FakeConsumer> consumer = new FakeConsumer("default");
   targetPoint->addFunction(consumer);
@@ -262,17 +265,17 @@ void MeasurementIntentTest::aPointCarryingTwoTagsIsFoundByBothConsumers() {
   oi::Guarded<Station> station;
   oi::Guarded<OiJob> job = makeJobWithActiveStation(station);
 
-  oi::Guarded<Point> featureA = new Point();
-  oi::Guarded<FeatureWrapper> wrapperA = new FeatureWrapper();
-  wrapperA->setPoint(featureA);
+  auto own_featureA = std::make_unique<oi::Point>();
+  oi::Guarded<Point> featureA = own_featureA.get();
+  oi::Guarded<oi::FeatureWrapper> wrapperA = featureA->getFeatureWrapper();
   wrapperA->getFeature()->setFeatureName("A");
-  job->addFeature(wrapperA);
+  job->addFeature(std::move(own_featureA));
 
-  oi::Guarded<Point> featureB = new Point();
-  oi::Guarded<FeatureWrapper> wrapperB = new FeatureWrapper();
-  wrapperB->setPoint(featureB);
+  auto own_featureB = std::make_unique<oi::Point>();
+  oi::Guarded<Point> featureB = own_featureB.get();
+  oi::Guarded<oi::FeatureWrapper> wrapperB = featureB->getFeatureWrapper();
   wrapperB->getFeature()->setFeatureName("B");
-  job->addFeature(wrapperB);
+  job->addFeature(std::move(own_featureB));
 
   oi::Guarded<FakeConsumer> consumerA = new FakeConsumer("default");
   featureA->addFunction(consumerA);
@@ -306,11 +309,12 @@ void MeasurementIntentTest::renamingTheFeatureDoesNotOrphanTags() {
   oi::Guarded<Station> station;
   oi::Guarded<OiJob> job = makeJobWithActiveStation(station);
 
-  oi::Guarded<Point> targetPoint = new Point();
-  oi::Guarded<FeatureWrapper> targetFeature = new FeatureWrapper();
-  targetFeature->setPoint(targetPoint);
+  auto own_targetPoint = std::make_unique<oi::Point>();
+  oi::Guarded<Point> targetPoint = own_targetPoint.get();
+  oi::Guarded<oi::FeatureWrapper> targetFeature =
+      targetPoint->getFeatureWrapper();
   targetFeature->getFeature()->setFeatureName("target");
-  job->addFeature(targetFeature);
+  job->addFeature(std::move(own_targetPoint));
 
   oi::Guarded<FakeConsumer> consumer = new FakeConsumer("default");
   targetPoint->addFunction(consumer);

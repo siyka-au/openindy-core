@@ -128,24 +128,9 @@ CoordinateSystem::~CoordinateSystem() {
     }
   }
 
-  // delete transformation parameter sets from this coordinate system
-  for (const oi::Guarded<TrafoParam>& trafoParam :
-       oi::snapshot(this->trafoParams)) {
-    if (!trafoParam.isNull()) {
-      delete trafoParam.data();
-    }
-  }
-
-  // delete nominals of this coordinate system
-  for (const oi::Guarded<FeatureWrapper>& nominal :
-       oi::snapshot(this->nominalsList)) {
-    if (!nominal.isNull()) {
-      if (!nominal->getFeature().isNull()) {
-        delete nominal->getFeature().data();
-      }
-      delete nominal.data();
-    }
-  }
+  // The transformation parameter sets and the nominals referenced from here
+  // are features of the job: the job's FeatureContainer owns them, and
+  // OiJob::removeFeature removes a system's parameter sets with it.
 
   // delete bundle adjustment
   if (!this->bundlePlugin.isNull()) {

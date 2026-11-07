@@ -322,10 +322,9 @@ TEST_CASE("transformation parameters round trip, matrix included") {
   in.set_used(true);
   // from/to are references, resolved by the linker
 
-  const oi::Guarded<TrafoParam> trafo = codec::createTrafoParam(in);
-  REQUIRE_FALSE(trafo.isNull());
+  const auto trafo = codec::createTrafoParam(in);
+  REQUIRE(trafo);
   CHECK(MessageDifferencer::Equals(in, codec::toProto(*trafo)));
-  delete trafo.data();
 }
 
 TEST_CASE("a coordinate system round trips, bundle template included") {
@@ -352,11 +351,9 @@ TEST_CASE("a coordinate system round trips, bundle template included") {
   bt->mutable_plugin()->set_plugin("OpenIndy Default Plugin");
   // trafo_params / observations / nominal_geometries are references
 
-  const oi::Guarded<CoordinateSystem> system =
-      codec::createCoordinateSystem(in);
-  REQUIRE_FALSE(system.isNull());
+  const auto system = codec::createCoordinateSystem(in);
+  REQUIRE(system);
   CHECK(MessageDifferencer::Equals(in, codec::toProto(*system)));
-  delete system.data();
 }
 
 TEST_CASE("a station round trips its own state") {
@@ -369,12 +366,11 @@ TEST_CASE("a station round trips its own state") {
   f->set_active(true);
   in.set_active_station(true);
 
-  const oi::Guarded<Station> station = codec::createStation(in);
-  REQUIRE_FALSE(station.isNull());
+  const auto station = codec::createStation(in);
+  REQUIRE(station);
   const oipb::Station out = codec::toProto(*station);
   CHECK(MessageDifferencer::Equals(in.feature(), out.feature()));
   CHECK(out.active_station());
-  delete station.data();
 }
 
 namespace {
@@ -492,21 +488,20 @@ TEST_CASE("every geometry type round trips, with its type-specific state") {
     oipb::Geometry in = geometryBase(id++);
     fill(in);
 
-    const oi::Guarded<Geometry> geometry = codec::createGeometry(in);
-    REQUIRE_FALSE(geometry.isNull());
+    const auto geometry = codec::createGeometry(in);
+    REQUIRE(geometry);
     std::string differences;
     MessageDifferencer differencer;
     differencer.ReportDifferencesToString(&differences);
     const bool same = differencer.Compare(in, codec::toProto(*geometry));
     INFO(differences);
     CHECK(same);
-    delete geometry.data();
   }
 }
 
 TEST_CASE("a geometry message without a shape cannot be created") {
   useArmadillo();
-  CHECK(codec::createGeometry(geometryBase(1)).isNull());
+  CHECK(codec::createGeometry(geometryBase(1)) == nullptr);
 }
 
 TEST_CASE("a geometry's references are not applied at creation") {
@@ -518,15 +513,14 @@ TEST_CASE("a geometry's references are not applied at creation") {
   in.set_realises(6);
   in.set_owner_feature(8);
 
-  const oi::Guarded<Geometry> geometry = codec::createGeometry(in);
-  REQUIRE_FALSE(geometry.isNull());
+  const auto geometry = codec::createGeometry(in);
+  REQUIRE(geometry);
   const oipb::Geometry out = codec::toProto(*geometry);
   // left for the linking pass, which reads them from the message
   CHECK(out.observations_size() == 0);
   CHECK(out.nominal_system() == 0);
   CHECK_FALSE(geometry->getRealises().has_value());
   CHECK_FALSE(geometry->getOwnerFeature().has_value());
-  delete geometry.data();
 }
 
 TEST_CASE("groups round trip, constraint and kind included") {
@@ -538,15 +532,14 @@ TEST_CASE("groups round trip, constraint and kind included") {
   plain.set_constraint(oipb::FEATURE_KIND_PLANE);
   plain.add_members(1);  // references are left for the linking pass
 
-  oi::Guarded<Group> group = codec::createGroup(plain);
-  REQUIRE_FALSE(group.isNull());
-  CHECK(dynamic_cast<PointGroup*>(group.data()) == nullptr);
+  std::unique_ptr<Group> group = codec::createGroup(plain);
+  REQUIRE(group);
+  CHECK(dynamic_cast<PointGroup*>(group.get()) == nullptr);
   CHECK(group->getConstraint() == FeatureTypes::ePlaneFeature);
   oipb::Group out = codec::toProto(*group);
   CHECK(out.constraint() == oipb::FEATURE_KIND_PLANE);
   CHECK_FALSE(out.point_group());
   CHECK(out.common().name() == "walls");
-  delete group.data();
 
   oipb::Group points;
   points.mutable_common()->set_id(201);
@@ -555,20 +548,18 @@ TEST_CASE("groups round trip, constraint and kind included") {
   points.set_point_group(true);
 
   group = codec::createGroup(points);
-  REQUIRE_FALSE(group.isNull());
-  CHECK(dynamic_cast<PointGroup*>(group.data()) != nullptr);
+  REQUIRE(group);
+  CHECK(dynamic_cast<PointGroup*>(group.get()) != nullptr);
   out = codec::toProto(*group);
   CHECK(out.point_group());
   CHECK(out.constraint() == oipb::FEATURE_KIND_POINT);
-  delete group.data();
 
   oipb::Group unconstrained;
   unconstrained.mutable_common()->set_id(202);
   group = codec::createGroup(unconstrained);
-  REQUIRE_FALSE(group.isNull());
+  REQUIRE(group);
   CHECK_FALSE(group->getConstraint().has_value());
   CHECK(codec::toProto(*group).constraint() == oipb::FEATURE_KIND_UNSPECIFIED);
-  delete group.data();
 }
 
 namespace {
@@ -854,13 +845,13 @@ struct World {
   oi::Guarded<TrafoParam> trafo;
 };
 
-// The job holds its features through wrappers the caller creates.
+// The job takes over a feature the caller built.
 template <class T>
 bool addToJob(OiJob& job, const oi::Guarded<T>& feature,
               void (FeatureWrapper::*set)(const oi::Guarded<T>&)) {
-  oi::Guarded<FeatureWrapper> wrapper = new FeatureWrapper();
-  (wrapper.data()->*set)(feature);
-  return job.addFeature(wrapper);
+  static_cast<void>(set);
+  // the test built the feature with new; the job takes it over
+  return !job.addFeature(std::unique_ptr<Feature>(feature.data())).isNull();
 }
 
 oi::Guarded<Point> addPoint(OiJob& job, const std::string& name, double x) {
@@ -991,7 +982,7 @@ TEST_CASE("loading links the references the file only holds as ids") {
 
   CHECK(job.getStationsList().size() == 1);
   const oi::Guarded<Station> station = job.getActiveStation();
-  REQUIRE_FALSE(station.isNull());
+  REQUIRE(station);
   CHECK(station->getFeatureName() == "STATION01");
   CHECK_FALSE(station->getPosition().isNull());
   REQUIRE_FALSE(station->getCoordinateSystem().isNull());

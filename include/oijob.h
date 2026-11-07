@@ -134,10 +134,13 @@ class OI_CORE_EXPORT OiJob : public oi::Trackable,
   // ######################
 
   // add features
-  bool addFeature(const oi::Guarded<FeatureWrapper>& feature);
+  // Hands the feature to the job, which owns it from then on. Returns the
+  // feature's wrapper (its own, Feature::getFeatureWrapper()), or null when
+  // the job rejects it - the feature is then destroyed.
+  oi::Guarded<FeatureWrapper> addFeature(std::unique_ptr<Feature> feature);
   std::vector<oi::Guarded<FeatureWrapper>> addFeatures(
       const FeatureAttributes& fAttr);
-  bool addFeatures(const std::vector<oi::Guarded<FeatureWrapper>>& features,
+  bool addFeatures(std::vector<std::unique_ptr<Feature>> features,
                    bool overwrite = false);
 
   // remove features
@@ -436,9 +439,10 @@ class OI_CORE_EXPORT OiJob : public oi::Trackable,
 
   [[nodiscard]] std::vector<std::string> createFeatureNames(
       const std::string& name, const int& count) const;
-  [[nodiscard]] oi::Guarded<FeatureWrapper> createFeatureWrapper(
+  [[nodiscard]] std::unique_ptr<Feature> createFeature(
       const FeatureTypes& type) const;
-  bool checkAndSetUpNewFeature(const oi::Guarded<FeatureWrapper>& feature,
+  // on success the feature has been moved into the container
+  bool checkAndSetUpNewFeature(std::unique_ptr<Feature>& feature,
                                bool overwrite = false);
 
   [[nodiscard]] bool canRemoveFeature(
@@ -473,8 +477,7 @@ class OI_CORE_EXPORT OiJob : public oi::Trackable,
   // ProjectExchanger)
   // ###################################################################################
 
-  void addFeaturesFromXml(
-      const std::vector<oi::Guarded<FeatureWrapper>>& features);
+  void addFeaturesFromXml(std::vector<std::unique_ptr<Feature>> features);
 
  private:
   // #########################

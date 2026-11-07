@@ -1,6 +1,7 @@
 #ifndef FEATURE_H
 #define FEATURE_H
 #include <map>
+#include <memory>
 #include <optional>
 #include <string>
 #include <type_traits>
@@ -320,6 +321,11 @@ class OI_CORE_EXPORT Feature : public Element {
   // this pointer wrapped by FeatureWrapper
   // ######################################
 
+  // The feature's one FeatureWrapper. The feature owns it, so whoever owns
+  // the feature (FeatureContainer, through a std::unique_ptr<Feature>) owns
+  // the whole lifetime; selfFeature is the non-owning handle everything else
+  // is given (getFeatureWrapper()).
+  std::unique_ptr<FeatureWrapper> ownedWrapper;
   oi::Guarded<FeatureWrapper> selfFeature;
 
   // #############################################
