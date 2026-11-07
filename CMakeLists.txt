@@ -219,6 +219,7 @@ add_library(OpenIndyCore SHARED
     include/connectionkind.h
     include/calibratedconstellation.h
     include/group.h
+    include/guarded.h
     include/pointgroup.h
     include/pointcollection.h
     include/sensorcontrol.h
@@ -343,6 +344,11 @@ add_executable(tst_codec test/codec/tst_codec.cpp)
 target_link_libraries(tst_codec PRIVATE
     OpenIndyCodec OpenIndyCore OpenIndyMath Catch2::Catch2WithMain)
 add_test(NAME codec COMMAND tst_codec)
+
+add_executable(tst_guarded test/guarded/tst_guarded.cpp)
+target_include_directories(tst_guarded PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_link_libraries(tst_guarded PRIVATE Catch2::Catch2WithMain)
+add_test(NAME guarded COMMAND tst_guarded)
 
 add_executable(tst_measurementconfig test/measurementconfig/tst_measurementconfig.cpp)
 target_compile_definitions(tst_measurementconfig PRIVATE SRCDIR="${CMAKE_CURRENT_SOURCE_DIR}/test/measurementconfig")
