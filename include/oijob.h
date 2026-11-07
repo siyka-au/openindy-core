@@ -5,6 +5,8 @@
 #include <QList>
 #include <QMap>
 #include <QMultiMap>
+#include <QMutex>
+#include <QMutexLocker>
 #include <QObject>
 #include <QPointer>
 #include <QSet>
@@ -336,15 +338,23 @@ class OI_CORE_EXPORT OiJob : public QObject, public FeatureObserver {
   // remove themselves from within a callback.
   template <typename Callback, typename... Args>
   void notifyObservers(Callback callback, const Args&... args) {
-    const std::vector<JobObserver*> snapshot = this->observers;
+    std::vector<JobObserver*> snapshot;
+    {
+      const QMutexLocker locker(&this->observersMutex);
+      snapshot = this->observers;
+    }
     for (JobObserver* observer : snapshot) {
-      if (std::find(this->observers.begin(), this->observers.end(), observer) !=
-          this->observers.end()) {
+      if (this->isObserver(observer)) {
         (observer->*callback)(args...);
       }
     }
   }
 
+  [[nodiscard]] bool isObserver(const JobObserver* observer) const;
+
+  // guarded: changes may be reported from worker threads (as the signals
+  // they replace could be) while observers are added or removed
+  mutable QMutex observersMutex;
   std::vector<JobObserver*> observers;
 
   // ##############################

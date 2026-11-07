@@ -46,7 +46,10 @@ OiJob::~OiJob() {
   // tell the observers first, while the job is still intact, then forget
   // them: nothing below reports to anyone any more
   this->notifyObservers(&JobObserver::onJobDestroyed, this);
-  this->observers.clear();
+  {
+    const QMutexLocker locker(&this->observersMutex);
+    this->observers.clear();
+  }
 
   // no feature may keep a pointer to this job (or to the station system
   // observer) past this point
@@ -68,7 +71,14 @@ OiJob::~OiJob() {
  * \brief OiJob::addObserver
  * Registers a (non-owning) observer; registering it twice has no effect.
  */
+bool OiJob::isObserver(const JobObserver* observer) const {
+  const QMutexLocker locker(&this->observersMutex);
+  return std::find(this->observers.begin(), this->observers.end(), observer) !=
+         this->observers.end();
+}
+
 void OiJob::addObserver(JobObserver* observer) {
+  const QMutexLocker locker(&this->observersMutex);
   if (observer == nullptr ||
       std::find(this->observers.begin(), this->observers.end(), observer) !=
           this->observers.end()) {
@@ -81,6 +91,7 @@ void OiJob::addObserver(JobObserver* observer) {
  * \brief OiJob::removeObserver
  */
 void OiJob::removeObserver(JobObserver* observer) {
+  const QMutexLocker locker(&this->observersMutex);
   this->observers.erase(
       std::remove(this->observers.begin(), this->observers.end(), observer),
       this->observers.end());
