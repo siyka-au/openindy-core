@@ -5,7 +5,6 @@
 #include <QPointer>
 #include <QString>
 #include <QtSerialPort/QSerialPort>
-#include <QtXml>
 
 #include "connectionkind.h"
 #include "core_export.h"
@@ -139,9 +138,6 @@ class OI_CORE_EXPORT SensorConfiguration {
       const;
   void setAvailableStringParameter(
       const QMultiMap<QString, QString>& stringParams);
-
-  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const;
-  bool fromOpenIndyXML(QDomElement& xmlElem);
 
  private:
   // ###############################

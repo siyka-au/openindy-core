@@ -85,6 +85,92 @@ message MeasurementConfig {
 }
 
 // ---------------------------------------------------------------------------
+// Sensor configuration (a config file, not part of a project)
+// ---------------------------------------------------------------------------
+
+enum SerialParity {
+  SERIAL_PARITY_UNSPECIFIED = 0;
+  SERIAL_PARITY_NONE = 1;
+  SERIAL_PARITY_EVEN = 2;
+  SERIAL_PARITY_ODD = 3;
+  SERIAL_PARITY_SPACE = 4;
+  SERIAL_PARITY_MARK = 5;
+}
+
+enum SerialDataBits {
+  SERIAL_DATA_BITS_UNSPECIFIED = 0;
+  SERIAL_DATA_BITS_5 = 1;
+  SERIAL_DATA_BITS_6 = 2;
+  SERIAL_DATA_BITS_7 = 3;
+  SERIAL_DATA_BITS_8 = 4;
+}
+
+enum SerialStopBits {
+  SERIAL_STOP_BITS_UNSPECIFIED = 0;
+  SERIAL_STOP_BITS_ONE = 1;
+  SERIAL_STOP_BITS_ONE_AND_HALF = 2;
+  SERIAL_STOP_BITS_TWO = 3;
+}
+
+enum SerialFlowControl {
+  SERIAL_FLOW_CONTROL_UNSPECIFIED = 0;
+  SERIAL_FLOW_CONTROL_NONE = 1;
+  SERIAL_FLOW_CONTROL_HARDWARE = 2;
+  SERIAL_FLOW_CONTROL_SOFTWARE = 3;
+}
+
+// How a driver reaches its instrument. Both the network and the serial
+// settings are always stored; only the ones the connection kind uses matter.
+message SensorConnection {
+  // Id of the connection kind ("network", "serial"). Empty: none chosen.
+  string kind = 1;
+  string ip = 2;
+  string port = 3;
+  string com_port = 4;
+  // Bits per second; 0 when unset or not a standard rate.
+  int32 baud_rate = 5;
+  SerialDataBits data_bits = 6;
+  SerialParity parity = 7;
+  SerialStopBits stop_bits = 8;
+  SerialFlowControl flow_control = 9;
+}
+
+// Standard deviations of a sensor, in the sensor's own units.
+message SensorAccuracy {
+  Vec3 sigma_xyz = 1;
+  double sigma_azimuth = 2;
+  double sigma_zenith = 3;
+  double sigma_distance = 4;
+  double sigma_temp = 5;
+  double sigma_i = 6;
+  double sigma_j = 7;
+  double sigma_k = 8;
+  // Sigmas a driver defines itself, by name.
+  map<string, double> sigma_undefined = 9;
+}
+
+message StringOptions {
+  repeated string options = 1;
+}
+
+message SensorConfiguration {
+  string name = 1;
+  bool is_saved = 2;
+  // The driver this configuration belongs to.
+  string plugin_name = 3;
+  string sensor_name = 4;
+  // Id of the sensor type. Empty: unknown.
+  string sensor_type = 5;
+  SensorConnection connection = 6;
+  SensorAccuracy accuracy = 7;
+  map<string, int32> integer_parameters = 8;
+  map<string, double> double_parameters = 9;
+  map<string, string> string_parameters = 10;
+  // Every value a string parameter may take, as the driver declared them.
+  map<string, StringOptions> available_string_parameters = 11;
+}
+
+// ---------------------------------------------------------------------------
 // Readings and observations
 // ---------------------------------------------------------------------------
 

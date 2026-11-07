@@ -18,6 +18,7 @@
 #include "plugin/function/function.h"
 #include "plugin/networkAdjustment/bundleadjustment.h"
 #include "reading.h"
+#include "sensorconfiguration.h"
 #include "station.h"
 #include "trafoparam.h"
 
@@ -30,6 +31,15 @@ namespace oi::codec {
  *  caller decides the config type (user, project, standard). */
 [[nodiscard]] std::optional<MeasurementConfig> fromProto(
     const openindy::v1::MeasurementConfig& message);
+
+[[nodiscard]] openindy::v1::SensorConfiguration toProto(
+    const SensorConfiguration& config);
+
+/*! Empty if the message has no name, which no valid config can have. Values
+ *  the model cannot represent (an unspecified enum, a baud rate that is not
+ *  a standard one) come back as Qt's "unknown" values. */
+[[nodiscard]] std::optional<SensorConfiguration> fromProto(
+    const openindy::v1::SensorConfiguration& message);
 
 // ---------------------------------------------------------------------------
 // Entities

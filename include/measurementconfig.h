@@ -2,8 +2,10 @@
 #define MEASUREMENTCONFIG_H
 
 #include <QHash>
+#include <QList>
+#include <QMap>
 #include <QString>
-#include <QtXml>
+#include <QVariant>
 
 #include "core_export.h"
 #include "sensortype.h"
@@ -187,9 +189,6 @@ class OI_CORE_EXPORT MeasurementConfig {
   void makeUserConfig();
   void makeStandardConfig();
   void makeProjectConfig();
-
-  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const;
-  bool fromOpenIndyXML(QDomElement& xmlElem);
 
   bool applicableFor(const ElementTypes elementType,
                      QList<FeatureTypes> functionIsApplicableFor);

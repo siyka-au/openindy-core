@@ -269,6 +269,7 @@ target_link_libraries(OpenIndyCore
 # lookup. The converters reach the model's private state through the
 # codec::Access friend declared in the model classes.
 add_library(OpenIndyCodec STATIC
+    src/codec/config.cpp
     src/codec/convert.cpp
     src/codec/functions.cpp
     src/codec/geometry.cpp

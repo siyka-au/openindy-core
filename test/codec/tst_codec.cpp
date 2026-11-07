@@ -8,6 +8,7 @@
 
 #include "bundleadjustment.h"
 #include "chooselalib.h"
+#include "config_codec.h"
 #include "constructfunction.h"
 #include "convert.h"
 #include "digest.h"
@@ -1135,4 +1136,298 @@ TEST_CASE("a geometry writes the feature that owns it, an owner writes none") {
 
   CHECK(codec::toProto(child).owner_feature() == 303);
   CHECK(codec::toProto(owner).owner_feature() == 0);
+}
+
+// ---------------------------------------------------------------------------
+// Config files (JSON)
+// ---------------------------------------------------------------------------
+
+namespace {
+
+SensorConfiguration sampleSensorConfig() {
+  SensorConfiguration config;
+  config.setName("Tracker \"A\" \xC3\xA4");
+  config.setIsSaved(true);
+  config.setPluginName("Some Plugin");
+  config.setSensorName("Sensor 1");
+  config.setTypeOfSensor(SensorTypeRegistry::byId("laserTracker").value());
+
+  ConnectionConfig connection;
+  connection.typeOfConnection = ConnectionKind::serial();
+  connection.ip = "192.168.0.7";
+  connection.port = "700";
+  connection.comPort = "/dev/ttyUSB0";
+  connection.baudRate = QSerialPort::Baud115200;
+  connection.dataBits = QSerialPort::Data7;
+  connection.parity = QSerialPort::OddParity;
+  connection.stopBits = QSerialPort::OneAndHalfStop;
+  connection.flowControl = QSerialPort::HardwareControl;
+  config.setConnectionConfig(connection);
+
+  Accuracy accuracy;
+  accuracy.sigmaXyz.setAt(0, 0.1);
+  accuracy.sigmaXyz.setAt(1, 0.2);
+  accuracy.sigmaXyz.setAt(2, 0.3);
+  accuracy.sigmaAzimuth = 1.5e-6;
+  accuracy.sigmaZenith = 2.5e-6;
+  accuracy.sigmaDistance = 3.5e-5;
+  accuracy.sigmaTemp = 0.5;
+  accuracy.sigmaI = 0.01;
+  accuracy.sigmaJ = 0.02;
+  accuracy.sigmaK = 0.03;
+  accuracy.sigmaUndefined.insert("custom sigma", 7.25);
+  accuracy.sigmaUndefined.insert("other", -1.0);
+  config.setAccuracy(accuracy);
+
+  config.setIntegerParameter({{"count", 3}, {"negative", -42}});
+  config.setDoubleParameter({{"gain", 0.125}, {"huge", 1e300}});
+  config.setStringParameter({{"probe", "1.5''"}, {"empty", ""}});
+  QMultiMap<QString, QString> ordered;
+  for (const QString& v :
+       {QString("third"), QString("second"), QString("first")}) {
+    ordered.insert("probe", v);
+  }
+  config.setAvailableStringParameter(ordered);
+  return config;
+}
+
+}  // namespace
+
+TEST_CASE("MeasurementConfig survives a JSON round trip") {
+  MeasurementConfig in = sampleConfig();
+  in.setSensorType(SensorTypeRegistry::byId("totalStation").value());
+
+  const std::string json = codec::encodeMeasurementConfig(in);
+  CHECK(json.find("\"measure_two_sides\": true") != std::string::npos);
+  CHECK(json.find("MEASUREMENT_MODE_PRECISE") != std::string::npos);
+
+  const auto out = codec::decodeMeasurementConfig(json);
+  REQUIRE(out.has_value());
+  CHECK(out->getName() == in.getName());
+  CHECK(out->getMeasurementMode() == in.getMeasurementMode());
+  CHECK(out->getMeasurementType() == in.getMeasurementType());
+  CHECK(out->getMeasureTwoSides());
+  CHECK(out->getMaxObservations() == 25);
+  CHECK(out->getTimeInterval() == 0.5);
+  CHECK(out->getDistanceInterval() == 2.25);
+  CHECK(out->getSensorType().id() == "totalStation");
+}
+
+TEST_CASE("a default-valued MeasurementConfig prints every field") {
+  MeasurementConfig in;
+  in.setName("Zero");
+  in.setMeasureTwoSides(false);
+  in.setMaxObservations(0);
+  in.setTimeInterval(0);
+  in.setDistanceInterval(0);
+  const std::string json = codec::encodeMeasurementConfig(in);
+  for (const char* key :
+       {"name", "mode", "type", "measure_two_sides", "max_observations",
+        "time_interval", "distance_interval"}) {
+    INFO(key);
+    CHECK(json.find(std::string("\"") + key + "\"") != std::string::npos);
+  }
+  // not gated: no sensor_type key
+  CHECK(json.find("sensor_type") == std::string::npos);
+  const auto out = codec::decodeMeasurementConfig(json);
+  REQUIRE(out.has_value());
+  CHECK_FALSE(out->getMeasureTwoSides());
+  CHECK(out->getMaxObservations() == 0);
+  CHECK_FALSE(out->getSensorType().isValid());
+}
+
+TEST_CASE(
+    "measurement config decoding ignores unknown keys and accepts camelCase") {
+  const auto out = codec::decodeMeasurementConfig(R"({
+    "name": "FromTheFuture",
+    "measureTwoSides": true,
+    "max_observations": 9,
+    "added_in_v9": {"nested": [1, 2, 3]},
+    "mode": "MEASUREMENT_MODE_THAT_DOES_NOT_EXIST_YET"
+  })");
+  REQUIRE(out.has_value());
+  CHECK(out->getName() == "FromTheFuture");
+  CHECK(out->getMeasureTwoSides());
+  CHECK(out->getMaxObservations() == 9);
+}
+
+TEST_CASE("garbage is never a measurement config") {
+  for (const std::string_view garbage :
+       {std::string_view{""}, std::string_view{"   "},
+        std::string_view{"not json"}, std::string_view{"{"},
+        std::string_view{"[]"}, std::string_view{"null"},
+        std::string_view{"42"}, std::string_view{"{}"},
+        std::string_view{R"({"name": ""})"}, std::string_view{R"({"name": 5})"},
+        std::string_view{R"({"name": "x", "max_observations": "many"})"},
+        std::string_view{R"({"name": "x", "max_observations": 1e30})"},
+        std::string_view{R"({"name": "x", "time_interval": [1]})"},
+        std::string_view{"<measurementConfig name=\"x\"/>"},
+        std::string_view{"\x00\x01\xff\xfe", 4}}) {
+    INFO(std::string(garbage));
+    CHECK_FALSE(codec::decodeMeasurementConfig(garbage).has_value());
+  }
+}
+
+TEST_CASE("SensorConfiguration survives a protobuf round trip") {
+  const SensorConfiguration in = sampleSensorConfig();
+  const auto out = codec::fromProto(codec::toProto(in));
+  REQUIRE(out.has_value());
+  CHECK(out->getName() == in.getName());
+  CHECK(out->getIsSaved());
+  CHECK(out->getPluginName() == "Some Plugin");
+  CHECK(out->getSensorName() == "Sensor 1");
+  CHECK(out->getTypeOfSensor().id() == "laserTracker");
+
+  const ConnectionConfig& c = out->getConnectionConfig();
+  CHECK(c.typeOfConnection == ConnectionKind::serial());
+  CHECK(c.ip == "192.168.0.7");
+  CHECK(c.port == "700");
+  CHECK(c.comPort == "/dev/ttyUSB0");
+  CHECK(c.baudRate == QSerialPort::Baud115200);
+  CHECK(c.dataBits == QSerialPort::Data7);
+  CHECK(c.parity == QSerialPort::OddParity);
+  CHECK(c.stopBits == QSerialPort::OneAndHalfStop);
+  CHECK(c.flowControl == QSerialPort::HardwareControl);
+
+  const Accuracy& a = out->getAccuracy();
+  CHECK(a.sigmaXyz.getAt(0) == 0.1);
+  CHECK(a.sigmaXyz.getAt(1) == 0.2);
+  CHECK(a.sigmaXyz.getAt(2) == 0.3);
+  CHECK(a.sigmaAzimuth == 1.5e-6);
+  CHECK(a.sigmaZenith == 2.5e-6);
+  CHECK(a.sigmaDistance == 3.5e-5);
+  CHECK(a.sigmaTemp == 0.5);
+  CHECK(a.sigmaI == 0.01);
+  CHECK(a.sigmaJ == 0.02);
+  CHECK(a.sigmaK == 0.03);
+  CHECK(a.sigmaUndefined.size() == 2);
+  CHECK(a.sigmaUndefined.value("custom sigma") == 7.25);
+  CHECK(a.sigmaUndefined.value("other") == -1.0);
+
+  CHECK(out->getIntegerParameter() == in.getIntegerParameter());
+  CHECK(out->getDoubleParameter() == in.getDoubleParameter());
+  CHECK(out->getStringParameter() == in.getStringParameter());
+  CHECK(out->getAvailableStringParameter().values("probe") ==
+        in.getAvailableStringParameter().values("probe"));
+}
+
+TEST_CASE("SensorConfiguration survives a JSON round trip, repeatedly") {
+  const SensorConfiguration in = sampleSensorConfig();
+  const std::string once = codec::encodeSensorConfiguration(in);
+  const auto out = codec::decodeSensorConfiguration(once);
+  REQUIRE(out.has_value());
+  CHECK(out->getName() == in.getName());
+  CHECK(out->getDoubleParameter().value("huge") == 1e300);
+  CHECK(out->getAvailableStringParameter().values("probe") ==
+        QStringList({"first", "second", "third"}));
+  // the option order must not flip on every save
+  CHECK(codec::encodeSensorConfiguration(*out) == once);
+}
+
+TEST_CASE("an empty SensorConfiguration with just a name round trips") {
+  SensorConfiguration in;
+  in.setName("Bare");
+  const std::string json = codec::encodeSensorConfiguration(in);
+  const auto out = codec::decodeSensorConfiguration(json);
+  REQUIRE(out.has_value());
+  CHECK(out->getName() == "Bare");
+  CHECK_FALSE(out->getIsSaved());
+  CHECK_FALSE(out->getTypeOfSensor().isValid());
+  CHECK_FALSE(out->getConnectionConfig().typeOfConnection.isValid());
+  CHECK(out->getIntegerParameter().isEmpty());
+  CHECK(out->getDoubleParameter().isEmpty());
+  CHECK(out->getStringParameter().isEmpty());
+  CHECK(out->getAvailableStringParameter().isEmpty());
+  CHECK(out->getAccuracy().sigmaUndefined.isEmpty());
+  CHECK(out->getAccuracy().sigmaXyz.getAt(2) == 0.0);
+}
+
+TEST_CASE("every serial setting maps both ways") {
+  for (const auto baud :
+       {QSerialPort::Baud1200, QSerialPort::Baud2400, QSerialPort::Baud4800,
+        QSerialPort::Baud9600, QSerialPort::Baud19200, QSerialPort::Baud38400,
+        QSerialPort::Baud57600, QSerialPort::Baud115200}) {
+    SensorConfiguration in = sampleSensorConfig();
+    ConnectionConfig c = in.getConnectionConfig();
+    c.baudRate = baud;
+    in.setConnectionConfig(c);
+    CHECK(
+        codec::fromProto(codec::toProto(in))->getConnectionConfig().baudRate ==
+        baud);
+  }
+  for (const auto parity :
+       {QSerialPort::NoParity, QSerialPort::EvenParity, QSerialPort::OddParity,
+        QSerialPort::SpaceParity, QSerialPort::MarkParity}) {
+    SensorConfiguration in = sampleSensorConfig();
+    ConnectionConfig c = in.getConnectionConfig();
+    c.parity = parity;
+    in.setConnectionConfig(c);
+    CHECK(codec::fromProto(codec::toProto(in))->getConnectionConfig().parity ==
+          parity);
+  }
+  for (const auto bits : {QSerialPort::Data5, QSerialPort::Data6,
+                          QSerialPort::Data7, QSerialPort::Data8}) {
+    SensorConfiguration in = sampleSensorConfig();
+    ConnectionConfig c = in.getConnectionConfig();
+    c.dataBits = bits;
+    in.setConnectionConfig(c);
+    CHECK(
+        codec::fromProto(codec::toProto(in))->getConnectionConfig().dataBits ==
+        bits);
+  }
+  for (const auto stop : {QSerialPort::OneStop, QSerialPort::OneAndHalfStop,
+                          QSerialPort::TwoStop}) {
+    SensorConfiguration in = sampleSensorConfig();
+    ConnectionConfig c = in.getConnectionConfig();
+    c.stopBits = stop;
+    in.setConnectionConfig(c);
+    CHECK(
+        codec::fromProto(codec::toProto(in))->getConnectionConfig().stopBits ==
+        stop);
+  }
+  for (const auto flow :
+       {QSerialPort::NoFlowControl, QSerialPort::HardwareControl,
+        QSerialPort::SoftwareControl}) {
+    SensorConfiguration in = sampleSensorConfig();
+    ConnectionConfig c = in.getConnectionConfig();
+    c.flowControl = flow;
+    in.setConnectionConfig(c);
+    CHECK(codec::fromProto(codec::toProto(in))
+              ->getConnectionConfig()
+              .flowControl == flow);
+  }
+}
+
+TEST_CASE(
+    "an unknown sensor type or connection kind does not fail the config") {
+  const auto out = codec::decodeSensorConfiguration(R"({
+    "name": "Odd", "sensor_type": "noSuchType",
+    "connection": {"kind": "carrierPigeon", "baud_rate": 31337},
+    "unknown_future_field": true
+  })");
+  REQUIRE(out.has_value());
+  CHECK_FALSE(out->getTypeOfSensor().isValid());
+  CHECK_FALSE(out->getConnectionConfig().typeOfConnection.isValid());
+  // unspecified or unknown values come back as 9600 8N1, no flow control
+  CHECK(out->getConnectionConfig().baudRate == QSerialPort::Baud9600);
+  CHECK(out->getConnectionConfig().dataBits == QSerialPort::Data8);
+  CHECK(out->getConnectionConfig().parity == QSerialPort::NoParity);
+  CHECK(out->getConnectionConfig().stopBits == QSerialPort::OneStop);
+  CHECK(out->getConnectionConfig().flowControl == QSerialPort::NoFlowControl);
+}
+
+TEST_CASE("garbage is never a sensor configuration") {
+  for (const std::string_view garbage :
+       {std::string_view{""}, std::string_view{"nope"},
+        std::string_view{"{\"name\": \"x\""}, std::string_view{"[1,2]"},
+        std::string_view{"{}"}, std::string_view{R"({"name": ""})"},
+        std::string_view{R"({"name": "x", "connection": 5})"},
+        std::string_view{R"({"name": "x", "double_parameters": [1]})"},
+        std::string_view{R"({"name": "x", "integer_parameters": {"a": "b"}})"},
+        std::string_view{R"({"name": "x", "accuracy": {"sigma_xyz": "no"}})"},
+        std::string_view{"<sensorConfig name=\"x\"/>"},
+        std::string_view{"\xff\xfe\x00\x01", 4}}) {
+    INFO(std::string(garbage));
+    CHECK_FALSE(codec::decodeSensorConfiguration(garbage).has_value());
+  }
 }
