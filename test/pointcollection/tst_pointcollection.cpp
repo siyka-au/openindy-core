@@ -1,6 +1,7 @@
-#include <QtTest>
+#include <catch2/catch_test_macros.hpp>
 #include <vector>
 
+#include "catch_compat.h"
 #include "chooselalib.h"
 #include "featurewrapper.h"
 #include "geometry/point.h"
@@ -33,10 +34,8 @@ oi::Guarded<FeatureWrapper> makePoint(double x, double y, double z, int id) {
  * particularly that a Group references and never owns, since the whole
  * point of many-to-many membership is measuring once and reusing.
  */
-class PointCollectionTest : public QObject {
-  Q_OBJECT
-
- private slots:
+class PointCollectionTest {
+ public:
   void initTestCase();
 
   void groupHoldsReferencesNotCopies();
@@ -59,8 +58,8 @@ void PointCollectionTest::groupHoldsReferencesNotCopies() {
   oi::Guarded<FeatureWrapper> point = makePoint(1.0, 2.0, 3.0, 1);
 
   PointGroup group("wall");
-  QVERIFY(group.addMember(point));
-  QCOMPARE(group.memberCount(), 1);
+  REQUIRE(group.addMember(point));
+  OI_COMPARE(group.memberCount(), 1);
 
   // mutating the point must be visible through the group - a copy would
   // silently diverge, which is exactly the failure mode this design exists
@@ -69,8 +68,8 @@ void PointCollectionTest::groupHoldsReferencesNotCopies() {
   point->getPoint()->setPoint(moved);
 
   const std::vector<Position> positions = group.collectionPoints();
-  QCOMPARE(positions.size(), 1);
-  QCOMPARE(positions.front().getVector().getAt(0), 9.0);
+  OI_COMPARE(positions.size(), 1);
+  OI_COMPARE(positions.front().getVector().getAt(0), 9.0);
 }
 
 void PointCollectionTest::pointInManyGroupsIsStoredOnce() {
@@ -79,14 +78,15 @@ void PointCollectionTest::pointInManyGroupsIsStoredOnce() {
   PointGroup wall("wall");
   PointGroup control("control network");
 
-  QVERIFY(wall.addMember(shared));
-  QVERIFY(control.addMember(shared));
+  REQUIRE(wall.addMember(shared));
+  REQUIRE(control.addMember(shared));
 
   // same underlying feature, reached from both groups - no copy, no second
   // measurement, no re-identification
-  QCOMPARE(wall.getPoints().front().data(), control.getPoints().front().data());
-  QCOMPARE(wall.getPoints().front()->getId(),
-           control.getPoints().front()->getId());
+  OI_COMPARE(wall.getPoints().front().data(),
+             control.getPoints().front().data());
+  OI_COMPARE(wall.getPoints().front()->getId(),
+             control.getPoints().front()->getId());
 }
 
 void PointCollectionTest::constraintRejectsWrongType() {
@@ -95,31 +95,32 @@ void PointCollectionTest::constraintRejectsWrongType() {
   cloudWrapper->setPointCloud(cloud);
 
   PointGroup group("points only");
-  QVERIFY2(!group.addMember(cloudWrapper),
-           "a point group must not accept a point cloud as a member");
-  QCOMPARE(group.memberCount(), 0);
+  OI_REQUIRE2(!group.addMember(cloudWrapper),
+              "a point group must not accept a point cloud as a member");
+  OI_COMPARE(group.memberCount(), 0);
 
   // an unconstrained Group takes anything - that generality is why there
   // is one Group class rather than one per feature type
   Group anything("mixed");
-  QVERIFY(anything.addMember(cloudWrapper));
-  QVERIFY(anything.addMember(makePoint(0.0, 0.0, 0.0, 51)));
-  QCOMPARE(anything.memberCount(), 2);
+  REQUIRE(anything.addMember(cloudWrapper));
+  REQUIRE(anything.addMember(makePoint(0.0, 0.0, 0.0, 51)));
+  OI_COMPARE(anything.memberCount(), 2);
 }
 
 void PointCollectionTest::duplicateAndSelfMembershipRejected() {
   oi::Guarded<FeatureWrapper> point = makePoint(1.0, 1.0, 1.0, 1);
 
   PointGroup group("wall");
-  QVERIFY(group.addMember(point));
-  QVERIFY2(!group.addMember(point), "the same feature must not be added twice");
-  QCOMPARE(group.memberCount(), 1);
+  REQUIRE(group.addMember(point));
+  OI_REQUIRE2(!group.addMember(point),
+              "the same feature must not be added twice");
+  OI_COMPARE(group.memberCount(), 1);
 
   // a group containing itself would recurse forever on traversal
   Group outer("outer");
   oi::Guarded<FeatureWrapper> selfWrapper = new FeatureWrapper();
-  QVERIFY2(!outer.addMember(selfWrapper),
-           "a null-typed wrapper must be rejected outright");
+  OI_REQUIRE2(!outer.addMember(selfWrapper),
+              "a null-typed wrapper must be rejected outright");
 }
 
 void PointCollectionTest::compactDropsDeletedMembers() {
@@ -127,17 +128,17 @@ void PointCollectionTest::compactDropsDeletedMembers() {
   oi::Guarded<FeatureWrapper> discard = makePoint(2.0, 2.0, 2.0, 2);
 
   PointGroup group("wall");
-  QVERIFY(group.addMember(keep));
-  QVERIFY(group.addMember(discard));
-  QCOMPARE(group.memberCount(), 2);
+  REQUIRE(group.addMember(keep));
+  REQUIRE(group.addMember(discard));
+  OI_COMPARE(group.memberCount(), 2);
 
   delete discard->getPoint().data();
   delete discard.data();
 
   // memberCount already ignores the dead reference; compact() removes it
-  QCOMPARE(group.memberCount(), 1);
+  OI_COMPARE(group.memberCount(), 1);
   group.compact();
-  QCOMPARE(group.getMembers().size(), 1);
+  OI_COMPARE(group.getMembers().size(), 1);
 }
 
 void PointCollectionTest::deletingAGroupDoesNotDeleteItsMembers() {
@@ -145,14 +146,14 @@ void PointCollectionTest::deletingAGroupDoesNotDeleteItsMembers() {
 
   {
     PointGroup group("temporary");
-    QVERIFY(group.addMember(point));
+    REQUIRE(group.addMember(point));
   }
 
   // the group is gone; the point it referenced must be untouched. A group
   // organises, it never owns.
-  QVERIFY2(!point.isNull(), "deleting a group must not delete its members");
-  QVERIFY(!point->getPoint().isNull());
-  QCOMPARE(point->getPoint()->getPosition().getVector().getAt(0), 1.0);
+  OI_REQUIRE2(!point.isNull(), "deleting a group must not delete its members");
+  REQUIRE(!point->getPoint().isNull());
+  OI_COMPARE(point->getPoint()->getPosition().getVector().getAt(0), 1.0);
 }
 
 void PointCollectionTest::pointGroupSatisfiesPointCollection() {
@@ -163,8 +164,8 @@ void PointCollectionTest::pointGroupSatisfiesPointCollection() {
 
   // reached only through the interface, exactly as a fit function will
   PointCollection* collection = &group;
-  QCOMPARE(collection->collectionPointCount(), 3);
-  QCOMPARE(collection->collectionPoints().size(), 3);
+  OI_COMPARE(collection->collectionPointCount(), 3);
+  OI_COMPARE(collection->collectionPoints().size(), 3);
 }
 
 void PointCollectionTest::unsolvedPointsAreNotPartOfTheCollection() {
@@ -175,12 +176,12 @@ void PointCollectionTest::unsolvedPointsAreNotPartOfTheCollection() {
   unsolved->setIsSolved(false);
   oi::Guarded<FeatureWrapper> unsolvedWrapper = new FeatureWrapper();
   unsolvedWrapper->setPoint(unsolved);
-  QVERIFY(group.addMember(unsolvedWrapper));
+  REQUIRE(group.addMember(unsolvedWrapper));
 
   // it is a member, but it has no trustworthy position yet - feeding it to
   // a fit would quietly corrupt the result
-  QCOMPARE(group.memberCount(), 2);
-  QCOMPARE(group.collectionPointCount(), 1);
+  OI_COMPARE(group.memberCount(), 2);
+  OI_COMPARE(group.collectionPointCount(), 1);
 }
 
 void PointCollectionTest::pointCloudSatisfiesPointCollection() {
@@ -195,11 +196,11 @@ void PointCollectionTest::pointCloudSatisfiesPointCollection() {
   cloud->addPointCloudPoint(excluded);
 
   PointCollection* collection = cloud.data();
-  QCOMPARE(collection->collectionPointCount(), 2);
+  OI_COMPARE(collection->collectionPointCount(), 2);
 
   const std::vector<Position> positions = collection->collectionPoints();
-  QCOMPARE(positions.size(), 2);
-  QCOMPARE(positions.front().getVector().getAt(0), 1.0);
+  OI_COMPARE(positions.size(), 2);
+  OI_COMPARE(positions.front().getVector().getAt(0), 1.0);
 }
 
 void PointCollectionTest::
@@ -220,10 +221,78 @@ void PointCollectionTest::
   collections.push_back(cloud.data());
 
   for (PointCollection* collection : collections) {
-    QCOMPARE(collection->collectionPointCount(), 2);
-    QCOMPARE(collection->collectionPoints().size(), 2);
+    OI_COMPARE(collection->collectionPointCount(), 2);
+    OI_COMPARE(collection->collectionPoints().size(), 2);
   }
 }
 
-QTEST_APPLESS_MAIN(PointCollectionTest)
-#include "tst_pointcollection.moc"
+TEST_CASE("PointCollectionTest::groupHoldsReferencesNotCopies",
+          "[PointCollectionTest]") {
+  PointCollectionTest fixture;
+  fixture.initTestCase();
+  fixture.groupHoldsReferencesNotCopies();
+}
+
+TEST_CASE("PointCollectionTest::pointInManyGroupsIsStoredOnce",
+          "[PointCollectionTest]") {
+  PointCollectionTest fixture;
+  fixture.initTestCase();
+  fixture.pointInManyGroupsIsStoredOnce();
+}
+
+TEST_CASE("PointCollectionTest::constraintRejectsWrongType",
+          "[PointCollectionTest]") {
+  PointCollectionTest fixture;
+  fixture.initTestCase();
+  fixture.constraintRejectsWrongType();
+}
+
+TEST_CASE("PointCollectionTest::duplicateAndSelfMembershipRejected",
+          "[PointCollectionTest]") {
+  PointCollectionTest fixture;
+  fixture.initTestCase();
+  fixture.duplicateAndSelfMembershipRejected();
+}
+
+TEST_CASE("PointCollectionTest::compactDropsDeletedMembers",
+          "[PointCollectionTest]") {
+  PointCollectionTest fixture;
+  fixture.initTestCase();
+  fixture.compactDropsDeletedMembers();
+}
+
+TEST_CASE("PointCollectionTest::deletingAGroupDoesNotDeleteItsMembers",
+          "[PointCollectionTest]") {
+  PointCollectionTest fixture;
+  fixture.initTestCase();
+  fixture.deletingAGroupDoesNotDeleteItsMembers();
+}
+
+TEST_CASE("PointCollectionTest::pointGroupSatisfiesPointCollection",
+          "[PointCollectionTest]") {
+  PointCollectionTest fixture;
+  fixture.initTestCase();
+  fixture.pointGroupSatisfiesPointCollection();
+}
+
+TEST_CASE("PointCollectionTest::unsolvedPointsAreNotPartOfTheCollection",
+          "[PointCollectionTest]") {
+  PointCollectionTest fixture;
+  fixture.initTestCase();
+  fixture.unsolvedPointsAreNotPartOfTheCollection();
+}
+
+TEST_CASE("PointCollectionTest::pointCloudSatisfiesPointCollection",
+          "[PointCollectionTest]") {
+  PointCollectionTest fixture;
+  fixture.initTestCase();
+  fixture.pointCloudSatisfiesPointCollection();
+}
+
+TEST_CASE(
+    "PointCollectionTest::bothCollectionsAreInterchangeableThroughTheInterface",
+    "[PointCollectionTest]") {
+  PointCollectionTest fixture;
+  fixture.initTestCase();
+  fixture.bothCollectionsAreInterchangeableThroughTheInterface();
+}

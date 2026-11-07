@@ -1,8 +1,9 @@
-#include <QtTest>
+#include <catch2/catch_test_macros.hpp>
 #include <cmath>
 #include <string>
 #include <vector>
 
+#include "catch_compat.h"
 #include "chooselalib.h"
 #include "featurewrapper.h"
 #include "fitfunction.h"
@@ -102,10 +103,8 @@ class FakeAverageFit : public FitFunction, public Producer<Point> {
  * "no fit function needed changes" design claim; this suite is the fast,
  * cross-cutting regression guard for the mechanism itself.
  */
-class PipelineTest : public QObject {
-  Q_OBJECT
-
- private Q_SLOTS:
+class PipelineTest {
+ public:
   void initTestCase();
 
   void undeclaredPipelineLeavesShouldBeUsedUntouched();
@@ -153,7 +152,7 @@ oi::Guarded<Point> PipelineTest::makeCandidate(double x,
 void PipelineTest::undeclaredPipelineLeavesShouldBeUsedUntouched() {
   oi::Guarded<OiJob> job = new OiJob();
   oi::Guarded<FeatureWrapper> target = this->makeTargetPoint("Target1");
-  QVERIFY(job->addFeature(target));
+  REQUIRE(job->addFeature(target));
 
   oi::Guarded<FakeAverageFit> function = new FakeAverageFit();
   target->getPoint()->addFunction(function);
@@ -172,20 +171,21 @@ void PipelineTest::undeclaredPipelineLeavesShouldBeUsedUntouched() {
   // manually mark p1 unused, the pre-existing (UI-less) mechanism
   function->setShouldBeUsed(0, p1->getId(), false);
 
-  QVERIFY(function->getPipeline(0).empty());
+  REQUIRE(function->getPipeline(0).empty());
 
   target->getPoint()->recalc();
 
-  QVERIFY2(!function->getShouldBeUsed(0, p1->getId()),
-           "an undeclared pipeline must not touch a manually-set shouldBeUsed");
-  QVERIFY(function->getShouldBeUsed(0, p2->getId()));
-  QVERIFY(function->getPipelineExclusions(0).empty());
+  OI_REQUIRE2(
+      !function->getShouldBeUsed(0, p1->getId()),
+      "an undeclared pipeline must not touch a manually-set shouldBeUsed");
+  REQUIRE(function->getShouldBeUsed(0, p2->getId()));
+  REQUIRE(function->getPipelineExclusions(0).empty());
 }
 
 void PipelineTest::explicitListStageKeepsOnlyListedIdsAndRecordsReasons() {
   oi::Guarded<OiJob> job = new OiJob();
   oi::Guarded<FeatureWrapper> target = this->makeTargetPoint("Target2");
-  QVERIFY(job->addFeature(target));
+  REQUIRE(job->addFeature(target));
 
   oi::Guarded<FakeAverageFit> function = new FakeAverageFit();
   target->getPoint()->addFunction(function);
@@ -207,23 +207,23 @@ void PipelineTest::explicitListStageKeepsOnlyListedIdsAndRecordsReasons() {
 
   target->getPoint()->recalc();
 
-  QCOMPARE(target->getPoint()->getPosition().getVector().getAt(0),
-           5.0);  // avg(0,10), p3 excluded
-  QVERIFY(function->getShouldBeUsed(0, p1->getId()));
-  QVERIFY(function->getShouldBeUsed(0, p2->getId()));
-  QVERIFY(!function->getShouldBeUsed(0, p3->getId()));
+  OI_COMPARE(target->getPoint()->getPosition().getVector().getAt(0),
+             5.0);  // avg(0,10), p3 excluded
+  REQUIRE(function->getShouldBeUsed(0, p1->getId()));
+  REQUIRE(function->getShouldBeUsed(0, p2->getId()));
+  REQUIRE(!function->getShouldBeUsed(0, p3->getId()));
 
   const std::vector<PipelineExclusion> exclusions =
       function->getPipelineExclusions(0);
-  QCOMPARE(exclusions.size(), 1);
-  QCOMPARE(exclusions.front().elementId, p3->getId());
-  QVERIFY(!exclusions.front().reason.empty());
+  OI_COMPARE(exclusions.size(), 1);
+  OI_COMPARE(exclusions.front().elementId, p3->getId());
+  REQUIRE(!exclusions.front().reason.empty());
 }
 
 void PipelineTest::excludeStageDropsSpecificIdWithReason() {
   oi::Guarded<OiJob> job = new OiJob();
   oi::Guarded<FeatureWrapper> target = this->makeTargetPoint("Target3");
-  QVERIFY(job->addFeature(target));
+  REQUIRE(job->addFeature(target));
 
   oi::Guarded<FakeAverageFit> function = new FakeAverageFit();
   target->getPoint()->addFunction(function);
@@ -245,16 +245,16 @@ void PipelineTest::excludeStageDropsSpecificIdWithReason() {
 
   target->getPoint()->recalc();
 
-  QCOMPARE(target->getPoint()->getPosition().getVector().getAt(0),
-           0.0);  // only p1 survives
-  QVERIFY(!function->getShouldBeUsed(0, p2->getId()));
+  OI_COMPARE(target->getPoint()->getPosition().getVector().getAt(0),
+             0.0);  // only p1 survives
+  REQUIRE(!function->getShouldBeUsed(0, p2->getId()));
 
   const std::vector<PipelineExclusion> exclusions =
       function->getPipelineExclusions(0);
-  QCOMPARE(exclusions.size(), 1);
-  QCOMPARE(exclusions.front().elementId, p2->getId());
-  QCOMPARE(exclusions.front().reason,
-           std::string("known bad target - operator flagged on site"));
+  OI_COMPARE(exclusions.size(), 1);
+  OI_COMPARE(exclusions.front().elementId, p2->getId());
+  OI_COMPARE(exclusions.front().reason,
+             std::string("known bad target - operator flagged on site"));
 }
 
 /*!
@@ -266,7 +266,7 @@ void PipelineTest::excludeStageDropsSpecificIdWithReason() {
 void PipelineTest::residualOutlierRejectionExcludesTheOutlierAndConverges() {
   oi::Guarded<OiJob> job = new OiJob();
   oi::Guarded<FeatureWrapper> target = this->makeTargetPoint("Target4");
-  QVERIFY(job->addFeature(target));
+  REQUIRE(job->addFeature(target));
 
   oi::Guarded<FakeAverageFit> function = new FakeAverageFit();
   target->getPoint()->addFunction(function);
@@ -304,13 +304,13 @@ void PipelineTest::residualOutlierRejectionExcludesTheOutlierAndConverges() {
 
   const double converged =
       target->getPoint()->getPosition().getVector().getAt(0);
-  QVERIFY2(
+  OI_REQUIRE2(
       std::abs(converged) < 1.0,
       (std::format("expected convergence near 0, got {}", converged)).c_str());
 
   const int outlierId = candidates.back()->getId();
-  QVERIFY2(!function->getShouldBeUsed(0, outlierId),
-           "the outlier must be excluded");
+  OI_REQUIRE2(!function->getShouldBeUsed(0, outlierId),
+              "the outlier must be excluded");
 
   const std::vector<PipelineExclusion> exclusions =
       function->getPipelineExclusions(0);
@@ -318,10 +318,10 @@ void PipelineTest::residualOutlierRejectionExcludesTheOutlierAndConverges() {
   for (const PipelineExclusion& excl : exclusions) {
     if (excl.elementId == outlierId) {
       found = true;
-      QVERIFY2(excl.reason.contains("residual"), (excl.reason).c_str());
+      OI_REQUIRE2(excl.reason.contains("residual"), (excl.reason).c_str());
     }
   }
-  QVERIFY2(
+  OI_REQUIRE2(
       found,
       "the outlier's exclusion must be individually reportable with a reason");
 }
@@ -334,7 +334,7 @@ void PipelineTest::residualOutlierRejectionExcludesTheOutlierAndConverges() {
 void PipelineTest::omittingTheFilterLeavesTheResultSkewedByTheOutlier() {
   oi::Guarded<OiJob> job = new OiJob();
   oi::Guarded<FeatureWrapper> target = this->makeTargetPoint("Target5");
-  QVERIFY(job->addFeature(target));
+  REQUIRE(job->addFeature(target));
 
   oi::Guarded<FakeAverageFit> function = new FakeAverageFit();
   target->getPoint()->addFunction(function);
@@ -357,7 +357,7 @@ void PipelineTest::omittingTheFilterLeavesTheResultSkewedByTheOutlier() {
   target->getPoint()->recalc();
 
   const double skewed = target->getPoint()->getPosition().getVector().getAt(0);
-  QVERIFY2(
+  OI_REQUIRE2(
       skewed > 10.0,
       (std::format("expected the outlier to skew the average, got {}", skewed))
           .c_str());
@@ -371,7 +371,7 @@ void PipelineTest::omittingTheFilterLeavesTheResultSkewedByTheOutlier() {
 void PipelineTest::addingANewOutlierLaterReTriggersTheFilterOnRecalc() {
   oi::Guarded<OiJob> job = new OiJob();
   oi::Guarded<FeatureWrapper> target = this->makeTargetPoint("Target6");
-  QVERIFY(job->addFeature(target));
+  REQUIRE(job->addFeature(target));
 
   oi::Guarded<FakeAverageFit> function = new FakeAverageFit();
   target->getPoint()->addFunction(function);
@@ -393,8 +393,8 @@ void PipelineTest::addingANewOutlierLaterReTriggersTheFilterOnRecalc() {
                                PipelineStage::residualOutlierRejection(3.0)});
 
   target->getPoint()->recalc();
-  QVERIFY(function->getPipelineExclusions(0).empty());
-  QCOMPARE(target->getPoint()->getPosition().getVector().getAt(0), 0.0);
+  REQUIRE(function->getPipelineExclusions(0).empty());
+  OI_COMPARE(target->getPoint()->getPosition().getVector().getAt(0), 0.0);
 
   // a new outlier arrives later - no pipeline redeclaration, just new data
   oi::Guarded<Point> outlier = this->makeCandidate(1000.0, job);
@@ -405,16 +405,56 @@ void PipelineTest::addingANewOutlierLaterReTriggersTheFilterOnRecalc() {
 
   target->getPoint()->recalc();
 
-  QVERIFY2(!function->getShouldBeUsed(0, outlier->getId()),
-           "a newly-added outlier must be caught on the next recalc without "
-           "redeclaring anything");
-  QVERIFY2(
+  OI_REQUIRE2(!function->getShouldBeUsed(0, outlier->getId()),
+              "a newly-added outlier must be caught on the next recalc without "
+              "redeclaring anything");
+  OI_REQUIRE2(
       std::abs(target->getPoint()->getPosition().getVector().getAt(0)) < 1.0,
       "the fit must still converge correctly after the new outlier is "
       "filtered");
 }
 
-QTEST_APPLESS_MAIN(PipelineTest)
-#include <format>
+TEST_CASE("PipelineTest::undeclaredPipelineLeavesShouldBeUsedUntouched",
+          "[PipelineTest]") {
+  PipelineTest fixture;
+  fixture.initTestCase();
+  fixture.undeclaredPipelineLeavesShouldBeUsedUntouched();
+}
 
-#include "tst_pipeline.moc"
+TEST_CASE("PipelineTest::explicitListStageKeepsOnlyListedIdsAndRecordsReasons",
+          "[PipelineTest]") {
+  PipelineTest fixture;
+  fixture.initTestCase();
+  fixture.explicitListStageKeepsOnlyListedIdsAndRecordsReasons();
+}
+
+TEST_CASE("PipelineTest::excludeStageDropsSpecificIdWithReason",
+          "[PipelineTest]") {
+  PipelineTest fixture;
+  fixture.initTestCase();
+  fixture.excludeStageDropsSpecificIdWithReason();
+}
+
+TEST_CASE(
+    "PipelineTest::residualOutlierRejectionExcludesTheOutlierAndConverges",
+    "[PipelineTest]") {
+  PipelineTest fixture;
+  fixture.initTestCase();
+  fixture.residualOutlierRejectionExcludesTheOutlierAndConverges();
+}
+
+TEST_CASE("PipelineTest::omittingTheFilterLeavesTheResultSkewedByTheOutlier",
+          "[PipelineTest]") {
+  PipelineTest fixture;
+  fixture.initTestCase();
+  fixture.omittingTheFilterLeavesTheResultSkewedByTheOutlier();
+}
+
+TEST_CASE("PipelineTest::addingANewOutlierLaterReTriggersTheFilterOnRecalc",
+          "[PipelineTest]") {
+  PipelineTest fixture;
+  fixture.initTestCase();
+  fixture.addingANewOutlierLaterReTriggersTheFilterOnRecalc();
+}
+
+#include <format>

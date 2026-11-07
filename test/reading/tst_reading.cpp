@@ -1,26 +1,27 @@
-#include <QtTest>
+#include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <format>
+#include <stdexcept>
 #include <string>
 
+#include "catch_compat.h"
 #include "chooselalib.h"
 #include "convert.h"
 #include "openindy/project.pb.h"
 #include "reading.h"
 
 #define COMPARE_DOUBLE(actual, expected, threshold) \
-  QVERIFY2(std::abs(actual - expected) < threshold, \
-           std::format("actual: {}, expected: {}", actual, expected).c_str());
+  OI_REQUIRE2(                                      \
+      std::abs(actual - expected) < threshold,      \
+      std::format("actual: {}, expected: {}", actual, expected).c_str());
 
 using namespace oi;
 
-class ReadingTest : public QObject {
-  Q_OBJECT
-
+class ReadingTest {
  public:
   ReadingTest();
 
- private Q_SLOTS:
+ public:
   void initTestCase();
   void testCartesian6D();
   void testCartesian();
@@ -45,11 +46,11 @@ ReadingTest::ReadingTest() {}
 oi::Guarded<Reading> ReadingTest::roundTrip(oi::Guarded<Reading> r) {
   std::string bytes;
   if (!oi::codec::toProto(*r).SerializeToString(&bytes)) {
-    qFatal("failed to serialise the reading");
+    throw std::runtime_error("failed to serialise the reading");
   }
   openindy::v1::Reading message;
   if (!message.ParseFromString(bytes)) {
-    qFatal("failed to parse the reading");
+    throw std::runtime_error("failed to parse the reading");
   }
   return oi::codec::createReading(message);
 }
@@ -65,10 +66,10 @@ void ReadingTest::testMeasuredAtSurvivesRoundTrip() {
   reading->setMeasuredAt(when);
 
   oi::Guarded<Reading> back = roundTrip(reading);
-  QCOMPARE(time_point_cast<nanoseconds>(back->getMeasuredAt())
-               .time_since_epoch()
-               .count(),
-           when.time_since_epoch().count());
+  OI_COMPARE(time_point_cast<nanoseconds>(back->getMeasuredAt())
+                 .time_since_epoch()
+                 .count(),
+             when.time_since_epoch().count());
 }
 
 void ReadingTest::testCartesian6D() {
@@ -86,8 +87,8 @@ void ReadingTest::testCartesian6D() {
 
   ReadingCartesian6D in = inReading->getCartesianReading6D();
 
-  QVERIFY(inReading->getTypeOfReading() == ReadingTypes::eCartesianReading6D);
-  QVERIFY(in.isValid);
+  REQUIRE(inReading->getTypeOfReading() == ReadingTypes::eCartesianReading6D);
+  REQUIRE(in.isValid);
   COMPARE_DOUBLE(in.xyz.getAt(0), 1., 0.01);
   COMPARE_DOUBLE(in.xyz.getAt(1), 2., 0.01);
   COMPARE_DOUBLE(in.xyz.getAt(2), 3., 0.01);
@@ -109,8 +110,8 @@ void ReadingTest::testCartesian() {
 
   ReadingCartesian in = inReading->getCartesianReading();
 
-  QVERIFY(inReading->getTypeOfReading() == ReadingTypes::eCartesianReading);
-  QVERIFY(in.isValid);
+  REQUIRE(inReading->getTypeOfReading() == ReadingTypes::eCartesianReading);
+  REQUIRE(in.isValid);
   COMPARE_DOUBLE(in.xyz.getAt(0), 1., 0.01);
   COMPARE_DOUBLE(in.xyz.getAt(1), 2., 0.01);
   COMPARE_DOUBLE(in.xyz.getAt(2), 3., 0.01);
@@ -126,8 +127,8 @@ void ReadingTest::testDistanceReading() {
 
   ReadingDistance in = inReading->getDistanceReading();
 
-  QVERIFY(inReading->getTypeOfReading() == ReadingTypes::eDistanceReading);
-  QVERIFY(in.isValid);
+  REQUIRE(inReading->getTypeOfReading() == ReadingTypes::eDistanceReading);
+  REQUIRE(in.isValid);
   COMPARE_DOUBLE(in.distance, 123.4, 0.01);
 }
 
@@ -143,8 +144,8 @@ void ReadingTest::testPolarReading() {
 
   ReadingPolar in = inReading->getPolarReading();
 
-  QVERIFY(inReading->getTypeOfReading() == ReadingTypes::ePolarReading);
-  QVERIFY(in.isValid);
+  REQUIRE(inReading->getTypeOfReading() == ReadingTypes::ePolarReading);
+  REQUIRE(in.isValid);
   COMPARE_DOUBLE(in.azimuth, 12.2, 0.01);
   COMPARE_DOUBLE(in.zenith, 23.3, 0.01);
   COMPARE_DOUBLE(in.distance, 56.8, 0.01);
@@ -161,8 +162,8 @@ void ReadingTest::testDirectionReading() {
 
   ReadingDirection in = inReading->getDirectionReading();
 
-  QVERIFY(inReading->getTypeOfReading() == ReadingTypes::eDirectionReading);
-  QVERIFY(in.isValid);
+  REQUIRE(inReading->getTypeOfReading() == ReadingTypes::eDirectionReading);
+  REQUIRE(in.isValid);
   COMPARE_DOUBLE(in.azimuth, 12.2, 0.01);
   COMPARE_DOUBLE(in.zenith, 23.3, 0.01);
 }
@@ -177,8 +178,8 @@ void ReadingTest::testTemperatureReading() {
 
   ReadingTemperature in = inReading->getTemperatureReading();
 
-  QVERIFY(inReading->getTypeOfReading() == ReadingTypes::eTemperatureReading);
-  QVERIFY(in.isValid);
+  REQUIRE(inReading->getTypeOfReading() == ReadingTypes::eTemperatureReading);
+  REQUIRE(in.isValid);
   COMPARE_DOUBLE(in.temperature, 27.1, 0.01);
 }
 
@@ -194,13 +195,57 @@ void ReadingTest::testLevelReading() {
 
   ReadingLevel in = inReading->getLevelReading();
 
-  QVERIFY(inReading->getTypeOfReading() == ReadingTypes::eLevelReading);
-  QVERIFY(in.isValid);
+  REQUIRE(inReading->getTypeOfReading() == ReadingTypes::eLevelReading);
+  REQUIRE(in.isValid);
   COMPARE_DOUBLE(in.i, .1, 0.01);
   COMPARE_DOUBLE(in.j, .9, 0.01);
   COMPARE_DOUBLE(in.k, .2, 0.01);
 }
 
-QTEST_APPLESS_MAIN(ReadingTest)
+TEST_CASE("ReadingTest::testCartesian6D", "[ReadingTest]") {
+  ReadingTest fixture;
+  fixture.initTestCase();
+  fixture.testCartesian6D();
+}
 
-#include "tst_reading.moc"
+TEST_CASE("ReadingTest::testCartesian", "[ReadingTest]") {
+  ReadingTest fixture;
+  fixture.initTestCase();
+  fixture.testCartesian();
+}
+
+TEST_CASE("ReadingTest::testDistanceReading", "[ReadingTest]") {
+  ReadingTest fixture;
+  fixture.initTestCase();
+  fixture.testDistanceReading();
+}
+
+TEST_CASE("ReadingTest::testPolarReading", "[ReadingTest]") {
+  ReadingTest fixture;
+  fixture.initTestCase();
+  fixture.testPolarReading();
+}
+
+TEST_CASE("ReadingTest::testDirectionReading", "[ReadingTest]") {
+  ReadingTest fixture;
+  fixture.initTestCase();
+  fixture.testDirectionReading();
+}
+
+TEST_CASE("ReadingTest::testTemperatureReading", "[ReadingTest]") {
+  ReadingTest fixture;
+  fixture.initTestCase();
+  fixture.testTemperatureReading();
+}
+
+TEST_CASE("ReadingTest::testLevelReading", "[ReadingTest]") {
+  ReadingTest fixture;
+  fixture.initTestCase();
+  fixture.testLevelReading();
+}
+
+TEST_CASE("ReadingTest::testMeasuredAtSurvivesRoundTrip", "[ReadingTest]") {
+  ReadingTest fixture;
+  fixture.initTestCase();
+  fixture.testMeasuredAtSurvivesRoundTrip();
+}

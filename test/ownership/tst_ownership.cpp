@@ -1,7 +1,8 @@
-#include <QtTest>
+#include <catch2/catch_test_macros.hpp>
 #include <map>
 #include <string>
 
+#include "catch_compat.h"
 #include "chooselalib.h"
 #include "constructfunction.h"
 #include "containers.h"
@@ -36,10 +37,8 @@ class FakeConstruct : public ConstructFunction, public Producer<Point> {
  * (ownership determines editability, enforced at the API - not just
  * hidden in the UI).
  */
-class OwnershipTest : public QObject {
-  Q_OBJECT
-
- private Q_SLOTS:
+class OwnershipTest {
+ public:
   void initTestCase();
 
   void freshGeometryIsUserOwnedAndEditable();
@@ -64,14 +63,14 @@ void OwnershipTest::initTestCase() {
 
 void OwnershipTest::freshGeometryIsUserOwnedAndEditable() {
   Point point;
-  QVERIFY(!point.getOwnerDescription().has_value());
+  REQUIRE(!point.getOwnerDescription().has_value());
 }
 
 void OwnershipTest::constructFunctionProducerLeavesGeometryEditable() {
   Point point;
   oi::Guarded<FakeConstruct> construct = new FakeConstruct();
   point.addFunction(construct);
-  QVERIFY(!point.getOwnerDescription().has_value());
+  REQUIRE(!point.getOwnerDescription().has_value());
 }
 
 void OwnershipTest::fitFunctionProducerMakesGeometryReadOnly() {
@@ -79,8 +78,8 @@ void OwnershipTest::fitFunctionProducerMakesGeometryReadOnly() {
   oi::Guarded<FakeFit> fit = new FakeFit();
   point.addFunction(fit);
   const std::optional<std::string> owner = point.getOwnerDescription();
-  QVERIFY(owner.has_value());
-  QVERIFY(owner->contains("FakeFit"));
+  REQUIRE(owner.has_value());
+  REQUIRE(owner->contains("FakeFit"));
 }
 
 void OwnershipTest::readOnlyGeometryRejectsDirectParameterEdits() {
@@ -89,7 +88,7 @@ void OwnershipTest::readOnlyGeometryRejectsDirectParameterEdits() {
 
   oi::Guarded<FakeFit> fit = new FakeFit();
   point.addFunction(fit);
-  QVERIFY(point.getOwnerDescription().has_value());
+  REQUIRE(point.getOwnerDescription().has_value());
 
   std::map<GeometryParameters, double> edit;
   edit.insert_or_assign(GeometryParameters::eUnknownX, 99.0);
@@ -97,25 +96,25 @@ void OwnershipTest::readOnlyGeometryRejectsDirectParameterEdits() {
 
   // rejected at the API - the fit owns this point, so the edit must not
   // have taken effect
-  QCOMPARE(point.getPosition().getVector().getAt(0), 1.0);
+  OI_COMPARE(point.getPosition().getVector().getAt(0), 1.0);
 }
 
 void OwnershipTest::actualCanRealiseAnEditableNominal() {
   Point nominal;
-  QVERIFY(!nominal.getOwnerDescription().has_value());
+  REQUIRE(!nominal.getOwnerDescription().has_value());
 
   Point actual;
   actual.addFunction(new FakeFit());
-  QVERIFY(actual.getOwnerDescription().has_value());
+  REQUIRE(actual.getOwnerDescription().has_value());
 
-  QVERIFY(actual.setRealises(nominal.getFeatureWrapper()->getGeometry()));
-  QVERIFY(actual.getRealises().has_value());
-  QCOMPARE(actual.getRealises().value().data(),
-           static_cast<Geometry*>(&nominal));
+  REQUIRE(actual.setRealises(nominal.getFeatureWrapper()->getGeometry()));
+  REQUIRE(actual.getRealises().has_value());
+  OI_COMPARE(actual.getRealises().value().data(),
+             static_cast<Geometry*>(&nominal));
 
   // the nominal itself carries no back-reference - D17 deliberately
   // does not maintain a reverse list
-  QVERIFY(!nominal.getRealises().has_value());
+  REQUIRE(!nominal.getRealises().has_value());
 }
 
 void OwnershipTest::manyActualsMayRealiseTheSameNominal() {
@@ -128,13 +127,13 @@ void OwnershipTest::manyActualsMayRealiseTheSameNominal() {
   Point actualB;
   actualB.addFunction(new FakeFit());
 
-  QVERIFY(actualA.setRealises(nominal.getFeatureWrapper()->getGeometry()));
-  QVERIFY(actualB.setRealises(nominal.getFeatureWrapper()->getGeometry()));
+  REQUIRE(actualA.setRealises(nominal.getFeatureWrapper()->getGeometry()));
+  REQUIRE(actualB.setRealises(nominal.getFeatureWrapper()->getGeometry()));
 
-  QCOMPARE(actualA.getRealises().value().data(),
-           static_cast<Geometry*>(&nominal));
-  QCOMPARE(actualB.getRealises().value().data(),
-           static_cast<Geometry*>(&nominal));
+  OI_COMPARE(actualA.getRealises().value().data(),
+             static_cast<Geometry*>(&nominal));
+  OI_COMPARE(actualB.getRealises().value().data(),
+             static_cast<Geometry*>(&nominal));
 }
 
 void OwnershipTest::actualCannotBeRealisedByAnotherActual() {
@@ -146,8 +145,8 @@ void OwnershipTest::actualCannotBeRealisedByAnotherActual() {
 
   // realising another actual makes no sense - only a user-owned
   //(editable) geometry can be the nominal side of the relationship
-  QVERIFY(!actualB.setRealises(actualA.getFeatureWrapper()->getGeometry()));
-  QVERIFY(!actualB.getRealises().has_value());
+  REQUIRE(!actualB.setRealises(actualA.getFeatureWrapper()->getGeometry()));
+  REQUIRE(!actualB.getRealises().has_value());
 }
 
 /*!
@@ -172,14 +171,14 @@ void OwnershipTest::ownedSubGeometryIsReadOnlyAndNamesItsOwner() {
 
   // still editable before ownership is recorded - the same construct
   // function, unowned, is 7c-i's independent path
-  QVERIFY(!child.getOwnerDescription().has_value());
+  REQUIRE(!child.getOwnerDescription().has_value());
 
-  QVERIFY(child.setOwnerFeature(owner.getFeatureWrapper()->getGeometry()));
+  REQUIRE(child.setOwnerFeature(owner.getFeatureWrapper()->getGeometry()));
 
   const std::optional<std::string> description = child.getOwnerDescription();
-  QVERIFY(description.has_value());
-  QVERIFY(description->contains("FakeConstruct"));
-  QVERIFY(description->contains("Plane1"));
+  REQUIRE(description.has_value());
+  REQUIRE(description->contains("FakeConstruct"));
+  REQUIRE(description->contains("Plane1"));
 }
 
 void OwnershipTest::ownedSubGeometryRejectsDirectParameterEdits() {
@@ -187,14 +186,14 @@ void OwnershipTest::ownedSubGeometryRejectsDirectParameterEdits() {
   Point child;
   child.setPoint(Position(1.0, 2.0, 3.0));
   child.addFunction(new FakeConstruct());
-  QVERIFY(child.setOwnerFeature(owner.getFeatureWrapper()->getGeometry()));
+  REQUIRE(child.setOwnerFeature(owner.getFeatureWrapper()->getGeometry()));
 
   std::map<GeometryParameters, double> edit;
   edit.insert_or_assign(GeometryParameters::eUnknownX, 99.0);
   child.setUnknownParameters(edit);
 
   // rejected at the API, exactly like the fit-owned case above
-  QCOMPARE(child.getPosition().getVector().getAt(0), 1.0);
+  OI_COMPARE(child.getPosition().getVector().getAt(0), 1.0);
 }
 
 void OwnershipTest::settingOwnerFeatureRegistersOnBothSides() {
@@ -202,24 +201,24 @@ void OwnershipTest::settingOwnerFeatureRegistersOnBothSides() {
   Point childA;
   Point childB;
 
-  QVERIFY(childA.setOwnerFeature(owner.getFeatureWrapper()->getGeometry()));
-  QVERIFY(childB.setOwnerFeature(owner.getFeatureWrapper()->getGeometry()));
+  REQUIRE(childA.setOwnerFeature(owner.getFeatureWrapper()->getGeometry()));
+  REQUIRE(childB.setOwnerFeature(owner.getFeatureWrapper()->getGeometry()));
 
-  QCOMPARE(owner.getOwnedSubGeometries().size(), 2);
-  QVERIFY(oi::contains(owner.getOwnedSubGeometries(),
+  OI_COMPARE(owner.getOwnedSubGeometries().size(), 2);
+  REQUIRE(oi::contains(owner.getOwnedSubGeometries(),
                        childA.getFeatureWrapper()->getGeometry()));
-  QVERIFY(oi::contains(owner.getOwnedSubGeometries(),
+  REQUIRE(oi::contains(owner.getOwnedSubGeometries(),
                        childB.getFeatureWrapper()->getGeometry()));
 
-  QVERIFY(childA.getOwnerFeature().has_value());
-  QCOMPARE(childA.getOwnerFeature().value().data(),
-           static_cast<Geometry*>(&owner));
+  REQUIRE(childA.getOwnerFeature().has_value());
+  OI_COMPARE(childA.getOwnerFeature().value().data(),
+             static_cast<Geometry*>(&owner));
 }
 
 void OwnershipTest::aGeometryCannotOwnItself() {
   Point point;
-  QVERIFY(!point.setOwnerFeature(point.getFeatureWrapper()->getGeometry()));
-  QVERIFY(!point.getOwnerFeature().has_value());
+  REQUIRE(!point.setOwnerFeature(point.getFeatureWrapper()->getGeometry()));
+  REQUIRE(!point.getOwnerFeature().has_value());
 }
 
 void OwnershipTest::destroyingAnOwnedGeometryUnregistersFromItsOwner() {
@@ -227,14 +226,94 @@ void OwnershipTest::destroyingAnOwnedGeometryUnregistersFromItsOwner() {
 
   {
     Point child;
-    QVERIFY(child.setOwnerFeature(owner.getFeatureWrapper()->getGeometry()));
-    QCOMPARE(owner.getOwnedSubGeometries().size(), 1);
+    REQUIRE(child.setOwnerFeature(owner.getFeatureWrapper()->getGeometry()));
+    OI_COMPARE(owner.getOwnedSubGeometries().size(), 1);
   }
 
   // child just went out of scope (~Geometry ran) - the owner's list must
   // not be left pointing at a destroyed object
-  QCOMPARE(owner.getOwnedSubGeometries().size(), 0);
+  OI_COMPARE(owner.getOwnedSubGeometries().size(), 0);
 }
 
-QTEST_MAIN(OwnershipTest)
-#include "tst_ownership.moc"
+TEST_CASE("OwnershipTest::freshGeometryIsUserOwnedAndEditable",
+          "[OwnershipTest]") {
+  OwnershipTest fixture;
+  fixture.initTestCase();
+  fixture.freshGeometryIsUserOwnedAndEditable();
+}
+
+TEST_CASE("OwnershipTest::constructFunctionProducerLeavesGeometryEditable",
+          "[OwnershipTest]") {
+  OwnershipTest fixture;
+  fixture.initTestCase();
+  fixture.constructFunctionProducerLeavesGeometryEditable();
+}
+
+TEST_CASE("OwnershipTest::fitFunctionProducerMakesGeometryReadOnly",
+          "[OwnershipTest]") {
+  OwnershipTest fixture;
+  fixture.initTestCase();
+  fixture.fitFunctionProducerMakesGeometryReadOnly();
+}
+
+TEST_CASE("OwnershipTest::readOnlyGeometryRejectsDirectParameterEdits",
+          "[OwnershipTest]") {
+  OwnershipTest fixture;
+  fixture.initTestCase();
+  fixture.readOnlyGeometryRejectsDirectParameterEdits();
+}
+
+TEST_CASE("OwnershipTest::actualCanRealiseAnEditableNominal",
+          "[OwnershipTest]") {
+  OwnershipTest fixture;
+  fixture.initTestCase();
+  fixture.actualCanRealiseAnEditableNominal();
+}
+
+TEST_CASE("OwnershipTest::manyActualsMayRealiseTheSameNominal",
+          "[OwnershipTest]") {
+  OwnershipTest fixture;
+  fixture.initTestCase();
+  fixture.manyActualsMayRealiseTheSameNominal();
+}
+
+TEST_CASE("OwnershipTest::actualCannotBeRealisedByAnotherActual",
+          "[OwnershipTest]") {
+  OwnershipTest fixture;
+  fixture.initTestCase();
+  fixture.actualCannotBeRealisedByAnotherActual();
+}
+
+TEST_CASE("OwnershipTest::ownedSubGeometryIsReadOnlyAndNamesItsOwner",
+          "[OwnershipTest]") {
+  OwnershipTest fixture;
+  fixture.initTestCase();
+  fixture.ownedSubGeometryIsReadOnlyAndNamesItsOwner();
+}
+
+TEST_CASE("OwnershipTest::ownedSubGeometryRejectsDirectParameterEdits",
+          "[OwnershipTest]") {
+  OwnershipTest fixture;
+  fixture.initTestCase();
+  fixture.ownedSubGeometryRejectsDirectParameterEdits();
+}
+
+TEST_CASE("OwnershipTest::settingOwnerFeatureRegistersOnBothSides",
+          "[OwnershipTest]") {
+  OwnershipTest fixture;
+  fixture.initTestCase();
+  fixture.settingOwnerFeatureRegistersOnBothSides();
+}
+
+TEST_CASE("OwnershipTest::aGeometryCannotOwnItself", "[OwnershipTest]") {
+  OwnershipTest fixture;
+  fixture.initTestCase();
+  fixture.aGeometryCannotOwnItself();
+}
+
+TEST_CASE("OwnershipTest::destroyingAnOwnedGeometryUnregistersFromItsOwner",
+          "[OwnershipTest]") {
+  OwnershipTest fixture;
+  fixture.initTestCase();
+  fixture.destroyingAnOwnedGeometryUnregistersFromItsOwner();
+}

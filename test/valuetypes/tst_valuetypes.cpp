@@ -1,5 +1,6 @@
-// Plain-assert test that Position, Direction and Radius are real value types:
+// Test that Position, Direction and Radius are real value types:
 // copyable, movable, independent after copy, and carrying no Qt base class.
+#include <catch2/catch_test_macros.hpp>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
@@ -14,17 +15,6 @@ using namespace oi;
 
 namespace {
 
-int failures = 0;
-
-#define CHECK(cond)                                                         \
-  do {                                                                      \
-    if (!(cond)) {                                                          \
-      std::fprintf(stderr, "%s:%d: CHECK failed: %s\n", __FILE__, __LINE__, \
-                   #cond);                                                  \
-      ++failures;                                                           \
-    }                                                                       \
-  } while (false)
-
 static_assert(std::is_copy_constructible_v<Position>);
 static_assert(std::is_move_constructible_v<Position>);
 static_assert(std::is_copy_constructible_v<Direction>);
@@ -34,7 +24,9 @@ static_assert(std::is_nothrow_move_constructible_v<Radius>);
 
 bool near(double a, double b) { return std::fabs(a - b) < 1e-12; }
 
-void positionCopyIsIndependent() {
+TEST_CASE("positionCopyIsIndependent") {
+  math::ChooseLALib::setLinearAlgebra(
+      math::ChooseLALib::LinearAlgebraLibrary::Armadillo);
   Position a(1.0, 2.0, 3.0);
   Position b = a;
   b.setVector(9.0, 8.0, 7.0);
@@ -43,7 +35,9 @@ void positionCopyIsIndependent() {
   CHECK(near(a.getVectorH().getAt(3), 1.0));
 }
 
-void positionHomogeneousForms() {
+TEST_CASE("positionHomogeneousForms") {
+  math::ChooseLALib::setLinearAlgebra(
+      math::ChooseLALib::LinearAlgebraLibrary::Armadillo);
   Position p(2.0, 4.0, 6.0, 2.0);  // (x, y, z, h) -> cartesian divides by h
   CHECK(near(p.getVector().getAt(0), 1.0));
   CHECK(near(p.getVector().getAt(2), 3.0));
@@ -58,7 +52,9 @@ void positionHomogeneousForms() {
   CHECK(near(q.getVector().getAt(1), 2.0));
 }
 
-void positionNullObject() {
+TEST_CASE("positionNullObject") {
+  math::ChooseLALib::setLinearAlgebra(
+      math::ChooseLALib::LinearAlgebraLibrary::Armadillo);
   CHECK(Position::NullObject.isNull());
   CHECK(!Position().isNull());
   CHECK(!Position(1.0, 2.0, 3.0).isNull());
@@ -66,13 +62,17 @@ void positionNullObject() {
   CHECK(copy.isNull());
 }
 
-void positionMoveLeavesTargetUsable() {
+TEST_CASE("positionMoveLeavesTargetUsable") {
+  math::ChooseLALib::setLinearAlgebra(
+      math::ChooseLALib::LinearAlgebraLibrary::Armadillo);
   Position a(1.0, 2.0, 3.0);
   Position b = std::move(a);
   CHECK(near(b.getVector().getAt(2), 3.0));
 }
 
-void directionBehavesLikePosition() {
+TEST_CASE("directionBehavesLikePosition") {
+  math::ChooseLALib::setLinearAlgebra(
+      math::ChooseLALib::LinearAlgebraLibrary::Armadillo);
   Direction d(0.0, 0.0, 1.0);
   Direction e = d;
   e.setVector(1.0, 0.0, 0.0);
@@ -81,7 +81,9 @@ void directionBehavesLikePosition() {
   CHECK(near(Direction().getVectorH().getAt(3), 1.0));
 }
 
-void radiusIsAPlainNumber() {
+TEST_CASE("radiusIsAPlainNumber") {
+  math::ChooseLALib::setLinearAlgebra(
+      math::ChooseLALib::LinearAlgebraLibrary::Armadillo);
   Radius r(2.5);
   Radius s = r;
   s.setRadius(7.0);
@@ -91,20 +93,3 @@ void radiusIsAPlainNumber() {
 }
 
 }  // namespace
-
-int main() {
-  math::ChooseLALib::setLinearAlgebra(
-      math::ChooseLALib::LinearAlgebraLibrary::Armadillo);
-  positionCopyIsIndependent();
-  positionHomogeneousForms();
-  positionNullObject();
-  positionMoveLeavesTargetUsable();
-  directionBehavesLikePosition();
-  radiusIsAPlainNumber();
-  if (failures != 0) {
-    std::fprintf(stderr, "%d check(s) failed\n", failures);
-    return EXIT_FAILURE;
-  }
-  std::puts("valuetypes: all checks passed");
-  return EXIT_SUCCESS;
-}

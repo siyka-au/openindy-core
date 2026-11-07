@@ -1097,11 +1097,11 @@ TEST_CASE("the digest follows the content, not the save time or name") {
 
   codec::encodeProject(*w.job, host, "1.0");
   const std::string before = w.job->getDigest();
-  codec::encodeProject(*w.job, host, "2.0");
+  (void)codec::encodeProject(*w.job, host, "2.0");
   CHECK(w.job->getDigest() == before);
 
   w.a->setFeatureName("A-renamed");
-  codec::encodeProject(*w.job, host, "2.0");
+  (void)codec::encodeProject(*w.job, host, "2.0");
   CHECK(w.job->getDigest() != before);
 
   delete w.job.data();

@@ -4,13 +4,10 @@ project(OpenIndyCore LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_AUTOMOC ON)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-
-find_package(Qt6 REQUIRED COMPONENTS Core SerialPort)
 
 # --- version, derived from git describe (mirrors the old version.pri logic) ---
 
@@ -271,8 +268,6 @@ target_link_libraries(OpenIndyCore
         ${CMAKE_DL_LIBS}
         spdlog::spdlog
     PUBLIC
-        Qt6::Core
-        Qt6::SerialPort
         OpenIndyMath
 )
 
@@ -317,11 +312,12 @@ target_compile_options(OpenIndyCodec PUBLIC $<$<CXX_COMPILER_ID:MSVC>:/utf-8>)
 
 enable_testing()
 
-find_package(Qt6 REQUIRED COMPONENTS Test)
+find_package(Catch2 3 CONFIG REQUIRED)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/test/common)
 
 add_executable(tst_reading test/reading/tst_reading.cpp)
 target_compile_definitions(tst_reading PRIVATE SRCDIR="${CMAKE_CURRENT_SOURCE_DIR}/test/reading")
-target_link_libraries(tst_reading PRIVATE Qt6::Test OpenIndyCodec OpenIndyCore OpenIndyMath)
+target_link_libraries(tst_reading PRIVATE Catch2::Catch2WithMain OpenIndyCodec OpenIndyCore OpenIndyMath)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_compile_options(tst_reading PRIVATE -Wall -Wextra -Wpedantic)
@@ -329,25 +325,23 @@ endif()
 
 add_test(NAME reading COMMAND tst_reading)
 
-# Header-only and deliberately Qt-free: no Qt::Test and no link to OpenIndyCore.
+# Header-only: no link to OpenIndyCore.
 add_executable(tst_progress test/progress/tst_progress.cpp)
+target_link_libraries(tst_progress PRIVATE Catch2::Catch2WithMain)
 target_include_directories(tst_progress PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_compile_options(tst_progress PRIVATE -Wall -Wextra -Wpedantic)
 endif()
 add_test(NAME progress COMMAND tst_progress)
 
-# Plain-assert test for the value types; no Qt::Test, only the library itself.
 add_executable(tst_valuetypes test/valuetypes/tst_valuetypes.cpp)
-target_link_libraries(tst_valuetypes PRIVATE OpenIndyCore OpenIndyMath)
+target_link_libraries(tst_valuetypes PRIVATE OpenIndyCore OpenIndyMath Catch2::Catch2WithMain)
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_compile_options(tst_valuetypes PRIVATE -Wall -Wextra -Wpedantic)
 endif()
 add_test(NAME valuetypes COMMAND tst_valuetypes)
 
-# Codec tests use Catch2 (from Conan). They reach the private conversion
-# headers directly.
-find_package(Catch2 3 CONFIG REQUIRED)
+# Codec tests reach the private conversion headers directly.
 add_executable(tst_codec test/codec/tst_codec.cpp)
 target_link_libraries(tst_codec PRIVATE
     OpenIndyCodec OpenIndyCore OpenIndyMath Catch2::Catch2WithMain)
@@ -369,7 +363,7 @@ add_test(NAME guarded COMMAND tst_guarded)
 
 add_executable(tst_measurementconfig test/measurementconfig/tst_measurementconfig.cpp)
 target_compile_definitions(tst_measurementconfig PRIVATE SRCDIR="${CMAKE_CURRENT_SOURCE_DIR}/test/measurementconfig")
-target_link_libraries(tst_measurementconfig PRIVATE Qt6::Test OpenIndyCore OpenIndyMath)
+target_link_libraries(tst_measurementconfig PRIVATE Catch2::Catch2WithMain OpenIndyCore OpenIndyMath)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_compile_options(tst_measurementconfig PRIVATE -Wall -Wextra -Wpedantic)
@@ -378,7 +372,7 @@ endif()
 add_test(NAME measurementconfig COMMAND tst_measurementconfig)
 
 add_executable(tst_pointcollection test/pointcollection/tst_pointcollection.cpp)
-target_link_libraries(tst_pointcollection PRIVATE Qt6::Test OpenIndyCore OpenIndyMath)
+target_link_libraries(tst_pointcollection PRIVATE Catch2::Catch2WithMain OpenIndyCore OpenIndyMath)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_compile_options(tst_pointcollection PRIVATE -Wall -Wextra -Wpedantic)
@@ -387,7 +381,7 @@ endif()
 add_test(NAME pointcollection COMMAND tst_pointcollection)
 
 add_executable(tst_ownership test/ownership/tst_ownership.cpp)
-target_link_libraries(tst_ownership PRIVATE Qt6::Test OpenIndyCore OpenIndyMath)
+target_link_libraries(tst_ownership PRIVATE Catch2::Catch2WithMain OpenIndyCore OpenIndyMath)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_compile_options(tst_ownership PRIVATE -Wall -Wextra -Wpedantic)
@@ -396,7 +390,7 @@ endif()
 add_test(NAME ownership COMMAND tst_ownership)
 
 add_executable(tst_featureobserver test/featureobserver/tst_featureobserver.cpp)
-target_link_libraries(tst_featureobserver PRIVATE Qt6::Test OpenIndyCore OpenIndyMath)
+target_link_libraries(tst_featureobserver PRIVATE Catch2::Catch2WithMain OpenIndyCore OpenIndyMath)
 target_include_directories(tst_featureobserver PRIVATE test/common)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
@@ -406,7 +400,7 @@ endif()
 add_test(NAME featureobserver COMMAND tst_featureobserver)
 
 add_executable(tst_jobobserver test/jobobserver/tst_jobobserver.cpp)
-target_link_libraries(tst_jobobserver PRIVATE Qt6::Test OpenIndyCore OpenIndyMath)
+target_link_libraries(tst_jobobserver PRIVATE Catch2::Catch2WithMain OpenIndyCore OpenIndyMath)
 target_include_directories(tst_jobobserver PRIVATE test/common)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
@@ -416,7 +410,7 @@ endif()
 add_test(NAME jobobserver COMMAND tst_jobobserver)
 
 add_executable(tst_messagesink test/messagesink/tst_messagesink.cpp)
-target_link_libraries(tst_messagesink PRIVATE Qt6::Test OpenIndyCore OpenIndyMath)
+target_link_libraries(tst_messagesink PRIVATE Catch2::Catch2WithMain OpenIndyCore OpenIndyMath)
 target_include_directories(tst_messagesink PRIVATE test/common)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
@@ -426,7 +420,7 @@ endif()
 add_test(NAME messagesink COMMAND tst_messagesink)
 
 add_executable(tst_ownedsubgeometry test/ownedsubgeometry/tst_ownedsubgeometry.cpp)
-target_link_libraries(tst_ownedsubgeometry PRIVATE Qt6::Test OpenIndyCore OpenIndyMath)
+target_link_libraries(tst_ownedsubgeometry PRIVATE Catch2::Catch2WithMain OpenIndyCore OpenIndyMath)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_compile_options(tst_ownedsubgeometry PRIVATE -Wall -Wextra -Wpedantic)
@@ -435,7 +429,7 @@ endif()
 add_test(NAME ownedsubgeometry COMMAND tst_ownedsubgeometry)
 
 add_executable(tst_measurementintent test/measurementintent/tst_measurementintent.cpp)
-target_link_libraries(tst_measurementintent PRIVATE Qt6::Test OpenIndyCore OpenIndyMath)
+target_link_libraries(tst_measurementintent PRIVATE Catch2::Catch2WithMain OpenIndyCore OpenIndyMath)
 target_include_directories(tst_measurementintent PRIVATE test/common)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
@@ -445,7 +439,7 @@ endif()
 add_test(NAME measurementintent COMMAND tst_measurementintent)
 
 add_executable(tst_sensorworker test/sensorworker/tst_sensorworker.cpp)
-target_link_libraries(tst_sensorworker PRIVATE Qt6::Test OpenIndyCore OpenIndyMath)
+target_link_libraries(tst_sensorworker PRIVATE Catch2::Catch2WithMain OpenIndyCore OpenIndyMath)
 target_include_directories(tst_sensorworker PRIVATE test/common)
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(tst_sensorworker PRIVATE -Wall -Wextra -Wpedantic)
@@ -464,7 +458,7 @@ endif()
 add_test(NAME pluginabi COMMAND tst_pluginabi)
 
 add_executable(tst_pipeline test/pipeline/tst_pipeline.cpp)
-target_link_libraries(tst_pipeline PRIVATE Qt6::Test OpenIndyCore OpenIndyMath)
+target_link_libraries(tst_pipeline PRIVATE Catch2::Catch2WithMain OpenIndyCore OpenIndyMath)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_compile_options(tst_pipeline PRIVATE -Wall -Wextra -Wpedantic)
@@ -473,7 +467,7 @@ endif()
 add_test(NAME pipeline COMMAND tst_pipeline)
 
 add_executable(tst_typenames test/typenames/tst_typenames.cpp)
-target_link_libraries(tst_typenames PRIVATE Qt6::Test OpenIndyCore OpenIndyMath)
+target_link_libraries(tst_typenames PRIVATE Catch2::Catch2WithMain OpenIndyCore OpenIndyMath)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_compile_options(tst_typenames PRIVATE -Wall -Wextra -Wpedantic)
@@ -524,3 +518,9 @@ if(OI_BUILD_CLI)
         COMMAND oi-cli --selftest --plugin "${OI_CLI_PLUGIN}")
     set_tests_properties(oi_cli PROPERTIES SKIP_RETURN_CODE 77)
 endif()
+
+# Core and math must stay Qt-free: fail on any Qt include, identifier or CMake
+# package in their sources, tests and build files.
+add_test(NAME no_qt
+    COMMAND sh ${CMAKE_CURRENT_SOURCE_DIR}/scripts/check-no-qt.sh
+            ${CMAKE_CURRENT_SOURCE_DIR} ${OI_MATH_LOCAL_DIR})

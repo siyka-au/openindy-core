@@ -1,8 +1,8 @@
-#include <QCoreApplication>
-#include <QtTest>
+#include <catch2/catch_test_macros.hpp>
 #include <string>
 #include <vector>
 
+#include "catch_compat.h"
 #include "chooselalib.h"
 #include "containers.h"
 #include "jobobserver.h"
@@ -34,10 +34,8 @@ class SelfRemovingObserver : public JobObserver {
 
 }  // namespace
 
-class JobObserverTest : public QObject {
-  Q_OBJECT
-
- private slots:
+class JobObserverTest {
+ public:
   void initTestCase();
 
   void addAndRemoveFeatureNotifySetChanges();
@@ -68,25 +66,25 @@ void JobObserverTest::addAndRemoveFeatureNotifySetChanges() {
   Point* point = new Point();
   point->setFeatureName("P");
   point->setFeatureName("P1");
-  QVERIFY(job.addFeature(point->getFeatureWrapper()));
-  QCOMPARE(rec.count("featureSetChanged"), 1);
-  QCOMPARE(rec.count("geometrySetChanged"), 1);
-  QCOMPARE(rec.count("stationSetChanged"), 0);
-  QCOMPARE(rec.count("coordSystemSetChanged"), 0);
-  QCOMPARE(rec.count("trafoParamSetChanged"), 0);
+  REQUIRE(job.addFeature(point->getFeatureWrapper()));
+  OI_COMPARE(rec.count("featureSetChanged"), 1);
+  OI_COMPARE(rec.count("geometrySetChanged"), 1);
+  OI_COMPARE(rec.count("stationSetChanged"), 0);
+  OI_COMPARE(rec.count("coordSystemSetChanged"), 0);
+  OI_COMPARE(rec.count("trafoParamSetChanged"), 0);
 
   rec.calls.clear();
-  QVERIFY(job.removeFeature(point->getId()));
-  QCOMPARE(rec.count("featureSetChanged"), 1);
-  QCOMPARE(rec.count("recalcFeatureSet"), 1);
+  REQUIRE(job.removeFeature(point->getId()));
+  OI_COMPARE(rec.count("featureSetChanged"), 1);
+  OI_COMPARE(rec.count("recalcFeatureSet"), 1);
 
   Station* station = new Station("S1");
   rec.calls.clear();
-  QVERIFY(job.addFeature(station->getFeatureWrapper()));
-  QCOMPARE(rec.count("featureSetChanged"), 1);
-  QCOMPARE(rec.count("stationSetChanged"), 1);
-  QCOMPARE(rec.count("coordSystemSetChanged"), 0);
-  QCOMPARE(rec.count("geometrySetChanged"), 0);
+  REQUIRE(job.addFeature(station->getFeatureWrapper()));
+  OI_COMPARE(rec.count("featureSetChanged"), 1);
+  OI_COMPARE(rec.count("stationSetChanged"), 1);
+  OI_COMPARE(rec.count("coordSystemSetChanged"), 0);
+  OI_COMPARE(rec.count("geometrySetChanged"), 0);
 }
 
 void JobObserverTest::renameAndGroupAreReported() {
@@ -97,24 +95,24 @@ void JobObserverTest::renameAndGroupAreReported() {
   Point point;
   point.setFeatureName("point");
   point.setFeatureName("P1");
-  QVERIFY(job.addFeature(point.getFeatureWrapper()));
+  REQUIRE(job.addFeature(point.getFeatureWrapper()));
   rec.calls.clear();
 
   point.setFeatureName("renamed");
-  QCOMPARE(rec.count("featureNameChanged"), 1);
-  QCOMPARE(rec.count("featureAttributesChanged"), 1);
-  QVERIFY(oi::contains(rec.calls,
+  OI_COMPARE(rec.count("featureNameChanged"), 1);
+  OI_COMPARE(rec.count("featureAttributesChanged"), 1);
+  REQUIRE(oi::contains(rec.calls,
                        std::format("featureNameChanged:{}:P1", point.getId())));
 
   rec.calls.clear();
   point.setGroupName("G1");
-  QCOMPARE(rec.count("featureGroupChanged"), 1);
-  QCOMPARE(rec.count("availableGroupsChanged"), 1);
-  QVERIFY(oi::contains(job.getFeatureGroupList(), "G1"));
+  OI_COMPARE(rec.count("featureGroupChanged"), 1);
+  OI_COMPARE(rec.count("availableGroupsChanged"), 1);
+  REQUIRE(oi::contains(job.getFeatureGroupList(), "G1"));
 
   rec.calls.clear();
-  QVERIFY(job.setActiveGroup("G1"));
-  QCOMPARE(rec.count("activeGroupChanged"), 1);
+  REQUIRE(job.setActiveGroup("G1"));
+  OI_COMPARE(rec.count("activeGroupChanged"), 1);
 }
 
 void JobObserverTest::activeFeatureStationAndSystemChanges() {
@@ -124,20 +122,20 @@ void JobObserverTest::activeFeatureStationAndSystemChanges() {
 
   Point point;
   point.setFeatureName("point");
-  QVERIFY(job.addFeature(point.getFeatureWrapper()));
+  REQUIRE(job.addFeature(point.getFeatureWrapper()));
   rec.calls.clear();
   point.setActiveFeatureState(true);
-  QCOMPARE(rec.count("activeFeatureChanged"), 1);
+  OI_COMPARE(rec.count("activeFeatureChanged"), 1);
 
   Station* station = new Station("S1");
-  QVERIFY(job.addFeature(station->getFeatureWrapper()));
+  REQUIRE(job.addFeature(station->getFeatureWrapper()));
   rec.calls.clear();
   station->setActiveStationState(true);
-  QCOMPARE(rec.count("activeStationChanged"), 1);
+  OI_COMPARE(rec.count("activeStationChanged"), 1);
 
   rec.calls.clear();
   station->getCoordinateSystem()->setActiveCoordinateSystemState(true);
-  QCOMPARE(rec.count("activeCoordinateSystemChanged"), 1);
+  OI_COMPARE(rec.count("activeCoordinateSystemChanged"), 1);
 }
 
 void JobObserverTest::trafoParamChangesAreReported() {
@@ -147,23 +145,23 @@ void JobObserverTest::trafoParamChangesAreReported() {
 
   Station* s1 = new Station("S1");
   Station* s2 = new Station("S2");
-  QVERIFY(job.addFeature(s1->getFeatureWrapper()));
-  QVERIFY(job.addFeature(s2->getFeatureWrapper()));
+  REQUIRE(job.addFeature(s1->getFeatureWrapper()));
+  REQUIRE(job.addFeature(s2->getFeatureWrapper()));
   TrafoParam* tp = new TrafoParam();
   tp->setFeatureName("T1");
-  QVERIFY(tp->setCoordinateSystems(s1->getCoordinateSystem(),
+  REQUIRE(tp->setCoordinateSystems(s1->getCoordinateSystem(),
                                    s2->getCoordinateSystem()));
   rec.calls.clear();
-  QVERIFY(job.addFeature(tp->getFeatureWrapper()));
-  QCOMPARE(rec.count("trafoParamSetChanged"), 1);
+  REQUIRE(job.addFeature(tp->getFeatureWrapper()));
+  OI_COMPARE(rec.count("trafoParamSetChanged"), 1);
   rec.calls.clear();
 
   tp->setIsUsed(true);
-  QCOMPARE(rec.count("trafoParamIsUsedChanged"), 1);
-  QVERIFY(oi::contains(rec.calls,
+  OI_COMPARE(rec.count("trafoParamIsUsedChanged"), 1);
+  REQUIRE(oi::contains(rec.calls,
                        std::format("trafoParamIsUsedChanged:{}", tp->getId())));
   tp->setIsDatumTrafo(true);
-  QCOMPARE(rec.count("trafoParamIsDatumChanged"), 1);
+  OI_COMPARE(rec.count("trafoParamIsDatumChanged"), 1);
 }
 
 void JobObserverTest::messageIsDelivered() {
@@ -172,16 +170,17 @@ void JobObserverTest::messageIsDelivered() {
   rec.attach(&job);
 
   job.sendMessage("hello", MessageTypes::eWarningMessage);
-  QCOMPARE(rec.count("sendMessage"), 1);
-  QCOMPARE(rec.calls.back(),
-           std::format("sendMessage:hello:{}:{}",
-                       static_cast<int>(MessageTypes::eWarningMessage),
-                       static_cast<int>(MessageDestinations::eConsoleMessage)));
+  OI_COMPARE(rec.count("sendMessage"), 1);
+  OI_COMPARE(
+      rec.calls.back(),
+      std::format("sendMessage:hello:{}:{}",
+                  static_cast<int>(MessageTypes::eWarningMessage),
+                  static_cast<int>(MessageDestinations::eConsoleMessage)));
 
   // a failing operation reports through the same path
   rec.calls.clear();
-  QVERIFY(!job.removeFeature(424242));
-  QVERIFY(rec.count("sendMessage") <= 1);
+  REQUIRE(!job.removeFeature(424242));
+  REQUIRE(rec.count("sendMessage") <= 1);
 }
 
 void JobObserverTest::recalculationNotifications() {
@@ -192,9 +191,9 @@ void JobObserverTest::recalculationNotifications() {
   job.featureRecalculated(7);
   job.featuresRecalculated();
   job.trafoParamRecalculated(9);
-  QCOMPARE(rec.calls, (std::vector<std::string>{"featureRecalculated:7",
-                                                "featuresRecalculated",
-                                                "trafoParamRecalculated:9"}));
+  OI_COMPARE(rec.calls, (std::vector<std::string>{"featureRecalculated:7",
+                                                  "featuresRecalculated",
+                                                  "trafoParamRecalculated:9"}));
 }
 
 void JobObserverTest::recalcRequestsAreReported() {
@@ -204,10 +203,10 @@ void JobObserverTest::recalcRequestsAreReported() {
 
   Point* point = new Point();
   point->setFeatureName("P");
-  QVERIFY(job.addFeature(point->getFeatureWrapper()));
+  REQUIRE(job.addFeature(point->getFeatureWrapper()));
   rec.calls.clear();
-  QVERIFY(job.removeFeature(point->getId()));
-  QCOMPARE(rec.count("recalcFeatureSet"), 1);
+  REQUIRE(job.removeFeature(point->getId()));
+  OI_COMPARE(rec.count("recalcFeatureSet"), 1);
 }
 
 void JobObserverTest::multipleObserversAreAllNotified() {
@@ -218,10 +217,10 @@ void JobObserverTest::multipleObserversAreAllNotified() {
 
   Point point;
   point.setFeatureName("point");
-  QVERIFY(job.addFeature(point.getFeatureWrapper()));
-  QCOMPARE(a.count("featureSetChanged"), 1);
-  QCOMPARE(b.count("featureSetChanged"), 1);
-  QCOMPARE(a.calls, b.calls);
+  REQUIRE(job.addFeature(point.getFeatureWrapper()));
+  OI_COMPARE(a.count("featureSetChanged"), 1);
+  OI_COMPARE(b.count("featureSetChanged"), 1);
+  OI_COMPARE(a.calls, b.calls);
 }
 
 void JobObserverTest::observersAreDeduplicated() {
@@ -232,10 +231,10 @@ void JobObserverTest::observersAreDeduplicated() {
   rec.attach(&job);
 
   job.featureRecalculated(1);
-  QCOMPARE(rec.count("featureRecalculated"), 1);
+  OI_COMPARE(rec.count("featureRecalculated"), 1);
   job.removeObserver(&rec);
   job.featureRecalculated(1);
-  QCOMPARE(rec.count("featureRecalculated"), 1);
+  OI_COMPARE(rec.count("featureRecalculated"), 1);
 }
 
 void JobObserverTest::removedObserverIsNotNotified() {
@@ -248,8 +247,8 @@ void JobObserverTest::removedObserverIsNotNotified() {
   job.removeObserver(nullptr);
 
   job.featuresRecalculated();
-  QCOMPARE(a.count("featuresRecalculated"), 0);
-  QCOMPARE(b.count("featuresRecalculated"), 1);
+  OI_COMPARE(a.count("featuresRecalculated"), 0);
+  OI_COMPARE(b.count("featuresRecalculated"), 1);
 }
 
 void JobObserverTest::observerMayRemoveItselfInCallback() {
@@ -263,12 +262,12 @@ void JobObserverTest::observerMayRemoveItselfInCallback() {
   Point p1, p2;
   p1.setFeatureName("p1");
   p2.setFeatureName("p2");
-  QVERIFY(job.addFeature(p1.getFeatureWrapper()));
-  QCOMPARE(self.calls, 1);
-  QCOMPARE(after.count("featureSetChanged"), 1);  // still reached
-  QVERIFY(job.addFeature(p2.getFeatureWrapper()));
-  QCOMPARE(self.calls, 1);  // gone
-  QCOMPARE(after.count("featureSetChanged"), 2);
+  REQUIRE(job.addFeature(p1.getFeatureWrapper()));
+  OI_COMPARE(self.calls, 1);
+  OI_COMPARE(after.count("featureSetChanged"), 1);  // still reached
+  REQUIRE(job.addFeature(p2.getFeatureWrapper()));
+  OI_COMPARE(self.calls, 1);  // gone
+  OI_COMPARE(after.count("featureSetChanged"), 2);
 }
 
 void JobObserverTest::observerRemovedByAnotherIsSkipped() {
@@ -282,8 +281,8 @@ void JobObserverTest::observerRemovedByAnotherIsSkipped() {
 
   Point p;
   p.setFeatureName("p");
-  QVERIFY(job.addFeature(p.getFeatureWrapper()));
-  QCOMPARE(victim.count("featureSetChanged"), 0);
+  REQUIRE(job.addFeature(p.getFeatureWrapper()));
+  OI_COMPARE(victim.count("featureSetChanged"), 0);
 }
 
 void JobObserverTest::jobDestroyedIsReported() {
@@ -293,9 +292,9 @@ void JobObserverTest::jobDestroyedIsReported() {
   rec.attach(job);
   other.attach(job);
   delete job;
-  QCOMPARE(rec.destroyed.size(), 1);
-  QCOMPARE(rec.destroyed.front(), job);
-  QCOMPARE(other.destroyed.size(), 1);
+  OI_COMPARE(rec.destroyed.size(), 1);
+  OI_COMPARE(rec.destroyed.front(), job);
+  OI_COMPARE(other.destroyed.size(), 1);
 }
 
 void JobObserverTest::isSolvedIsDeliveredDeferred() {
@@ -306,16 +305,104 @@ void JobObserverTest::isSolvedIsDeliveredDeferred() {
   rec.attach(&job);
   Point point;
   point.setFeatureName("point");
-  QVERIFY(job.addFeature(point.getFeatureWrapper()));
+  REQUIRE(job.addFeature(point.getFeatureWrapper()));
   rec.calls.clear();
 
   point.setIsSolved(true);
-  QCOMPARE(rec.count("featureIsSolvedChanged"), 0);  // queued
+  OI_COMPARE(rec.count("featureIsSolvedChanged"), 0);  // queued
   executor.flush();
-  QCOMPARE(rec.count("featureIsSolvedChanged"), 1);
+  OI_COMPARE(rec.count("featureIsSolvedChanged"), 1);
 }
 
-QTEST_MAIN(JobObserverTest)
-#include <format>
+TEST_CASE("JobObserverTest::addAndRemoveFeatureNotifySetChanges",
+          "[JobObserverTest]") {
+  JobObserverTest fixture;
+  fixture.initTestCase();
+  fixture.addAndRemoveFeatureNotifySetChanges();
+}
 
-#include "tst_jobobserver.moc"
+TEST_CASE("JobObserverTest::renameAndGroupAreReported", "[JobObserverTest]") {
+  JobObserverTest fixture;
+  fixture.initTestCase();
+  fixture.renameAndGroupAreReported();
+}
+
+TEST_CASE("JobObserverTest::activeFeatureStationAndSystemChanges",
+          "[JobObserverTest]") {
+  JobObserverTest fixture;
+  fixture.initTestCase();
+  fixture.activeFeatureStationAndSystemChanges();
+}
+
+TEST_CASE("JobObserverTest::trafoParamChangesAreReported",
+          "[JobObserverTest]") {
+  JobObserverTest fixture;
+  fixture.initTestCase();
+  fixture.trafoParamChangesAreReported();
+}
+
+TEST_CASE("JobObserverTest::messageIsDelivered", "[JobObserverTest]") {
+  JobObserverTest fixture;
+  fixture.initTestCase();
+  fixture.messageIsDelivered();
+}
+
+TEST_CASE("JobObserverTest::recalculationNotifications", "[JobObserverTest]") {
+  JobObserverTest fixture;
+  fixture.initTestCase();
+  fixture.recalculationNotifications();
+}
+
+TEST_CASE("JobObserverTest::recalcRequestsAreReported", "[JobObserverTest]") {
+  JobObserverTest fixture;
+  fixture.initTestCase();
+  fixture.recalcRequestsAreReported();
+}
+
+TEST_CASE("JobObserverTest::multipleObserversAreAllNotified",
+          "[JobObserverTest]") {
+  JobObserverTest fixture;
+  fixture.initTestCase();
+  fixture.multipleObserversAreAllNotified();
+}
+
+TEST_CASE("JobObserverTest::observersAreDeduplicated", "[JobObserverTest]") {
+  JobObserverTest fixture;
+  fixture.initTestCase();
+  fixture.observersAreDeduplicated();
+}
+
+TEST_CASE("JobObserverTest::removedObserverIsNotNotified",
+          "[JobObserverTest]") {
+  JobObserverTest fixture;
+  fixture.initTestCase();
+  fixture.removedObserverIsNotNotified();
+}
+
+TEST_CASE("JobObserverTest::observerMayRemoveItselfInCallback",
+          "[JobObserverTest]") {
+  JobObserverTest fixture;
+  fixture.initTestCase();
+  fixture.observerMayRemoveItselfInCallback();
+}
+
+TEST_CASE("JobObserverTest::observerRemovedByAnotherIsSkipped",
+          "[JobObserverTest]") {
+  JobObserverTest fixture;
+  fixture.initTestCase();
+  fixture.observerRemovedByAnotherIsSkipped();
+}
+
+TEST_CASE("JobObserverTest::jobDestroyedIsReported", "[JobObserverTest]") {
+  JobObserverTest fixture;
+  fixture.initTestCase();
+  fixture.jobDestroyedIsReported();
+}
+
+TEST_CASE("JobObserverTest::isSolvedIsDeliveredDeferred", "[JobObserverTest]") {
+  JobObserverTest fixture;
+  fixture.initTestCase();
+  fixture.isSolvedIsDeliveredDeferred();
+}
+
+#include <format>

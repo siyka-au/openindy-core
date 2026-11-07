@@ -1,6 +1,7 @@
-#include <QtTest>
+#include <catch2/catch_test_macros.hpp>
 #include <string>
 
+#include "catch_compat.h"
 #include "chooselalib.h"
 #include "constructfunction.h"
 #include "containers.h"
@@ -81,10 +82,8 @@ class CopyPointFunction : public ConstructFunction, public Producer<Point> {
  * drives this same OiJob::addOwnedSubGeometry entry point with the real
  * functions.
  */
-class OwnedSubGeometryTest : public QObject {
-  Q_OBJECT
-
- private Q_SLOTS:
+class OwnedSubGeometryTest {
+ public:
   void initTestCase();
 
   void generatingAnOwnedAccessorAttachesFunctionBindsInputAndMarksOwnership();
@@ -110,33 +109,33 @@ void OwnedSubGeometryTest::
   oi::Guarded<FeatureWrapper> ownerWrapper = new FeatureWrapper();
   ownerWrapper->setPoint(owner);
   owner->setFeatureName("Owner1");
-  QVERIFY(job->addFeature(ownerWrapper));
+  REQUIRE(job->addFeature(ownerWrapper));
 
   oi::Guarded<Point> child = new Point();
   oi::Guarded<FeatureWrapper> childWrapper = new FeatureWrapper();
   childWrapper->setPoint(child);
   child->setFeatureName("Child1");
-  QVERIFY(job->addFeature(childWrapper));
+  REQUIRE(job->addFeature(childWrapper));
 
   oi::Guarded<CopyPointFunction> function = new CopyPointFunction();
-  QVERIFY(job->addOwnedSubGeometry(ownerWrapper, childWrapper, function, 0));
+  REQUIRE(job->addOwnedSubGeometry(ownerWrapper, childWrapper, function, 0));
 
   // the function got attached, and the owner got bound as its input -
   // reusing Feature::addFunction/OiJob::addInputFeature, not a parallel
   // mechanism
-  QCOMPARE(child->getFunctions().size(), 1);
-  QCOMPARE(oi::value(function->getInputElements(), 0).size(), 1);
-  QCOMPARE(oi::value(function->getInputElements(), 0).front().id,
-           owner->getId());
+  OI_COMPARE(child->getFunctions().size(), 1);
+  OI_COMPARE(oi::value(function->getInputElements(), 0).size(), 1);
+  OI_COMPARE(oi::value(function->getInputElements(), 0).front().id,
+             owner->getId());
 
   // ownership recorded on both sides
-  QVERIFY(child->getOwnerFeature().has_value());
-  QCOMPARE(child->getOwnerFeature().value().data(), owner.data());
-  QVERIFY(oi::contains(owner->getOwnedSubGeometries(), child));
+  REQUIRE(child->getOwnerFeature().has_value());
+  OI_COMPARE(child->getOwnerFeature().value().data(), owner.data());
+  REQUIRE(oi::contains(owner->getOwnedSubGeometries(), child));
 
   const std::optional<std::string> description = child->getOwnerDescription();
-  QVERIFY(description.has_value());
-  QVERIFY(description->contains("Owner1"));
+  REQUIRE(description.has_value());
+  REQUIRE(description->contains("Owner1"));
 
   // the ordinary dependency graph is wired too (previouslyNeeded/usedFor) -
   // this is what lets FeatureUpdater's existing DAG walk find and
@@ -150,7 +149,7 @@ void OwnedSubGeometryTest::
   // use selfFeature, so list membership must be compared by the
   // underlying feature's id, not object identity, same as usedForMap/
   // previouslyNeededMap already do internally.
-  QVERIFY(oi::contains(child->getPreviouslyNeeded(), ownerWrapper));
+  REQUIRE(oi::contains(child->getPreviouslyNeeded(), ownerWrapper));
   bool ownerUsedForContainsChild = false;
   for (const oi::Guarded<FeatureWrapper>& usedFor : owner->getUsedFor()) {
     if (!usedFor.isNull() && !usedFor->getFeature().isNull() &&
@@ -158,7 +157,7 @@ void OwnedSubGeometryTest::
       ownerUsedForContainsChild = true;
     }
   }
-  QVERIFY(ownerUsedForContainsChild);
+  REQUIRE(ownerUsedForContainsChild);
 }
 
 void OwnedSubGeometryTest::
@@ -169,7 +168,7 @@ void OwnedSubGeometryTest::
   oi::Guarded<FeatureWrapper> ownerWrapper = new FeatureWrapper();
   ownerWrapper->setPoint(owner);
   owner->setFeatureName("Owner2");
-  QVERIFY(job->addFeature(ownerWrapper));
+  REQUIRE(job->addFeature(ownerWrapper));
 
   oi::Guarded<FixedPositionFunction> ownerFn = new FixedPositionFunction();
   ownerFn->x = 1.0;
@@ -181,9 +180,9 @@ void OwnedSubGeometryTest::
   oi::Guarded<FeatureWrapper> childWrapper = new FeatureWrapper();
   childWrapper->setPoint(child);
   child->setFeatureName("Child2");
-  QVERIFY(job->addFeature(childWrapper));
+  REQUIRE(job->addFeature(childWrapper));
 
-  QVERIFY(job->addOwnedSubGeometry(ownerWrapper, childWrapper,
+  REQUIRE(job->addOwnedSubGeometry(ownerWrapper, childWrapper,
                                    new CopyPointFunction(), 0));
 
   // first pass: owner solves for the first time, child computes from the
@@ -195,27 +194,29 @@ void OwnedSubGeometryTest::
   child->recalc();
   child->setIsUpdated(true);
 
-  QCOMPARE(child->getPosition().getVector().getAt(0), 1.0);
-  QCOMPARE(child->getPosition().getVector().getAt(2), 3.0);
+  OI_COMPARE(child->getPosition().getVector().getAt(0), 1.0);
+  OI_COMPARE(child->getPosition().getVector().getAt(2), 3.0);
 
   // owner recalculates again to an identical value - Geometry::recalc()
   // must NOT dirty the child. This is what keeps a project reload (an
   // ordinary recalc pass over an unchanged graph) from re-executing an
   // owned accessor's construction chain (domain-model.md S1/S6).
   owner->recalc();
-  QVERIFY2(child->getIsUpdated(),
-           "recalculating the owner to the same value must not dirty an owned "
-           "child");
+  OI_REQUIRE2(
+      child->getIsUpdated(),
+      "recalculating the owner to the same value must not dirty an owned "
+      "child");
 
   // now the owner actually moves - the child must be dirtied so the next
   // DAG pass regenerates it, which is what keeps it from drifting
   ownerFn->x = 9.0;
   owner->recalc();
-  QVERIFY2(!child->getIsUpdated(),
-           "recalculating the owner to a new value must dirty its owned child");
+  OI_REQUIRE2(
+      !child->getIsUpdated(),
+      "recalculating the owner to a new value must dirty its owned child");
 
   child->recalc();
-  QCOMPARE(child->getPosition().getVector().getAt(0), 9.0);
+  OI_COMPARE(child->getPosition().getVector().getAt(0), 9.0);
 }
 
 void OwnedSubGeometryTest::aSecondFeatureCanReferenceTheOwnedChildAsInput() {
@@ -225,15 +226,15 @@ void OwnedSubGeometryTest::aSecondFeatureCanReferenceTheOwnedChildAsInput() {
   oi::Guarded<FeatureWrapper> ownerWrapper = new FeatureWrapper();
   ownerWrapper->setPoint(owner);
   owner->setFeatureName("Owner3");
-  QVERIFY(job->addFeature(ownerWrapper));
+  REQUIRE(job->addFeature(ownerWrapper));
 
   oi::Guarded<Point> child = new Point();
   oi::Guarded<FeatureWrapper> childWrapper = new FeatureWrapper();
   childWrapper->setPoint(child);
   child->setFeatureName("Child3");
-  QVERIFY(job->addFeature(childWrapper));
+  REQUIRE(job->addFeature(childWrapper));
 
-  QVERIFY(job->addOwnedSubGeometry(ownerWrapper, childWrapper,
+  REQUIRE(job->addOwnedSubGeometry(ownerWrapper, childWrapper,
                                    new CopyPointFunction(), 0));
 
   // a third, ordinary feature takes the owned child as an input - proves
@@ -244,16 +245,16 @@ void OwnedSubGeometryTest::aSecondFeatureCanReferenceTheOwnedChildAsInput() {
   oi::Guarded<FeatureWrapper> consumerWrapper = new FeatureWrapper();
   consumerWrapper->setPoint(consumer);
   consumer->setFeatureName("Consumer3");
-  QVERIFY(job->addFeature(consumerWrapper));
+  REQUIRE(job->addFeature(consumerWrapper));
 
   oi::Guarded<CopyPointFunction> consumerFn = new CopyPointFunction();
   consumer->addFunction(consumerFn);
   job->addInputFeature(consumerWrapper, 0, 0, childWrapper);
 
-  QCOMPARE(oi::value(consumerFn->getInputElements(), 0).size(), 1);
-  QCOMPARE(oi::value(consumerFn->getInputElements(), 0).front().id,
-           child->getId());
-  QVERIFY(oi::contains(consumer->getPreviouslyNeeded(), childWrapper));
+  OI_COMPARE(oi::value(consumerFn->getInputElements(), 0).size(), 1);
+  OI_COMPARE(oi::value(consumerFn->getInputElements(), 0).front().id,
+             child->getId());
+  REQUIRE(oi::contains(consumer->getPreviouslyNeeded(), childWrapper));
 }
 
 void OwnedSubGeometryTest::removingTheOwnerCascadesToItsOwnedChild() {
@@ -263,27 +264,58 @@ void OwnedSubGeometryTest::removingTheOwnerCascadesToItsOwnedChild() {
   oi::Guarded<FeatureWrapper> ownerWrapper = new FeatureWrapper();
   ownerWrapper->setPoint(owner);
   owner->setFeatureName("Owner4");
-  QVERIFY(job->addFeature(ownerWrapper));
+  REQUIRE(job->addFeature(ownerWrapper));
 
   oi::Guarded<Point> child = new Point();
   oi::Guarded<FeatureWrapper> childWrapper = new FeatureWrapper();
   childWrapper->setPoint(child);
   child->setFeatureName("Child4");
-  QVERIFY(job->addFeature(childWrapper));
+  REQUIRE(job->addFeature(childWrapper));
 
-  QVERIFY(job->addOwnedSubGeometry(ownerWrapper, childWrapper,
+  REQUIRE(job->addOwnedSubGeometry(ownerWrapper, childWrapper,
                                    new CopyPointFunction(), 0));
 
   const int childId = child->getId();
-  QVERIFY(!job->getFeatureById(childId).isNull());
+  REQUIRE(!job->getFeatureById(childId).isNull());
 
-  QVERIFY(job->removeFeature(ownerWrapper->getFeature()->getId()));
+  REQUIRE(job->removeFeature(ownerWrapper->getFeature()->getId()));
 
   // the owner is gone, and so is what it owned - D19 "deleting the owner
   // deletes its owned sub-geometry" - not left dangling for some other
   // feature to reference a now-orphaned id
-  QVERIFY(job->getFeatureById(childId).isNull());
+  REQUIRE(job->getFeatureById(childId).isNull());
 }
 
-QTEST_MAIN(OwnedSubGeometryTest)
-#include "tst_ownedsubgeometry.moc"
+TEST_CASE(
+    "OwnedSubGeometryTest::"
+    "generatingAnOwnedAccessorAttachesFunctionBindsInputAndMarksOwnership",
+    "[OwnedSubGeometryTest]") {
+  OwnedSubGeometryTest fixture;
+  fixture.initTestCase();
+  fixture
+      .generatingAnOwnedAccessorAttachesFunctionBindsInputAndMarksOwnership();
+}
+
+TEST_CASE(
+    "OwnedSubGeometryTest::"
+    "ownerRecalcOnlyDirtiesOwnedChildWhenItsValueActuallyChanges",
+    "[OwnedSubGeometryTest]") {
+  OwnedSubGeometryTest fixture;
+  fixture.initTestCase();
+  fixture.ownerRecalcOnlyDirtiesOwnedChildWhenItsValueActuallyChanges();
+}
+
+TEST_CASE(
+    "OwnedSubGeometryTest::aSecondFeatureCanReferenceTheOwnedChildAsInput",
+    "[OwnedSubGeometryTest]") {
+  OwnedSubGeometryTest fixture;
+  fixture.initTestCase();
+  fixture.aSecondFeatureCanReferenceTheOwnedChildAsInput();
+}
+
+TEST_CASE("OwnedSubGeometryTest::removingTheOwnerCascadesToItsOwnedChild",
+          "[OwnedSubGeometryTest]") {
+  OwnedSubGeometryTest fixture;
+  fixture.initTestCase();
+  fixture.removingTheOwnerCascadesToItsOwnedChild();
+}

@@ -2,9 +2,8 @@
 // SensorControl (delivery through the Executor) and Station (command methods,
 // StationObserver). They run with plain std::thread helpers and are meant to
 // be run under ThreadSanitizer as well.
-#include <QCoreApplication>
-#include <QtTest>
 #include <atomic>
+#include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <condition_variable>
 #include <deque>
@@ -17,6 +16,7 @@
 #include <thread>
 #include <vector>
 
+#include "catch_compat.h"
 #include "chooselalib.h"
 #include "containers.h"
 #include "executor.h"
@@ -293,10 +293,8 @@ void barrier(SensorWorker& worker) {
 
 }  // namespace
 
-class SensorWorkerTest : public QObject {
-  Q_OBJECT
-
- private slots:
+class SensorWorkerTest {
+ public:
   void initTestCase();
 
   // worker
@@ -349,21 +347,21 @@ void SensorWorkerTest::commandsRunOnTheWorkerThreadInFifoOrder() {
     std::vector<std::string> names;
     for (const Event& e : calls) {
       names.push_back(e.what);
-      QCOMPARE(e.thread, worker.workerThreadId());
-      QVERIFY(e.thread != std::this_thread::get_id());
+      OI_COMPARE(e.thread, worker.workerThreadId());
+      REQUIRE(e.thread != std::this_thread::get_id());
     }
-    QCOMPARE(names,
-             (std::vector<std::string>{"connect", "accept", "action:a",
-                                       "action:b", "search", "disconnect"}));
-    QVERIFY(!sensor->overlapped);
+    OI_COMPARE(names,
+               (std::vector<std::string>{"connect", "accept", "action:a",
+                                         "action:b", "search", "disconnect"}));
+    REQUIRE(!sensor->overlapped);
 
     // results in the same order, on the worker thread as well
     const std::vector<Event> events = results.log.all();
-    QCOMPARE(events.size(), size_t{6});
+    OI_COMPARE(events.size(), size_t{6});
     for (const Event& e : events) {
-      QCOMPARE(e.thread, worker.workerThreadId());
+      OI_COMPARE(e.thread, worker.workerThreadId());
     }
-    QCOMPARE(
+    OI_COMPARE(
         events.front().what,
         std::format("finished:1:{}:0", SensorWorkerMessage::SENSOR_CONNECTED));
   }
@@ -385,14 +383,14 @@ void SensorWorkerTest::aSlowCommandDoesNotBlockTheCaller() {
   while (sensor.calls.count("measure") == 0) {
     std::this_thread::yield();
   }
-  QVERIFY(worker.getIsBusy());
-  QVERIFY(worker.getIsSensorConnected());
-  QVERIFY(worker.getSupportedReadingTypes().empty());
+  REQUIRE(worker.getIsBusy());
+  REQUIRE(worker.getIsSensorConnected());
+  REQUIRE(worker.getSupportedReadingTypes().empty());
   const auto callerTime = std::chrono::steady_clock::now() - start;
-  QVERIFY2(callerTime < 300ms, "the caller was blocked by the command");
+  OI_REQUIRE2(callerTime < 300ms, "the caller was blocked by the command");
 
-  QVERIFY(results.log.waitForCount("measurementFinished", 2));
-  QCOMPARE(results.log.count("measurementFinished"), 2);
+  REQUIRE(results.log.waitForCount("measurementFinished", 2));
+  OI_COMPARE(results.log.count("measurementFinished"), 2);
 }
 
 void SensorWorkerTest::measurementFlow() {
@@ -403,15 +401,15 @@ void SensorWorkerTest::measurementFlow() {
   worker.setSensor(&sensor);
 
   worker.measure(7, MeasurementConfig());
-  QVERIFY(results.log.waitForCount("done", 1));
-  QCOMPARE(
+  REQUIRE(results.log.waitForCount("done", 1));
+  OI_COMPARE(
       results.log.names(),
       (std::vector<std::string>{
           std::format("finished:1:{}:{}",
                       SensorWorkerMessage::MEASUREMENT_FINISHED,
                       static_cast<int>(SensorAction::eSensorActionMeasure)),
           "measurementFinished:7:2", "done:1"}));
-  QVERIFY(!results.overlapped);
+  REQUIRE(!results.overlapped);
 }
 
 void SensorWorkerTest::measurementFailureReportsDoneLast() {
@@ -421,8 +419,8 @@ void SensorWorkerTest::measurementFailureReportsDoneLast() {
   worker.setSensor(&sensor);
 
   worker.measure(7, MeasurementConfig());
-  QVERIFY(results.log.waitForCount("done", 1));
-  QCOMPARE(
+  REQUIRE(results.log.waitForCount("done", 1));
+  OI_COMPARE(
       results.log.names(),
       (std::vector<std::string>{
           std::format("finished:0:{}:{}",
@@ -437,7 +435,7 @@ void SensorWorkerTest::commandsWithoutSensorReportAnError() {
   worker.connectSensor();
   worker.startReadingStream();
   barrier(worker);
-  QCOMPARE(
+  OI_COMPARE(
       results.log.names(),
       (std::vector<std::string>{
           std::format("finished:0:{}:0",
@@ -456,7 +454,7 @@ void SensorWorkerTest::readingStreamYieldsReadingsThenStops() {
 
   worker.startReadingStream();
   worker.startReadingStream();  // already running: no second loop
-  QVERIFY(results.log.waitForCount("reading", 5));
+  REQUIRE(results.log.waitForCount("reading", 5));
 
   worker.stopReadingStream();
   barrier(worker);
@@ -464,14 +462,14 @@ void SensorWorkerTest::readingStreamYieldsReadingsThenStops() {
   const int driverCalls = sensor.calls.count("stream");
   std::this_thread::sleep_for(60ms);
   barrier(worker);
-  QCOMPARE(results.log.count("reading"), afterStop);
-  QCOMPARE(sensor.calls.count("stream"), driverCalls);
-  QVERIFY(!sensor.overlapped);
+  OI_COMPARE(results.log.count("reading"), afterStop);
+  OI_COMPARE(sensor.calls.count("stream"), driverCalls);
+  REQUIRE(!sensor.overlapped);
 
   // the readings arrived in order, each reported once
   const std::vector<std::string> names = results.log.names();
   for (int i = 0; i < std::ssize(names); ++i) {
-    QCOMPARE(names.at(i), std::format("reading:{}", i + 1));
+    OI_COMPARE(names.at(i), std::format("reading:{}", i + 1));
   }
 }
 
@@ -484,18 +482,18 @@ void SensorWorkerTest::aRestartedStreamKeepsRunning() {
   worker.setSensor(&sensor);
 
   worker.startReadingStream();
-  QVERIFY(results.log.waitForCount("reading", 3));
+  REQUIRE(results.log.waitForCount("reading", 3));
   worker.stopReadingStream();
   worker.startReadingStream();  // the old loop's iteration may still be queued
   const int before = results.log.count("reading");
-  QVERIFY(results.log.waitForCount("reading", before + 5));
+  REQUIRE(results.log.waitForCount("reading", before + 5));
   worker.stopReadingStream();
   barrier(worker);
 
   // exactly one loop ran at any time: the numbers are strictly consecutive
   const std::vector<std::string> names = results.log.names();
   for (int i = 0; i < std::ssize(names); ++i) {
-    QCOMPARE(names.at(i), std::format("reading:{}", i + 1));
+    OI_COMPARE(names.at(i), std::format("reading:{}", i + 1));
   }
 }
 
@@ -508,11 +506,11 @@ void SensorWorkerTest::commandsAreInterleavedWithARunningStream() {
   worker.setSensor(&sensor);
 
   worker.startReadingStream();
-  QVERIFY(results.log.waitForCount("reading", 3));
+  REQUIRE(results.log.waitForCount("reading", 3));
   worker.home();
-  QVERIFY(results.log.waitForCount("finished", 1));  // not starved
+  REQUIRE(results.log.waitForCount("finished", 1));  // not starved
   const int readingsAtHome = results.log.count("reading");
-  QVERIFY(results.log.waitForCount("reading", readingsAtHome + 3));  // goes on
+  REQUIRE(results.log.waitForCount("reading", readingsAtHome + 3));  // goes on
   worker.stopReadingStream();
   barrier(worker);
 }
@@ -525,12 +523,12 @@ void SensorWorkerTest::statusStreamReportsStatus() {
   worker.setSensor(&sensor);
 
   worker.startStatusMonitoringStream();
-  QVERIFY(results.log.waitForCount("status", 3));
+  REQUIRE(results.log.waitForCount("status", 3));
   worker.stopStatusMonitoringStream();
   barrier(worker);
   const int n = results.log.count("status");
   barrier(worker);
-  QCOMPARE(results.log.count("status"), n);
+  OI_COMPARE(results.log.count("status"), n);
 }
 
 void SensorWorkerTest::connectionMonitoringReportsLostAndReceived() {
@@ -541,16 +539,16 @@ void SensorWorkerTest::connectionMonitoringReportsLostAndReceived() {
 
   worker.startConnectionMonitoringStream();
   sensor.connected = true;
-  QVERIFY(results.log.waitForCount("received", 1));
+  REQUIRE(results.log.waitForCount("received", 1));
   sensor.connected = false;
-  QVERIFY(results.log.waitForCount("lost", 1));
+  REQUIRE(results.log.waitForCount("lost", 1));
   sensor.connected = true;
-  QVERIFY(results.log.waitForCount("received", 2));
+  REQUIRE(results.log.waitForCount("received", 2));
   worker.stopConnectionMonitoringStream();
   barrier(worker);
 
-  QCOMPARE(results.log.names(),
-           (std::vector<std::string>{"received", "lost", "received"}));
+  OI_COMPARE(results.log.names(),
+             (std::vector<std::string>{"received", "lost", "received"}));
 }
 
 void SensorWorkerTest::asyncSensorReportsFromForeignThreadsAreSerialised() {
@@ -587,20 +585,20 @@ void SensorWorkerTest::asyncSensorReportsFromForeignThreadsAreSerialised() {
   barrier(worker);
 
   // every callback ran on the worker thread and never two at once
-  QVERIFY(!results.overlapped);
-  QCOMPARE(results.log.count("reading"), threads * perThread);
+  REQUIRE(!results.overlapped);
+  OI_COMPARE(results.log.count("reading"), threads * perThread);
   for (const Event& e : results.log.all()) {
-    QCOMPARE(e.thread, worker.workerThreadId());
+    OI_COMPARE(e.thread, worker.workerThreadId());
   }
   // a measurement without results is reported as a failed one
-  QCOMPARE(results.log.count("done:0"), threads * 2);
+  OI_COMPARE(results.log.count("done:0"), threads * 2);
   // per reporting thread the order is kept
   std::map<int, int> last;
   for (const std::string& name : results.log.names()) {
     if (name.starts_with("reading:")) {
       const int n = oi::toInt(name.substr(8)).value_or(0);
       const int t = n / 1000;
-      QVERIFY(!last.contains(t) || n > oi::value(last, t));
+      REQUIRE((!last.contains(t) || n > oi::value(last, t)));
       last[t] = n;
     }
   }
@@ -616,12 +614,12 @@ void SensorWorkerTest::sensorMessagesFromForeignThreadsAreForwarded() {
     sensor.sensorMessage("hello", MessageTypes::eInformationMessage);
   });
   t.join();
-  QCOMPARE(results.log.names(), (std::vector<std::string>{"message:hello"}));
+  OI_COMPARE(results.log.names(), (std::vector<std::string>{"message:hello"}));
 
   // without a sink the report is dropped
   worker.takeSensor();
   sensor.sensorMessage("dropped", MessageTypes::eInformationMessage);
-  QCOMPARE(results.log.count("message"), 1);
+  OI_COMPARE(results.log.count("message"), 1);
 }
 
 void SensorWorkerTest::takeSensorWaitsForTheRunningCommandAndDetaches() {
@@ -630,17 +628,17 @@ void SensorWorkerTest::takeSensorWaitsForTheRunningCommandAndDetaches() {
   sensor.connectDelayMs = 200;
   SensorWorker worker(results);
   worker.setSensor(&sensor);
-  QCOMPARE(sensor.getSensorSink(), &worker);
+  OI_COMPARE(sensor.getSensorSink(), &worker);
 
   worker.connectSensor();
-  QVERIFY(sensor.calls.waitForCount("connect", 1));
+  REQUIRE(sensor.calls.waitForCount("connect", 1));
   const oi::Guarded<Sensor> taken = worker.takeSensor();
   // the command was complete when the sensor was handed back
-  QVERIFY(sensor.connected);
-  QCOMPARE(taken.data(), &sensor);
-  QVERIFY(sensor.getSensorSink() == nullptr);
-  QVERIFY(worker.getSensor().getSensorConfiguration().getSensorName().empty());
-  QVERIFY(!worker.getIsSensorConnected());
+  REQUIRE(sensor.connected);
+  OI_COMPARE(taken.data(), &sensor);
+  REQUIRE(sensor.getSensorSink() == nullptr);
+  REQUIRE(worker.getSensor().getSensorConfiguration().getSensorName().empty());
+  REQUIRE(!worker.getIsSensorConnected());
 }
 
 void SensorWorkerTest::destructionWithPendingCommandsDropsThem() {
@@ -654,13 +652,14 @@ void SensorWorkerTest::destructionWithPendingCommandsDropsThem() {
     for (int i = 0; i < 50; ++i) {
       worker.selfDefinedAction(oi::number(i));
     }
-    QVERIFY(sensor.calls.waitForCount("connect", 1));
+    REQUIRE(sensor.calls.waitForCount("connect", 1));
   }  // destroyed while connect runs and 50 commands wait
   const int executed = sensor.calls.count("action");
-  QVERIFY(executed < 50);
-  QVERIFY(sensor.getSensorSink() == nullptr);
+  REQUIRE(executed < 50);
+  REQUIRE(sensor.getSensorSink() == nullptr);
   std::this_thread::sleep_for(30ms);
-  QCOMPARE(sensor.calls.count("action"), executed);  // nothing runs afterwards
+  OI_COMPARE(sensor.calls.count("action"),
+             executed);  // nothing runs afterwards
 }
 
 void SensorWorkerTest::destructionWhileAStreamRunsStopsCleanly() {
@@ -673,15 +672,15 @@ void SensorWorkerTest::destructionWhileAStreamRunsStopsCleanly() {
     worker.startReadingStream();
     worker.startConnectionMonitoringStream();
     worker.startStatusMonitoringStream();
-    QVERIFY(results.log.waitForCount("reading", 3));
-    QVERIFY(results.log.waitForCount("status", 3));
+    REQUIRE(results.log.waitForCount("reading", 3));
+    REQUIRE(results.log.waitForCount("status", 3));
   }
   const int streamCalls = sensor.calls.count("stream");
   const int statusCalls = sensor.calls.count("status");
   std::this_thread::sleep_for(30ms);
-  QCOMPARE(sensor.calls.count("stream"), streamCalls);
-  QCOMPARE(sensor.calls.count("status"), statusCalls);
-  QVERIFY(!sensor.overlapped);
+  OI_COMPARE(sensor.calls.count("stream"), streamCalls);
+  OI_COMPARE(sensor.calls.count("status"), statusCalls);
+  REQUIRE(!sensor.overlapped);
 }
 
 void SensorWorkerTest::destructionWhileTheDriverReportsFromAnotherThread() {
@@ -705,7 +704,7 @@ void SensorWorkerTest::destructionWhileTheDriverReportsFromAnotherThread() {
   }  // each worker dies while the driver is reporting
   stop = true;
   reporter.join();
-  QVERIFY(sensor.getSensorSink() == nullptr);
+  REQUIRE(sensor.getSensorSink() == nullptr);
 }
 
 void SensorWorkerTest::controlDeliversThroughTheExecutorInOrder() {
@@ -718,25 +717,25 @@ void SensorWorkerTest::controlDeliversThroughTheExecutorInOrder() {
 
   control.measure(3, MeasurementConfig());
   control.home();
-  QVERIFY(executor.waitForPending(4));  // finished, measurementFinished, done
+  REQUIRE(executor.waitForPending(4));  // finished, measurementFinished, done
                                         // + home's finished
   // nothing was delivered yet: the executor decides when and where
-  QCOMPARE(results.log.names().size(), 0);
+  OI_COMPARE(results.log.names().size(), 0);
   // posted from the worker thread
   for (const std::thread::id& id : executor.posterThreads()) {
-    QCOMPARE(id, control.getWorker().workerThreadId());
+    OI_COMPARE(id, control.getWorker().workerThreadId());
   }
 
-  QCOMPARE(executor.drain(), size_t{4});
-  QCOMPARE(results.log.names().size(), 4);
+  OI_COMPARE(executor.drain(), size_t{4});
+  OI_COMPARE(results.log.names().size(), 4);
   // delivered here, in the order the worker produced them
   for (const Event& e : results.log.all()) {
-    QCOMPARE(e.thread, std::this_thread::get_id());
+    OI_COMPARE(e.thread, std::this_thread::get_id());
   }
-  QVERIFY(results.log.names().at(0).starts_with("finished:1:"));
-  QCOMPARE(results.log.names().at(1), std::string("measurementFinished:3:2"));
-  QCOMPARE(results.log.names().at(2), std::string("done:1"));
-  QVERIFY(results.log.names().at(3).starts_with("finished:1:"));
+  REQUIRE(results.log.names().at(0).starts_with("finished:1:"));
+  OI_COMPARE(results.log.names().at(1), std::string("measurementFinished:3:2"));
+  OI_COMPARE(results.log.names().at(2), std::string("done:1"));
+  REQUIRE(results.log.names().at(3).starts_with("finished:1:"));
 }
 
 void SensorWorkerTest::tasksStillQueuedAfterDestructionAreDropped() {
@@ -748,10 +747,10 @@ void SensorWorkerTest::tasksStillQueuedAfterDestructionAreDropped() {
     SensorControl control(&results, &executor);
     control.setSensor(&sensor);
     control.measure(1, MeasurementConfig());
-    QVERIFY(executor.waitForPending(3));
+    REQUIRE(executor.waitForPending(3));
   }  // the control is gone, its results are still queued in the executor
-  QCOMPARE(executor.drain(), size_t{3});
-  QCOMPARE(results.log.names().size(), 0);
+  OI_COMPARE(executor.drain(), size_t{3});
+  OI_COMPARE(results.log.names().size(), 0);
 }
 
 void SensorWorkerTest::anExecutorCanBeDestroyedRightAfterItWasReplaced() {
@@ -764,7 +763,7 @@ void SensorWorkerTest::anExecutorCanBeDestroyedRightAfterItWasReplaced() {
     auto executor = std::make_unique<ManualExecutor>();
     control.setExecutor(executor.get());
     control.startStatusMonitoringStream();  // posts continuously
-    QVERIFY(executor->waitForPending(1));
+    REQUIRE(executor->waitForPending(1));
     control.stopStatusMonitoringStream();
     control.setExecutor(nullptr);
     executor.reset();  // the worker must not post to it any more
@@ -779,7 +778,7 @@ void SensorWorkerTest::stationCommandMethodsReachTheSensor() {
   station.setStationObserver(&results);
   station.setActiveStationState(true);
   station.setSensor(&sensor);
-  QVERIFY(station.getIsSensorSet());
+  REQUIRE(station.getIsSensorSet());
 
   station.connectSensor();
   station.initialize();
@@ -795,31 +794,31 @@ void SensorWorkerTest::stationCommandMethodsReachTheSensor() {
   station.measure(4, MeasurementConfig());
   station.disconnectSensor();
   station.startReadingStream();
-  QVERIFY(results.log.waitForCount("reading", 2));
+  REQUIRE(results.log.waitForCount("reading", 2));
   station.stopReadingStream();
   station.startStatusMonitoringStream();
-  QVERIFY(results.log.waitForCount("status", 1));
+  REQUIRE(results.log.waitForCount("status", 1));
   station.stopStatusMonitoringStream();
   station.startConnectionMonitoringStream();
   station.stopConnectionMonitoringStream();
   barrier(station.getSensorControl()->getWorker());
 
   const std::vector<std::string> calls = sensor.calls.names();
-  QVERIFY(oi::contains(calls, "connect"));
-  QVERIFY(oi::contains(calls, "action:stopMeasure"));
-  QVERIFY(oi::contains(calls, "action:x"));
-  QVERIFY(oi::contains(calls, "search"));
-  QVERIFY(oi::contains(calls, "measure"));
-  QVERIFY(oi::contains(calls, "disconnect"));
+  REQUIRE(oi::contains(calls, "connect"));
+  REQUIRE(oi::contains(calls, "action:stopMeasure"));
+  REQUIRE(oi::contains(calls, "action:x"));
+  REQUIRE(oi::contains(calls, "search"));
+  REQUIRE(oi::contains(calls, "measure"));
+  REQUIRE(oi::contains(calls, "disconnect"));
   // initialize, home, toggleSight, compensation, motorState, two moves
-  QCOMPARE(std::count(calls.begin(), calls.end(), std::string("accept")), 7);
-  QVERIFY(oi::indexOf(calls, "connect") < oi::indexOf(calls, "measure"));
-  QVERIFY(oi::indexOf(calls, "measure") < oi::indexOf(calls, "disconnect"));
+  OI_COMPARE(std::count(calls.begin(), calls.end(), std::string("accept")), 7);
+  REQUIRE(oi::indexOf(calls, "connect") < oi::indexOf(calls, "measure"));
+  REQUIRE(oi::indexOf(calls, "measure") < oi::indexOf(calls, "disconnect"));
 
   // the measurement arrived at the station's observer
-  QVERIFY(oi::contains(results.log.names(), "measurementFinished:4:2"));
-  QVERIFY(oi::contains(results.log.names(), "done:1"));
-  QVERIFY(!results.overlapped);
+  REQUIRE(oi::contains(results.log.names(), "measurementFinished:4:2"));
+  REQUIRE(oi::contains(results.log.names(), "done:1"));
+  REQUIRE(!results.overlapped);
 }
 
 void SensorWorkerTest::stationObserverIsToldAndForgotten() {
@@ -829,18 +828,18 @@ void SensorWorkerTest::stationObserverIsToldAndForgotten() {
   station->setExecutor(&executor);
   station->setStationObserver(&results);
   station->setActiveStationState(true);
-  QCOMPARE(station->getStationObserver(), &results);
+  OI_COMPARE(station->getStationObserver(), &results);
 
   FakeSensor sensor;
   sensor.connected = true;
   station->setSensor(&sensor);
   station->measure(1, MeasurementConfig());
-  QVERIFY(executor.waitForPending(3));
+  REQUIRE(executor.waitForPending(3));
 
   delete station;  // results still queued in the executor
-  QCOMPARE(results.destroyedCount.load(), 1);
-  QCOMPARE(executor.drain(), size_t{3});
-  QCOMPARE(results.log.names().size(), 0);  // dropped: no dangling station
+  OI_COMPARE(results.destroyedCount.load(), 1);
+  OI_COMPARE(executor.drain(), size_t{3});
+  OI_COMPARE(results.log.names().size(), 0);  // dropped: no dangling station
 }
 
 void SensorWorkerTest::stationsOfAJobUseTheJobsExecutor() {
@@ -856,7 +855,7 @@ void SensorWorkerTest::stationsOfAJobUseTheJobsExecutor() {
   earlyFeature->setStation(early);
   job.addFeature(earlyFeature);
   job.setExecutor(&executor);
-  QCOMPARE(job.getExecutor(), &executor);
+  OI_COMPARE(job.getExecutor(), &executor);
 
   // ... and one added afterwards
   oi::Guarded<Station> late = new Station("S2");
@@ -865,17 +864,17 @@ void SensorWorkerTest::stationsOfAJobUseTheJobsExecutor() {
   job.addFeature(lateFeature);
 
   for (const oi::Guarded<Station>& station : {early, late}) {
-    QCOMPARE(station->getSensorControl()->getExecutor(), &executor);
+    OI_COMPARE(station->getSensorControl()->getExecutor(), &executor);
   }
 
   late->setStationObserver(&results);
   late->setActiveStationState(true);
   late->setSensor(&sensor);
   late->measure(1, MeasurementConfig());
-  QVERIFY(executor.waitForPending(3));
-  QCOMPARE(results.log.names().size(), 0);
+  REQUIRE(executor.waitForPending(3));
+  OI_COMPARE(results.log.names().size(), 0);
   executor.drain();
-  QVERIFY(oi::contains(results.log.names(), "done:1"));
+  REQUIRE(oi::contains(results.log.names(), "done:1"));
 
   // the job does not stop its stations' workers; hand the sensor back
   // before it goes out of scope
@@ -883,7 +882,7 @@ void SensorWorkerTest::stationsOfAJobUseTheJobsExecutor() {
 
   // a station outside any job delivers inline
   Station alone("S3");
-  QVERIFY(dynamic_cast<InlineExecutor*>(
+  REQUIRE(dynamic_cast<InlineExecutor*>(
               alone.getSensorControl()->getExecutor()) != nullptr);
 }
 
@@ -898,18 +897,175 @@ void SensorWorkerTest::stationReportsActiveStationAndSensorChangesToTheJob() {
   job.addFeature(feature);
 
   station->setActiveStationState(true);
-  QCOMPARE(job.getActiveStation().data(), station.data());
-  QVERIFY(jobObserver.count("activeStationChanged") >= 1);
+  OI_COMPARE(job.getActiveStation().data(), station.data());
+  REQUIRE(jobObserver.count("activeStationChanged") >= 1);
 
   FakeSensor sensor;
   station->setSensor(&sensor);
-  QCOMPARE(jobObserver.count("stationSensorChanged"), 1);
+  OI_COMPARE(jobObserver.count("stationSensorChanged"), 1);
   oi::Guarded<Sensor> taken = station->takeSensor();
-  QCOMPARE(jobObserver.count("stationSensorChanged"), 2);
-  QCOMPARE(taken.data(), &sensor);
+  OI_COMPARE(jobObserver.count("stationSensorChanged"), 2);
+  OI_COMPARE(taken.data(), &sensor);
 }
 
-QTEST_MAIN(SensorWorkerTest)
-#include <format>
+TEST_CASE("SensorWorkerTest::commandsRunOnTheWorkerThreadInFifoOrder",
+          "[SensorWorkerTest]") {
+  SensorWorkerTest fixture;
+  fixture.initTestCase();
+  fixture.commandsRunOnTheWorkerThreadInFifoOrder();
+}
 
-#include "tst_sensorworker.moc"
+TEST_CASE("SensorWorkerTest::aSlowCommandDoesNotBlockTheCaller",
+          "[SensorWorkerTest]") {
+  SensorWorkerTest fixture;
+  fixture.initTestCase();
+  fixture.aSlowCommandDoesNotBlockTheCaller();
+}
+
+TEST_CASE("SensorWorkerTest::measurementFlow", "[SensorWorkerTest]") {
+  SensorWorkerTest fixture;
+  fixture.initTestCase();
+  fixture.measurementFlow();
+}
+
+TEST_CASE("SensorWorkerTest::measurementFailureReportsDoneLast",
+          "[SensorWorkerTest]") {
+  SensorWorkerTest fixture;
+  fixture.initTestCase();
+  fixture.measurementFailureReportsDoneLast();
+}
+
+TEST_CASE("SensorWorkerTest::commandsWithoutSensorReportAnError",
+          "[SensorWorkerTest]") {
+  SensorWorkerTest fixture;
+  fixture.initTestCase();
+  fixture.commandsWithoutSensorReportAnError();
+}
+
+TEST_CASE("SensorWorkerTest::readingStreamYieldsReadingsThenStops",
+          "[SensorWorkerTest]") {
+  SensorWorkerTest fixture;
+  fixture.initTestCase();
+  fixture.readingStreamYieldsReadingsThenStops();
+}
+
+TEST_CASE("SensorWorkerTest::aRestartedStreamKeepsRunning",
+          "[SensorWorkerTest]") {
+  SensorWorkerTest fixture;
+  fixture.initTestCase();
+  fixture.aRestartedStreamKeepsRunning();
+}
+
+TEST_CASE("SensorWorkerTest::commandsAreInterleavedWithARunningStream",
+          "[SensorWorkerTest]") {
+  SensorWorkerTest fixture;
+  fixture.initTestCase();
+  fixture.commandsAreInterleavedWithARunningStream();
+}
+
+TEST_CASE("SensorWorkerTest::statusStreamReportsStatus", "[SensorWorkerTest]") {
+  SensorWorkerTest fixture;
+  fixture.initTestCase();
+  fixture.statusStreamReportsStatus();
+}
+
+TEST_CASE("SensorWorkerTest::connectionMonitoringReportsLostAndReceived",
+          "[SensorWorkerTest]") {
+  SensorWorkerTest fixture;
+  fixture.initTestCase();
+  fixture.connectionMonitoringReportsLostAndReceived();
+}
+
+TEST_CASE("SensorWorkerTest::asyncSensorReportsFromForeignThreadsAreSerialised",
+          "[SensorWorkerTest]") {
+  SensorWorkerTest fixture;
+  fixture.initTestCase();
+  fixture.asyncSensorReportsFromForeignThreadsAreSerialised();
+}
+
+TEST_CASE("SensorWorkerTest::sensorMessagesFromForeignThreadsAreForwarded",
+          "[SensorWorkerTest]") {
+  SensorWorkerTest fixture;
+  fixture.initTestCase();
+  fixture.sensorMessagesFromForeignThreadsAreForwarded();
+}
+
+TEST_CASE("SensorWorkerTest::takeSensorWaitsForTheRunningCommandAndDetaches",
+          "[SensorWorkerTest]") {
+  SensorWorkerTest fixture;
+  fixture.initTestCase();
+  fixture.takeSensorWaitsForTheRunningCommandAndDetaches();
+}
+
+TEST_CASE("SensorWorkerTest::destructionWithPendingCommandsDropsThem",
+          "[SensorWorkerTest]") {
+  SensorWorkerTest fixture;
+  fixture.initTestCase();
+  fixture.destructionWithPendingCommandsDropsThem();
+}
+
+TEST_CASE("SensorWorkerTest::destructionWhileAStreamRunsStopsCleanly",
+          "[SensorWorkerTest]") {
+  SensorWorkerTest fixture;
+  fixture.initTestCase();
+  fixture.destructionWhileAStreamRunsStopsCleanly();
+}
+
+TEST_CASE("SensorWorkerTest::destructionWhileTheDriverReportsFromAnotherThread",
+          "[SensorWorkerTest]") {
+  SensorWorkerTest fixture;
+  fixture.initTestCase();
+  fixture.destructionWhileTheDriverReportsFromAnotherThread();
+}
+
+TEST_CASE("SensorWorkerTest::controlDeliversThroughTheExecutorInOrder",
+          "[SensorWorkerTest]") {
+  SensorWorkerTest fixture;
+  fixture.initTestCase();
+  fixture.controlDeliversThroughTheExecutorInOrder();
+}
+
+TEST_CASE("SensorWorkerTest::tasksStillQueuedAfterDestructionAreDropped",
+          "[SensorWorkerTest]") {
+  SensorWorkerTest fixture;
+  fixture.initTestCase();
+  fixture.tasksStillQueuedAfterDestructionAreDropped();
+}
+
+TEST_CASE("SensorWorkerTest::anExecutorCanBeDestroyedRightAfterItWasReplaced",
+          "[SensorWorkerTest]") {
+  SensorWorkerTest fixture;
+  fixture.initTestCase();
+  fixture.anExecutorCanBeDestroyedRightAfterItWasReplaced();
+}
+
+TEST_CASE("SensorWorkerTest::stationCommandMethodsReachTheSensor",
+          "[SensorWorkerTest]") {
+  SensorWorkerTest fixture;
+  fixture.initTestCase();
+  fixture.stationCommandMethodsReachTheSensor();
+}
+
+TEST_CASE("SensorWorkerTest::stationObserverIsToldAndForgotten",
+          "[SensorWorkerTest]") {
+  SensorWorkerTest fixture;
+  fixture.initTestCase();
+  fixture.stationObserverIsToldAndForgotten();
+}
+
+TEST_CASE("SensorWorkerTest::stationsOfAJobUseTheJobsExecutor",
+          "[SensorWorkerTest]") {
+  SensorWorkerTest fixture;
+  fixture.initTestCase();
+  fixture.stationsOfAJobUseTheJobsExecutor();
+}
+
+TEST_CASE(
+    "SensorWorkerTest::stationReportsActiveStationAndSensorChangesToTheJob",
+    "[SensorWorkerTest]") {
+  SensorWorkerTest fixture;
+  fixture.initTestCase();
+  fixture.stationReportsActiveStationAndSensorChangesToTheJob();
+}
+
+#include <format>

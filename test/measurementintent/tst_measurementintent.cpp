@@ -1,8 +1,9 @@
-#include <QtTest>
+#include <catch2/catch_test_macros.hpp>
 #include <cmath>
 #include <string>
 #include <vector>
 
+#include "catch_compat.h"
 #include "chooselalib.h"
 #include "constructfunction.h"
 #include "containers.h"
@@ -52,10 +53,8 @@ class FakeConsumer : public ConstructFunction, public Producer<Point> {
  * cascade the real app uses (see the comments in oijob.cpp/point.cpp this
  * test exercises).
  */
-class MeasurementIntentTest : public QObject {
-  Q_OBJECT
-
- private Q_SLOTS:
+class MeasurementIntentTest {
+ public:
   void initTestCase();
 
   // Point::recalc() computing its own position from observations
@@ -135,16 +134,17 @@ void MeasurementIntentTest::pointWithObservationsAndNoFunctionAveragesThem() {
   point->addObservation(obsA);
   point->addObservation(obsB);
 
-  QVERIFY(point->getFunctions().empty());
+  REQUIRE(point->getFunctions().empty());
   point->recalc();
 
-  QVERIFY2(point->getIsSolved(),
-           "a point with solved observations and no producer function should "
-           "solve itself");
-  QVERIFY2(std::abs(point->getPosition().getVector().getAt(0) - 1.0) < 1e-9,
-           "expected the midpoint of the two observations");
-  QVERIFY2(std::abs(point->getPosition().getVector().getAt(1) - 0.0) < 1e-9,
-           "expected the midpoint of the two observations");
+  OI_REQUIRE2(
+      point->getIsSolved(),
+      "a point with solved observations and no producer function should "
+      "solve itself");
+  OI_REQUIRE2(std::abs(point->getPosition().getVector().getAt(0) - 1.0) < 1e-9,
+              "expected the midpoint of the two observations");
+  OI_REQUIRE2(std::abs(point->getPosition().getVector().getAt(1) - 0.0) < 1e-9,
+              "expected the midpoint of the two observations");
 }
 
 void MeasurementIntentTest::pointWithObservationsIsStationOwned() {
@@ -156,10 +156,10 @@ void MeasurementIntentTest::pointWithObservationsIsStationOwned() {
   point->addObservation(obs);
 
   const std::optional<std::string> owner = point->getOwnerDescription();
-  QVERIFY2(owner.has_value(),
-           "a point carrying observations must be read-only");
-  QVERIFY2(owner->contains("S1"),
-           "the owner description should name the station");
+  OI_REQUIRE2(owner.has_value(),
+              "a point carrying observations must be read-only");
+  OI_REQUIRE2(owner->contains("S1"),
+              "the owner description should name the station");
 }
 
 void MeasurementIntentTest::pointWithNoObservationsIsUnaffected() {
@@ -167,7 +167,7 @@ void MeasurementIntentTest::pointWithNoObservationsIsUnaffected() {
   // is still user-owned and editable - this stage must not have widened
   // ownership beyond what 7g already established
   Point point;
-  QVERIFY(!point.getOwnerDescription().has_value());
+  REQUIRE(!point.getOwnerDescription().has_value());
 }
 
 void MeasurementIntentTest::measuringAlwaysCreatesExactlyOneNewPoint() {
@@ -191,7 +191,7 @@ void MeasurementIntentTest::measuringAlwaysCreatesExactlyOneNewPoint() {
 
   job->addMeasurementResults(targetFeature->getFeature()->getId(), readings);
 
-  QCOMPARE(job->getFeaturesList().size(), featureCountBefore + 1);
+  OI_COMPARE(job->getFeaturesList().size(), featureCountBefore + 1);
 }
 
 void MeasurementIntentTest::measuredPointHasObservationsDerivedPointDoesNot() {
@@ -218,18 +218,18 @@ void MeasurementIntentTest::measuredPointHasObservationsDerivedPointDoesNot() {
       measured = fw->getPoint();
     }
   }
-  QVERIFY2(!measured.isNull(),
-           "addMeasurementResults must have created a new point");
+  OI_REQUIRE2(!measured.isNull(),
+              "addMeasurementResults must have created a new point");
 
   //"a measured point has observations and a derived one has none" -
   // the stage's own acceptance wording
-  QCOMPARE(measured->getObservations().size(), 2);
+  OI_COMPARE(measured->getObservations().size(), 2);
 
   // a plain, freshly-constructed point (standing in for AverageFromPoints'
   // output, which is built from ePointElement inputs, never from
   // Geometry::addObservation) has none
   Point derived;
-  QVERIFY(derived.getObservations().empty());
+  REQUIRE(derived.getObservations().empty());
 }
 
 void MeasurementIntentTest::
@@ -246,8 +246,8 @@ void MeasurementIntentTest::
   oi::Guarded<FakeConsumer> consumer = new FakeConsumer("default");
   targetPoint->addFunction(consumer);
 
-  QVERIFY2(oi::value(consumer->getInputElements(), 0).empty(),
-           "nothing tagged yet");
+  OI_REQUIRE2(oi::value(consumer->getInputElements(), 0).empty(),
+              "nothing tagged yet");
 
   std::vector<oi::Guarded<Reading> > readings;
   readings.push_back(makeCartesianReading(5.0, 5.0, 5.0));
@@ -255,7 +255,7 @@ void MeasurementIntentTest::
 
   // no binding step: the function already declared role "default" for
   // ePointFeature, and measuring for that same feature fed it directly
-  QCOMPARE(oi::value(consumer->getInputElements(), 0).size(), 1);
+  OI_COMPARE(oi::value(consumer->getInputElements(), 0).size(), 1);
 }
 
 void MeasurementIntentTest::aPointCarryingTwoTagsIsFoundByBothConsumers() {
@@ -293,13 +293,13 @@ void MeasurementIntentTest::aPointCarryingTwoTagsIsFoundByBothConsumers() {
       measured = fw->getPoint();
     }
   }
-  QVERIFY(!measured.isNull());
+  REQUIRE(!measured.isNull());
 
   job->tagPoint(measured, wrapperB->getFeature()->getId(), "default");
 
-  QCOMPARE(oi::value(consumerA->getInputElements(), 0).size(), 1);
-  QCOMPARE(oi::value(consumerB->getInputElements(), 0).size(), 1);
-  QCOMPARE(measured->getIntents().size(), 2);
+  OI_COMPARE(oi::value(consumerA->getInputElements(), 0).size(), 1);
+  OI_COMPARE(oi::value(consumerB->getInputElements(), 0).size(), 1);
+  OI_COMPARE(measured->getIntents().size(), 2);
 }
 
 void MeasurementIntentTest::renamingTheFeatureDoesNotOrphanTags() {
@@ -323,7 +323,7 @@ void MeasurementIntentTest::renamingTheFeatureDoesNotOrphanTags() {
   readings.push_back(makeCartesianReading(3.0, 3.0, 3.0));
   job->addMeasurementResults(targetFeature->getFeature()->getId(), readings);
 
-  QCOMPARE(oi::value(consumer->getInputElements(), 0).size(), 1);
+  OI_COMPARE(oi::value(consumer->getInputElements(), 0).size(), 1);
 }
 
 void MeasurementIntentTest::unresolvableTargetIsRejectedWithAMessage() {
@@ -339,10 +339,74 @@ void MeasurementIntentTest::unresolvableTargetIsRejectedWithAMessage() {
   readings.push_back(makeCartesianReading(1.0, 1.0, 1.0));
   job->addMeasurementResults(999999, readings);
 
-  QVERIFY2(spy.count("sendMessage") > 0,
-           "core must report why the measurement was rejected");
-  QCOMPARE(job->getFeaturesList().size(), featureCountBefore);
+  OI_REQUIRE2(spy.count("sendMessage") > 0,
+              "core must report why the measurement was rejected");
+  OI_COMPARE(job->getFeaturesList().size(), featureCountBefore);
 }
 
-QTEST_APPLESS_MAIN(MeasurementIntentTest)
-#include "tst_measurementintent.moc"
+TEST_CASE(
+    "MeasurementIntentTest::pointWithObservationsAndNoFunctionAveragesThem",
+    "[MeasurementIntentTest]") {
+  MeasurementIntentTest fixture;
+  fixture.initTestCase();
+  fixture.pointWithObservationsAndNoFunctionAveragesThem();
+}
+
+TEST_CASE("MeasurementIntentTest::pointWithObservationsIsStationOwned",
+          "[MeasurementIntentTest]") {
+  MeasurementIntentTest fixture;
+  fixture.initTestCase();
+  fixture.pointWithObservationsIsStationOwned();
+}
+
+TEST_CASE("MeasurementIntentTest::pointWithNoObservationsIsUnaffected",
+          "[MeasurementIntentTest]") {
+  MeasurementIntentTest fixture;
+  fixture.initTestCase();
+  fixture.pointWithNoObservationsIsUnaffected();
+}
+
+TEST_CASE("MeasurementIntentTest::measuringAlwaysCreatesExactlyOneNewPoint",
+          "[MeasurementIntentTest]") {
+  MeasurementIntentTest fixture;
+  fixture.initTestCase();
+  fixture.measuringAlwaysCreatesExactlyOneNewPoint();
+}
+
+TEST_CASE(
+    "MeasurementIntentTest::measuredPointHasObservationsDerivedPointDoesNot",
+    "[MeasurementIntentTest]") {
+  MeasurementIntentTest fixture;
+  fixture.initTestCase();
+  fixture.measuredPointHasObservationsDerivedPointDoesNot();
+}
+
+TEST_CASE(
+    "MeasurementIntentTest::"
+    "tagResolutionFeedsAMatchingFunctionWithNoBindingStep",
+    "[MeasurementIntentTest]") {
+  MeasurementIntentTest fixture;
+  fixture.initTestCase();
+  fixture.tagResolutionFeedsAMatchingFunctionWithNoBindingStep();
+}
+
+TEST_CASE("MeasurementIntentTest::aPointCarryingTwoTagsIsFoundByBothConsumers",
+          "[MeasurementIntentTest]") {
+  MeasurementIntentTest fixture;
+  fixture.initTestCase();
+  fixture.aPointCarryingTwoTagsIsFoundByBothConsumers();
+}
+
+TEST_CASE("MeasurementIntentTest::renamingTheFeatureDoesNotOrphanTags",
+          "[MeasurementIntentTest]") {
+  MeasurementIntentTest fixture;
+  fixture.initTestCase();
+  fixture.renamingTheFeatureDoesNotOrphanTags();
+}
+
+TEST_CASE("MeasurementIntentTest::unresolvableTargetIsRejectedWithAMessage",
+          "[MeasurementIntentTest]") {
+  MeasurementIntentTest fixture;
+  fixture.initTestCase();
+  fixture.unresolvableTargetIsRejectedWithAMessage();
+}

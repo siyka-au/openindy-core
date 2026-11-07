@@ -1,8 +1,10 @@
-#include <QtTest>
+#include <cassert>
+#include <catch2/catch_test_macros.hpp>
 #include <string>
 #include <vector>
 
 #include "bundleadjustment.h"
+#include "catch_compat.h"
 #include "chooselalib.h"
 #include "constructfunction.h"
 #include "containers.h"
@@ -73,7 +75,7 @@ class ChattyFunction : public ConstructFunction, public Producer<Point> {
     this->applicableFor.push_back(FeatureTypes::ePointFeature);
   }
   std::expected<Point, std::string> exec() override {
-    emit this->sendMessage("chatty exec", MessageTypes::eInformationMessage);
+    this->sendMessage("chatty exec", MessageTypes::eInformationMessage);
     Point point;
     point.setPoint(Position(1.0, 2.0, 3.0));
     return point;
@@ -84,21 +86,19 @@ class ChattyFunction : public ConstructFunction, public Producer<Point> {
 class ChattyExchange : public ExchangeInterface {
  public:
   void importOiData(const oi::OperationContext& ctx) override {
-    emit this->sendMessage("importing", MessageTypes::eInformationMessage);
+    this->sendMessage("importing", MessageTypes::eInformationMessage);
     ctx.report(std::size_t{1}, std::size_t{2}, "half");
-    emit this->importFinished(true);
+    this->importFinished(true);
   }
   void exportOiData(const oi::OperationContext&) override {
-    emit this->exportFinished(false);
+    this->exportFinished(false);
   }
 };
 
 }  // namespace
 
-class MessageSinkTest : public QObject {
-  Q_OBJECT
-
- private slots:
+class MessageSinkTest {
+ public:
   void initTestCase();
 
   void aFunctionOfTheJobReportsThroughTheJobsMessageNotification();
@@ -132,7 +132,7 @@ MessageSinkTest::Fixture MessageSinkTest::addActivePoint(OiJob& job) {
   f.wrapper->setPoint(f.point);
   f.point->setFeatureName("P1");
   const bool added = job.addFeature(f.wrapper);
-  Q_ASSERT(added);
+  assert(added);
   static_cast<void>(added);
   f.point->setActiveFeatureState(true);
   return f;
@@ -147,11 +147,11 @@ void MessageSinkTest::
 
   oi::Guarded<ChattyFunction> function = new ChattyFunction();
   job.addFunction(function);
-  QCOMPARE(function->getMessageSink(), static_cast<MessageSink*>(&job));
+  OI_COMPARE(function->getMessageSink(), static_cast<MessageSink*>(&job));
 
   function->sendMessage("hello from the function",
                         MessageTypes::eWarningMessage);
-  QVERIFY(oi::contains(
+  REQUIRE(oi::contains(
       rec.calls,
       std::format("sendMessage:hello from the function:{}:{}",
                   static_cast<int>(MessageTypes::eWarningMessage),
@@ -160,8 +160,8 @@ void MessageSinkTest::
   // a message sent from inside exec reaches the job as well
   rec.calls.clear();
   f.point->recalc();
-  QVERIFY2(rec.joined().contains("sendMessage:chatty exec"),
-           (rec.joined()).c_str());
+  OI_REQUIRE2(rec.joined().contains("sendMessage:chatty exec"),
+              (rec.joined()).c_str());
 }
 
 void MessageSinkTest::removingAFunctionFromTheJobStopsItReportingToTheJob() {
@@ -172,15 +172,15 @@ void MessageSinkTest::removingAFunctionFromTheJobStopsItReportingToTheJob() {
 
   oi::Guarded<ChattyFunction> function = new ChattyFunction();
   job.addFunction(function);
-  QCOMPARE(function->getMessageSink(), static_cast<MessageSink*>(&job));
+  OI_COMPARE(function->getMessageSink(), static_cast<MessageSink*>(&job));
 
   // removing the feature detaches its functions from the job
-  QVERIFY(job.removeFeature(f.point->getId()));
+  REQUIRE(job.removeFeature(f.point->getId()));
   if (!function.isNull()) {
-    QCOMPARE(function->getMessageSink(), static_cast<MessageSink*>(nullptr));
+    OI_COMPARE(function->getMessageSink(), static_cast<MessageSink*>(nullptr));
     rec.calls.clear();
     function->sendMessage("late", MessageTypes::eInformationMessage);
-    QCOMPARE(rec.count("sendMessage"), 0);
+    OI_COMPARE(rec.count("sendMessage"), 0);
   }
 
   // removing just the function deletes it: nothing left that could dangle
@@ -189,7 +189,7 @@ void MessageSinkTest::removingAFunctionFromTheJobStopsItReportingToTheJob() {
   oi::Guarded<ChattyFunction> second = new ChattyFunction();
   job2.addFunction(second);
   job2.removeFunction(0);
-  QVERIFY(second.isNull());
+  REQUIRE(second.isNull());
 }
 
 void MessageSinkTest::aFunctionOutlivingItsJobDoesNotReportToADeadJob() {
@@ -200,23 +200,23 @@ void MessageSinkTest::aFunctionOutlivingItsJobDoesNotReportToADeadJob() {
     const Fixture f = addActivePoint(job);
     // keep the function alive past the job: detach it from its feature first
     job.addFunction(function);
-    QCOMPARE(function->getMessageSink(), static_cast<MessageSink*>(&job));
+    OI_COMPARE(function->getMessageSink(), static_cast<MessageSink*>(&job));
     // the feature owns the function; the job's destructor must clear the
     // sink before the features go
   }
   // the feature (and with it the function) died with the job; a function that
   // is still around must not point at the job
   if (!function.isNull()) {
-    QCOMPARE(function->getMessageSink(), static_cast<MessageSink*>(nullptr));
+    OI_COMPARE(function->getMessageSink(), static_cast<MessageSink*>(nullptr));
     function->sendMessage("after", MessageTypes::eInformationMessage);
     delete function.data();
   }
-  QVERIFY(after.messages.empty());
+  REQUIRE(after.messages.empty());
 }
 
 void MessageSinkTest::aFunctionWithoutSinkDropsMessages() {
   ChattyFunction function;
-  QCOMPARE(function.getMessageSink(), static_cast<MessageSink*>(nullptr));
+  OI_COMPARE(function.getMessageSink(), static_cast<MessageSink*>(nullptr));
   function.sendMessage("nobody listens", MessageTypes::eInformationMessage);
 
   RecordingSink sink;
@@ -224,7 +224,7 @@ void MessageSinkTest::aFunctionWithoutSinkDropsMessages() {
   function.sendMessage("heard", MessageTypes::eInformationMessage);
   function.setMessageSink(nullptr);
   function.sendMessage("not heard", MessageTypes::eInformationMessage);
-  QCOMPARE(sink.messages, std::vector<std::string>{"heard"});
+  OI_COMPARE(sink.messages, std::vector<std::string>{"heard"});
 }
 
 void MessageSinkTest::aBundleAdjustmentReportsToItsJob() {
@@ -234,17 +234,17 @@ void MessageSinkTest::aBundleAdjustmentReportsToItsJob() {
 
   BundleAdjustment bundle;
   bundle.setCurrentJob(&job);
-  QCOMPARE(bundle.getMessageSink(), static_cast<MessageSink*>(&job));
-  QVERIFY(!bundle.runBundle());
-  QVERIFY(rec.count("sendMessage") == 1);
-  QVERIFY(rec.calls.back().contains("not implemented"));
+  OI_COMPARE(bundle.getMessageSink(), static_cast<MessageSink*>(&job));
+  REQUIRE(!bundle.runBundle());
+  REQUIRE(rec.count("sendMessage") == 1);
+  REQUIRE(rec.calls.back().contains("not implemented"));
 
   // switching the job away stops the reports
   bundle.setCurrentJob(nullptr);
-  QCOMPARE(bundle.getMessageSink(), static_cast<MessageSink*>(nullptr));
+  OI_COMPARE(bundle.getMessageSink(), static_cast<MessageSink*>(nullptr));
   rec.calls.clear();
-  QVERIFY(!bundle.runBundle());
-  QCOMPARE(rec.count("sendMessage"), 0);
+  REQUIRE(!bundle.runBundle());
+  OI_COMPARE(rec.count("sendMessage"), 0);
 }
 
 void MessageSinkTest::aBundleAdjustmentOutlivingItsJobIsDetached() {
@@ -257,16 +257,16 @@ void MessageSinkTest::aBundleAdjustmentOutlivingItsJobIsDetached() {
     system->setBundlePlugin(bundle);
     oi::Guarded<FeatureWrapper> wrapper = new FeatureWrapper();
     wrapper->setCoordinateSystem(system);
-    QVERIFY(job.addFeature(wrapper));
+    REQUIRE(job.addFeature(wrapper));
     bundle->setCurrentJob(&job);
-    QCOMPARE(bundle->getMessageSink(), static_cast<MessageSink*>(&job));
-    QVERIFY(!bundle->runBundle());
+    OI_COMPARE(bundle->getMessageSink(), static_cast<MessageSink*>(&job));
+    REQUIRE(!bundle->runBundle());
   }
   // whether the system took the bundle with it or not, it must not be left
   // pointing at the dead job
   if (!bundle.isNull()) {
-    QCOMPARE(bundle->getMessageSink(), static_cast<MessageSink*>(nullptr));
-    QVERIFY(!bundle->runBundle());
+    OI_COMPARE(bundle->getMessageSink(), static_cast<MessageSink*>(nullptr));
+    REQUIRE(!bundle->runBundle());
     delete bundle.data();
   }
 }
@@ -276,12 +276,12 @@ void MessageSinkTest::simulationModelReportsToItsSink() {
   RecordingSink sink;
   model.setMessageSink(&sink);
   UncertaintyData data;
-  QVERIFY(!model.analyseSimulationData(data));
-  QCOMPARE(sink.messages.size(), 1);
-  QVERIFY(sink.messages.front().contains("analyse method missing"));
+  REQUIRE(!model.analyseSimulationData(data));
+  OI_COMPARE(sink.messages.size(), 1);
+  REQUIRE(sink.messages.front().contains("analyse method missing"));
   model.setMessageSink(nullptr);
-  QVERIFY(!model.analyseSimulationData(data));
-  QCOMPARE(sink.messages.size(), 1);
+  REQUIRE(!model.analyseSimulationData(data));
+  OI_COMPARE(sink.messages.size(), 1);
 }
 
 void MessageSinkTest::exchangeReportsMessagesProgressAndCompletion() {
@@ -293,18 +293,18 @@ void MessageSinkTest::exchangeReportsMessagesProgressAndCompletion() {
 
   RecordingProgress progress;
   exchange.importOiData(oi::OperationContext(&progress));
-  QCOMPARE(sink.messages, std::vector<std::string>{"importing"});
-  QCOMPARE(observer.events, std::vector<std::string>{"import:1"});
-  QCOMPARE(progress.events, std::vector<std::string>{"progress:50:half"});
+  OI_COMPARE(sink.messages, std::vector<std::string>{"importing"});
+  OI_COMPARE(observer.events, std::vector<std::string>{"import:1"});
+  OI_COMPARE(progress.events, std::vector<std::string>{"progress:50:half"});
 
   observer.events.clear();
   exchange.exportOiData({});
-  QCOMPARE(observer.events, std::vector<std::string>{"export:0"});
+  OI_COMPARE(observer.events, std::vector<std::string>{"export:0"});
 
   // without an observer nothing happens (and nothing crashes)
   exchange.setObserver(nullptr);
   exchange.importOiData({});
-  QCOMPARE(observer.events, std::vector<std::string>{"export:0"});
+  OI_COMPARE(observer.events, std::vector<std::string>{"export:0"});
 }
 
 void MessageSinkTest::aFunctionSeesTheOperationContextOfItsExec() {
@@ -315,11 +315,11 @@ void MessageSinkTest::aFunctionSeesTheOperationContextOfItsExec() {
 
   // progress and the context visible to the function
   RecordingProgress progress;
-  QVERIFY(function->execChecked(f.wrapper, oi::OperationContext(&progress))
+  REQUIRE(function->execChecked(f.wrapper, oi::OperationContext(&progress))
               .has_value());
-  QCOMPARE(progress.events,
-           (std::vector<std::string>{"progress:0:ChattyFunction",
-                                     "progress:100:ChattyFunction"}));
+  OI_COMPARE(progress.events,
+             (std::vector<std::string>{"progress:0:ChattyFunction",
+                                       "progress:100:ChattyFunction"}));
 
   // a cancelled context stops before running and is an error, not a throw
   std::stop_source stop;
@@ -327,13 +327,13 @@ void MessageSinkTest::aFunctionSeesTheOperationContextOfItsExec() {
   progress.events.clear();
   const auto cancelled = function->execChecked(
       f.wrapper, oi::OperationContext(&progress, stop.get_token()));
-  QVERIFY(!cancelled.has_value());
-  QCOMPARE(cancelled.error(), std::string("operation cancelled"));
-  QVERIFY(progress.events.empty());
+  REQUIRE(!cancelled.has_value());
+  OI_COMPARE(cancelled.error(), std::string("operation cancelled"));
+  REQUIRE(progress.events.empty());
 
   // outside an exec the function has no context to report to
   function->operation().report(0.5, "ignored");
-  QVERIFY(!function->operation().cancelRequested());
+  REQUIRE(!function->operation().cancelRequested());
 }
 
 void MessageSinkTest::functionObserverSeesInputElementAndParameterChanges() {
@@ -344,23 +344,23 @@ void MessageSinkTest::functionObserverSeesInputElementAndParameterChanges() {
   InputElement element(7);
   element.typeOfElement = ElementTypes::ePointElement;
   function.addInputElement(element, 0);
-  QCOMPARE(observer.inputElementsChanged, 1);
+  OI_COMPARE(observer.inputElementsChanged, 1);
 
   function.setShouldBeUsed(0, 7, false);
-  QCOMPARE(observer.inputElementsChanged, 2);
+  OI_COMPARE(observer.inputElementsChanged, 2);
 
   function.removeInputElement(7, 0);
-  QCOMPARE(observer.inputElementsChanged, 3);
+  OI_COMPARE(observer.inputElementsChanged, 3);
 
   function.setScalarInputParams(ScalarInputParams());
-  QCOMPARE(observer.scalarInputParametersChanged, 1);
+  OI_COMPARE(observer.scalarInputParametersChanged, 1);
 
   function.clear();
-  QCOMPARE(observer.inputElementsChanged, 4);
+  OI_COMPARE(observer.inputElementsChanged, 4);
 
   function.setObserver(nullptr);
   function.clear();
-  QCOMPARE(observer.inputElementsChanged, 4);
+  OI_COMPARE(observer.inputElementsChanged, 4);
 }
 
 void MessageSinkTest::functionObserverIsToldWhenTheFunctionIsDestroyed() {
@@ -369,10 +369,88 @@ void MessageSinkTest::functionObserverIsToldWhenTheFunctionIsDestroyed() {
   Function* raw = function;
   function->setObserver(&observer);
   delete function;
-  QCOMPARE(observer.destroyed, std::vector<Function*>{raw});
+  OI_COMPARE(observer.destroyed, std::vector<Function*>{raw});
 }
 
-QTEST_GUILESS_MAIN(MessageSinkTest)
-#include <format>
+TEST_CASE(
+    "MessageSinkTest::"
+    "aFunctionOfTheJobReportsThroughTheJobsMessageNotification",
+    "[MessageSinkTest]") {
+  MessageSinkTest fixture;
+  fixture.initTestCase();
+  fixture.aFunctionOfTheJobReportsThroughTheJobsMessageNotification();
+}
 
-#include "tst_messagesink.moc"
+TEST_CASE(
+    "MessageSinkTest::removingAFunctionFromTheJobStopsItReportingToTheJob",
+    "[MessageSinkTest]") {
+  MessageSinkTest fixture;
+  fixture.initTestCase();
+  fixture.removingAFunctionFromTheJobStopsItReportingToTheJob();
+}
+
+TEST_CASE("MessageSinkTest::aFunctionOutlivingItsJobDoesNotReportToADeadJob",
+          "[MessageSinkTest]") {
+  MessageSinkTest fixture;
+  fixture.initTestCase();
+  fixture.aFunctionOutlivingItsJobDoesNotReportToADeadJob();
+}
+
+TEST_CASE("MessageSinkTest::aFunctionWithoutSinkDropsMessages",
+          "[MessageSinkTest]") {
+  MessageSinkTest fixture;
+  fixture.initTestCase();
+  fixture.aFunctionWithoutSinkDropsMessages();
+}
+
+TEST_CASE("MessageSinkTest::aBundleAdjustmentReportsToItsJob",
+          "[MessageSinkTest]") {
+  MessageSinkTest fixture;
+  fixture.initTestCase();
+  fixture.aBundleAdjustmentReportsToItsJob();
+}
+
+TEST_CASE("MessageSinkTest::aBundleAdjustmentOutlivingItsJobIsDetached",
+          "[MessageSinkTest]") {
+  MessageSinkTest fixture;
+  fixture.initTestCase();
+  fixture.aBundleAdjustmentOutlivingItsJobIsDetached();
+}
+
+TEST_CASE("MessageSinkTest::simulationModelReportsToItsSink",
+          "[MessageSinkTest]") {
+  MessageSinkTest fixture;
+  fixture.initTestCase();
+  fixture.simulationModelReportsToItsSink();
+}
+
+TEST_CASE("MessageSinkTest::exchangeReportsMessagesProgressAndCompletion",
+          "[MessageSinkTest]") {
+  MessageSinkTest fixture;
+  fixture.initTestCase();
+  fixture.exchangeReportsMessagesProgressAndCompletion();
+}
+
+TEST_CASE("MessageSinkTest::aFunctionSeesTheOperationContextOfItsExec",
+          "[MessageSinkTest]") {
+  MessageSinkTest fixture;
+  fixture.initTestCase();
+  fixture.aFunctionSeesTheOperationContextOfItsExec();
+}
+
+TEST_CASE(
+    "MessageSinkTest::functionObserverSeesInputElementAndParameterChanges",
+    "[MessageSinkTest]") {
+  MessageSinkTest fixture;
+  fixture.initTestCase();
+  fixture.functionObserverSeesInputElementAndParameterChanges();
+}
+
+TEST_CASE("MessageSinkTest::functionObserverIsToldWhenTheFunctionIsDestroyed",
+          "[MessageSinkTest]") {
+  MessageSinkTest fixture;
+  fixture.initTestCase();
+  fixture.functionObserverIsToldWhenTheFunctionIsDestroyed();
+}
+
+#include <format>

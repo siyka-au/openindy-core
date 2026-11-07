@@ -1,5 +1,5 @@
-// Plain-assert test for oi::OperationContext. Deliberately free of Qt and of
-// any test framework so it keeps building once the core is Qt-free.
+// Test for oi::OperationContext.
+#include <catch2/catch_test_macros.hpp>
 #include <cstdio>
 #include <cstdlib>
 #include <stop_token>
@@ -9,17 +9,6 @@
 
 namespace {
 
-int failures = 0;
-
-#define CHECK(cond)                                                         \
-  do {                                                                      \
-    if (!(cond)) {                                                          \
-      std::fprintf(stderr, "%s:%d: CHECK failed: %s\n", __FILE__, __LINE__, \
-                   #cond);                                                  \
-      ++failures;                                                           \
-    }                                                                       \
-  } while (false)
-
 struct RecordingSink : oi::ProgressSink {
   std::vector<oi::Progress> seen;
   void onProgress(const oi::Progress& p) override { seen.push_back(p); }
@@ -27,7 +16,7 @@ struct RecordingSink : oi::ProgressSink {
 
 bool near(double a, double b) { return (a > b ? a - b : b - a) < 1e-12; }
 
-void defaultContextIsInert() {
+TEST_CASE("defaultContextIsInert") {
   const oi::OperationContext ctx;
   ctx.report(0.5, "ignored");
   ctx.reportIndeterminate();
@@ -35,7 +24,7 @@ void defaultContextIsInert() {
   ctx.throwIfCancelled();  // must not throw
 }
 
-void reportsFractionAndMessage() {
+TEST_CASE("reportsFractionAndMessage") {
   RecordingSink sink;
   const oi::OperationContext ctx(&sink);
   ctx.report(0.25, "reading");
@@ -45,7 +34,7 @@ void reportsFractionAndMessage() {
   CHECK(sink.seen[0].isDeterminate());
 }
 
-void clampsOutOfRange() {
+TEST_CASE("clampsOutOfRange") {
   RecordingSink sink;
   const oi::OperationContext ctx(&sink);
   ctx.report(-3.0);
@@ -54,7 +43,7 @@ void clampsOutOfRange() {
   CHECK(near(sink.seen[1].fraction, 1.0));
 }
 
-void countedReport() {
+TEST_CASE("countedReport") {
   RecordingSink sink;
   const oi::OperationContext ctx(&sink);
   ctx.report(std::size_t{3}, std::size_t{4});
@@ -63,7 +52,7 @@ void countedReport() {
   CHECK(near(sink.seen[1].fraction, 1.0));
 }
 
-void indeterminate() {
+TEST_CASE("indeterminate") {
   RecordingSink sink;
   const oi::OperationContext ctx(&sink);
   ctx.reportIndeterminate("waiting for sensor");
@@ -71,7 +60,7 @@ void indeterminate() {
   CHECK(sink.seen[0].message == "waiting for sensor");
 }
 
-void subrangeMapsIntoParentSlice() {
+TEST_CASE("subrangeMapsIntoParentSlice") {
   RecordingSink sink;
   const oi::OperationContext ctx(&sink);
   const oi::OperationContext half = ctx.subrange(0.5, 1.0);
@@ -90,7 +79,7 @@ void subrangeMapsIntoParentSlice() {
   CHECK(near(sink.seen[4].fraction, 0.875));
 }
 
-void cancellationIsSharedWithSubranges() {
+TEST_CASE("cancellationIsSharedWithSubranges") {
   std::stop_source source;
   RecordingSink sink;
   const oi::OperationContext ctx(&sink, source.get_token());
@@ -109,7 +98,7 @@ void cancellationIsSharedWithSubranges() {
   CHECK(threw);
 }
 
-void scopeSplitsByWeight() {
+TEST_CASE("scopeSplitsByWeight") {
   RecordingSink sink;
   const oi::OperationContext ctx(&sink);
   oi::ProgressScope scope(ctx, "Adjust",
@@ -143,7 +132,7 @@ void scopeSplitsByWeight() {
   CHECK(sink.seen.size() == reports);
 }
 
-void scopeEqualStepsAndDegenerateWeights() {
+TEST_CASE("scopeEqualStepsAndDegenerateWeights") {
   RecordingSink sink;
   const oi::OperationContext ctx(&sink);
   oi::ProgressScope four(ctx, "", std::size_t{4});
@@ -165,7 +154,7 @@ void scopeEqualStepsAndDegenerateWeights() {
   CHECK(empty.seen.empty());
 }
 
-void scopeInsideSubrangeAndCancellation() {
+TEST_CASE("scopeInsideSubrangeAndCancellation") {
   RecordingSink sink;
   std::stop_source source;
   const oi::OperationContext ctx(&sink, source.get_token());
@@ -188,22 +177,3 @@ void scopeInsideSubrangeAndCancellation() {
 }
 
 }  // namespace
-
-int main() {
-  defaultContextIsInert();
-  reportsFractionAndMessage();
-  clampsOutOfRange();
-  countedReport();
-  indeterminate();
-  subrangeMapsIntoParentSlice();
-  cancellationIsSharedWithSubranges();
-  scopeSplitsByWeight();
-  scopeEqualStepsAndDegenerateWeights();
-  scopeInsideSubrangeAndCancellation();
-  if (failures != 0) {
-    std::fprintf(stderr, "%d check(s) failed\n", failures);
-    return EXIT_FAILURE;
-  }
-  std::puts("progress: all checks passed");
-  return EXIT_SUCCESS;
-}

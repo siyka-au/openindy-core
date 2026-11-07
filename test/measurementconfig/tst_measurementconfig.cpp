@@ -1,17 +1,16 @@
-#include <QtTest>
+#include <catch2/catch_test_macros.hpp>
 #include <map>
 #include <string>
 
+#include "catch_compat.h"
 #include "containers.h"
 #include "measurementconfig.h"
 #include "sensortype.h"
 
 using namespace oi;
 
-class MeasurementConfigTest : public QObject {
-  Q_OBJECT
-
- private slots:
+class MeasurementConfigTest {
+ public:
   // MeasurementConfigKey used to be (name, configType) alone. Two drivers
   // publishing the same standard-config name - which every driver does,
   // e.g. "FastPoint" - collided in exactly this map shape
@@ -39,7 +38,7 @@ void MeasurementConfigTest::sameNameDifferentSensorTypeDoNotCollide() {
   totalStationFastPoint.setSensorType(
       SensorType("totalStation", "Total Station"));
 
-  QVERIFY2(
+  OI_REQUIRE2(
       !(trackerFastPoint.getKey() == totalStationFastPoint.getKey()),
       "same-named configs from different sensor types must not share a key");
 
@@ -48,10 +47,10 @@ void MeasurementConfigTest::sameNameDifferentSensorTypeDoNotCollide() {
   configs.insert_or_assign(totalStationFastPoint.getKey(),
                            totalStationFastPoint);
 
-  QCOMPARE(configs.size(), 2);
-  QCOMPARE(oi::value(configs, trackerFastPoint.getKey()).getSensorType().id(),
-           std::string("laserTracker"));
-  QCOMPARE(
+  OI_COMPARE(configs.size(), 2);
+  OI_COMPARE(oi::value(configs, trackerFastPoint.getKey()).getSensorType().id(),
+             std::string("laserTracker"));
+  OI_COMPARE(
       oi::value(configs, totalStationFastPoint.getKey()).getSensorType().id(),
       std::string("totalStation"));
 }
@@ -67,14 +66,23 @@ void MeasurementConfigTest::sameNameSameSensorTypeAreEqual() {
   second.makeStandardConfig();
   second.setSensorType(SensorType("laserTracker", "Laser Tracker"));
 
-  QVERIFY(first.getKey() == second.getKey());
+  REQUIRE(first.getKey() == second.getKey());
 
   std::map<MeasurementConfigKey, MeasurementConfig> configs;
   configs.insert_or_assign(first.getKey(), first);
   configs.insert_or_assign(second.getKey(), second);
 
-  QCOMPARE(configs.size(), 1);
+  OI_COMPARE(configs.size(), 1);
 }
 
-QTEST_APPLESS_MAIN(MeasurementConfigTest)
-#include "tst_measurementconfig.moc"
+TEST_CASE("MeasurementConfigTest::sameNameDifferentSensorTypeDoNotCollide",
+          "[MeasurementConfigTest]") {
+  MeasurementConfigTest fixture;
+  fixture.sameNameDifferentSensorTypeDoNotCollide();
+}
+
+TEST_CASE("MeasurementConfigTest::sameNameSameSensorTypeAreEqual",
+          "[MeasurementConfigTest]") {
+  MeasurementConfigTest fixture;
+  fixture.sameNameSameSensorTypeAreEqual();
+}

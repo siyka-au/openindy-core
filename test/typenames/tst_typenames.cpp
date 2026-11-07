@@ -1,6 +1,7 @@
-#include <QtTest>
+#include <catch2/catch_test_macros.hpp>
 #include <map>
 
+#include "catch_compat.h"
 #include "containers.h"
 #include "util/types.h"
 #include "util/util.h"
@@ -29,10 +30,8 @@ using namespace oi;
  * it, or accept that existing projects and settings will not load and update
  * the golden list deliberately.
  */
-class TypeNamesTest : public QObject {
-  Q_OBJECT
-
- private slots:
+class TypeNamesTest {
+ public:
   void persistedElementTokensAreUnchanged();
   void persistedElementPluralTokensAreUnchanged();
   void persistedFeatureTokensAreUnchanged();
@@ -88,7 +87,7 @@ void TypeNamesTest::persistedElementTokensAreUnchanged() {
       {ElementTypes::ePointCollectionElement, std::string("point collection")},
   };
   for (auto it = golden.cbegin(); it != golden.cend(); ++it) {
-    QCOMPARE(getElementTypeName(it->first), it->second);
+    OI_COMPARE(getElementTypeName(it->first), it->second);
   }
 }
 
@@ -138,7 +137,7 @@ void TypeNamesTest::persistedElementPluralTokensAreUnchanged() {
       {ElementTypes::ePointCollectionElement, std::string("point collections")},
   };
   for (auto it = golden.cbegin(); it != golden.cend(); ++it) {
-    QCOMPARE(getElementTypePluralName(it->first), it->second);
+    OI_COMPARE(getElementTypePluralName(it->first), it->second);
   }
 }
 
@@ -175,7 +174,7 @@ void TypeNamesTest::persistedFeatureTokensAreUnchanged() {
       {FeatureTypes::ePointGroupFeature, std::string("point group")},
   };
   for (auto it = golden.cbegin(); it != golden.cend(); ++it) {
-    QCOMPARE(getFeatureTypeName(it->first), it->second);
+    OI_COMPARE(getFeatureTypeName(it->first), it->second);
   }
 }
 
@@ -205,7 +204,7 @@ void TypeNamesTest::persistedGeometryTokensAreUnchanged() {
       {GeometryTypes::ePlaneLevelGeometry, std::string("level")},
   };
   for (auto it = golden.cbegin(); it != golden.cend(); ++it) {
-    QCOMPARE(getGeometryTypeName(it->first), it->second);
+    OI_COMPARE(getGeometryTypeName(it->first), it->second);
   }
 }
 
@@ -219,7 +218,7 @@ void TypeNamesTest::everyTokenRoundTripsBackToItsEnum() {
     if (token.empty()) {
       continue;
     }
-    QCOMPARE(getElementTypeEnum(token), type);
+    OI_COMPARE(getElementTypeEnum(token), type);
   }
 
   for (const FeatureTypes& type : getAvailableFeatureTypes()) {
@@ -227,7 +226,7 @@ void TypeNamesTest::everyTokenRoundTripsBackToItsEnum() {
     if (token.empty()) {
       continue;
     }
-    QCOMPARE(getFeatureTypeEnum(token), type);
+    OI_COMPARE(getFeatureTypeEnum(token), type);
   }
 
   for (const GeometryTypes& type : getAvailableGeometryTypes()) {
@@ -235,7 +234,7 @@ void TypeNamesTest::everyTokenRoundTripsBackToItsEnum() {
     if (token.empty()) {
       continue;
     }
-    QCOMPARE(getGeometryTypeEnum(token), type);
+    OI_COMPARE(getGeometryTypeEnum(token), type);
   }
 }
 
@@ -248,30 +247,30 @@ void TypeNamesTest::displayNamesExistForEveryTypeThatHasAToken() {
     if (getElementTypeName(type).empty()) {
       continue;
     }
-    QVERIFY2(!getElementTypeDisplayName(type).empty(),
-             (std::format("element type {} has no display name",
-                          getElementTypeName(type)))
-                 .c_str());
+    OI_REQUIRE2(!getElementTypeDisplayName(type).empty(),
+                (std::format("element type {} has no display name",
+                             getElementTypeName(type)))
+                    .c_str());
   }
 
   for (const FeatureTypes& type : getAvailableFeatureTypes()) {
     if (getFeatureTypeName(type).empty()) {
       continue;
     }
-    QVERIFY2(!getFeatureTypeDisplayName(type).empty(),
-             (std::format("feature type {} has no display name",
-                          getFeatureTypeName(type)))
-                 .c_str());
+    OI_REQUIRE2(!getFeatureTypeDisplayName(type).empty(),
+                (std::format("feature type {} has no display name",
+                             getFeatureTypeName(type)))
+                    .c_str());
   }
 
   for (const GeometryTypes& type : getAvailableGeometryTypes()) {
     if (getGeometryTypeName(type).empty()) {
       continue;
     }
-    QVERIFY2(!getGeometryTypeDisplayName(type).empty(),
-             (std::format("geometry type {} has no display name",
-                          getGeometryTypeName(type)))
-                 .c_str());
+    OI_REQUIRE2(!getGeometryTypeDisplayName(type).empty(),
+                (std::format("geometry type {} has no display name",
+                             getGeometryTypeName(type)))
+                    .c_str());
   }
 }
 
@@ -289,7 +288,7 @@ void TypeNamesTest::displayNamesAreNotAcceptedByTheReverseLookup() {
     if (display.empty() || display == getFeatureTypeName(type)) {
       continue;
     }
-    QCOMPARE(getFeatureTypeEnum(display), FeatureTypes::eUndefinedFeature);
+    OI_COMPARE(getFeatureTypeEnum(display), FeatureTypes::eUndefinedFeature);
   }
 
   for (const GeometryTypes& type : getAvailableGeometryTypes()) {
@@ -297,11 +296,50 @@ void TypeNamesTest::displayNamesAreNotAcceptedByTheReverseLookup() {
     if (display.empty() || display == getGeometryTypeName(type)) {
       continue;
     }
-    QCOMPARE(getGeometryTypeEnum(display), GeometryTypes::eUndefinedGeometry);
+    OI_COMPARE(getGeometryTypeEnum(display), GeometryTypes::eUndefinedGeometry);
   }
 }
 
-QTEST_APPLESS_MAIN(TypeNamesTest)
-#include <format>
+TEST_CASE("TypeNamesTest::persistedElementTokensAreUnchanged",
+          "[TypeNamesTest]") {
+  TypeNamesTest fixture;
+  fixture.persistedElementTokensAreUnchanged();
+}
 
-#include "tst_typenames.moc"
+TEST_CASE("TypeNamesTest::persistedElementPluralTokensAreUnchanged",
+          "[TypeNamesTest]") {
+  TypeNamesTest fixture;
+  fixture.persistedElementPluralTokensAreUnchanged();
+}
+
+TEST_CASE("TypeNamesTest::persistedFeatureTokensAreUnchanged",
+          "[TypeNamesTest]") {
+  TypeNamesTest fixture;
+  fixture.persistedFeatureTokensAreUnchanged();
+}
+
+TEST_CASE("TypeNamesTest::persistedGeometryTokensAreUnchanged",
+          "[TypeNamesTest]") {
+  TypeNamesTest fixture;
+  fixture.persistedGeometryTokensAreUnchanged();
+}
+
+TEST_CASE("TypeNamesTest::everyTokenRoundTripsBackToItsEnum",
+          "[TypeNamesTest]") {
+  TypeNamesTest fixture;
+  fixture.everyTokenRoundTripsBackToItsEnum();
+}
+
+TEST_CASE("TypeNamesTest::displayNamesExistForEveryTypeThatHasAToken",
+          "[TypeNamesTest]") {
+  TypeNamesTest fixture;
+  fixture.displayNamesExistForEveryTypeThatHasAToken();
+}
+
+TEST_CASE("TypeNamesTest::displayNamesAreNotAcceptedByTheReverseLookup",
+          "[TypeNamesTest]") {
+  TypeNamesTest fixture;
+  fixture.displayNamesAreNotAcceptedByTheReverseLookup();
+}
+
+#include <format>
