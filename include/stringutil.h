@@ -317,6 +317,26 @@ namespace detail {
   });
 }
 
+//! Three-way comparison ignoring the case of ASCII letters (<0, 0, >0), like
+//! QString::compare with Qt::CaseInsensitive. Bytes above ASCII compare by
+//! value, so non-ASCII text sorts by code point order of its UTF-8 bytes (the
+//! same as by code point), not by language rules.
+[[nodiscard]] inline int compareIgnoreCase(std::string_view a,
+                                           std::string_view b) {
+  const std::size_t n = std::min(a.size(), b.size());
+  for (std::size_t i = 0; i < n; ++i) {
+    const int x = std::tolower(static_cast<unsigned char>(a[i]));
+    const int y = std::tolower(static_cast<unsigned char>(b[i]));
+    if (x != y) {
+      return x < y ? -1 : 1;
+    }
+  }
+  if (a.size() == b.size()) {
+    return 0;
+  }
+  return a.size() < b.size() ? -1 : 1;
+}
+
 //! Starts with `prefix`, apart from the case of ASCII letters
 //! (QString::startsWith with Qt::CaseInsensitive).
 [[nodiscard]] inline bool startsWithIgnoreCase(std::string_view s,

@@ -104,6 +104,9 @@ TEST_CASE("split, join, trim, case") {
   CHECK(oi::toUpper("AbC1") == "ABC1");
   CHECK(oi::equalsIgnoreCase("Plane", "pLANE"));
   CHECK_FALSE(oi::equalsIgnoreCase("Plane", "Planes"));
+  CHECK(oi::compareIgnoreCase("abc", "ABD") < 0);
+  CHECK(oi::compareIgnoreCase("abc", "ABC") == 0);
+  CHECK(oi::compareIgnoreCase("abc", "AB") > 0);
   CHECK(oi::startsWithIgnoreCase("Point12", "pOINT"));
   CHECK_FALSE(oi::startsWithIgnoreCase("Po", "Point"));
 }

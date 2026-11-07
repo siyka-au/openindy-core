@@ -71,7 +71,7 @@ class NeededElement {
  public:
   ElementTypes typeOfElement;  // type of the needed input element
   std::string description;     // optional description for the needed element to
-                            // show in the GUI
+                               // show in the GUI
   bool infinite{};       // only one element or as many elements as one wants?
   std::string roleName;  // stable role name for tag-based resolution (D12);
                          // empty for an undistinguished single input
