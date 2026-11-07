@@ -88,6 +88,9 @@ struct PluginLoadResult {
 class OI_CORE_EXPORT PluginLoader {
  public:
   [[nodiscard]] static PluginLoadResult load(const std::string& path);
+
+ private:
+  static PluginLoadResult loadImpl(const std::string& path);
 };
 
 }  // namespace oi

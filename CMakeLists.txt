@@ -90,6 +90,7 @@ FetchContent_MakeAvailable(OpenIndyMath)
 # --- third-party packages (provided by Conan, see conanfile.txt) ---
 
 find_package(Protobuf CONFIG REQUIRED)
+find_package(spdlog CONFIG REQUIRED)
 
 # --- library ---
 
@@ -127,6 +128,7 @@ add_library(OpenIndyCore SHARED
     src/direction.cpp
     src/element.cpp
     src/executor.cpp
+    src/log.cpp
     src/feature.cpp
     src/featurecontainer.cpp
     src/featurewrapper.cpp
@@ -200,6 +202,7 @@ add_library(OpenIndyCore SHARED
     include/featureattributes.h
     include/featureobserver.h
     include/jobobserver.h
+    include/log.h
     include/messagesink.h
     include/executor.h
     include/stationobserver.h
@@ -266,6 +269,7 @@ target_include_directories(OpenIndyCore
 target_link_libraries(OpenIndyCore
     PRIVATE
         ${CMAKE_DL_LIBS}
+        spdlog::spdlog
     PUBLIC
         Qt6::Core
         Qt6::SerialPort
@@ -495,3 +499,7 @@ target_compile_definitions(tst_pluginloader PRIVATE
     OI_TEST_NOT_A_LIBRARY="${CMAKE_CURRENT_SOURCE_DIR}/test/pluginloader/tst_pluginloader.cpp")
 add_dependencies(tst_pluginloader oi_test_plugin_good oi_test_plugin_wrong_abi oi_test_plugin_no_entry)
 add_test(NAME pluginloader COMMAND tst_pluginloader)
+
+add_executable(tst_log test/log/tst_log.cpp)
+target_link_libraries(tst_log PRIVATE OpenIndyCore Catch2::Catch2WithMain)
+add_test(NAME log COMMAND tst_log)

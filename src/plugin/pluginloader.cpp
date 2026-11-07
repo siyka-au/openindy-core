@@ -3,6 +3,8 @@
 #include <exception>
 #include <utility>
 
+#include "log.h"
+
 #if defined(_WIN32)
 #ifndef NOMINMAX
 #define NOMINMAX
@@ -94,6 +96,17 @@ void LoadedPlugin::reset() noexcept {
 }
 
 PluginLoadResult PluginLoader::load(const std::string& path) {
+  PluginLoadResult result = loadImpl(path);
+  if (result) {
+    oi::log::debug("loaded plugin {} (plugin ABI {})", path,
+                   result.plugin.abiVersion());
+  } else {
+    oi::log::warn("cannot load plugin: {}", result.error);
+  }
+  return result;
+}
+
+PluginLoadResult PluginLoader::loadImpl(const std::string& path) {
   PluginLoadResult result;
   const std::string where = path + ": ";
 

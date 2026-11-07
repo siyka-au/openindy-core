@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "containers.h"
+#include "log.h"
 #include "value.h"
 
 using namespace oi;
@@ -53,11 +54,13 @@ void SensorWorker::run() {
     try {
       task();
     } catch (const std::exception& e) {
+      oi::log::error("sensor command failed with an exception: {}", e.what());
       this->out.onSensorMessage(
           std::format("sensor command failed with an exception: {}",
                       std::string(e.what())),
           MessageTypes::eErrorMessage, MessageDestinations::eConsoleMessage);
     } catch (...) {
+      oi::log::error("sensor command failed with an unknown exception");
       this->out.onSensorMessage("sensor command failed with an exception",
                                 MessageTypes::eErrorMessage,
                                 MessageDestinations::eConsoleMessage);

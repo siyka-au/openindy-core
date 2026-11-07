@@ -16,7 +16,7 @@ class OiJob;
 /*!
  * Receives the notifications an OiJob used to publish as Qt signals. Every
  * method defaults to doing nothing, so an observer overrides only what it
- * needs. Parameters deliberately keep the Qt types for now.
+ * needs. Parameters are feature ids and std types only.
  *
  * Observers are registered with OiJob::addObserver (non-owning) and are
  * called synchronously on the thread that triggered the change.
