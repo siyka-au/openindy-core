@@ -1124,8 +1124,9 @@ void OiJob::removeFunction(const int& functionIndex) {
 
   // get and check the function at the specified index
   if (functionIndex < 0 ||
-      functionIndex >=
-          this->activeFeature->getFeature()->getFunctions().size()) {
+      std::cmp_greater_equal(
+          functionIndex,
+          this->activeFeature->getFeature()->getFunctions().size())) {
     return;
   }
   oi::Guarded<Function> function =
