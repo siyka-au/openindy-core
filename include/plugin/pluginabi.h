@@ -51,6 +51,6 @@
  * tst_pluginabi guards this: it fails when the interface headers change
  * without this number moving. Read that test's output before overriding it.
  */
-#define OI_PLUGIN_ABI_VERSION 14
+#define OI_PLUGIN_ABI_VERSION 15
 
 #endif  // PLUGINABI_H

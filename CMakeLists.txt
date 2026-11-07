@@ -118,6 +118,7 @@ add_library(OpenIndyCore SHARED
     src/plugin/exchange/exchangesimpleascii.cpp
     src/plugin/function/function.cpp
     src/plugin/function/pipelinestage.cpp
+    src/plugin/pluginloader.cpp
     src/plugin/networkAdjustment/bundleadjustment.cpp
     src/plugin/sensor/sensor.cpp
     src/plugin/simulation/simulationmodel.cpp
@@ -172,6 +173,7 @@ add_library(OpenIndyCore SHARED
     include/plugin/exchange/exchangeobserver.h
     include/plugin/exchange/exchangesimpleascii.h
     include/plugin/plugin.h
+    include/plugin/pluginloader.h
     include/plugin/pluginmetadata.h
     include/plugin/function/constructfunction.h
     include/plugin/function/fitfunction.h
@@ -262,6 +264,8 @@ target_include_directories(OpenIndyCore
 )
 
 target_link_libraries(OpenIndyCore
+    PRIVATE
+        ${CMAKE_DL_LIBS}
     PUBLIC
         Qt6::Core
         Qt6::SerialPort
@@ -472,3 +476,22 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 endif()
 
 add_test(NAME typenames COMMAND tst_typenames)
+
+# Plugin loader: tiny plugins built here (a good one, one with the wrong ABI
+# version, one without entry points) are loaded by path.
+add_library(oi_test_plugin_good MODULE test/pluginloader/good_plugin.cpp)
+add_library(oi_test_plugin_wrong_abi MODULE test/pluginloader/wrong_abi_plugin.cpp)
+add_library(oi_test_plugin_no_entry MODULE test/pluginloader/no_entry_plugin.cpp)
+foreach(t oi_test_plugin_good oi_test_plugin_wrong_abi oi_test_plugin_no_entry)
+    target_link_libraries(${t} PRIVATE OpenIndyCore OpenIndyMath)
+    set_target_properties(${t} PROPERTIES PREFIX "" LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/test-plugins)
+endforeach()
+add_executable(tst_pluginloader test/pluginloader/tst_pluginloader.cpp)
+target_link_libraries(tst_pluginloader PRIVATE OpenIndyCore OpenIndyMath Catch2::Catch2WithMain)
+target_compile_definitions(tst_pluginloader PRIVATE
+    OI_TEST_GOOD_PLUGIN="$<TARGET_FILE:oi_test_plugin_good>"
+    OI_TEST_WRONG_ABI_PLUGIN="$<TARGET_FILE:oi_test_plugin_wrong_abi>"
+    OI_TEST_NO_ENTRY_PLUGIN="$<TARGET_FILE:oi_test_plugin_no_entry>"
+    OI_TEST_NOT_A_LIBRARY="${CMAKE_CURRENT_SOURCE_DIR}/test/pluginloader/tst_pluginloader.cpp")
+add_dependencies(tst_pluginloader oi_test_plugin_good oi_test_plugin_wrong_abi oi_test_plugin_no_entry)
+add_test(NAME pluginloader COMMAND tst_pluginloader)
