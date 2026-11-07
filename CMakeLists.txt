@@ -350,6 +350,10 @@ target_link_libraries(tst_strings PRIVATE Catch2::Catch2WithMain)
 target_include_directories(tst_strings PRIVATE include)
 add_test(NAME strings COMMAND tst_strings)
 
+add_executable(tst_featurenames test/featurenames/tst_featurenames.cpp)
+target_link_libraries(tst_featurenames PRIVATE OpenIndyCore OpenIndyMath Catch2::Catch2WithMain)
+add_test(NAME featurenames COMMAND tst_featurenames)
+
 add_executable(tst_guarded test/guarded/tst_guarded.cpp)
 target_include_directories(tst_guarded PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries(tst_guarded PRIVATE Catch2::Catch2WithMain)
