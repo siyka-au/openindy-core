@@ -108,13 +108,6 @@ class OI_CORE_EXPORT Feature : public Element {
 
   virtual void recalc();
 
-  // #################
-  // save and load XML
-  // #################
-
-  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const override;
-  bool fromOpenIndyXML(QDomElement& xmlElem) override;
-
   // ###############
   // display methods
   // ###############

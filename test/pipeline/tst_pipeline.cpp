@@ -114,7 +114,6 @@ class PipelineTest : public QObject {
   void residualOutlierRejectionExcludesTheOutlierAndConverges();
   void omittingTheFilterLeavesTheResultSkewedByTheOutlier();
   void addingANewOutlierLaterReTriggersTheFilterOnRecalc();
-  void pipelineStagesRoundTripThroughXml();
 
  private:
   QPointer<FeatureWrapper> makeTargetPoint(const QString& name);
@@ -411,36 +410,6 @@ void PipelineTest::addingANewOutlierLaterReTriggersTheFilterOnRecalc() {
       std::abs(target->getPoint()->getPosition().getVector().getAt(0)) < 1.0,
       "the fit must still converge correctly after the new outlier is "
       "filtered");
-}
-
-void PipelineTest::pipelineStagesRoundTripThroughXml() {
-  QPointer<FakeAverageFit> function = new FakeAverageFit();
-  function->setPipeline(0, QList<PipelineStage>()
-                               << PipelineStage::exclude(7, "operator-flagged")
-                               << PipelineStage::residualOutlierRejection(2.5));
-
-  QDomDocument doc("test");
-  QDomElement xml = function->toOpenIndyXML(doc);
-  QVERIFY(!xml.isNull());
-  xml.setAttribute("executionIndex",
-                   0);  // fromOpenIndyXML requires this attribute to exist
-
-  QPointer<FakeAverageFit> restored = new FakeAverageFit();
-  QVERIFY(restored->getPipeline(0).isEmpty());
-  QVERIFY(restored->fromOpenIndyXML(xml));
-
-  const QList<PipelineStage> stages = restored->getPipeline(0);
-  QCOMPARE(stages.size(), 2);
-
-  QCOMPARE(stages.at(0).type, PipelineStageType::eExcludeStage);
-  QCOMPARE(stages.at(0).explicitExclusions.size(), 1);
-  QCOMPARE(stages.at(0).explicitExclusions.first().elementId, 7);
-  QCOMPARE(stages.at(0).explicitExclusions.first().reason,
-           QString("operator-flagged"));
-
-  QCOMPARE(stages.at(1).type,
-           PipelineStageType::eResidualOutlierRejectionStage);
-  QCOMPARE(stages.at(1).sigmaMultiplier, 2.5);
 }
 
 QTEST_APPLESS_MAIN(PipelineTest)

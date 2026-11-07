@@ -284,13 +284,6 @@ class OI_CORE_EXPORT Reading : public Element {
   [[nodiscard]] QString getDisplaySigmaTemperature(const UnitType& type,
                                                    const int& digits) const;
 
-  // #################
-  // save and load XML
-  // #################
-
-  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const override;
-  bool fromOpenIndyXML(QDomElement& xmlElem) override;
-
  private:
   // #######################
   // reading type and values

@@ -53,15 +53,12 @@ class OwnershipTest : public QObject {
   void actualCanRealiseAnEditableNominal();
   void manyActualsMayRealiseTheSameNominal();
   void actualCannotBeRealisedByAnotherActual();
-  void realisesRoundTripsThroughXml();
-  void geometryXmlHasNoIsNominalAttribute();
 
   // Stage 7h: D19 applied to functions - function-owned sub-geometry
   void ownedSubGeometryIsReadOnlyAndNamesItsOwner();
   void ownedSubGeometryRejectsDirectParameterEdits();
   void settingOwnerFeatureRegistersOnBothSides();
   void aGeometryCannotOwnItself();
-  void ownerFeatureRoundTripsThroughXml();
   void destroyingAnOwnedGeometryUnregistersFromItsOwner();
 };
 
@@ -157,47 +154,6 @@ void OwnershipTest::actualCannotBeRealisedByAnotherActual() {
   QVERIFY(!actualB.getRealises().has_value());
 }
 
-void OwnershipTest::realisesRoundTripsThroughXml() {
-  // D17 persistence: an actual's realises reference is written as a
-  //<realises ref="..."> child element (replacing the old
-  // nominalGeometries/actual pair) - this only checks the write side,
-  // since resolving the ref back into a live pointer is a two-pass
-  // job-level operation done by ProjectExchanger, not something a bare
-  // Geometry can do on its own.
-  Point nominal(101, Position());
-
-  Point actual(202, Position());
-  actual.addFunction(new FakeFit());
-  QVERIFY(actual.setRealises(nominal.getFeatureWrapper()->getGeometry()));
-
-  QDomDocument doc("test");
-  QDomElement xml = actual.toOpenIndyXML(doc);
-  QVERIFY(!xml.isNull());
-
-  QDomElement realisesElement = xml.firstChildElement("realises");
-  QVERIFY(!realisesElement.isNull());
-  QCOMPARE(realisesElement.attribute("ref").toInt(), 101);
-
-  // a nominal itself realises nothing, so it must not write the element
-  QDomDocument nominalDoc("test");
-  QDomElement nominalXml = nominal.toOpenIndyXML(nominalDoc);
-  QVERIFY(nominalXml.firstChildElement("realises").isNull());
-}
-
-void OwnershipTest::geometryXmlHasNoIsNominalAttribute() {
-  // the acceptance bar for this stage, literally: no isNominal flag
-  // anywhere, including on the wire
-  Point point;
-  QDomDocument doc("test");
-  QDomElement xml = point.toOpenIndyXML(doc);
-  QVERIFY(!xml.isNull());
-  QVERIFY(!xml.hasAttribute("nominal"));
-
-  // fromOpenIndyXML must not require it either
-  Point reloaded;
-  QVERIFY(reloaded.fromOpenIndyXML(xml));
-}
-
 /*!
  * Stage 7h coverage for D19 applied to functions (domain-model.md S6):
  * function-owned sub-geometry is a real feature in the tree, owned by an
@@ -268,31 +224,6 @@ void OwnershipTest::aGeometryCannotOwnItself() {
   Point point;
   QVERIFY(!point.setOwnerFeature(point.getFeatureWrapper()->getGeometry()));
   QVERIFY(!point.getOwnerFeature().has_value());
-}
-
-void OwnershipTest::ownerFeatureRoundTripsThroughXml() {
-  // write side only, same shape and same reason as
-  // realisesRoundTripsThroughXml: resolving the ref back into a live pointer is
-  // ProjectExchanger's job
-  Point owner(303, Position());
-
-  Point child(404, Position());
-  child.addFunction(new FakeConstruct());
-  QVERIFY(child.setOwnerFeature(owner.getFeatureWrapper()->getGeometry()));
-  child.setIsSolved(true);
-
-  QDomDocument doc("test");
-  QDomElement xml = child.toOpenIndyXML(doc);
-  QVERIFY(!xml.isNull());
-
-  QDomElement ownerElement = xml.firstChildElement("ownerFeature");
-  QVERIFY(!ownerElement.isNull());
-  QCOMPARE(ownerElement.attribute("ref").toInt(), 303);
-
-  // the owner itself is not owned, so it must not write the element
-  QDomDocument ownerDoc("test");
-  QDomElement ownerXml = owner.toOpenIndyXML(ownerDoc);
-  QVERIFY(ownerXml.firstChildElement("ownerFeature").isNull());
 }
 
 void OwnershipTest::destroyingAnOwnedGeometryUnregistersFromItsOwner() {

@@ -143,55 +143,6 @@ void ScalarEntityAngle::recalc() {
 }
 
 /*!
- * \brief ScalarEntityAngle::toOpenIndyXML
- * \param xmlDoc
- * \return
- */
-QDomElement ScalarEntityAngle::toOpenIndyXML(QDomDocument& xmlDoc) const {
-  QDomElement entityAngle = Geometry::toOpenIndyXML(xmlDoc);
-
-  if (entityAngle.isNull()) {
-    return entityAngle;
-  }
-
-  entityAngle.setAttribute(
-      "type", getGeometryTypeName(GeometryTypes::eScalarEntityAngleGeometry));
-
-  // add angle
-  QDomElement angle = xmlDoc.createElement("angle");
-  if (this->isSolved || !this->getOwnerDescription().has_value()) {
-    angle.setAttribute("value", this->angle);
-  } else {
-    angle.setAttribute("value", 0.0);
-  }
-  entityAngle.appendChild(angle);
-
-  return entityAngle;
-}
-
-/*!
- * \brief ScalarEntityAngle::fromOpenIndyXML
- * \param xmlElem
- * \return
- */
-bool ScalarEntityAngle::fromOpenIndyXML(QDomElement& xmlElem) {
-  bool result = Geometry::fromOpenIndyXML(xmlElem);
-
-  if (result) {
-    // set angle attributes
-    QDomElement angle = xmlElem.firstChildElement("angle");
-
-    if (angle.isNull() || !angle.hasAttribute("value")) {
-      return false;
-    }
-
-    this->angle = angle.attribute("value").toDouble();
-  }
-
-  return result;
-}
-
-/*!
  * \brief ScalarEntityAngle::getDisplayAngle
  * \param type
  * \param digits

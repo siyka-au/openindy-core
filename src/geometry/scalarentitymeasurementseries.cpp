@@ -150,57 +150,6 @@ void ScalarEntityMeasurementSeries::recalc() {
 }
 
 /*!
- * \brief ScalarEntityMeasurementSeries::toOpenIndyXML
- * \param xmlDoc
- * \return
- */
-QDomElement ScalarEntityMeasurementSeries::toOpenIndyXML(
-    QDomDocument& xmlDoc) const {
-  QDomElement entityMeasurementSeries = Geometry::toOpenIndyXML(xmlDoc);
-
-  if (entityMeasurementSeries.isNull()) {
-    return entityMeasurementSeries;
-  }
-
-  entityMeasurementSeries.setAttribute(
-      "type", getGeometryTypeName(
-                  GeometryTypes::eScalarEntityMeasurementSeriesGeometry));
-
-  // add series value
-  QDomElement seriesValue = xmlDoc.createElement("seriesValue");
-  if (this->isSolved || !this->getOwnerDescription().has_value()) {
-    seriesValue.setAttribute("value", this->seriesValue);
-  } else {
-    seriesValue.setAttribute("value", 0.0);
-  }
-  entityMeasurementSeries.appendChild(seriesValue);
-
-  return entityMeasurementSeries;
-}
-
-/*!
- * \brief ScalarEntityMeasurementSeries::fromOpenIndyXML
- * \param xmlElem
- * \return
- */
-bool ScalarEntityMeasurementSeries::fromOpenIndyXML(QDomElement& xmlElem) {
-  bool result = Geometry::fromOpenIndyXML(xmlElem);
-
-  if (result) {
-    // set measurement series attributes
-    QDomElement seriesValue = xmlElem.firstChildElement("seriesValue");
-
-    if (seriesValue.isNull() || !seriesValue.hasAttribute("value")) {
-      return false;
-    }
-
-    this->seriesValue = seriesValue.attribute("value").toDouble();
-  }
-
-  return result;
-}
-
-/*!
  * \brief ScalarEntityMeasurementSeries::getDisplayMeasurementSeries
  * \param type
  * \param digits

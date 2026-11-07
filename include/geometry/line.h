@@ -67,13 +67,6 @@ class OI_CORE_EXPORT Line : public Geometry {
   // ###########################
 
   void recalc() override;
-
-  // #################
-  // save and load XML
-  // #################
-
-  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const override;
-  bool fromOpenIndyXML(QDomElement& xmlElem) override;
 };
 
 }  // namespace oi

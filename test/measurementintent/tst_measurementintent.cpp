@@ -70,7 +70,6 @@ class MeasurementIntentTest : public QObject {
   void aPointCarryingTwoTagsIsFoundByBothConsumers();
   void renamingTheFeatureDoesNotOrphanTags();
   void unresolvableTargetIsRejectedWithAMessage();
-  void intentsRoundTripThroughXml();
 
  private:
   QPointer<OiJob> makeJobWithActiveStation(QPointer<Station>& outStation);
@@ -342,29 +341,6 @@ void MeasurementIntentTest::unresolvableTargetIsRejectedWithAMessage() {
   QVERIFY2(spy.count() > 0,
            "core must report why the measurement was rejected");
   QCOMPARE(job->getFeaturesList().size(), featureCountBefore);
-}
-
-void MeasurementIntentTest::intentsRoundTripThroughXml() {
-  Point point(42, Position(1.0, 2.0, 3.0));
-  point.addIntent(MeasurementIntent(7, "default"));
-  point.addIntent(MeasurementIntent(9, "dummyPoint"));
-
-  QDomDocument doc("test");
-  QDomElement xml = point.toOpenIndyXML(doc);
-  QVERIFY(!xml.isNull());
-
-  Point reloaded;
-  QVERIFY(reloaded.fromOpenIndyXML(xml));
-
-  QCOMPARE(reloaded.getIntents().size(), 2);
-  QVERIFY(reloaded.hasIntent(7, "default"));
-  QVERIFY(reloaded.hasIntent(9, "dummyPoint"));
-
-  // a point with no tags at all must not write an empty <intents> element
-  Point untagged;
-  QDomDocument untaggedDoc("test");
-  QDomElement untaggedXml = untagged.toOpenIndyXML(untaggedDoc);
-  QVERIFY(untaggedXml.firstChildElement("intents").isNull());
 }
 
 QTEST_APPLESS_MAIN(MeasurementIntentTest)

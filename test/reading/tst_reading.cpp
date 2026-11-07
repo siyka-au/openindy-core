@@ -3,6 +3,8 @@
 #include <chrono>
 
 #include "chooselalib.h"
+#include "convert.h"
+#include "openindy/project.pb.h"
 #include "reading.h"
 
 #define COMPARE_DOUBLE(actual, expected, threshold) \
@@ -30,10 +32,10 @@ class ReadingTest : public QObject {
   void testDirectionReading();
   void testTemperatureReading();
   void testLevelReading();
-  void testMeasuredAtSurvivesXmlRoundTrip();
+  void testMeasuredAtSurvivesRoundTrip();
 
  private:
-  QPointer<Reading> writeReadXml(QPointer<Reading> r);
+  QPointer<Reading> roundTrip(QPointer<Reading> r);
 };
 
 void ReadingTest::initTestCase() {
@@ -42,44 +44,33 @@ void ReadingTest::initTestCase() {
 
 ReadingTest::ReadingTest() {}
 
-QPointer<Reading> ReadingTest::writeReadXml(QPointer<Reading> r) {
-  QDomDocument root("test");
-  QDomElement xml = r->toOpenIndyXML(root);
-  root.appendChild(xml);
-
-  QTemporaryFile file;
-  // file.setAutoRemove(false);
-  if (!file.open()) {
-    qFatal("failed to open temporary file");
+// What a reading goes through when a project is saved and loaded again.
+QPointer<Reading> ReadingTest::roundTrip(QPointer<Reading> r) {
+  std::string bytes;
+  if (!oi::codec::toProto(*r).SerializeToString(&bytes)) {
+    qFatal("failed to serialise the reading");
   }
-  qDebug() << file.fileName();
-
-  QTextStream out(&file);
-  root.save(out, 4);
-  file.close();
-
-  QDomDocument inXml;
-  inXml.setContent(&file);
-
-  ReadingUndefined u;
-  QPointer<Reading> inReading = new Reading(u);
-  QDomElement inElem = inXml.firstChild().toElement();
-  inReading->fromOpenIndyXML(inElem);
-  return inReading;
+  openindy::v1::Reading message;
+  if (!message.ParseFromString(bytes)) {
+    qFatal("failed to parse the reading");
+  }
+  return oi::codec::createReading(message);
 }
 
-// Reading time is a std::chrono time point serialised as ISO-8601 UTC. It is
-// stored with second resolution, so compare at that resolution.
-void ReadingTest::testMeasuredAtSurvivesXmlRoundTrip() {
+// The time a reading was taken is kept to the nanosecond.
+void ReadingTest::testMeasuredAtSurvivesRoundTrip() {
   using namespace std::chrono;
   ReadingUndefined u;
   QPointer<Reading> reading = new Reading(u);
-  const sys_seconds when =
-      sys_days{year{2024} / 5 / 17} + hours{13} + minutes{45} + seconds{9};
+  const sys_time<nanoseconds> when = sys_days{year{2024} / 5 / 17} + hours{13} +
+                                     minutes{45} + seconds{9} +
+                                     nanoseconds{123456789};
   reading->setMeasuredAt(when);
 
-  QPointer<Reading> back = writeReadXml(reading);
-  QCOMPARE(floor<seconds>(back->getMeasuredAt()).time_since_epoch().count(),
+  QPointer<Reading> back = roundTrip(reading);
+  QCOMPARE(time_point_cast<nanoseconds>(back->getMeasuredAt())
+               .time_since_epoch()
+               .count(),
            when.time_since_epoch().count());
 }
 
@@ -94,7 +85,7 @@ void ReadingTest::testCartesian6D() {
   reading.ijk.setAt(2, 0.2);
 
   QPointer<Reading> outReading = new Reading(reading);
-  QPointer<Reading> inReading = this->writeReadXml(outReading);
+  QPointer<Reading> inReading = this->roundTrip(outReading);
 
   ReadingCartesian6D in = inReading->getCartesianReading6D();
 
@@ -117,7 +108,7 @@ void ReadingTest::testCartesian() {
   ;
 
   QPointer<Reading> outReading = new Reading(reading);
-  QPointer<Reading> inReading = this->writeReadXml(outReading);
+  QPointer<Reading> inReading = this->roundTrip(outReading);
 
   ReadingCartesian in = inReading->getCartesianReading();
 
@@ -134,7 +125,7 @@ void ReadingTest::testDistanceReading() {
   reading.distance = 123.4;
 
   QPointer<Reading> outReading = new Reading(reading);
-  QPointer<Reading> inReading = this->writeReadXml(outReading);
+  QPointer<Reading> inReading = this->roundTrip(outReading);
 
   ReadingDistance in = inReading->getDistanceReading();
 
@@ -151,7 +142,7 @@ void ReadingTest::testPolarReading() {
   reading.distance = 56.8;
 
   QPointer<Reading> outReading = new Reading(reading);
-  QPointer<Reading> inReading = this->writeReadXml(outReading);
+  QPointer<Reading> inReading = this->roundTrip(outReading);
 
   ReadingPolar in = inReading->getPolarReading();
 
@@ -169,7 +160,7 @@ void ReadingTest::testDirectionReading() {
   reading.zenith = 23.3;
 
   QPointer<Reading> outReading = new Reading(reading);
-  QPointer<Reading> inReading = this->writeReadXml(outReading);
+  QPointer<Reading> inReading = this->roundTrip(outReading);
 
   ReadingDirection in = inReading->getDirectionReading();
 
@@ -185,7 +176,7 @@ void ReadingTest::testTemperatureReading() {
   reading.temperature = 27.1;
 
   QPointer<Reading> outReading = new Reading(reading);
-  QPointer<Reading> inReading = this->writeReadXml(outReading);
+  QPointer<Reading> inReading = this->roundTrip(outReading);
 
   ReadingTemperature in = inReading->getTemperatureReading();
 
@@ -202,7 +193,7 @@ void ReadingTest::testLevelReading() {
   reading.k = 0.2;
 
   QPointer<Reading> outReading = new Reading(reading);
-  QPointer<Reading> inReading = this->writeReadXml(outReading);
+  QPointer<Reading> inReading = this->roundTrip(outReading);
 
   ReadingLevel in = inReading->getLevelReading();
 

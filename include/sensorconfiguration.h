@@ -140,10 +140,6 @@ class OI_CORE_EXPORT SensorConfiguration {
   void setAvailableStringParameter(
       const QMultiMap<QString, QString>& stringParams);
 
-  // #################
-  // save and load XML
-  // #################
-
   QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const;
   bool fromOpenIndyXML(QDomElement& xmlElem);
 

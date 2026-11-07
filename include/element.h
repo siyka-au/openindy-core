@@ -39,13 +39,6 @@ class OI_CORE_EXPORT Element : public QObject {
 
   [[nodiscard]] int getId() const;
 
-  // ################
-  // save or load XML
-  // ################
-
-  virtual QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const;
-  virtual bool fromOpenIndyXML(QDomElement& xmlElem);
-
   bool isNull();
 
  signals:

@@ -343,32 +343,6 @@ bool Sensor::doSelfDefinedAction(const QString& /*action*/) { return false; }
 bool Sensor::search() { return false; }
 
 /*!
- * \brief Sensor::toOpenIndyXML
- * \param xmlDoc
- * \return
- */
-QDomElement Sensor::toOpenIndyXML(QDomDocument& xmlDoc) const {
-  if (xmlDoc.isNull()) {
-    return QDomElement();
-  }
-
-  QDomElement sensor = xmlDoc.createElement("sensor");
-
-  // add sensor attributes
-  sensor.setAttribute("name", this->getMetaData().name);
-  sensor.setAttribute("plugin", this->getMetaData().pluginName);
-
-  return sensor;
-}
-
-/*!
- * \brief Sensor::fromOpenIndyXML
- * \param xmlElem
- * \return
- */
-bool Sensor::fromOpenIndyXML(QDomElement& /*xmlElem*/) { return false; }
-
-/*!
  * \brief Sensor::init
  */
 void Sensor::init() {}

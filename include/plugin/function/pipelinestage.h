@@ -103,9 +103,6 @@ class OI_CORE_EXPORT PipelineStage {
                            // its own reason
   double sigmaMultiplier;  // eResidualOutlierRejectionStage: reject beyond this
                            // many sigma
-
-  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const;
-  bool fromOpenIndyXML(const QDomElement& xmlElem);
 };
 
 }  // namespace oi

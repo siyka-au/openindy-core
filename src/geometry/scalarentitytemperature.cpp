@@ -148,56 +148,6 @@ void ScalarEntityTemperature::recalc() {
 }
 
 /*!
- * \brief ScalarEntityTemperature::toOpenIndyXML
- * \param xmlDoc
- * \return
- */
-QDomElement ScalarEntityTemperature::toOpenIndyXML(QDomDocument& xmlDoc) const {
-  QDomElement entityTemperature = Geometry::toOpenIndyXML(xmlDoc);
-
-  if (entityTemperature.isNull()) {
-    return entityTemperature;
-  }
-
-  entityTemperature.setAttribute(
-      "type",
-      getGeometryTypeName(GeometryTypes::eScalarEntityTemperatureGeometry));
-
-  // add temperature
-  QDomElement temperature = xmlDoc.createElement("temperature");
-  if (this->isSolved || !this->getOwnerDescription().has_value()) {
-    temperature.setAttribute("value", this->temperature);
-  } else {
-    temperature.setAttribute("value", 0.0);
-  }
-  entityTemperature.appendChild(temperature);
-
-  return entityTemperature;
-}
-
-/*!
- * \brief ScalarEntityTemperature::fromOpenIndyXML
- * \param xmlElem
- * \return
- */
-bool ScalarEntityTemperature::fromOpenIndyXML(QDomElement& xmlElem) {
-  bool result = Geometry::fromOpenIndyXML(xmlElem);
-
-  if (result) {
-    // set temperature attributes
-    QDomElement temperature = xmlElem.firstChildElement("temperature");
-
-    if (temperature.isNull() || !temperature.hasAttribute("value")) {
-      return false;
-    }
-
-    this->temperature = temperature.attribute("value").toDouble();
-  }
-
-  return result;
-}
-
-/*!
  * \brief ScalarEntityTemperature::getDisplayTemperature
  * \param type
  * \param digits

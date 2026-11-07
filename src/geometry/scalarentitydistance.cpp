@@ -147,56 +147,6 @@ void ScalarEntityDistance::recalc() {
 }
 
 /*!
- * \brief ScalarEntityDistance::toOpenIndyXML
- * \param xmlDoc
- * \return
- */
-QDomElement ScalarEntityDistance::toOpenIndyXML(QDomDocument& xmlDoc) const {
-  QDomElement entityDistance = Geometry::toOpenIndyXML(xmlDoc);
-
-  if (entityDistance.isNull()) {
-    return entityDistance;
-  }
-
-  entityDistance.setAttribute(
-      "type",
-      getGeometryTypeName(GeometryTypes::eScalarEntityDistanceGeometry));
-
-  // add distance
-  QDomElement distance = xmlDoc.createElement("distance");
-  if (this->isSolved || !this->getOwnerDescription().has_value()) {
-    distance.setAttribute("value", this->distance);
-  } else {
-    distance.setAttribute("value", 0.0);
-  }
-  entityDistance.appendChild(distance);
-
-  return entityDistance;
-}
-
-/*!
- * \brief ScalarEntityDistance::fromOpenIndyXML
- * \param xmlElem
- * \return
- */
-bool ScalarEntityDistance::fromOpenIndyXML(QDomElement& xmlElem) {
-  bool result = Geometry::fromOpenIndyXML(xmlElem);
-
-  if (result) {
-    // set distance attributes
-    QDomElement distance = xmlElem.firstChildElement("distance");
-
-    if (distance.isNull() || !distance.hasAttribute("value")) {
-      return false;
-    }
-
-    this->distance = distance.attribute("value").toDouble();
-  }
-
-  return result;
-}
-
-/*!
  * \brief ScalarEntityDistance::getDisplayDistance
  * \param type
  * \param digits

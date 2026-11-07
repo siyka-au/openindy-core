@@ -176,13 +176,6 @@ class OI_CORE_EXPORT BundleAdjustment : public QObject {
   virtual void clear();
   virtual void clearResults();
 
-  // #################
-  // save and load XML
-  // #################
-
-  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const;
-  bool fromOpenIndyXML(QDomElement& xmlElem);
-
  signals:
 
   // ################################################

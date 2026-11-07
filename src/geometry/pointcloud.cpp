@@ -181,35 +181,3 @@ void PointCloud::setBoundingBox(const BoundingBox_PC& bbox) {
  * \brief PointCloud::recalc
  */
 void PointCloud::recalc() { Geometry::recalc(); }
-
-/*!
- * \brief PointCloud::toOpenIndyXML
- * \param xmlDoc
- * \return
- */
-QDomElement PointCloud::toOpenIndyXML(QDomDocument& xmlDoc) const {
-  QDomElement pointCloud = Geometry::toOpenIndyXML(xmlDoc);
-
-  if (pointCloud.isNull()) {
-    return pointCloud;
-  }
-
-  pointCloud.setAttribute(
-      "type", getGeometryTypeName(GeometryTypes::ePointCloudGeometry));
-
-  return pointCloud;
-}
-
-/*!
- * \brief PointCloud::fromOpenIndyXML
- * \param xmlElem
- * \return
- */
-bool PointCloud::fromOpenIndyXML(QDomElement& xmlElem) {
-  bool result = Geometry::fromOpenIndyXML(xmlElem);
-
-  if (result) {
-  }
-
-  return result;
-}

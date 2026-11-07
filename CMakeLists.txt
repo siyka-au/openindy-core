@@ -301,7 +301,7 @@ find_package(Qt6 REQUIRED COMPONENTS Test)
 
 add_executable(tst_reading test/reading/tst_reading.cpp)
 target_compile_definitions(tst_reading PRIVATE SRCDIR="${CMAKE_CURRENT_SOURCE_DIR}/test/reading")
-target_link_libraries(tst_reading PRIVATE Qt6::Test OpenIndyCore OpenIndyMath)
+target_link_libraries(tst_reading PRIVATE Qt6::Test OpenIndyCodec OpenIndyCore OpenIndyMath)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_compile_options(tst_reading PRIVATE -Wall -Wextra -Wpedantic)

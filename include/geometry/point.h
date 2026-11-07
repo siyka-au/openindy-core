@@ -92,13 +92,6 @@ class OI_CORE_EXPORT Point : public Geometry {
   bool removeIntent(const MeasurementIntent& intent);
   [[nodiscard]] bool hasIntent(int featureId, const QString& roleName) const;
 
-  // #################
-  // save and load XML
-  // #################
-
-  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const override;
-  bool fromOpenIndyXML(QDomElement& xmlElem) override;
-
   [[nodiscard]] QString getDisplayDistance(const UnitType& type,
                                            const int& digits,
                                            const bool& showDiff) const override;

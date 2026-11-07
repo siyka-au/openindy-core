@@ -188,10 +188,6 @@ class OI_CORE_EXPORT MeasurementConfig {
   void makeStandardConfig();
   void makeProjectConfig();
 
-  // #################
-  // save and load XML
-  // #################
-
   QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const;
   bool fromOpenIndyXML(QDomElement& xmlElem);
 

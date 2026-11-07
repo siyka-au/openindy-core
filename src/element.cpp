@@ -32,41 +32,6 @@ int Element::getId() const { return this->id; }
 }*/
 
 /*!
- * \brief Element::toOpenIndyXML
- * \param xmlDoc
- * \return
- */
-QDomElement Element::toOpenIndyXML(QDomDocument& xmlDoc) const {
-  if (xmlDoc.isNull()) {
-    return QDomElement();
-  }
-
-  QDomElement element = xmlDoc.createElement("element");
-  element.setAttribute("id", this->getId());
-
-  return element;
-}
-
-/*!
- * \brief Element::fromOpenIndyXML
- * \param xmlElem
- * \return
- */
-bool Element::fromOpenIndyXML(QDomElement& xmlElem) {
-  if (xmlElem.isNull()) {
-    return false;
-  }
-
-  if (!xmlElem.hasAttribute("id")) {
-    return false;
-  }
-
-  this->id = xmlElem.attribute("id").toInt();
-
-  return true;
-}
-
-/*!
  * null object or invalid object
  * @brief Element::isNull
  * @return

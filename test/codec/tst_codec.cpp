@@ -8,6 +8,7 @@
 
 #include "bundleadjustment.h"
 #include "chooselalib.h"
+#include "constructfunction.h"
 #include "convert.h"
 #include "digest.h"
 #include "fitfunction.h"
@@ -1097,4 +1098,41 @@ TEST_CASE("the digest follows the content, not the save time or name") {
   CHECK(w.job->getDigest() != before);
 
   delete w.job.data();
+}
+
+// ---------------------------------------------------------------------------
+// Ownership references
+// ---------------------------------------------------------------------------
+
+namespace {
+
+class TestConstruct : public ConstructFunction, public Producer<Point> {
+ public:
+  TestConstruct() { metaData.name = "TestConstruct"; }
+  std::expected<Point, QString> exec() override { return Point(); }
+};
+
+}  // namespace
+
+TEST_CASE("an actual writes the nominal it realises, a nominal writes none") {
+  useArmadillo();
+  Point nominal(101, Position());
+  Point actual(202, Position());
+  actual.addFunction(new TestFit());
+  REQUIRE(actual.setRealises(nominal.getFeatureWrapper()->getGeometry()));
+
+  CHECK(codec::toProto(actual).realises() == 101);
+  CHECK(codec::toProto(nominal).realises() == 0);
+}
+
+TEST_CASE("a geometry writes the feature that owns it, an owner writes none") {
+  useArmadillo();
+  Point owner(303, Position());
+  Point child(404, Position());
+  child.addFunction(new TestConstruct());
+  REQUIRE(child.setOwnerFeature(owner.getFeatureWrapper()->getGeometry()));
+  child.setIsSolved(true);
+
+  CHECK(codec::toProto(child).owner_feature() == 303);
+  CHECK(codec::toProto(owner).owner_feature() == 0);
 }

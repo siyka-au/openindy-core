@@ -218,67 +218,6 @@ void Paraboloid::recalc() {
 }
 
 /*!
- * \brief Paraboloid::toOpenIndyXML
- * \param xmlDoc
- * \return
- */
-QDomElement Paraboloid::toOpenIndyXML(QDomDocument& xmlDoc) const {
-  QDomElement paraboloid = Geometry::toOpenIndyXML(xmlDoc);
-
-  if (paraboloid.isNull()) {
-    return paraboloid;
-  }
-
-  paraboloid.setAttribute(
-      "type", getGeometryTypeName(GeometryTypes::eParaboloidGeometry));
-
-  // set a
-  QDomElement a = xmlDoc.createElement("a");
-  if (this->isSolved || !this->getOwnerDescription().has_value()) {
-    a.setAttribute("value", this->a);
-  } else {
-    a.setAttribute("value", 0.0);
-  }
-  paraboloid.appendChild(a);
-
-  return paraboloid;
-}
-
-/*!
- * \brief Paraboloid::fromOpenIndyXML
- * \param xmlElem
- * \return
- */
-bool Paraboloid::fromOpenIndyXML(QDomElement& xmlElem) {
-  bool result = Geometry::fromOpenIndyXML(xmlElem);
-
-  if (result) {
-    // set paraboloid attributes
-    QDomElement a = xmlElem.firstChildElement("a");
-    QDomElement axis = xmlElem.firstChildElement("spatialDirection");
-    QDomElement apex = xmlElem.firstChildElement("coordinates");
-
-    if (a.isNull() || axis.isNull() || apex.isNull() ||
-        !a.hasAttribute("value") || !axis.hasAttribute("i") ||
-        axis.hasAttribute("j") || axis.hasAttribute("k") ||
-        !apex.hasAttribute("x") || !apex.hasAttribute("y") ||
-        !apex.hasAttribute("z")) {
-      return false;
-    }
-
-    this->a = a.attribute("value").toDouble();
-    this->ijk.setVector(axis.attribute("i").toDouble(),
-                        axis.attribute("j").toDouble(),
-                        axis.attribute("k").toDouble());
-    this->xyz.setVector(apex.attribute("x").toDouble(),
-                        apex.attribute("y").toDouble(),
-                        apex.attribute("z").toDouble());
-  }
-
-  return result;
-}
-
-/*!
  * \brief Paraboloid::getDisplayA
  * \param type
  * \param digits

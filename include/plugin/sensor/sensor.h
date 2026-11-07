@@ -141,13 +141,6 @@ class OI_CORE_EXPORT SensorInterface : public QObject {
   [[nodiscard]] virtual ReadingTypes getReadingType(
       const MeasurementConfig& mConfig) const = 0;
 
-  // #################
-  // save and load XML
-  // #################
-
-  virtual QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const = 0;
-  virtual bool fromOpenIndyXML(QDomElement& xmlElem) = 0;
-
  signals:
 
   // ##############################################
@@ -272,13 +265,6 @@ class OI_CORE_EXPORT Sensor : public SensorInterface {
 
   [[nodiscard]] ReadingTypes getReadingType(
       const MeasurementConfig& mConfig) const override;
-
-  // #################
-  // save and load XML
-  // #################
-
-  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const override;
-  bool fromOpenIndyXML(QDomElement& xmlElem) override;
 
  protected:
   // #########################

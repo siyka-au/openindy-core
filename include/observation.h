@@ -170,13 +170,6 @@ class OI_CORE_EXPORT Observation : public Point {
   QString getDisplayIsValid() const;
   QString getDisplayIsSolved() const override;
 
-  // #################
-  // save and load XML
-  // #################
-
-  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const override;
-  bool fromOpenIndyXML(QDomElement& xmlElem) override;
-
  private:
   // ####################################################
   // references to station, reading and target geometries

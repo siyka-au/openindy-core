@@ -60,15 +60,4 @@ int PointGroup::collectionPointCount() const {
   return this->collectionPoints().size();
 }
 
-QDomElement PointGroup::toOpenIndyXML(QDomDocument& xmlDoc) const {
-  QDomElement group = Group::toOpenIndyXML(xmlDoc);
-
-  if (!group.isNull()) {
-    group.setAttribute("type",
-                       getFeatureTypeName(FeatureTypes::ePointGroupFeature));
-  }
-
-  return group;
-}
-
 QString PointGroup::getDisplayType() const { return QString("point group"); }

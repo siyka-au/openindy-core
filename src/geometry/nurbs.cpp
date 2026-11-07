@@ -50,35 +50,3 @@ Nurbs::~Nurbs() {}
  * \brief Nurbs::recalc
  */
 void Nurbs::recalc() { Geometry::recalc(); }
-
-/*!
- * \brief Nurbs::toOpenIndyXML
- * \param xmlDoc
- * \return
- */
-QDomElement Nurbs::toOpenIndyXML(QDomDocument& xmlDoc) const {
-  QDomElement nurbs = Geometry::toOpenIndyXML(xmlDoc);
-
-  if (nurbs.isNull()) {
-    return nurbs;
-  }
-
-  nurbs.setAttribute("type",
-                     getGeometryTypeName(GeometryTypes::eNurbsGeometry));
-
-  return nurbs;
-}
-
-/*!
- * \brief Nurbs::fromOpenIndyXML
- * \param xmlElem
- * \return
- */
-bool Nurbs::fromOpenIndyXML(QDomElement& xmlElem) {
-  bool result = Geometry::fromOpenIndyXML(xmlElem);
-
-  if (result) {
-  }
-
-  return result;
-}

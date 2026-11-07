@@ -61,15 +61,6 @@ class OI_CORE_EXPORT PointGroup : public Group, public PointCollection {
   //! exactly what a PointGroup has and a PointCloud does not.
   [[nodiscard]] QList<QPointer<Point>> getPoints() const;
 
-  // #################
-  // save and load XML
-  // #################
-
-  //! delegates to Group::toOpenIndyXML for everything except the "type"
-  //! attribute, which ProjectExchanger reads to decide whether to
-  //! reconstruct a Group or a PointGroup on load
-  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const override;
-
   // ###############
   // display methods
   // ###############

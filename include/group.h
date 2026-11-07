@@ -103,24 +103,6 @@ class OI_CORE_EXPORT Group : public Feature {
 
   void recalc() override;
 
-  // #################
-  // save and load XML
-  // #################
-
-  QDomElement toOpenIndyXML(QDomDocument& xmlDoc) const override;
-  bool fromOpenIndyXML(QDomElement& xmlElem) override;
-
-  //! resolves pendingMemberIds (recorded by fromOpenIndyXML, before the
-  //! referenced features necessarily existed) into real member
-  //! references now that every feature in the job has been loaded. Same
-  //! two-pass ref-resolution shape ProjectExchanger already uses for
-  //! Geometry::realises/ownerFeature (Stage 7h): load everything, then
-  //! walk a second pass wiring pointers. An id with no resolvable
-  //! feature (e.g. one that failed to load) is silently skipped rather
-  //! than failing the whole project load.
-  void restoreMembers(
-      const QMap<int, QPointer<FeatureWrapper>>& resolvedFeatures);
-
   // ###############
   // display methods
   // ###############
@@ -137,11 +119,6 @@ class OI_CORE_EXPORT Group : public Feature {
  protected:
   QList<QPointer<FeatureWrapper>> members;
   std::optional<FeatureTypes> constraint;
-
-  //! member ids as loaded from XML, before the referenced features exist.
-  //! Resolved in a second pass, the same way Geometry's nominal/actual
-  //! references already are.
-  QList<int> pendingMemberIds;
 };
 
 }  // namespace oi
