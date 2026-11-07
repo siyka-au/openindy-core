@@ -9,7 +9,7 @@
 
 #if defined(__GNUC__) && !defined(__clang__)
 #warning \
-    "openindy-core#1: Geometry/Observation hold direct QPointers to each other, which triggers -Wsfinae-incomplete via AUTOMOC's aggregated moc TU; see https://github.com/siyka-au/openindy-core/issues/1"
+    "openindy-core#1: Geometry/Observation hold direct guarded pointers to each other (formerly QPointers), which triggered -Wsfinae-incomplete via AUTOMOC's aggregated moc TU; see https://github.com/siyka-au/openindy-core/issues/1"
 #endif
 
 using namespace oi;

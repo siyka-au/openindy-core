@@ -40,10 +40,22 @@ class OI_CORE_EXPORT Element : public oi::Trackable {
 
   bool isNull();
 
+  // #####################################################################
+  // transient attributes: free-form values one party attaches to an object
+  // for another to pick up (replaces the dynamic properties of QObject).
+  // Not persisted and not copied with the object.
+  // #####################################################################
+
+  void setTransientAttribute(const QString& name, const QVariant& value);
+  [[nodiscard]] QVariant getTransientAttribute(const QString& name) const;
+
  protected:
   int id{-1};
   // indicates null object or invalid object
   bool isNullObject{false};
+
+ private:
+  QMap<QString, QVariant> transientAttributes;
 };
 
 }  // namespace oi

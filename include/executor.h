@@ -13,8 +13,8 @@ namespace oi {
  *
  * Sensor results are produced on the sensor worker thread; the host decides on
  * which thread they are consumed by giving the stations an Executor. A GUI
- * posts to its UI thread (the Qt application uses a QObject-based executor
- * that queues onto the UI event loop), a CLI or a test can use the
+ * posts to its UI thread (the Qt application uses an executor that queues
+ * onto the UI event loop), a CLI or a test can use the
  * InlineExecutor and consume the results straight on the worker thread.
  *
  * Contract for implementations:

@@ -37,3 +37,12 @@ int Element::getId() const { return this->id; }
  * @return
  */
 bool Element::isNull() { return isNullObject; }
+
+void Element::setTransientAttribute(const QString& name,
+                                    const QVariant& value) {
+  this->transientAttributes.insert(name, value);
+}
+
+QVariant Element::getTransientAttribute(const QString& name) const {
+  return this->transientAttributes.value(name);
+}

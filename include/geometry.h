@@ -35,9 +35,8 @@ class CoordinateSystem;
  * same thing over time looks like, so this is deliberately not a
  * back-reference list with a uniqueness constraint.
  *
- * Geometry<G> is impossible - moc cannot process templated QObject
- * subclasses - so the concrete geometry type is still resolved at
- * runtime via FeatureWrapper/qobject_cast, not a template parameter.
+ * Geometry<G> is not used: the concrete geometry type is resolved at
+ * runtime via FeatureWrapper, not through a template parameter.
  *
  * Tolerance (what a nominal allows) is deferred - no model for it exists
  * yet. It will attach to the nominal side of this relationship; nothing

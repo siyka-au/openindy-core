@@ -63,7 +63,7 @@ class OI_CORE_EXPORT PipelineExclusion {
  *
  * One stage in a NeededElement's declared pipeline (see
  * NeededElement::pipeline, function.h). A plain C++23 value type, not a
- * QObject/plugin-discoverable interface like Function itself - see
+ * plugin-discoverable interface like Function itself - see
  * domain-model.md S5 for why: the one stage this pass ships
  * (eResidualOutlierRejectionStage) has to read whatever residual the
  * *owning* fit function already reported (Function::addDisplayResidual),

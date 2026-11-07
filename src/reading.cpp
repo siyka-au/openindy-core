@@ -502,6 +502,12 @@ void Reading::setObservation(const oi::Guarded<Observation>& observation) {
     observation->originalIjk.setAt(2, 0.0);
     observation->originalIjk.setAt(3, 1.0);
 
+    if (this->getTransientAttribute("isDummyPoint").isValid()) {
+      // set only if the attribute is available
+      observation->isDummyPoint =
+          this->getTransientAttribute("isDummyPoint").toBool();
+    }
+
     // set observation to valid
     observation->isValid = true;
 
@@ -526,6 +532,12 @@ void Reading::setObservation(const oi::Guarded<Observation>& observation) {
     observation->originalIjk.setAt(1, this->rCartesian6D.ijk.getAt(1));
     observation->originalIjk.setAt(2, this->rCartesian6D.ijk.getAt(2));
     observation->originalIjk.setAt(3, 1.0);
+
+    if (this->getTransientAttribute("isDummyPoint").isValid()) {
+      // set only if the attribute is available
+      observation->isDummyPoint =
+          this->getTransientAttribute("isDummyPoint").toBool();
+    }
 
     // set observation to valid
     observation->isValid = true;

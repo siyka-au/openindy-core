@@ -2,6 +2,7 @@
 #define EXCHANGEINTERFACE_H
 
 #include <QIODevice>
+#include <QPointer>
 #include <QStringList>
 
 #include "coordinatesystem.h"

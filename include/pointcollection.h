@@ -12,9 +12,9 @@ namespace oi {
  * "Something a fit function can get points out of."
  *
  * Deliberately a pure interface, not a base class, and deliberately not a
- * QObject: the two things that satisfy it are genuinely different kinds of
- * object that already have their own base classes, and Qt permits exactly
- * one QObject base plus any number of plain interfaces.
+ * Trackable: the two things that satisfy it are genuinely different kinds
+ * of object that already have their own base classes, and exactly one
+ * Trackable base plus any number of plain interfaces is allowed.
  *
  *   PointCloud  - a Geometry that *owns* bulk, undifferentiated scanner
  *                 data (Point_PC), acquired in one shot by a scanner-shaped

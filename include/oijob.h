@@ -7,6 +7,7 @@
 #include <QMultiMap>
 #include <QMutex>
 #include <QMutexLocker>
+#include <QPointer>
 #include <QSet>
 #include <QString>
 #include <QStringList>
@@ -262,8 +263,7 @@ class OI_CORE_EXPORT OiJob : public oi::Trackable,
 
  public:
   // ###################################################################
-  // report job issues and recalculation results (used to be signals; as
-  // slots they can still be the target of connect() from other objects)
+  // report job issues and recalculation results (used to be signals)
   // ###################################################################
 
   void sendMessage(const QString& msg, const MessageTypes& msgType,
@@ -296,7 +296,8 @@ class OI_CORE_EXPORT OiJob : public oi::Trackable,
 
  private:
   // ###########################################################################
-  // internal slots that are called when a feature changes (or is added/removed)
+  // internal handlers that are called when a feature changes (or is
+  // added/removed)
   // ###########################################################################
 
   // active feature changes

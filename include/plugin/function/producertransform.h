@@ -17,12 +17,10 @@ namespace oi {
  * this - code simply assumed index 0.
  *
  * These two mixins give each job its own, differently-typed, compiler-
- * checked signature. They are plain C++23 templates - never QObject, never
- * moc-visible - because moc cannot process a templated QObject subclass,
- * and Function must stay QObject-derived for the plugin ABI (Q_INTERFACES,
- * plugin discovery). This is the same wall Geometry<G> hit
- * (domain-model.md S4): the generic parameter cannot go on the QObject
- * type itself.
+ * checked signature. They are plain C++23 templates, not part of the Function
+ * class hierarchy: Function is a non-template plugin interface, and the
+ * generic parameter cannot go on it (the same reason Geometry<G> was not
+ * introduced, domain-model.md S4).
  *
  * Resolved by composition, not by giving up genericity: a concrete plugin
  * class multiply-inherits Function (the moc-visible, plugin-discoverable

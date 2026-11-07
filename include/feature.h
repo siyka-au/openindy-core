@@ -252,8 +252,8 @@ class OI_CORE_EXPORT Feature : public Element {
   // observer is told - lets a subclass react to its own rename
   virtual void nameWasChanged(const QString& /*oldName*/) {}
 
-  // tell the observer, if there is one (and the object's signals are not
-  // blocked - the old Qt signals honoured QObject::blockSignals too)
+  // tell the observer, if there is one (and notifications are not
+  // blocked, see blockSignals)
   template <typename... Params>
   void notify(void (FeatureObserver::*method)(Params...),
               std::type_identity_t<Params>... args) {

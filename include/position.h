@@ -11,9 +11,8 @@ using namespace math;
 /*!
  * \brief A point in space (x, y, z) with its homogeneous form (x, y, z, h).
  *
- * A plain value type: copyable, movable, no identity, no Qt. (It used to be a
- * QObject through Element, which gave it a parent, an id and signals that
- * nothing used.)
+ * A plain value type: copyable, movable, no identity, no Qt. (It used to derive
+ * Element, which gave it an id and signals that nothing used.)
  */
 class OI_CORE_EXPORT Position {
  public:

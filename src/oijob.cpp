@@ -529,7 +529,7 @@ bool OiJob::addFeature(const oi::Guarded<FeatureWrapper>& feature) {
     return false;
   }
 
-  // connect the feature's signals to slots in OiJob
+  // register the job as the feature's observer
   this->attachFeature(feature);
 
   // if a group is set for the new feature notify the group change
@@ -788,7 +788,7 @@ bool OiJob::addFeatures(const QList<oi::Guarded<FeatureWrapper> >& features,
       continue;
     }
 
-    // connect the feature's signals to slots in OiJob
+    // register the job as the feature's observer
     this->attachFeature(feature);
 
     // add feature type to list of added feature types
@@ -3798,7 +3798,7 @@ void OiJob::addFeaturesFromXml(
       }
     }
 
-    // connect the feature's signals to slots in OiJob
+    // register the job as the feature's observer
     this->attachFeature(feature);
 
     // add the feature
