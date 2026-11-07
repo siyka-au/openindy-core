@@ -1417,16 +1417,18 @@ TEST_CASE(
 }
 
 TEST_CASE("garbage is never a sensor configuration") {
-  for (const std::string_view garbage :
-       {std::string_view{""}, std::string_view{"nope"},
-        std::string_view{"{\"name\": \"x\""}, std::string_view{"[1,2]"},
-        std::string_view{"{}"}, std::string_view{R"({"name": ""})"},
-        std::string_view{R"({"name": "x", "connection": 5})"},
-        std::string_view{R"({"name": "x", "double_parameters": [1]})"},
-        std::string_view{R"({"name": "x", "integer_parameters": {"a": "b"}})"},
-        std::string_view{R"({"name": "x", "accuracy": {"sigma_xyz": "no"}})"},
-        std::string_view{"<sensorConfig name=\"x\"/>"},
-        std::string_view{"\xff\xfe\x00\x01", 4}}) {
+  for (
+      const std::string_view garbage :
+      {std::string_view{""}, std::string_view{"nope"},
+       std::string_view{"{\"name\": \"x\""}, std::string_view{"[1,2]"},
+       std::string_view{"{}"}, std::string_view{R"({"name": ""})"},
+       std::string_view{R"({"name": "x", "connection": 5})"},
+       std::string_view{R"({"name": "x", "double_parameters": [1]})"},
+       std::string_view{
+           R"({"name": "x", "integer_parameters": [{"name": "a", "value": "b"}]})"},
+       std::string_view{R"({"name": "x", "accuracy": {"sigma_xyz": "no"}})"},
+       std::string_view{"<sensorConfig name=\"x\"/>"},
+       std::string_view{"\xff\xfe\x00\x01", 4}}) {
     INFO(std::string(garbage));
     CHECK_FALSE(codec::decodeSensorConfiguration(garbage).has_value());
   }

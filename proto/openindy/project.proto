@@ -145,12 +145,32 @@ message SensorAccuracy {
   double sigma_i = 6;
   double sigma_j = 7;
   double sigma_k = 8;
-  // Sigmas a driver defines itself, by name.
-  map<string, double> sigma_undefined = 9;
+  // Sigmas a driver defines itself, by name. Sorted by name when written.
+  repeated NamedDouble sigma_undefined = 9;
 }
 
-message StringOptions {
-  repeated string options = 1;
+// Parameters are lists of named entries rather than maps: a map has no
+// defined order in the JSON mapping, and these files are kept in version
+// control. Entries are written sorted by name.
+message NamedDouble {
+  string name = 1;
+  double value = 2;
+}
+
+message NamedInt {
+  string name = 1;
+  int32 value = 2;
+}
+
+message NamedString {
+  string name = 1;
+  string value = 2;
+}
+
+message StringParameterOptions {
+  string name = 1;
+  // In the order the driver declared them.
+  repeated string options = 2;
 }
 
 message SensorConfiguration {
@@ -163,11 +183,11 @@ message SensorConfiguration {
   string sensor_type = 5;
   SensorConnection connection = 6;
   SensorAccuracy accuracy = 7;
-  map<string, int32> integer_parameters = 8;
-  map<string, double> double_parameters = 9;
-  map<string, string> string_parameters = 10;
+  repeated NamedInt integer_parameters = 8;
+  repeated NamedDouble double_parameters = 9;
+  repeated NamedString string_parameters = 10;
   // Every value a string parameter may take, as the driver declared them.
-  map<string, StringOptions> available_string_parameters = 11;
+  repeated StringParameterOptions available_string_parameters = 11;
 }
 
 // ---------------------------------------------------------------------------

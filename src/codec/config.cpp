@@ -241,27 +241,35 @@ oipb::SensorConfiguration toProto(const SensorConfiguration& config) {
   acc->set_sigma_k(a.sigmaK);
   for (auto it = a.sigmaUndefined.cbegin(); it != a.sigmaUndefined.cend();
        ++it) {
-    (*acc->mutable_sigma_undefined())[str(it.key())] = it.value();
+    oipb::NamedDouble* entry = acc->add_sigma_undefined();
+    entry->set_name(str(it.key()));
+    entry->set_value(it.value());
   }
 
   for (auto it = config.getIntegerParameter().cbegin();
        it != config.getIntegerParameter().cend(); ++it) {
-    (*m.mutable_integer_parameters())[str(it.key())] = it.value();
+    oipb::NamedInt* entry = m.add_integer_parameters();
+    entry->set_name(str(it.key()));
+    entry->set_value(it.value());
   }
   for (auto it = config.getDoubleParameter().cbegin();
        it != config.getDoubleParameter().cend(); ++it) {
-    (*m.mutable_double_parameters())[str(it.key())] = it.value();
+    oipb::NamedDouble* entry = m.add_double_parameters();
+    entry->set_name(str(it.key()));
+    entry->set_value(it.value());
   }
   for (auto it = config.getStringParameter().cbegin();
        it != config.getStringParameter().cend(); ++it) {
-    (*m.mutable_string_parameters())[str(it.key())] = str(it.value());
+    oipb::NamedString* entry = m.add_string_parameters();
+    entry->set_name(str(it.key()));
+    entry->set_value(str(it.value()));
   }
   const auto& available = config.getAvailableStringParameter();
   for (const QString& key : available.uniqueKeys()) {
-    oipb::StringOptions& options =
-        (*m.mutable_available_string_parameters())[str(key)];
+    oipb::StringParameterOptions* entry = m.add_available_string_parameters();
+    entry->set_name(str(key));
     for (const QString& value : available.values(key)) {
-      options.add_options(str(value));
+      entry->add_options(str(value));
     }
   }
   return m;
@@ -303,33 +311,33 @@ std::optional<SensorConfiguration> fromProto(
   a.sigmaI = acc.sigma_i();
   a.sigmaJ = acc.sigma_j();
   a.sigmaK = acc.sigma_k();
-  for (const auto& [key, value] : acc.sigma_undefined()) {
-    a.sigmaUndefined.insert(qstr(key), value);
+  for (const auto& entry : acc.sigma_undefined()) {
+    a.sigmaUndefined.insert(qstr(entry.name()), entry.value());
   }
   config.setAccuracy(a);
 
   QMap<QString, int> ints;
-  for (const auto& [key, value] : m.integer_parameters()) {
-    ints.insert(qstr(key), value);
+  for (const auto& entry : m.integer_parameters()) {
+    ints.insert(qstr(entry.name()), entry.value());
   }
   config.setIntegerParameter(ints);
   QMap<QString, double> doubles;
-  for (const auto& [key, value] : m.double_parameters()) {
-    doubles.insert(qstr(key), value);
+  for (const auto& entry : m.double_parameters()) {
+    doubles.insert(qstr(entry.name()), entry.value());
   }
   config.setDoubleParameter(doubles);
   QMap<QString, QString> strings;
-  for (const auto& [key, value] : m.string_parameters()) {
-    strings.insert(qstr(key), qstr(value));
+  for (const auto& entry : m.string_parameters()) {
+    strings.insert(qstr(entry.name()), qstr(entry.value()));
   }
   config.setStringParameter(strings);
 
   // QMultiMap::values() lists the most recently inserted value first, so
   // insert in reverse to get the options back in the order they were written.
   QMultiMap<QString, QString> available;
-  for (const auto& [key, options] : m.available_string_parameters()) {
-    for (int i = options.options_size() - 1; i >= 0; --i) {
-      available.insert(qstr(key), qstr(options.options(i)));
+  for (const auto& entry : m.available_string_parameters()) {
+    for (int i = entry.options_size() - 1; i >= 0; --i) {
+      available.insert(qstr(entry.name()), qstr(entry.options(i)));
     }
   }
   config.setAvailableStringParameter(available);
