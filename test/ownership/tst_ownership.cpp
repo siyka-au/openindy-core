@@ -1,6 +1,6 @@
 #include <QString>
+#include <QtCore>
 #include <QtTest>
-#include <QtXml>
 
 #include "chooselalib.h"
 #include "constructfunction.h"

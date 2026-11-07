@@ -1,0 +1,518 @@
+// OpenIndy remote-control protocol (websocket).
+//
+// Transport: one binary websocket frame carries exactly one serialized
+// Envelope. A client sends Envelopes holding a Request; the server answers
+// with an Envelope holding the matching Response, and pushes Envelopes
+// holding Notifications to every connected client whenever the job or a
+// sensor changes.
+//
+// Like the project file, ids are int32 in the project's global id space and
+// 0 is never a valid id. Enums have their own wire numbering with 0 =
+// unspecified; they are mapped to the model's enums explicitly, never cast.
+// Field numbers are part of the protocol; never reuse or renumber one.
+syntax = "proto3";
+
+package openindy.v1;
+
+import "openindy/project.proto";
+
+// ---------------------------------------------------------------------------
+// Shared enums
+// ---------------------------------------------------------------------------
+
+// Why a request failed. 0 means the request succeeded. A response may carry
+// both an error and a payload (for example the active-feature getters answer
+// with id 0 and ERROR_CODE_NO_ACTIVE_FEATURE).
+enum ErrorCode {
+  ERROR_CODE_NONE = 0;
+  ERROR_CODE_NO_JOB = 1;
+  ERROR_CODE_WRONG_FORMAT = 2;
+  ERROR_CODE_UNKNOWN_REQUEST_TYPE = 3;
+  ERROR_CODE_NO_ACTIVE_FEATURE = 4;
+  ERROR_CODE_NO_ACTIVE_STATION = 5;
+  ERROR_CODE_NO_ACTIVE_COORDINATE_SYSTEM = 6;
+  ERROR_CODE_NO_FEATURE_WITH_ID = 7;
+  ERROR_CODE_NO_TRANSFORMATION_PARAMETERS = 8;
+  ERROR_CODE_TASK_IN_PROCESS = 9;
+  ERROR_CODE_NO_TASK = 10;
+  ERROR_CODE_NO_SENSOR = 11;
+  ERROR_CODE_NO_TASK_WITH_ID = 12;
+  ERROR_CODE_CANNOT_MEASURE_NOMINAL = 13;
+  ERROR_CODE_MEASUREMENT_ERROR = 14;
+  ERROR_CODE_NO_SENSOR_CONNECTED = 15;
+  ERROR_CODE_FEATURE_NOT_SOLVED = 16;
+  ERROR_CODE_CREATE_FEATURE_ERROR = 17;
+  ERROR_CODE_NO_MEASUREMENT_CONFIG_MANAGER = 18;
+  ERROR_CODE_NO_SENSOR_CONFIG_MANAGER = 19;
+  ERROR_CODE_NO_MEASUREMENT_CONFIG = 20;
+}
+
+// Which request a response answers. UNSPECIFIED when the request could not
+// be classified (unknown request).
+enum RequestKind {
+  REQUEST_KIND_UNSPECIFIED = 0;
+  REQUEST_KIND_GET_PROJECT = 1;
+  REQUEST_KIND_GET_ACTIVE_FEATURE = 2;
+  REQUEST_KIND_SET_ACTIVE_FEATURE = 3;
+  REQUEST_KIND_GET_ACTIVE_STATION = 4;
+  REQUEST_KIND_SET_ACTIVE_STATION = 5;
+  REQUEST_KIND_GET_ACTIVE_COORDINATE_SYSTEM = 6;
+  REQUEST_KIND_SET_ACTIVE_COORDINATE_SYSTEM = 7;
+  REQUEST_KIND_AIM = 8;
+  REQUEST_KIND_MEASURE = 9;
+  REQUEST_KIND_START_WATCHWINDOW = 10;
+  REQUEST_KIND_STOP_WATCHWINDOW = 11;
+  REQUEST_KIND_TOOL = 12;
+  REQUEST_KIND_GET_FEATURES = 13;
+  REQUEST_KIND_ADD_FEATURES = 14;
+  REQUEST_KIND_GET_OBSERVATIONS = 15;
+  REQUEST_KIND_REMOVE_OBSERVATIONS = 16;
+  REQUEST_KIND_GET_PARAMETERS = 17;
+  REQUEST_KIND_GET_MEASUREMENT_CONFIGS = 18;
+  REQUEST_KIND_GET_MEASUREMENT_CONFIG = 19;
+  REQUEST_KIND_SET_MEASUREMENT_CONFIG = 20;
+  REQUEST_KIND_GET_COORDINATE_SYSTEMS = 21;
+}
+
+// The kind of reading a watch window streams.
+enum ReadingKind {
+  READING_KIND_UNSPECIFIED = 0;
+  READING_KIND_DISTANCE = 1;
+  READING_KIND_CARTESIAN = 2;
+  READING_KIND_POLAR = 3;
+  READING_KIND_DIRECTION = 4;
+  READING_KIND_TEMPERATURE = 5;
+  READING_KIND_LEVEL = 6;
+  READING_KIND_CARTESIAN_6D = 7;
+}
+
+// Severity of a message shown to the user.
+enum MessageKind {
+  MESSAGE_KIND_UNSPECIFIED = 0;
+  MESSAGE_KIND_INFORMATION = 1;
+  MESSAGE_KIND_WARNING = 2;
+  MESSAGE_KIND_ERROR = 3;
+  MESSAGE_KIND_CRITICAL = 4;
+  MESSAGE_KIND_QUESTION = 5;
+}
+
+// ---------------------------------------------------------------------------
+// Envelope
+// ---------------------------------------------------------------------------
+
+// The unit sent in one binary websocket frame.
+message Envelope {
+  // Chosen by the client on a request and echoed on its response so that
+  // concurrent requests can be told apart. 0 on notifications.
+  int32 request_id = 1;
+  oneof content {
+    Request request = 2;
+    Response response = 3;
+    Notification notification = 4;
+  }
+}
+
+// A client request: exactly one payload.
+message Request {
+  oneof payload {
+    GetProjectRequest get_project = 1;
+    GetActiveFeatureRequest get_active_feature = 2;
+    SetActiveFeatureRequest set_active_feature = 3;
+    GetActiveStationRequest get_active_station = 4;
+    SetActiveStationRequest set_active_station = 5;
+    GetActiveCoordinateSystemRequest get_active_coordinate_system = 6;
+    SetActiveCoordinateSystemRequest set_active_coordinate_system = 7;
+    AimRequest aim = 8;
+    MeasureRequest measure = 9;
+    StartWatchwindowRequest start_watchwindow = 10;
+    StopWatchwindowRequest stop_watchwindow = 11;
+    ToolRequest tool = 12;
+    GetFeaturesRequest get_features = 13;
+    AddFeaturesRequest add_features = 14;
+    GetObservationsRequest get_observations = 15;
+    RemoveObservationsRequest remove_observations = 16;
+    GetParametersRequest get_parameters = 17;
+    GetMeasurementConfigsRequest get_measurement_configs = 18;
+    GetMeasurementConfigRequest get_measurement_config = 19;
+    SetMeasurementConfigRequest set_measurement_config = 20;
+    GetCoordinateSystemsRequest get_coordinate_systems = 21;
+  }
+}
+
+// The server's answer to one request. The payload is absent when the request
+// failed before there was anything to report.
+message Response {
+  // The request this answers.
+  RequestKind request = 1;
+  ErrorCode error = 2;
+  oneof payload {
+    GetProjectResponse get_project = 3;
+    GetActiveFeatureResponse get_active_feature = 4;
+    SetActiveFeatureResponse set_active_feature = 5;
+    GetActiveStationResponse get_active_station = 6;
+    SetActiveStationResponse set_active_station = 7;
+    GetActiveCoordinateSystemResponse get_active_coordinate_system = 8;
+    SetActiveCoordinateSystemResponse set_active_coordinate_system = 9;
+    AimResponse aim = 10;
+    MeasureResponse measure = 11;
+    StartWatchwindowResponse start_watchwindow = 12;
+    StopWatchwindowResponse stop_watchwindow = 13;
+    GetFeaturesResponse get_features = 14;
+    AddFeaturesResponse add_features = 15;
+    GetObservationsResponse get_observations = 16;
+    RemoveObservationsResponse remove_observations = 17;
+    GetParametersResponse get_parameters = 18;
+    GetMeasurementConfigsResponse get_measurement_configs = 19;
+    GetMeasurementConfigResponse get_measurement_config = 20;
+    SetMeasurementConfigResponse set_measurement_config = 21;
+    GetCoordinateSystemsResponse get_coordinate_systems = 22;
+  }
+}
+
+// Pushed by the server to every client without being asked.
+message Notification {
+  oneof payload {
+    SensorActionStarted sensor_action_started = 1;
+    SensorActionFinished sensor_action_finished = 2;
+    MessageBox message_box = 3;
+    RealTimeReading real_time_reading = 4;
+    ActiveFeatureChanged active_feature_changed = 5;
+    ActiveStationChanged active_station_changed = 6;
+    ActiveCoordinateSystemChanged active_coordinate_system_changed = 7;
+    FeatureSetChanged feature_set_changed = 8;
+    FeatureAttributesChanged feature_attributes_changed = 9;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Project
+// ---------------------------------------------------------------------------
+
+// Asks for the whole project.
+message GetProjectRequest {}
+
+message GetProjectResponse {
+  // The serialized openindy.v1.Project message; empty if the project could
+  // not be written.
+  bytes project = 1;
+}
+
+// ---------------------------------------------------------------------------
+// Active feature / station / coordinate system
+// ---------------------------------------------------------------------------
+
+message GetActiveFeatureRequest {}
+
+message GetActiveFeatureResponse {
+  // 0 if there is no active feature.
+  int32 id = 1;
+}
+
+message SetActiveFeatureRequest {
+  // Absent: the request is malformed.
+  optional int32 id = 1;
+}
+
+message SetActiveFeatureResponse {
+  // The active feature after the request, 0 if none.
+  int32 id = 1;
+}
+
+message GetActiveStationRequest {}
+
+message GetActiveStationResponse {
+  // 0 if there is no active station.
+  int32 id = 1;
+}
+
+message SetActiveStationRequest {
+  // Absent: the request is malformed.
+  optional int32 id = 1;
+}
+
+message SetActiveStationResponse {
+  // The active station after the request, 0 if none.
+  int32 id = 1;
+}
+
+message GetActiveCoordinateSystemRequest {}
+
+message GetActiveCoordinateSystemResponse {
+  // 0 if there is no active coordinate system.
+  int32 id = 1;
+}
+
+message SetActiveCoordinateSystemRequest {
+  // Absent: the request is malformed.
+  optional int32 id = 1;
+}
+
+message SetActiveCoordinateSystemResponse {
+  // The active coordinate system after the request, 0 if none.
+  int32 id = 1;
+}
+
+// ---------------------------------------------------------------------------
+// Sensor actions
+// ---------------------------------------------------------------------------
+
+// Makes a geometry the active feature and aims the sensor at it.
+message AimRequest {
+  // Absent: the request is malformed.
+  optional int32 id = 1;
+}
+
+// Acknowledges that aiming was started.
+message AimResponse {}
+
+// Makes a geometry the active feature and measures it.
+message MeasureRequest {
+  // Absent: the request is malformed.
+  optional int32 id = 1;
+}
+
+// Acknowledges that the measurement was started.
+message MeasureResponse {}
+
+// Starts streaming real-time readings relative to the active feature. Only
+// one watch window can be open at a time.
+message StartWatchwindowRequest {
+  ReadingKind reading = 1;
+}
+
+message StartWatchwindowResponse {}
+
+message StopWatchwindowRequest {}
+
+message StopWatchwindowResponse {}
+
+// A request addressed to a tool plugin. The payload is opaque to the server.
+// No response is sent for it.
+message ToolRequest {
+  bytes data = 1;
+}
+
+// ---------------------------------------------------------------------------
+// Features
+// ---------------------------------------------------------------------------
+
+message GetFeaturesRequest {}
+
+// One entry of the feature list.
+message FeatureSummary {
+  int32 id = 1;
+  FeatureKind kind = 2;
+  string name = 3;
+  string group = 4;
+  bool solved = 5;
+  // True for a geometry that is nominal (has no owner description).
+  bool nominal = 6;
+}
+
+message GetFeaturesResponse {
+  // In the application's current sorting order.
+  repeated FeatureSummary features = 1;
+}
+
+// Creates features. Name, group and count must be present.
+message AddFeaturesRequest {
+  FeatureKind kind = 1;
+  optional string name = 2;
+  optional string group = 3;
+  optional int32 count = 4;
+  optional string nominal_system = 5;
+  // Name of the measurement config the new features start with.
+  optional string measurement_config = 6;
+}
+
+message AddFeaturesResponse {}
+
+// ---------------------------------------------------------------------------
+// Observations
+// ---------------------------------------------------------------------------
+
+message GetObservationsRequest {
+  // The geometry whose observations are wanted. Absent: malformed.
+  optional int32 id = 1;
+}
+
+// Residuals of an observation against the geometry's first function.
+message ObservationDeviation {
+  double vx = 1;
+  double vy = 2;
+  double vz = 3;
+  double v = 4;
+}
+
+message ObservationSummary {
+  int32 id = 1;
+  Vec3 xyz = 2;
+  bool valid = 3;
+  // Present when the geometry has a function that reports residuals.
+  optional ObservationDeviation deviation = 4;
+  // Present when the geometry has a function; whether the function uses it.
+  optional bool used = 5;
+}
+
+message GetObservationsResponse {
+  // The geometry the observations belong to.
+  int32 id = 1;
+  repeated ObservationSummary observations = 2;
+}
+
+// A set of observation ids.
+message ObservationSelection {
+  repeated int32 ids = 1;
+}
+
+message RemoveObservationsRequest {
+  // The geometry to remove the observations from. Absent: malformed.
+  optional int32 id = 1;
+  // Absent: malformed. May be empty.
+  optional ObservationSelection observations = 2;
+}
+
+message RemoveObservationsResponse {}
+
+// ---------------------------------------------------------------------------
+// Parameters
+// ---------------------------------------------------------------------------
+
+message GetParametersRequest {
+  // Absent: malformed.
+  optional int32 id = 1;
+}
+
+// One named numeric parameter of a feature (x, y, z, i, j, k, radius, ...).
+message FeatureParameter {
+  string name = 1;
+  double value = 2;
+}
+
+message GetParametersResponse {
+  int32 id = 1;
+  string name = 2;
+  FeatureKind kind = 3;
+  string group = 4;
+  bool solved = 5;
+  bool nominal = 6;
+  // Sorted by name.
+  repeated FeatureParameter parameters = 7;
+  // Present for geometries.
+  optional double stdev = 8;
+}
+
+// ---------------------------------------------------------------------------
+// Measurement configs
+// ---------------------------------------------------------------------------
+
+// A measurement config together with where it is stored.
+message MeasurementConfigEntry {
+  MeasurementConfig config = 1;
+  // True for a user config (saved in the application), false for a config
+  // that only lives in the project.
+  bool saved = 2;
+}
+
+message GetMeasurementConfigsRequest {}
+
+message GetMeasurementConfigsResponse {
+  repeated MeasurementConfigEntry configs = 1;
+}
+
+message GetMeasurementConfigRequest {
+  // The geometry whose config is wanted. Absent: malformed.
+  optional int32 id = 1;
+}
+
+message GetMeasurementConfigResponse {
+  int32 id = 1;
+  MeasurementConfigEntry config = 2;
+}
+
+message SetMeasurementConfigRequest {
+  // The geometry to configure. Absent: malformed.
+  optional int32 id = 1;
+  // Name of the config to assign. Absent: malformed.
+  optional string config_name = 2;
+  // Whether to look the config up among the user configs (true) or the
+  // project configs (false). Absent: malformed.
+  optional bool saved = 3;
+}
+
+message SetMeasurementConfigResponse {}
+
+// ---------------------------------------------------------------------------
+// Coordinate systems
+// ---------------------------------------------------------------------------
+
+message GetCoordinateSystemsRequest {}
+
+message CoordinateSystemSummary {
+  int32 id = 1;
+  string name = 2;
+  string group = 3;
+}
+
+message GetCoordinateSystemsResponse {
+  // The coordinate systems followed by the station systems.
+  repeated CoordinateSystemSummary systems = 1;
+}
+
+// ---------------------------------------------------------------------------
+// Notifications
+// ---------------------------------------------------------------------------
+
+// A sensor action (connect, measure, move, ...) began.
+message SensorActionStarted {
+  string name = 1;
+}
+
+// A sensor action ended.
+message SensorActionFinished {
+  bool success = 1;
+  string message = 2;
+}
+
+// A message the application wants the user to see.
+message MessageBox {
+  string text = 1;
+  MessageKind kind = 2;
+}
+
+// The offset of the sensor's current reading from the active feature, in the
+// active coordinate system. Sent only to the client that started the watch
+// window.
+message RealTimeReading {
+  oneof offset {
+    CartesianOffset cartesian = 1;
+    PolarOffset polar = 2;
+  }
+}
+
+message CartesianOffset {
+  double x = 1;
+  double y = 2;
+  double z = 3;
+}
+
+message PolarOffset {
+  double azimuth = 1;
+  double zenith = 2;
+  double distance = 3;
+}
+
+// The active feature changed; ask for it again.
+message ActiveFeatureChanged {}
+
+// The active station changed; ask for it again.
+message ActiveStationChanged {}
+
+// The active coordinate system changed; ask for it again.
+message ActiveCoordinateSystemChanged {}
+
+// Features were added or removed; ask for the feature list again.
+message FeatureSetChanged {}
+
+// Names, groups or other feature attributes changed.
+message FeatureAttributesChanged {}

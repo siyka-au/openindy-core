@@ -1,8 +1,6 @@
 #ifndef BUNDLEADJUSTMENT_H
 #define BUNDLEADJUSTMENT_H
 
-#include <QDomDocument>
-#include <QDomElement>
 #include <QMap>
 #include <QMultiMap>
 #include <QObject>

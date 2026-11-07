@@ -5,7 +5,7 @@
 
 #include <QObject>
 #include <QPointer>
-#include <QtXml>
+#include <QtCore>
 #include <chrono>
 
 #include "core_export.h"

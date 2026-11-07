@@ -4,7 +4,7 @@
 #include <QList>
 #include <QObject>
 #include <QPointer>
-#include <QtXml>
+#include <QtCore>
 #include <optional>
 
 #include "core_export.h"

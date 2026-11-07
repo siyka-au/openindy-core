@@ -1,6 +1,7 @@
 #include <google/protobuf/util/message_differencer.h>
 #include <google/protobuf/util/time_util.h>
 
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <functional>
 #include <string>
@@ -16,7 +17,9 @@
 #include "geometry/plane.h"
 #include "geometry/point.h"
 #include "group.h"
+#include "network_convert.h"
 #include "oijob.h"
+#include "openindy/network.pb.h"
 #include "openindy/project.pb.h"
 #include "pointgroup.h"
 #include "project_codec.h"
@@ -1432,4 +1435,205 @@ TEST_CASE("garbage is never a sensor configuration") {
     INFO(std::string(garbage));
     CHECK_FALSE(codec::decodeSensorConfiguration(garbage).has_value());
   }
+}
+
+// ---------------------------------------------------------------------------
+// Remote-control protocol (network.proto)
+// ---------------------------------------------------------------------------
+
+namespace {
+
+template <class M>
+M reparse(const M& in) {
+  std::string bytes;
+  REQUIRE(in.SerializeToString(&bytes));
+  M out;
+  REQUIRE(out.ParseFromString(bytes));
+  return out;
+}
+
+/*! Every member of the message's "payload" oneof, set to an empty payload,
+ *  survives serialisation with its case intact. */
+template <class M>
+void everyPayloadVariantRoundTrips(std::size_t expectedVariants) {
+  const auto* oneof = M::descriptor()->FindOneofByName("payload");
+  REQUIRE(oneof != nullptr);
+  CHECK(static_cast<std::size_t>(oneof->field_count()) == expectedVariants);
+  const auto* reflection = M::GetReflection();
+  for (int i = 0; i < oneof->field_count(); ++i) {
+    const auto* field = oneof->field(i);
+    INFO(field->name());
+    M in;
+    reflection->MutableMessage(&in, field);
+    const M out = reparse(in);
+    CHECK(google::protobuf::util::MessageDifferencer::Equals(in, out));
+    CHECK(reflection->GetOneofFieldDescriptor(out, oneof) == field);
+  }
+}
+
+}  // namespace
+
+TEST_CASE("every request variant round trips") {
+  everyPayloadVariantRoundTrips<oipb::Request>(21);
+}
+
+TEST_CASE("every response variant round trips") {
+  everyPayloadVariantRoundTrips<oipb::Response>(20);
+}
+
+TEST_CASE("every notification variant round trips") {
+  everyPayloadVariantRoundTrips<oipb::Notification>(9);
+}
+
+TEST_CASE("every request has a response of the same name, except the tool") {
+  const auto* requests =
+      oipb::Request::descriptor()->FindOneofByName("payload");
+  const auto* responses =
+      oipb::Response::descriptor()->FindOneofByName("payload");
+  for (int i = 0; i < requests->field_count(); ++i) {
+    const std::string name(requests->field(i)->name());
+    INFO(name);
+    const bool hasResponse =
+        oipb::Response::descriptor()->FindFieldByName(name) != nullptr;
+    CHECK(hasResponse == (name != "tool"));
+  }
+  CHECK(responses->field_count() == requests->field_count() - 1);
+}
+
+TEST_CASE("an envelope carries the request id and its content") {
+  oipb::Envelope in;
+  in.set_request_id(42);
+  auto* set = in.mutable_request()->mutable_set_measurement_config();
+  set->set_id(7);
+  set->set_config_name("StdScan");
+  set->set_saved(true);
+  const auto out = reparse(in);
+  CHECK(google::protobuf::util::MessageDifferencer::Equals(in, out));
+  CHECK(out.request_id() == 42);
+  REQUIRE(out.content_case() == oipb::Envelope::kRequest);
+  REQUIRE(out.request().payload_case() == oipb::Request::kSetMeasurementConfig);
+  CHECK(out.request().set_measurement_config().config_name() == "StdScan");
+  CHECK(out.request().set_measurement_config().has_saved());
+}
+
+TEST_CASE("absent optional fields stay absent on the wire") {
+  oipb::Envelope in;
+  in.mutable_request()->mutable_set_active_feature();  // no id
+  const auto out = reparse(in);
+  REQUIRE(out.request().payload_case() == oipb::Request::kSetActiveFeature);
+  CHECK_FALSE(out.request().set_active_feature().has_id());
+
+  in.mutable_request()->mutable_set_active_feature()->set_id(0);
+  CHECK(reparse(in).request().set_active_feature().has_id());
+}
+
+TEST_CASE("a response with a populated payload round trips") {
+  oipb::Envelope in;
+  in.set_request_id(3);
+  auto* response = in.mutable_response();
+  response->set_request(oipb::REQUEST_KIND_GET_OBSERVATIONS);
+  response->set_error(oipb::ERROR_CODE_NONE);
+  auto* payload = response->mutable_get_observations();
+  payload->set_id(5);
+  auto* obs = payload->add_observations();
+  obs->set_id(9);
+  obs->mutable_xyz()->set_x(1.5);
+  obs->set_valid(true);
+  obs->mutable_deviation()->set_v(0.25);
+  obs->set_used(false);
+  payload->add_observations()->set_id(10);
+
+  const auto out = reparse(in);
+  CHECK(google::protobuf::util::MessageDifferencer::Equals(in, out));
+  const auto& got = out.response().get_observations();
+  REQUIRE(got.observations_size() == 2);
+  CHECK(got.observations(0).has_deviation());
+  CHECK(got.observations(0).has_used());
+  CHECK_FALSE(got.observations(0).used());
+  CHECK_FALSE(got.observations(1).has_deviation());
+  CHECK_FALSE(got.observations(1).has_used());
+}
+
+TEST_CASE("a project travels inside a getProject response as bytes") {
+  oipb::Envelope in;
+  in.mutable_response()->mutable_get_project()->set_project(
+      std::string("\0\1\2 binary", 10));
+  const auto out = reparse(in);
+  CHECK(out.response().get_project().project().size() == 10);
+  CHECK(google::protobuf::util::MessageDifferencer::Equals(in, out));
+}
+
+TEST_CASE("every error code maps both ways") {
+  using Err = OiRequestResponse::ErrorCode;
+  std::vector<Err> all;
+  for (int i = static_cast<int>(Err::eNoError);
+       i <= static_cast<int>(Err::eNoMeasurementConfig); ++i) {
+    all.push_back(static_cast<Err>(i));
+  }
+  REQUIRE(all.size() == 21);
+  std::vector<int> seen;
+  for (const auto e : all) {
+    const auto wire = codec::toProto(e);
+    CHECK(oipb::ErrorCode_IsValid(wire));
+    const auto back = codec::fromProto(wire);
+    REQUIRE(back.has_value());
+    CHECK(*back == e);
+    CHECK(std::find(seen.begin(), seen.end(), static_cast<int>(wire)) ==
+          seen.end());
+    seen.push_back(static_cast<int>(wire));
+  }
+  // every wire value is reachable from some model value
+  const auto* values = oipb::ErrorCode_descriptor();
+  for (int i = 0; i < values->value_count(); ++i) {
+    CHECK(codec::fromProto(
+              static_cast<oipb::ErrorCode>(values->value(i)->number()))
+              .has_value());
+  }
+  CHECK(codec::toProto(Err::eNoError) == oipb::ERROR_CODE_NONE);
+  CHECK(codec::toProto(Err::eNoJob) == oipb::ERROR_CODE_NO_JOB);
+  CHECK(codec::toProto(Err::eWrongFormat) == oipb::ERROR_CODE_WRONG_FORMAT);
+  // a number from a newer version is not guessed at
+  CHECK_FALSE(codec::fromProto(static_cast<oipb::ErrorCode>(9999)).has_value());
+}
+
+TEST_CASE("every request type maps both ways") {
+  using Req = OiRequestResponse::RequestType;
+  int count = 0;
+  for (int i = static_cast<int>(Req::eGetProject);
+       i <= static_cast<int>(Req::eGetCoordinateSystems); ++i, ++count) {
+    const auto type = static_cast<Req>(i);
+    const auto wire = codec::toProto(type);
+    CHECK(wire != oipb::REQUEST_KIND_UNSPECIFIED);
+    CHECK(codec::fromProto(wire) == type);
+  }
+  CHECK(count == 21);
+  // notifications and unknowns have no request kind
+  CHECK(codec::toProto(Req::eUnknownRequest) == oipb::REQUEST_KIND_UNSPECIFIED);
+  CHECK(codec::toProto(Req::eRealTimeReading) ==
+        oipb::REQUEST_KIND_UNSPECIFIED);
+  CHECK(codec::fromProto(oipb::REQUEST_KIND_UNSPECIFIED) ==
+        Req::eUnknownRequest);
+  CHECK(codec::fromProto(static_cast<oipb::RequestKind>(9999)) ==
+        Req::eUnknownRequest);
+}
+
+TEST_CASE("reading and message kinds map both ways") {
+  for (const auto type :
+       {ReadingTypes::eDistanceReading, ReadingTypes::eCartesianReading,
+        ReadingTypes::ePolarReading, ReadingTypes::eDirectionReading,
+        ReadingTypes::eTemperatureReading, ReadingTypes::eLevelReading,
+        ReadingTypes::eCartesianReading6D}) {
+    CHECK(codec::fromProto(codec::toProto(type)) == type);
+  }
+  CHECK(codec::toProto(ReadingTypes::eUndefinedReading) ==
+        oipb::READING_KIND_UNSPECIFIED);
+  CHECK_FALSE(codec::fromProto(oipb::READING_KIND_UNSPECIFIED).has_value());
+
+  for (const auto type :
+       {MessageTypes::eInformationMessage, MessageTypes::eWarningMessage,
+        MessageTypes::eErrorMessage, MessageTypes::eCriticalMessage,
+        MessageTypes::eQuestionMessage}) {
+    CHECK(codec::fromProto(codec::toProto(type)) == type);
+  }
+  CHECK_FALSE(codec::fromProto(oipb::MESSAGE_KIND_UNSPECIFIED).has_value());
 }

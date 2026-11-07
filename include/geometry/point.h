@@ -2,7 +2,7 @@
 #define POINT_H
 
 #include <QObject>
-#include <QtXml>
+#include <QtCore>
 
 #include "core_export.h"
 #include "geometry.h"

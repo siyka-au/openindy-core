@@ -4,7 +4,7 @@
 #include <QList>
 #include <QMetaType>
 #include <QString>
-#include <QtXml>
+#include <QtCore>
 
 #include "core_export.h"
 #include "types.h"

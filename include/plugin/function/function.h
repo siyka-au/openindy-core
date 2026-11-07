@@ -8,7 +8,7 @@
 #include <QObject>
 #include <QPointer>
 #include <QStringList>
-#include <QtXml>
+#include <QtCore>
 #include <cmath>
 #include <expected>
 #include <optional>

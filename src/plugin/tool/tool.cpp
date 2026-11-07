@@ -44,11 +44,11 @@ void Tool::setJob(const QPointer<OiJob>& job) { this->job = job; }
 void Tool::closeEvent(QCloseEvent* event) { event->accept(); }
 
 /*!
- * \brief Tool::customXmlRequest
+ * \brief Tool::customRequest
  * \param request
  */
-void Tool::customXmlRequest(OiRequestResponse* /*request*/) {
-  emit this->sendMessage(QString("No custom XML request implementation"),
+void Tool::customRequest(OiRequestResponse* /*request*/) {
+  emit this->sendMessage(QString("No custom request implementation"),
                          MessageTypes::eCriticalMessage,
                          MessageDestinations::eMessageBoxMessage);
 }

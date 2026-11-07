@@ -1,8 +1,9 @@
 #ifndef OIREQUESTRESPONSE_H
 #define OIREQUESTRESPONSE_H
 
+#include <QByteArray>
+#include <QMetaType>
 #include <QString>
-#include <QtXml>
 
 #include "types.h"
 
@@ -10,8 +11,10 @@ namespace oi {
 
 /*!
  * \brief The OiRequestResponse class
- * This class holds the XML request and response corresponding to a special
- * request type
+ * Carries one remote-control request and its response between the websocket
+ * layer and the request handler. The request and response are serialized
+ * protocol messages (see proto/openindy/network.proto); they are plain bytes
+ * here so that this header, which plugins see, stays free of protobuf.
  */
 class OiRequestResponse {
  public:
@@ -79,9 +82,11 @@ class OiRequestResponse {
 
   };
 
-  RequestType myRequestType;  // defines the type of request
-  QDomDocument request;       // holds the XML structure of the request
-  QDomDocument response;      // holds the XML structure of the response
+  RequestType myRequestType{
+      RequestType::eUnknownRequest};         // defines the type of request
+  ErrorCode errorCode{ErrorCode::eNoError};  // outcome of the request
+  QByteArray request;                        // the serialized request message
+  QByteArray response;                       // the serialized response message
   int requesterId{};  // identifies the requester so that the response is send
                       // only to him
 };

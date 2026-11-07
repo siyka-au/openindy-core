@@ -53,7 +53,7 @@ class OI_CORE_EXPORT Tool : public QWidget {
   // special events a tool could listen on
   // #####################################
 
-  virtual void customXmlRequest(OiRequestResponse* request);
+  virtual void customRequest(OiRequestResponse* request);
   virtual void watchWindowKeyPressed(const Qt::Key& key);
 
   // receive emitted job
@@ -68,7 +68,7 @@ class OI_CORE_EXPORT Tool : public QWidget {
   void sendMessage(const QString& msg, const MessageTypes& msgType,
                    const MessageDestinations& msgDest =
                        MessageDestinations::eConsoleMessage);
-  void customXmlResponse(OiRequestResponse* response);
+  void customResponse(OiRequestResponse* response);
 
   // ###############################
   // signals to start sensor actions

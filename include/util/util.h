@@ -43,7 +43,7 @@ QList<GeometryTypes> OI_CORE_EXPORT getAvailableGeometryTypes();
 //  contains. tst_typenames pins every token against a golden list and will
 //  fail if one moves.
 //
-//  Rule of thumb: if the string reaches a QDomElement, a settings key, or a
+//  Rule of thumb: if the string reaches a file, a settings key, or a
 //  reverse lookup, it is a token. If it reaches a widget, it is a display name.
 
 const QString OI_CORE_EXPORT& getElementTypeName(

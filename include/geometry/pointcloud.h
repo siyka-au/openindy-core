@@ -2,7 +2,7 @@
 #define POINTCLOUD_H
 
 #include <QObject>
-#include <QtXml>
+#include <QtCore>
 #include <array>
 
 #include "core_export.h"

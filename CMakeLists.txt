@@ -10,7 +10,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Widgets Xml SerialPort)
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets SerialPort)
 
 # --- version, derived from git describe (mirrors the old version.pri logic) ---
 
@@ -255,7 +255,6 @@ target_link_libraries(OpenIndyCore
     PUBLIC
         Qt6::Core
         Qt6::Widgets
-        Qt6::Xml
         Qt6::SerialPort
         OpenIndyMath
 )
@@ -274,6 +273,7 @@ add_library(OpenIndyCodec STATIC
     src/codec/functions.cpp
     src/codec/geometry.cpp
     src/codec/entities.cpp
+    src/codec/network.cpp
     src/codec/project.cpp
 )
 set_target_properties(OpenIndyCodec PROPERTIES POSITION_INDEPENDENT_CODE ON)
@@ -282,6 +282,7 @@ protobuf_generate(
     TARGET OpenIndyCodec
     LANGUAGE cpp
     PROTOS ${CMAKE_CURRENT_SOURCE_DIR}/proto/openindy/project.proto
+           ${CMAKE_CURRENT_SOURCE_DIR}/proto/openindy/network.proto
     IMPORT_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/proto
     PROTOC_OUT_DIR ${OI_PROTO_GENERATED_DIR}
 )

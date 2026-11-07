@@ -5,7 +5,7 @@
 #include <QObject>
 #include <QPointer>
 #include <QString>
-#include <QtXml>
+#include <QtCore>
 #include <optional>
 
 #include "core_export.h"
