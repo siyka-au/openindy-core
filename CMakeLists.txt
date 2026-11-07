@@ -503,3 +503,24 @@ add_test(NAME pluginloader COMMAND tst_pluginloader)
 add_executable(tst_log test/log/tst_log.cpp)
 target_link_libraries(tst_log PRIVATE OpenIndyCore Catch2::Catch2WithMain)
 add_test(NAME log COMMAND tst_log)
+
+# --- oi-cli: end-to-end example, Qt-free ---
+#
+# Loads a project, runs a fit through a compute plugin (oi::PluginLoader),
+# saves and reloads the protobuf. The CTest runs it against the plugin given
+# by -DOI_CLI_PLUGIN=<library> (default: the environment variable
+# OI_DEFAULT_PLUGIN at configure time) and is skipped (exit code 77) without one. openindy-default-plugin registers
+# the same test with its own library.
+option(OI_BUILD_CLI "Build the oi-cli example" ON)
+if(OI_BUILD_CLI)
+    add_executable(oi-cli tools/oi-cli/main.cpp)
+    target_link_libraries(oi-cli PRIVATE OpenIndyCodec OpenIndyCore OpenIndyMath)
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        target_compile_options(oi-cli PRIVATE -Wall -Wextra -Wpedantic)
+    endif()
+    set(OI_CLI_PLUGIN "$ENV{OI_DEFAULT_PLUGIN}" CACHE FILEPATH
+        "Plugin library the oi-cli test runs against")
+    add_test(NAME oi_cli
+        COMMAND oi-cli --selftest --plugin "${OI_CLI_PLUGIN}")
+    set_tests_properties(oi_cli PROPERTIES SKIP_RETURN_CODE 77)
+endif()
