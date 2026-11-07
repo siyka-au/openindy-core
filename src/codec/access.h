@@ -136,20 +136,16 @@ struct Access {
 
   // The station comes with a default position and station system; the saved
   // ones replace them.
-  static void setStationPosition(Station& s, const oi::Guarded<Point>& point) {
-    if (s.position != point) {
-      delete s.position.data();
-    }
-    s.position = point;
+  static void setStationPosition(Station& s, std::unique_ptr<Point> point) {
+    s.ownedPosition = std::move(point);
+    s.position = s.ownedPosition.get();
   }
   static void setStationSystem(Station& s,
-                               const oi::Guarded<CoordinateSystem>& system) {
-    if (s.stationSystem != system) {
-      delete s.stationSystem.data();
-    }
-    s.stationSystem = system;
-    system->isStationSystem = true;
-    system->station = &s;
+                               std::unique_ptr<CoordinateSystem> system) {
+    s.ownedSystem = std::move(system);
+    s.stationSystem = s.ownedSystem.get();
+    s.ownedSystem->isStationSystem = true;
+    s.ownedSystem->station = &s;
   }
   static void setUsedSensors(Station& s, const std::vector<Sensor>& sensors) {
     s.setUsedSensors(sensors);

@@ -27,10 +27,13 @@ Station::Station() : Feature(), isActiveStation(false) {
   }
 
   // create a point object as the station's position
-  this->position = new Point();
+  this->ownedPosition = std::make_unique<Point>();
+  this->position = this->ownedPosition.get();
 
   // create a coordinate system object as the station's coordinate system
-  this->stationSystem = new CoordinateSystem(oi::Guarded<Station>(this));
+  this->ownedSystem =
+      std::make_unique<CoordinateSystem>(oi::Guarded<Station>(this));
+  this->stationSystem = this->ownedSystem.get();
 
   // create the sensor control object
   this->createSensorControl();
@@ -49,11 +52,14 @@ Station::Station(const std::string& name) : Feature(), isActiveStation(false) {
   this->name = name;
 
   // create a point object as the station's position
-  this->position = new Point();
+  this->ownedPosition = std::make_unique<Point>();
+  this->position = this->ownedPosition.get();
   this->position->setFeatureName(name);
 
   // create a coordinate system object as the station's coordinate system
-  this->stationSystem = new CoordinateSystem(oi::Guarded<Station>(this));
+  this->ownedSystem =
+      std::make_unique<CoordinateSystem>(oi::Guarded<Station>(this));
+  this->stationSystem = this->ownedSystem.get();
   this->stationSystem->setFeatureName(this->name);
 
   // create the sensor control object
@@ -73,7 +79,8 @@ Station::Station(const Station& copy) : Feature(copy) {
   // copy general station attributes
   this->isActiveStation = copy.isActiveStation;
   if (!copy.position.isNull()) {
-    this->position = new Point(*copy.position.data());
+    this->ownedPosition = std::make_unique<Point>(*copy.position.data());
+    this->position = this->ownedPosition.get();
   }
 }
 
@@ -91,7 +98,8 @@ Station& Station::operator=(const Station& copy) {
   // copy general station attributes
   this->isActiveStation = copy.isActiveStation;
   if (!copy.position.isNull()) {
-    this->position = new Point(*copy.position.data());
+    this->ownedPosition = std::make_unique<Point>(*copy.position.data());
+    this->position = this->ownedPosition.get();
   }
 
   return *this;
@@ -111,16 +119,10 @@ Station::~Station() {
   }
   this->sensorResults.reset();
 
-  // delete corresponding coordinate system with all observations made from this
-  // station
-  if (!this->stationSystem.isNull()) {
-    delete this->stationSystem.data();
-  }
-
-  // delete position of this station
-  if (!this->position.isNull()) {
-    delete this->position.data();
-  }
+  // free the coordinate system with all observations made from this station,
+  // then the position of this station
+  this->ownedSystem.reset();
+  this->ownedPosition.reset();
 }
 
 /*!

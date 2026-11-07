@@ -215,6 +215,19 @@ struct Staging {
     return result;
   }
 
+  // The same, as the concrete type; null (the feature stays staged) when the
+  // staged feature is of another type.
+  template <typename T>
+  [[nodiscard]] std::unique_ptr<T> takeAs(
+      const oi::Guarded<FeatureWrapper>& wrapper) {
+    if (wrapper.isNull() ||
+        dynamic_cast<T*>(wrapper->getFeature().data()) == nullptr) {
+      return nullptr;
+    }
+    std::unique_ptr<Feature> feature = take(wrapper);
+    return std::unique_ptr<T>(static_cast<T*>(feature.release()));
+  }
+
   // Any feature by id, restricted to the kinds a given reference may name.
   enum Kind : unsigned {
     kGeometry = 1,
@@ -651,27 +664,17 @@ void Linker::linkStations() {
     }
 
     if (staging_.geometries.contains(message.position())) {
-      const oi::Guarded<Point> point =
-          oi::value(staging_.geometries, message.position())->getPoint();
-      if (!point.isNull()) {
-        // the station owns its position from here on (it deletes it)
-        Access::setStationPosition(*station, point);
-        [[maybe_unused]] Feature* const handedOver =
-            staging_.take(oi::value(staging_.geometries, message.position()))
-                .release();
+      // the station owns its position from here on
+      if (auto point = staging_.takeAs<Point>(
+              oi::value(staging_.geometries, message.position()))) {
+        Access::setStationPosition(*station, std::move(point));
       }
     }
     if (staging_.systems.contains(message.coordinate_system())) {
-      const oi::Guarded<CoordinateSystem> system =
-          oi::value(staging_.systems, message.coordinate_system())
-              ->getCoordinateSystem();
-      if (!system.isNull()) {
-        // the station owns its system from here on (it deletes it)
-        Access::setStationSystem(*station, system);
-        [[maybe_unused]] Feature* const handedOver =
-            staging_
-                .take(oi::value(staging_.systems, message.coordinate_system()))
-                .release();
+      // the station owns its system from here on
+      if (auto system = staging_.takeAs<CoordinateSystem>(
+              oi::value(staging_.systems, message.coordinate_system()))) {
+        Access::setStationSystem(*station, std::move(system));
       }
     }
 

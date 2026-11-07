@@ -209,7 +209,8 @@ class OI_CORE_EXPORT Station : public Feature {
 
   bool isActiveStation;
 
-  // the position of the station
+  // the position of the station: owned here, viewed through the handle
+  std::unique_ptr<Point> ownedPosition;
   oi::Guarded<Point> position;
   Direction xAxis;  // x axis of the coordinate system in the current display
                     // coordinate system
@@ -224,7 +225,8 @@ class OI_CORE_EXPORT Station : public Feature {
   std::unique_ptr<SensorControl> sensorControl;
   std::atomic<StationObserver*> stationObserver{nullptr};
 
-  // the corresponding coordinate system
+  // the corresponding coordinate system: owned here, viewed through the handle
+  std::unique_ptr<CoordinateSystem> ownedSystem;
   oi::Guarded<CoordinateSystem> stationSystem;
   oi::Guarded<CoordinateSystem> estimatedStationSystem;
 
