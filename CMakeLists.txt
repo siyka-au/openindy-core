@@ -195,6 +195,7 @@ add_library(OpenIndyCore SHARED
     include/feature.h
     include/featureattributes.h
     include/featureobserver.h
+    include/jobobserver.h
     include/featurecontainer.h
     include/featurewrapper.h
     include/geometry.h
@@ -366,12 +367,23 @@ add_test(NAME ownership COMMAND tst_ownership)
 
 add_executable(tst_featureobserver test/featureobserver/tst_featureobserver.cpp)
 target_link_libraries(tst_featureobserver PRIVATE Qt6::Test OpenIndyCore OpenIndyMath)
+target_include_directories(tst_featureobserver PRIVATE test/common)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_compile_options(tst_featureobserver PRIVATE -Wall -Wextra -Wpedantic)
 endif()
 
 add_test(NAME featureobserver COMMAND tst_featureobserver)
+
+add_executable(tst_jobobserver test/jobobserver/tst_jobobserver.cpp)
+target_link_libraries(tst_jobobserver PRIVATE Qt6::Test OpenIndyCore OpenIndyMath)
+target_include_directories(tst_jobobserver PRIVATE test/common)
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(tst_jobobserver PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+
+add_test(NAME jobobserver COMMAND tst_jobobserver)
 
 add_executable(tst_ownedsubgeometry test/ownedsubgeometry/tst_ownedsubgeometry.cpp)
 target_link_libraries(tst_ownedsubgeometry PRIVATE Qt6::Test OpenIndyCore OpenIndyMath)
@@ -384,6 +396,7 @@ add_test(NAME ownedsubgeometry COMMAND tst_ownedsubgeometry)
 
 add_executable(tst_measurementintent test/measurementintent/tst_measurementintent.cpp)
 target_link_libraries(tst_measurementintent PRIVATE Qt6::Test OpenIndyCore OpenIndyMath)
+target_include_directories(tst_measurementintent PRIVATE test/common)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_compile_options(tst_measurementintent PRIVATE -Wall -Wextra -Wpedantic)

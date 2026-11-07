@@ -1,4 +1,3 @@
-#include <QSignalSpy>
 #include <QString>
 #include <QtTest>
 #include <cmath>
@@ -9,6 +8,7 @@
 #include "geometry/point.h"
 #include "oijob.h"
 #include "reading.h"
+#include "recordingjobobserver.h"
 #include "station.h"
 
 using namespace oi;
@@ -330,7 +330,8 @@ void MeasurementIntentTest::unresolvableTargetIsRejectedWithAMessage() {
   QPointer<Station> station;
   QPointer<OiJob> job = makeJobWithActiveStation(station);
 
-  QSignalSpy spy(job.data(), &OiJob::sendMessage);
+  RecordingJobObserver spy;
+  spy.attach(job.data());
 
   const int featureCountBefore = job->getFeaturesList().size();
 
@@ -338,7 +339,7 @@ void MeasurementIntentTest::unresolvableTargetIsRejectedWithAMessage() {
   readings << makeCartesianReading(1.0, 1.0, 1.0);
   job->addMeasurementResults(999999, readings);
 
-  QVERIFY2(spy.count() > 0,
+  QVERIFY2(spy.count("sendMessage") > 0,
            "core must report why the measurement was rejected");
   QCOMPARE(job->getFeaturesList().size(), featureCountBefore);
 }

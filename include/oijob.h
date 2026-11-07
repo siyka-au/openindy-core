@@ -10,13 +10,16 @@
 #include <QSet>
 #include <QString>
 #include <QStringList>
+#include <algorithm>
 #include <memory>
+#include <vector>
 
 #include "core_export.h"
 #include "featureattributes.h"
 #include "featurecontainer.h"
 #include "featureobserver.h"
 #include "function.h"
+#include "jobobserver.h"
 #include "types.h"
 #include "util.h"
 
@@ -249,92 +252,30 @@ class OI_CORE_EXPORT OiJob : public QObject, public FeatureObserver {
 
   void createTemplateFromJob();
 
- signals:
+ public slots:
 
-  // #########################################
-  // signals to inform about job state changes
-  // #########################################
-
-  // active feature changes
-  void activeFeatureChanged();
-  void activeStationChanged();
-  void activeCoordinateSystemChanged();
-
-  // feature(s) added or removed
-  void featureSetChanged();
-  void coordSystemSetChanged();
-  void stationSetChanged();
-  void trafoParamSetChanged();
-  void geometrySetChanged();
-
-  // group(s) added or removed
-  void availableGroupsChanged();
-  void activeGroupChanged();
-
-  // general feature attributes changed
-  void featureAttributesChanged();
-
-  // feature specific attributes changed
-  void featureNameChanged(const int& featureId, const QString& oldName);
-  void featureGroupChanged(const int& featureId, const QString& oldGroup);
-  void featureCommentChanged(const int& featureId);
-  void featureIsUpdatedChanged(const int& featureId);  // currently not
-                                                       // connected
-  void featureIsSolvedChanged(const int& featureId);
-  void featureFunctionsChanged(const int& featureId);
-  void featureUsedForChanged(const int& featureId);
-  void featurePreviouslyNeededChanged(const int& featureId);
-
-  // geometry specific attributes changed
-  void geometryIsCommonChanged(const int& featureId);
-  void geometryRealisesChanged(const int& featureId);
-  void geometryObservationsChanged(const int& featureId);
-  void groupMembersChanged(const int& featureId);
-  void geometryNominalSystemChanged(const int& featureId);
-  void geometryStatisticChanged(const int& featureId);
-  void geometrySimulationDataChanged(const int& featureId);
-  void geometryMeasurementConfigChanged(const int& featureId,
-                                        const QString& oldMConfig,
-                                        const MeasurementConfigKey oldKey);
-
-  // coordinate system specific attributes changed
-  void systemObservationsChanged(const int& featureId, const int& obsId);
-  void systemTrafoParamsChanged(const int& featureId);
-  void systemsNominalsChanged(const int& featureId);
-
-  // station specific attributes changed
-  void stationSensorChanged(const int& featureId);
-
-  // transformation parameter specific attributes changed
-  void trafoParamParametersChanged(const int& featureId);
-  void trafoParamSystemsChanged(const int& featureId);
-  void trafoParamIsUsedChanged(const int& featureId);
-  // void trafoParamValidTimeChanged(const int &featureId);
-  // void trafoParamIsMovementChanged(const int &featureId);
-  void trafoParamIsDatumChanged(const int& featureId);
-
-  // ###################################################
-  // general signals to inform OpenIndy about job issues
-  // ###################################################
+  // ###################################################################
+  // report job issues and recalculation results (used to be signals; as
+  // slots they can still be the target of connect() from other objects)
+  // ###################################################################
 
   void sendMessage(const QString& msg, const MessageTypes& msgType,
                    const MessageDestinations& msgDest =
                        MessageDestinations::eConsoleMessage) const;
 
-  // ##############################
-  // signals to force recalculation
-  // ##############################
-
-  void recalcFeature(const QPointer<Feature>& feature);
-  void recalcFeatureSet();
-
-  // #####################################
-  // signals forwarded from FeatureUpdater
-  // #####################################
-
+  // forwarded from FeatureUpdater
   void featuresRecalculated();
   void featureRecalculated(const int& featureId);
   void trafoParamRecalculated(const int& featureId);
+
+ public:
+  // ##########################################################
+  // observers: receive the job's change notifications (see
+  // JobObserver). Non-owning; each observer is registered once.
+  // ##########################################################
+
+  void addObserver(JobObserver* observer);
+  void removeObserver(JobObserver* observer);
 
  private slots:
 
@@ -390,6 +331,22 @@ class OI_CORE_EXPORT OiJob : public QObject, public FeatureObserver {
                                const QString& group, const FeatureTypes& type);
 
  private:
+  // calls `callback` on every registered observer. Iterates over a copy and
+  // skips observers that were removed meanwhile, so observers may add or
+  // remove themselves from within a callback.
+  template <typename Callback, typename... Args>
+  void notifyObservers(Callback callback, const Args&... args) {
+    const std::vector<JobObserver*> snapshot = this->observers;
+    for (JobObserver* observer : snapshot) {
+      if (std::find(this->observers.begin(), this->observers.end(), observer) !=
+          this->observers.end()) {
+        (observer->*callback)(args...);
+      }
+    }
+  }
+
+  std::vector<JobObserver*> observers;
+
   // ##############################
   // connect or disconnect features
   // ##############################

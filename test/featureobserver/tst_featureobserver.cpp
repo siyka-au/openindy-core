@@ -1,5 +1,4 @@
 #include <QCoreApplication>
-#include <QSignalSpy>
 #include <QString>
 #include <QtTest>
 
@@ -10,6 +9,7 @@
 #include "group.h"
 #include "oijob.h"
 #include "point.h"
+#include "recordingjobobserver.h"
 #include "station.h"
 #include "trafoparam.h"
 
@@ -208,7 +208,8 @@ void FeatureObserverTest::stationSystemObservationAdded() {
   QPointer<FeatureWrapper> wrapper = station->getFeatureWrapper();
   QVERIFY(job.addFeature(wrapper));
 
-  QSignalSpy spy(&job, &OiJob::systemObservationsChanged);
+  RecordingJobObserver spy;
+  spy.attach(&job);
 
   ReadingCartesian r;
   r.isValid = true;
@@ -216,7 +217,7 @@ void FeatureObserverTest::stationSystemObservationAdded() {
   QPointer<Observation> obs = new Observation();
   reading->setObservation(obs);
   QVERIFY(station->getCoordinateSystem()->addObservation(obs));
-  QCOMPARE(spy.count(), 1);
+  QCOMPARE(spy.count("systemObservationsChanged"), 1);
 }
 
 void FeatureObserverTest::blockedSignalsStaySilent() {
@@ -336,23 +337,22 @@ void FeatureObserverTest::jobRelaysIntoItsOwnSignals() {
   point.setFeatureName("P1");
   QVERIFY(job.addFeature(point.getFeatureWrapper()));
 
-  QSignalSpy nameSpy(&job, &OiJob::featureNameChanged);
-  QSignalSpy commentSpy(&job, &OiJob::featureCommentChanged);
-  QSignalSpy commonSpy(&job, &OiJob::geometryIsCommonChanged);
-  QSignalSpy functionSpy(&job, &OiJob::featureFunctionsChanged);
+  RecordingJobObserver rec;
+  rec.attach(&job);
 
   point.setFeatureName("renamed");
-  QCOMPARE(nameSpy.count(), 1);  // synchronous
-  QCOMPARE(nameSpy.first().at(0).toInt(), point.getId());
+  QCOMPARE(rec.count("featureNameChanged"), 1);  // synchronous
+  QVERIFY(rec.calls.contains(
+      QString("featureNameChanged:%1:P1").arg(point.getId())));
 
   point.setComment("c");
-  QCOMPARE(commentSpy.count(), 1);
+  QCOMPARE(rec.count("featureCommentChanged"), 1);
 
   point.setCommonState(true);
-  QCOMPARE(commonSpy.count(), 1);
+  QCOMPARE(rec.count("geometryIsCommonChanged"), 1);
 
   point.addFunction(new FakeFit());
-  QCOMPARE(functionSpy.count(), 1);
+  QCOMPARE(rec.count("featureFunctionsChanged"), 1);
 }
 
 void FeatureObserverTest::jobDeliversIsSolvedDeferred() {
@@ -361,12 +361,14 @@ void FeatureObserverTest::jobDeliversIsSolvedDeferred() {
   point.setFeatureName("P1");
   QVERIFY(job.addFeature(point.getFeatureWrapper()));
 
-  QSignalSpy spy(&job, &OiJob::featureIsSolvedChanged);
+  RecordingJobObserver spy;
+  spy.attach(&job);
   point.setIsSolved(true);
-  QCOMPARE(spy.count(), 0);  // queued, not delivered inside the call
+  QCOMPARE(spy.count("featureIsSolvedChanged"), 0);  // queued, not delivered
   QCoreApplication::processEvents();
-  QCOMPARE(spy.count(), 1);
-  QCOMPARE(spy.first().at(0).toInt(), point.getId());
+  QCOMPARE(spy.count("featureIsSolvedChanged"), 1);
+  QVERIFY(spy.calls.contains(
+      QString("featureIsSolvedChanged:%1").arg(point.getId())));
 }
 
 QTEST_MAIN(FeatureObserverTest)
