@@ -123,7 +123,7 @@ MessageSinkTest::Fixture MessageSinkTest::addActivePoint(OiJob& job) {
   f.point->setFeatureName("P1");
   const bool added = job.addFeature(f.wrapper);
   Q_ASSERT(added);
-  Q_UNUSED(added);
+  static_cast<void>(added);
   f.point->setActiveFeatureState(true);
   return f;
 }

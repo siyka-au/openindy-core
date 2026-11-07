@@ -1,6 +1,5 @@
 #ifndef CONNECTIONKIND_H
 #define CONNECTIONKIND_H
-#include <QMetaType>
 #include <QString>
 #include <vector>
 
@@ -49,7 +48,5 @@ class OI_CORE_EXPORT ConnectionKind {
 };
 
 }  // namespace oi
-
-Q_DECLARE_METATYPE(oi::ConnectionKind)
 
 #endif  // CONNECTIONKIND_H

@@ -240,8 +240,6 @@ class OI_CORE_EXPORT BundleAdjustment : public oi::Trackable {
 
 }  // namespace oi
 
-Q_DECLARE_METATYPE(oi::BundleAdjustment*)
-
 #ifndef STR
 #define STR(x) #x
 #endif

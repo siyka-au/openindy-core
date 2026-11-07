@@ -1,6 +1,5 @@
 #ifndef PIPELINESTAGE_H
 #define PIPELINESTAGE_H
-#include <QMetaType>
 #include <QString>
 #include <QtCore>
 #include <map>
@@ -107,8 +106,5 @@ class OI_CORE_EXPORT PipelineStage {
 };
 
 }  // namespace oi
-
-Q_DECLARE_METATYPE(oi::PipelineStage)
-Q_DECLARE_METATYPE(oi::PipelineExclusion)
 
 #endif  // PIPELINESTAGE_H

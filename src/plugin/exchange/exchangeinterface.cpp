@@ -20,12 +20,7 @@ ExchangeInterface::ExchangeInterface() {
 /*!
  * \brief ExchangeInterface::~ExchangeInterface
  */
-ExchangeInterface::~ExchangeInterface() {
-  // delete device if not deleted yet
-  if (!this->device.isNull()) {
-    delete this->device.data();
-  }
-}
+ExchangeInterface::~ExchangeInterface() = default;
 
 /*!
  * \brief ExchangeInterface::getMetaData
@@ -44,19 +39,17 @@ const std::vector<GeometryTypes>& ExchangeInterface::getSupportedGeometries() {
 }
 
 /*!
- * \brief ExchangeInterface::getDevice
+ * \brief ExchangeInterface::getStream
  * \return
  */
-const QPointer<QIODevice>& ExchangeInterface::getDevice() const {
-  return this->device;
-}
+std::iostream* ExchangeInterface::getStream() const { return this->stream; }
 
 /*!
- * \brief ExchangeInterface::setDevice
- * \param device
+ * \brief ExchangeInterface::setStream
+ * \param stream
  */
-void ExchangeInterface::setDevice(const QPointer<QIODevice>& device) {
-  this->device = device;
+void ExchangeInterface::setStream(std::iostream* stream) {
+  this->stream = stream;
 }
 
 /*!

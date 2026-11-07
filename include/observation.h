@@ -221,6 +221,4 @@ class OI_CORE_EXPORT Observation : public Point {
 
 }  // namespace oi
 
-Q_DECLARE_METATYPE(oi::Observation*)
-
 #endif  // OBSERVATION_H

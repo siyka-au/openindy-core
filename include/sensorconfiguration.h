@@ -1,7 +1,6 @@
 #ifndef SENSORCONFIGURATION_H
 #define SENSORCONFIGURATION_H
 #include <QString>
-#include <QtSerialPort/QSerialPort>
 #include <map>
 
 #include "connectionkind.h"
@@ -17,6 +16,23 @@ namespace oi {
 using namespace math;
 
 class Sensor;
+
+// Serial line settings. The numeric values are the ones Qt's QSerialPort
+// enums use, so a host can static_cast between the two.
+enum class BaudRate : int {
+  Baud1200 = 1200,
+  Baud2400 = 2400,
+  Baud4800 = 4800,
+  Baud9600 = 9600,
+  Baud19200 = 19200,
+  Baud38400 = 38400,
+  Baud57600 = 57600,
+  Baud115200 = 115200
+};
+enum class DataBits : int { Data5 = 5, Data6 = 6, Data7 = 7, Data8 = 8 };
+enum class Parity : int { None = 0, Even = 2, Odd = 3, Space = 4, Mark = 5 };
+enum class StopBits : int { One = 1, Two = 2, OneAndHalf = 3 };
+enum class FlowControl : int { None = 0, Hardware = 1, Software = 2 };
 
 // ##############
 // helper classes
@@ -39,11 +55,11 @@ class OI_CORE_EXPORT ConnectionConfig {
 
   // serial
   QString comPort;
-  QSerialPort::BaudRate baudRate;
-  QSerialPort::DataBits dataBits;
-  QSerialPort::Parity parity;
-  QSerialPort::StopBits stopBits;
-  QSerialPort::FlowControl flowControl;
+  oi::BaudRate baudRate{oi::BaudRate::Baud9600};
+  oi::DataBits dataBits{oi::DataBits::Data8};
+  oi::Parity parity{oi::Parity::None};
+  oi::StopBits stopBits{oi::StopBits::One};
+  oi::FlowControl flowControl{oi::FlowControl::None};
 };
 
 /*!
@@ -163,8 +179,5 @@ class OI_CORE_EXPORT SensorConfiguration {
 };
 
 }  // namespace oi
-
-Q_DECLARE_METATYPE(oi::SensorConfiguration)
-Q_DECLARE_METATYPE(oi::SensorConfiguration*)
 
 #endif  // SENSORCONFIGURATION_H

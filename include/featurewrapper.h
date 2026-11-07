@@ -160,6 +160,4 @@ class OI_CORE_EXPORT FeatureWrapper : public oi::Trackable {
 
 }  // namespace oi
 
-Q_DECLARE_METATYPE(oi::FeatureWrapper*)
-
 #endif  // FEATUREWRAPPER_H

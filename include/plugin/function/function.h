@@ -481,8 +481,6 @@ class OI_CORE_EXPORT Function : public oi::Trackable {
 
 }  // namespace oi
 
-Q_DECLARE_METATYPE(oi::Function*)
-
 #ifndef STR
 #define STR(x) #x
 #endif

@@ -1163,11 +1163,11 @@ SensorConfiguration sampleSensorConfig() {
   connection.ip = "192.168.0.7";
   connection.port = "700";
   connection.comPort = "/dev/ttyUSB0";
-  connection.baudRate = QSerialPort::Baud115200;
-  connection.dataBits = QSerialPort::Data7;
-  connection.parity = QSerialPort::OddParity;
-  connection.stopBits = QSerialPort::OneAndHalfStop;
-  connection.flowControl = QSerialPort::HardwareControl;
+  connection.baudRate = oi::BaudRate::Baud115200;
+  connection.dataBits = oi::DataBits::Data7;
+  connection.parity = oi::Parity::Odd;
+  connection.stopBits = oi::StopBits::OneAndHalf;
+  connection.flowControl = oi::FlowControl::Hardware;
   config.setConnectionConfig(connection);
 
   Accuracy accuracy;
@@ -1289,11 +1289,11 @@ TEST_CASE("SensorConfiguration survives a protobuf round trip") {
   CHECK(c.ip == "192.168.0.7");
   CHECK(c.port == "700");
   CHECK(c.comPort == "/dev/ttyUSB0");
-  CHECK(c.baudRate == QSerialPort::Baud115200);
-  CHECK(c.dataBits == QSerialPort::Data7);
-  CHECK(c.parity == QSerialPort::OddParity);
-  CHECK(c.stopBits == QSerialPort::OneAndHalfStop);
-  CHECK(c.flowControl == QSerialPort::HardwareControl);
+  CHECK(c.baudRate == oi::BaudRate::Baud115200);
+  CHECK(c.dataBits == oi::DataBits::Data7);
+  CHECK(c.parity == oi::Parity::Odd);
+  CHECK(c.stopBits == oi::StopBits::OneAndHalf);
+  CHECK(c.flowControl == oi::FlowControl::Hardware);
 
   const Accuracy& a = out->getAccuracy();
   CHECK(a.sigmaXyz.getAt(0) == 0.1);
@@ -1349,10 +1349,10 @@ TEST_CASE("an empty SensorConfiguration with just a name round trips") {
 }
 
 TEST_CASE("every serial setting maps both ways") {
-  for (const auto baud :
-       {QSerialPort::Baud1200, QSerialPort::Baud2400, QSerialPort::Baud4800,
-        QSerialPort::Baud9600, QSerialPort::Baud19200, QSerialPort::Baud38400,
-        QSerialPort::Baud57600, QSerialPort::Baud115200}) {
+  for (const auto baud : {oi::BaudRate::Baud1200, oi::BaudRate::Baud2400,
+                          oi::BaudRate::Baud4800, oi::BaudRate::Baud9600,
+                          oi::BaudRate::Baud19200, oi::BaudRate::Baud38400,
+                          oi::BaudRate::Baud57600, oi::BaudRate::Baud115200}) {
     SensorConfiguration in = sampleSensorConfig();
     ConnectionConfig c = in.getConnectionConfig();
     c.baudRate = baud;
@@ -1361,9 +1361,8 @@ TEST_CASE("every serial setting maps both ways") {
         codec::fromProto(codec::toProto(in))->getConnectionConfig().baudRate ==
         baud);
   }
-  for (const auto parity :
-       {QSerialPort::NoParity, QSerialPort::EvenParity, QSerialPort::OddParity,
-        QSerialPort::SpaceParity, QSerialPort::MarkParity}) {
+  for (const auto parity : {oi::Parity::None, oi::Parity::Even, oi::Parity::Odd,
+                            oi::Parity::Space, oi::Parity::Mark}) {
     SensorConfiguration in = sampleSensorConfig();
     ConnectionConfig c = in.getConnectionConfig();
     c.parity = parity;
@@ -1371,8 +1370,8 @@ TEST_CASE("every serial setting maps both ways") {
     CHECK(codec::fromProto(codec::toProto(in))->getConnectionConfig().parity ==
           parity);
   }
-  for (const auto bits : {QSerialPort::Data5, QSerialPort::Data6,
-                          QSerialPort::Data7, QSerialPort::Data8}) {
+  for (const auto bits : {oi::DataBits::Data5, oi::DataBits::Data6,
+                          oi::DataBits::Data7, oi::DataBits::Data8}) {
     SensorConfiguration in = sampleSensorConfig();
     ConnectionConfig c = in.getConnectionConfig();
     c.dataBits = bits;
@@ -1381,8 +1380,8 @@ TEST_CASE("every serial setting maps both ways") {
         codec::fromProto(codec::toProto(in))->getConnectionConfig().dataBits ==
         bits);
   }
-  for (const auto stop : {QSerialPort::OneStop, QSerialPort::OneAndHalfStop,
-                          QSerialPort::TwoStop}) {
+  for (const auto stop :
+       {oi::StopBits::One, oi::StopBits::OneAndHalf, oi::StopBits::Two}) {
     SensorConfiguration in = sampleSensorConfig();
     ConnectionConfig c = in.getConnectionConfig();
     c.stopBits = stop;
@@ -1391,9 +1390,8 @@ TEST_CASE("every serial setting maps both ways") {
         codec::fromProto(codec::toProto(in))->getConnectionConfig().stopBits ==
         stop);
   }
-  for (const auto flow :
-       {QSerialPort::NoFlowControl, QSerialPort::HardwareControl,
-        QSerialPort::SoftwareControl}) {
+  for (const auto flow : {oi::FlowControl::None, oi::FlowControl::Hardware,
+                          oi::FlowControl::Software}) {
     SensorConfiguration in = sampleSensorConfig();
     ConnectionConfig c = in.getConnectionConfig();
     c.flowControl = flow;
@@ -1415,11 +1413,11 @@ TEST_CASE(
   CHECK_FALSE(out->getTypeOfSensor().isValid());
   CHECK_FALSE(out->getConnectionConfig().typeOfConnection.isValid());
   // unspecified or unknown values come back as 9600 8N1, no flow control
-  CHECK(out->getConnectionConfig().baudRate == QSerialPort::Baud9600);
-  CHECK(out->getConnectionConfig().dataBits == QSerialPort::Data8);
-  CHECK(out->getConnectionConfig().parity == QSerialPort::NoParity);
-  CHECK(out->getConnectionConfig().stopBits == QSerialPort::OneStop);
-  CHECK(out->getConnectionConfig().flowControl == QSerialPort::NoFlowControl);
+  CHECK(out->getConnectionConfig().baudRate == oi::BaudRate::Baud9600);
+  CHECK(out->getConnectionConfig().dataBits == oi::DataBits::Data8);
+  CHECK(out->getConnectionConfig().parity == oi::Parity::None);
+  CHECK(out->getConnectionConfig().stopBits == oi::StopBits::One);
+  CHECK(out->getConnectionConfig().flowControl == oi::FlowControl::None);
 }
 
 TEST_CASE("garbage is never a sensor configuration") {

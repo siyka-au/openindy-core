@@ -1,6 +1,5 @@
 #ifndef CALIBRATEDCONSTELLATION_H
 #define CALIBRATEDCONSTELLATION_H
-#include <QMetaType>
 #include <QString>
 #include <chrono>
 #include <optional>
@@ -93,8 +92,5 @@ class OI_CORE_EXPORT CalibratedConstellation {
 };
 
 }  // namespace oi
-
-Q_DECLARE_METATYPE(oi::LocalPoint)
-Q_DECLARE_METATYPE(oi::CalibratedConstellation)
 
 #endif  // CALIBRATEDCONSTELLATION_H

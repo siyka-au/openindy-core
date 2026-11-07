@@ -35,7 +35,7 @@ class JobObserver {
 
   // called from ~OiJob, before the job's state is torn down; the observer must
   // not use the job afterwards and should drop its reference to it
-  virtual void onJobDestroyed(OiJob* job) { Q_UNUSED(job); }
+  virtual void onJobDestroyed(OiJob* /*job*/) {}
 
   virtual void onActiveFeatureChanged() {}
 
@@ -59,134 +59,73 @@ class JobObserver {
 
   virtual void onFeatureAttributesChanged() {}
 
-  virtual void onFeatureNameChanged(const int& featureId,
-                                    const QString& oldName) {
-    Q_UNUSED(featureId);
-    Q_UNUSED(oldName);
-  }
+  virtual void onFeatureNameChanged(const int& /*featureId*/,
+                                    const QString& /*oldName*/) {}
 
-  virtual void onFeatureGroupChanged(const int& featureId,
-                                     const QString& oldGroup) {
-    Q_UNUSED(featureId);
-    Q_UNUSED(oldGroup);
-  }
+  virtual void onFeatureGroupChanged(const int& /*featureId*/,
+                                     const QString& /*oldGroup*/) {}
 
-  virtual void onFeatureCommentChanged(const int& featureId) {
-    Q_UNUSED(featureId);
-  }
+  virtual void onFeatureCommentChanged(const int& /*featureId*/) {}
 
-  virtual void onFeatureIsUpdatedChanged(const int& featureId) {
-    Q_UNUSED(featureId);
-  }
+  virtual void onFeatureIsUpdatedChanged(const int& /*featureId*/) {}
 
-  virtual void onFeatureIsSolvedChanged(const int& featureId) {
-    Q_UNUSED(featureId);
-  }
+  virtual void onFeatureIsSolvedChanged(const int& /*featureId*/) {}
 
-  virtual void onFeatureFunctionsChanged(const int& featureId) {
-    Q_UNUSED(featureId);
-  }
+  virtual void onFeatureFunctionsChanged(const int& /*featureId*/) {}
 
-  virtual void onFeatureUsedForChanged(const int& featureId) {
-    Q_UNUSED(featureId);
-  }
+  virtual void onFeatureUsedForChanged(const int& /*featureId*/) {}
 
-  virtual void onFeaturePreviouslyNeededChanged(const int& featureId) {
-    Q_UNUSED(featureId);
-  }
+  virtual void onFeaturePreviouslyNeededChanged(const int& /*featureId*/) {}
 
-  virtual void onGeometryIsCommonChanged(const int& featureId) {
-    Q_UNUSED(featureId);
-  }
+  virtual void onGeometryIsCommonChanged(const int& /*featureId*/) {}
 
-  virtual void onGeometryRealisesChanged(const int& featureId) {
-    Q_UNUSED(featureId);
-  }
+  virtual void onGeometryRealisesChanged(const int& /*featureId*/) {}
 
-  virtual void onGeometryObservationsChanged(const int& featureId) {
-    Q_UNUSED(featureId);
-  }
+  virtual void onGeometryObservationsChanged(const int& /*featureId*/) {}
 
-  virtual void onGroupMembersChanged(const int& featureId) {
-    Q_UNUSED(featureId);
-  }
+  virtual void onGroupMembersChanged(const int& /*featureId*/) {}
 
-  virtual void onGeometryNominalSystemChanged(const int& featureId) {
-    Q_UNUSED(featureId);
-  }
+  virtual void onGeometryNominalSystemChanged(const int& /*featureId*/) {}
 
-  virtual void onGeometryStatisticChanged(const int& featureId) {
-    Q_UNUSED(featureId);
-  }
+  virtual void onGeometryStatisticChanged(const int& /*featureId*/) {}
 
-  virtual void onGeometrySimulationDataChanged(const int& featureId) {
-    Q_UNUSED(featureId);
-  }
+  virtual void onGeometrySimulationDataChanged(const int& /*featureId*/) {}
 
   virtual void onGeometryMeasurementConfigChanged(
-      const int& featureId, const QString& oldMConfig,
-      const MeasurementConfigKey oldKey) {
-    Q_UNUSED(featureId);
-    Q_UNUSED(oldMConfig);
-    Q_UNUSED(oldKey);
-  }
+      const int& /*featureId*/, const QString& /*oldMConfig*/,
+      const MeasurementConfigKey /*oldKey*/) {}
 
-  virtual void onSystemObservationsChanged(const int& featureId,
-                                           const int& obsId) {
-    Q_UNUSED(featureId);
-    Q_UNUSED(obsId);
-  }
+  virtual void onSystemObservationsChanged(const int& /*featureId*/,
+                                           const int& /*obsId*/) {}
 
-  virtual void onSystemTrafoParamsChanged(const int& featureId) {
-    Q_UNUSED(featureId);
-  }
+  virtual void onSystemTrafoParamsChanged(const int& /*featureId*/) {}
 
-  virtual void onSystemsNominalsChanged(const int& featureId) {
-    Q_UNUSED(featureId);
-  }
+  virtual void onSystemsNominalsChanged(const int& /*featureId*/) {}
 
-  virtual void onStationSensorChanged(const int& featureId) {
-    Q_UNUSED(featureId);
-  }
+  virtual void onStationSensorChanged(const int& /*featureId*/) {}
 
-  virtual void onTrafoParamParametersChanged(const int& featureId) {
-    Q_UNUSED(featureId);
-  }
+  virtual void onTrafoParamParametersChanged(const int& /*featureId*/) {}
 
-  virtual void onTrafoParamSystemsChanged(const int& featureId) {
-    Q_UNUSED(featureId);
-  }
+  virtual void onTrafoParamSystemsChanged(const int& /*featureId*/) {}
 
-  virtual void onTrafoParamIsUsedChanged(const int& featureId) {
-    Q_UNUSED(featureId);
-  }
+  virtual void onTrafoParamIsUsedChanged(const int& /*featureId*/) {}
 
-  virtual void onTrafoParamIsDatumChanged(const int& featureId) {
-    Q_UNUSED(featureId);
-  }
+  virtual void onTrafoParamIsDatumChanged(const int& /*featureId*/) {}
 
-  virtual void onSendMessage(const QString& msg, const MessageTypes& msgType,
-                             const MessageDestinations& msgDest) {
-    Q_UNUSED(msg);
-    Q_UNUSED(msgType);
-    Q_UNUSED(msgDest);
-  }
+  virtual void onSendMessage(const QString& /*msg*/,
+                             const MessageTypes& /*msgType*/,
+                             const MessageDestinations& /*msgDest*/) {}
 
-  virtual void onRecalcFeatureRequested(const oi::Guarded<Feature>& feature) {
-    Q_UNUSED(feature);
-  }
+  virtual void onRecalcFeatureRequested(
+      const oi::Guarded<Feature>& /*feature*/) {}
 
   virtual void onRecalcFeatureSetRequested() {}
 
   virtual void onFeaturesRecalculated() {}
 
-  virtual void onFeatureRecalculated(const int& featureId) {
-    Q_UNUSED(featureId);
-  }
+  virtual void onFeatureRecalculated(const int& /*featureId*/) {}
 
-  virtual void onTrafoParamRecalculated(const int& featureId) {
-    Q_UNUSED(featureId);
-  }
+  virtual void onTrafoParamRecalculated(const int& /*featureId*/) {}
 };
 
 }  // namespace oi

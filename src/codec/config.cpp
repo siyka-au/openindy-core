@@ -13,166 +13,166 @@ namespace oi::codec {
 
 namespace {
 
-// Qt's serial enums have their own values, the wire enums their own numbering
-// (0 = unspecified). Every value is mapped explicitly. A value outside the
-// known set (including whatever an uninitialised ConnectionConfig holds)
-// goes to the wire as unspecified. Qt 6 has no "unknown" value for these, so
-// unspecified comes back as the usual 9600 8N1 without flow control.
+// The core's serial enums have their own values, the wire enums their own
+// numbering (0 = unspecified). Every value is mapped explicitly. A value
+// outside the known set (including whatever an uninitialised ConnectionConfig
+// holds) goes to the wire as unspecified. The core enums have no "unknown"
+// value, so unspecified comes back as the usual 9600 8N1 without flow control.
 
-oipb::SerialParity toProto(QSerialPort::Parity v) {
+oipb::SerialParity toProto(oi::Parity v) {
   switch (v) {
-    case QSerialPort::NoParity:
+    case oi::Parity::None:
       return oipb::SERIAL_PARITY_NONE;
-    case QSerialPort::EvenParity:
+    case oi::Parity::Even:
       return oipb::SERIAL_PARITY_EVEN;
-    case QSerialPort::OddParity:
+    case oi::Parity::Odd:
       return oipb::SERIAL_PARITY_ODD;
-    case QSerialPort::SpaceParity:
+    case oi::Parity::Space:
       return oipb::SERIAL_PARITY_SPACE;
-    case QSerialPort::MarkParity:
+    case oi::Parity::Mark:
       return oipb::SERIAL_PARITY_MARK;
     default:
       return oipb::SERIAL_PARITY_UNSPECIFIED;
   }
 }
 
-QSerialPort::Parity fromProto(oipb::SerialParity v) {
+oi::Parity fromProto(oipb::SerialParity v) {
   switch (v) {
     case oipb::SERIAL_PARITY_NONE:
-      return QSerialPort::NoParity;
+      return oi::Parity::None;
     case oipb::SERIAL_PARITY_EVEN:
-      return QSerialPort::EvenParity;
+      return oi::Parity::Even;
     case oipb::SERIAL_PARITY_ODD:
-      return QSerialPort::OddParity;
+      return oi::Parity::Odd;
     case oipb::SERIAL_PARITY_SPACE:
-      return QSerialPort::SpaceParity;
+      return oi::Parity::Space;
     case oipb::SERIAL_PARITY_MARK:
-      return QSerialPort::MarkParity;
+      return oi::Parity::Mark;
     default:
-      return QSerialPort::NoParity;
+      return oi::Parity::None;
   }
 }
 
-oipb::SerialDataBits toProto(QSerialPort::DataBits v) {
+oipb::SerialDataBits toProto(oi::DataBits v) {
   switch (v) {
-    case QSerialPort::Data5:
+    case oi::DataBits::Data5:
       return oipb::SERIAL_DATA_BITS_5;
-    case QSerialPort::Data6:
+    case oi::DataBits::Data6:
       return oipb::SERIAL_DATA_BITS_6;
-    case QSerialPort::Data7:
+    case oi::DataBits::Data7:
       return oipb::SERIAL_DATA_BITS_7;
-    case QSerialPort::Data8:
+    case oi::DataBits::Data8:
       return oipb::SERIAL_DATA_BITS_8;
     default:
       return oipb::SERIAL_DATA_BITS_UNSPECIFIED;
   }
 }
 
-QSerialPort::DataBits fromProto(oipb::SerialDataBits v) {
+oi::DataBits fromProto(oipb::SerialDataBits v) {
   switch (v) {
     case oipb::SERIAL_DATA_BITS_5:
-      return QSerialPort::Data5;
+      return oi::DataBits::Data5;
     case oipb::SERIAL_DATA_BITS_6:
-      return QSerialPort::Data6;
+      return oi::DataBits::Data6;
     case oipb::SERIAL_DATA_BITS_7:
-      return QSerialPort::Data7;
+      return oi::DataBits::Data7;
     case oipb::SERIAL_DATA_BITS_8:
-      return QSerialPort::Data8;
+      return oi::DataBits::Data8;
     default:
-      return QSerialPort::Data8;
+      return oi::DataBits::Data8;
   }
 }
 
-oipb::SerialStopBits toProto(QSerialPort::StopBits v) {
+oipb::SerialStopBits toProto(oi::StopBits v) {
   switch (v) {
-    case QSerialPort::OneStop:
+    case oi::StopBits::One:
       return oipb::SERIAL_STOP_BITS_ONE;
-    case QSerialPort::OneAndHalfStop:
+    case oi::StopBits::OneAndHalf:
       return oipb::SERIAL_STOP_BITS_ONE_AND_HALF;
-    case QSerialPort::TwoStop:
+    case oi::StopBits::Two:
       return oipb::SERIAL_STOP_BITS_TWO;
     default:
       return oipb::SERIAL_STOP_BITS_UNSPECIFIED;
   }
 }
 
-QSerialPort::StopBits fromProto(oipb::SerialStopBits v) {
+oi::StopBits fromProto(oipb::SerialStopBits v) {
   switch (v) {
     case oipb::SERIAL_STOP_BITS_ONE:
-      return QSerialPort::OneStop;
+      return oi::StopBits::One;
     case oipb::SERIAL_STOP_BITS_ONE_AND_HALF:
-      return QSerialPort::OneAndHalfStop;
+      return oi::StopBits::OneAndHalf;
     case oipb::SERIAL_STOP_BITS_TWO:
-      return QSerialPort::TwoStop;
+      return oi::StopBits::Two;
     default:
-      return QSerialPort::OneStop;
+      return oi::StopBits::One;
   }
 }
 
-oipb::SerialFlowControl toProto(QSerialPort::FlowControl v) {
+oipb::SerialFlowControl toProto(oi::FlowControl v) {
   switch (v) {
-    case QSerialPort::NoFlowControl:
+    case oi::FlowControl::None:
       return oipb::SERIAL_FLOW_CONTROL_NONE;
-    case QSerialPort::HardwareControl:
+    case oi::FlowControl::Hardware:
       return oipb::SERIAL_FLOW_CONTROL_HARDWARE;
-    case QSerialPort::SoftwareControl:
+    case oi::FlowControl::Software:
       return oipb::SERIAL_FLOW_CONTROL_SOFTWARE;
     default:
       return oipb::SERIAL_FLOW_CONTROL_UNSPECIFIED;
   }
 }
 
-QSerialPort::FlowControl fromProto(oipb::SerialFlowControl v) {
+oi::FlowControl fromProto(oipb::SerialFlowControl v) {
   switch (v) {
     case oipb::SERIAL_FLOW_CONTROL_NONE:
-      return QSerialPort::NoFlowControl;
+      return oi::FlowControl::None;
     case oipb::SERIAL_FLOW_CONTROL_HARDWARE:
-      return QSerialPort::HardwareControl;
+      return oi::FlowControl::Hardware;
     case oipb::SERIAL_FLOW_CONTROL_SOFTWARE:
-      return QSerialPort::SoftwareControl;
+      return oi::FlowControl::Software;
     default:
-      return QSerialPort::NoFlowControl;
+      return oi::FlowControl::None;
   }
 }
 
 // A baud rate is a number, not a choice: the wire carries the rate itself,
-// but only the rates Qt names are accepted.
-int32_t toProto(QSerialPort::BaudRate v) {
+// but only the standard rates are accepted.
+int32_t toProto(oi::BaudRate v) {
   switch (v) {
-    case QSerialPort::Baud1200:
-    case QSerialPort::Baud2400:
-    case QSerialPort::Baud4800:
-    case QSerialPort::Baud9600:
-    case QSerialPort::Baud19200:
-    case QSerialPort::Baud38400:
-    case QSerialPort::Baud57600:
-    case QSerialPort::Baud115200:
+    case oi::BaudRate::Baud1200:
+    case oi::BaudRate::Baud2400:
+    case oi::BaudRate::Baud4800:
+    case oi::BaudRate::Baud9600:
+    case oi::BaudRate::Baud19200:
+    case oi::BaudRate::Baud38400:
+    case oi::BaudRate::Baud57600:
+    case oi::BaudRate::Baud115200:
       return static_cast<int32_t>(v);
     default:
       return 0;
   }
 }
 
-QSerialPort::BaudRate baudFromProto(int32_t v) {
+oi::BaudRate baudFromProto(int32_t v) {
   switch (v) {
     case 1200:
-      return QSerialPort::Baud1200;
+      return oi::BaudRate::Baud1200;
     case 2400:
-      return QSerialPort::Baud2400;
+      return oi::BaudRate::Baud2400;
     case 4800:
-      return QSerialPort::Baud4800;
+      return oi::BaudRate::Baud4800;
     case 9600:
-      return QSerialPort::Baud9600;
+      return oi::BaudRate::Baud9600;
     case 19200:
-      return QSerialPort::Baud19200;
+      return oi::BaudRate::Baud19200;
     case 38400:
-      return QSerialPort::Baud38400;
+      return oi::BaudRate::Baud38400;
     case 57600:
-      return QSerialPort::Baud57600;
+      return oi::BaudRate::Baud57600;
     case 115200:
-      return QSerialPort::Baud115200;
+      return oi::BaudRate::Baud115200;
     default:
-      return QSerialPort::Baud9600;
+      return oi::BaudRate::Baud9600;
   }
 }
 

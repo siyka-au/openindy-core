@@ -1,12 +1,10 @@
 #ifndef OIJOB_H
 #define OIJOB_H
-#include <QIODevice>
-#include <QMutex>
-#include <QMutexLocker>
-#include <QPointer>
 #include <QString>
 #include <algorithm>
+#include <filesystem>
 #include <memory>
+#include <mutex>
 #include <set>
 #include <vector>
 
@@ -57,8 +55,9 @@ class OI_CORE_EXPORT OiJob : public oi::Trackable,
   [[nodiscard]] const QString& getJobName() const;
   void setJobName(const QString& jobName);
 
-  [[nodiscard]] const QPointer<QFileDevice>& getJobDevice() const;
-  void setJobDevice(const QPointer<QFileDevice>& jobDevice);
+  // the file the job is saved to (empty: not saved yet)
+  [[nodiscard]] const std::filesystem::path& getJobFile() const;
+  void setJobFile(std::filesystem::path jobFile);
 
   void setDigest(const QString&);
   [[nodiscard]] const QString& getDigest() const;
@@ -353,7 +352,7 @@ class OI_CORE_EXPORT OiJob : public oi::Trackable,
   void notifyObservers(Callback callback, const Args&... args) {
     std::vector<JobObserver*> snapshot;
     {
-      const QMutexLocker locker(&this->observersMutex);
+      const std::lock_guard<std::mutex> locker(this->observersMutex);
       snapshot = this->observers;
     }
     for (JobObserver* observer : snapshot) {
@@ -367,7 +366,7 @@ class OI_CORE_EXPORT OiJob : public oi::Trackable,
 
   // guarded: changes may be reported from worker threads (as the signals
   // they replace could be) while observers are added or removed
-  mutable QMutex observersMutex;
+  mutable std::mutex observersMutex;
   std::vector<JobObserver*> observers;
 
   Executor* executor{&InlineExecutor::instance()};
@@ -481,8 +480,8 @@ class OI_CORE_EXPORT OiJob : public oi::Trackable,
   // meta information of a job
   // #########################
 
-  QString jobName;                  // the name under that the job is saved
-  QPointer<QFileDevice> jobDevice;  // the device where the job is saved
+  QString jobName;                // the name under that the job is saved
+  std::filesystem::path jobFile;  // the file where the job is saved
 
   // the last calculated digest of the job content
   QString digest;

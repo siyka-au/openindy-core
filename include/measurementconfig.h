@@ -209,7 +209,4 @@ class OI_CORE_EXPORT MeasurementConfig {
 
 }  // namespace oi
 
-Q_DECLARE_METATYPE(oi::MeasurementConfig)
-Q_DECLARE_METATYPE(oi::MeasurementConfig*)
-
 #endif  // MEASUREMENTCONFIG_H

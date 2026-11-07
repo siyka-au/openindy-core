@@ -1,6 +1,5 @@
 #ifndef SENSORTYPE_H
 #define SENSORTYPE_H
-#include <QMetaType>
 #include <QString>
 #include <optional>
 #include <vector>
@@ -69,7 +68,5 @@ class OI_CORE_EXPORT SensorTypeRegistry {
 };
 
 }  // namespace oi
-
-Q_DECLARE_METATYPE(oi::SensorType)
 
 #endif  // SENSORTYPE_H

@@ -51,7 +51,7 @@ OiJob::~OiJob() {
   // them: nothing below reports to anyone any more
   this->notifyObservers(&JobObserver::onJobDestroyed, this);
   {
-    const QMutexLocker locker(&this->observersMutex);
+    const std::lock_guard<std::mutex> locker(this->observersMutex);
     this->observers.clear();
   }
 
@@ -64,11 +64,6 @@ OiJob::~OiJob() {
 
   // remove all features
   this->featureContainer.removeAll();
-
-  // delete device pointer
-  if (!this->jobDevice.isNull()) {
-    delete this->jobDevice.data();
-  }
 }
 
 /*!
@@ -76,13 +71,13 @@ OiJob::~OiJob() {
  * Registers a (non-owning) observer; registering it twice has no effect.
  */
 bool OiJob::isObserver(const JobObserver* observer) const {
-  const QMutexLocker locker(&this->observersMutex);
+  const std::lock_guard<std::mutex> locker(this->observersMutex);
   return std::find(this->observers.begin(), this->observers.end(), observer) !=
          this->observers.end();
 }
 
 void OiJob::addObserver(JobObserver* observer) {
-  const QMutexLocker locker(&this->observersMutex);
+  const std::lock_guard<std::mutex> locker(this->observersMutex);
   if (observer == nullptr ||
       std::find(this->observers.begin(), this->observers.end(), observer) !=
           this->observers.end()) {
@@ -95,7 +90,7 @@ void OiJob::addObserver(JobObserver* observer) {
  * \brief OiJob::removeObserver
  */
 void OiJob::removeObserver(JobObserver* observer) {
-  const QMutexLocker locker(&this->observersMutex);
+  const std::lock_guard<std::mutex> locker(this->observersMutex);
   this->observers.erase(
       std::remove(this->observers.begin(), this->observers.end(), observer),
       this->observers.end());
@@ -149,19 +144,17 @@ const QString& OiJob::getJobName() const { return this->jobName; }
 void OiJob::setJobName(const QString& jobName) { this->jobName = jobName; }
 
 /*!
- * \brief OiJob::getJobDevice
+ * \brief OiJob::getJobFile
  * \return
  */
-const QPointer<QFileDevice>& OiJob::getJobDevice() const {
-  return this->jobDevice;
-}
+const std::filesystem::path& OiJob::getJobFile() const { return this->jobFile; }
 
 /*!
- * \brief OiJob::setJobDevice
- * \param jobDevice
+ * \brief OiJob::setJobFile
+ * \param jobFile
  */
-void OiJob::setJobDevice(const QPointer<QFileDevice>& jobDevice) {
-  this->jobDevice = jobDevice;
+void OiJob::setJobFile(std::filesystem::path jobFile) {
+  this->jobFile = std::move(jobFile);
 }
 
 /*!

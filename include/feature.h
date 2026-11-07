@@ -333,6 +333,4 @@ class OI_CORE_EXPORT Feature : public Element {
 
 }  // namespace oi
 
-Q_DECLARE_METATYPE(oi::Feature*)
-
 #endif  // FEATURE_H

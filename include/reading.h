@@ -345,6 +345,4 @@ class OI_CORE_EXPORT Reading : public Element {
 
 }  // namespace oi
 
-Q_DECLARE_METATYPE(oi::Reading*)
-
 #endif  // READING_H

@@ -1,7 +1,6 @@
 #ifndef MEASUREMENTINTENT_H
 #define MEASUREMENTINTENT_H
 
-#include <QMetaType>
 #include <QString>
 
 namespace oi {
@@ -43,7 +42,5 @@ class MeasurementIntent {
 };
 
 }  // namespace oi
-
-Q_DECLARE_METATYPE(oi::MeasurementIntent)
 
 #endif  // MEASUREMENTINTENT_H

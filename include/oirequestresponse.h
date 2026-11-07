@@ -2,7 +2,6 @@
 #define OIREQUESTRESPONSE_H
 
 #include <QByteArray>
-#include <QMetaType>
 #include <QString>
 
 #include "types.h"
@@ -92,8 +91,5 @@ class OiRequestResponse {
 };
 
 }  // namespace oi
-
-Q_DECLARE_METATYPE(oi::OiRequestResponse)
-Q_DECLARE_METATYPE(oi::OiRequestResponse*)
 
 #endif  // OIREQUESTRESPONSE_H

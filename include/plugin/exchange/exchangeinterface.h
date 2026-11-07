@@ -1,7 +1,6 @@
 #ifndef EXCHANGEINTERFACE_H
 #define EXCHANGEINTERFACE_H
-#include <QIODevice>
-#include <QPointer>
+#include <iosfwd>
 #include <map>
 #include <vector>
 
@@ -38,8 +37,10 @@ class OI_CORE_EXPORT ExchangeInterface : public oi::Trackable {
   [[nodiscard]] const PluginMetaData& getMetaData() const;
   const std::vector<GeometryTypes>& getSupportedGeometries();
 
-  [[nodiscard]] const QPointer<QIODevice>& getDevice() const;
-  void setDevice(const QPointer<QIODevice>& device);
+  // the stream used for the im- or export (a file stream, a string stream);
+  // non-owning, it must outlive the exchange run
+  [[nodiscard]] std::iostream* getStream() const;
+  void setStream(std::iostream* stream);
 
   [[nodiscard]] const std::vector<oi::Guarded<FeatureWrapper>>& getFeatures()
       const;
@@ -122,8 +123,7 @@ class OI_CORE_EXPORT ExchangeInterface : public oi::Trackable {
       nominalSystem;  // nominal coordinate system the imported geometries are
                       // referenced to
 
-  QPointer<QIODevice>
-      device;  // the device used for the im- or export (e.g. a file)
+  std::iostream* stream{nullptr};  // non-owning, see setStream
   std::vector<oi::Guarded<FeatureWrapper>>
       features;  // the features that shall be exported or were imported
 
