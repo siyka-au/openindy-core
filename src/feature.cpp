@@ -112,8 +112,12 @@ Feature::~Feature() {
     }
   }
 
-  emit this->elementAboutToBeDeleted(this->id, this->name, this->group,
-                                     this->selfFeature->getFeatureTypeEnum());
+  // the observer is told once, then forgotten: nothing may reach it after
+  // this object is gone
+  this->notify(&FeatureObserver::onElementAboutToBeDeleted, this->id,
+               this->name, this->group,
+               this->selfFeature->getFeatureTypeEnum());
+  this->observer = nullptr;
 
   // delete self feature wrapper
   if (!this->selfFeature.isNull()) {
@@ -191,7 +195,10 @@ void Feature::setFeatureName(const QString& name) {
   // set the new name
   QString oldName = this->name;
   this->name = name;
-  emit this->featureNameChanged(this->id, oldName);
+  if (!this->signalsBlocked()) {
+    this->nameWasChanged(oldName);
+  }
+  this->notify(&FeatureObserver::onFeatureNameChanged, this->id, oldName);
 }
 
 /*!
@@ -208,7 +215,7 @@ void Feature::setGroupName(const QString& group) {
   if (group.compare(this->group) != 0) {
     QString oldGroup = this->group;
     this->group = group;
-    emit this->featureGroupChanged(this->id, oldGroup);
+    this->notify(&FeatureObserver::onFeatureGroupChanged, this->id, oldGroup);
   }
 }
 
@@ -225,7 +232,7 @@ const QString& Feature::getComment() const { return this->comment; }
 void Feature::setComment(const QString& comment) {
   if (comment.compare(this->comment) != 0) {
     this->comment = comment;
-    emit this->featureCommentChanged(this->id);
+    this->notify(&FeatureObserver::onFeatureCommentChanged, this->id);
   }
 }
 
@@ -242,7 +249,7 @@ const bool& Feature::getIsUpdated() const { return this->isUpdated; }
 void Feature::setIsUpdated(const bool& isUpdated) {
   if (isUpdated != this->isUpdated) {
     this->isUpdated = isUpdated;
-    // emit this->featureIsUpdatedChanged(this->id);
+    // this->notify(&FeatureObserver::onFeatureIsUpdatedChanged, this->id);
   }
 }
 
@@ -259,7 +266,7 @@ const bool& Feature::getIsSolved() const { return this->isSolved; }
 void Feature::setIsSolved(const bool& isSolved) {
   if (isSolved != this->isSolved) {
     this->isSolved = isSolved;
-    emit this->featureIsSolvedChanged(this->id);
+    this->notify(&FeatureObserver::onFeatureIsSolvedChanged, this->id);
   }
 }
 
@@ -364,7 +371,7 @@ void Feature::addFunction(const QPointer<Function>& function) {
   }
 
   this->isUpdated = false;
-  emit this->featureFunctionListChanged(this->id);
+  this->notify(&FeatureObserver::onFeatureFunctionListChanged, this->id);
 }
 
 /*!
@@ -382,14 +389,14 @@ void Feature::removeFunction(const int& index) {
     if (index == 0) {
       this->producerFunction = std::nullopt;
       this->isUpdated = false;
-      emit this->featureFunctionListChanged(this->id);
+      this->notify(&FeatureObserver::onFeatureFunctionListChanged, this->id);
       return;
     }
     const int transformIndex = index - 1;
     if (transformIndex < this->transformFunctions.size()) {
       this->transformFunctions.removeAt(transformIndex);
       this->isUpdated = false;
-      emit this->featureFunctionListChanged(this->id);
+      this->notify(&FeatureObserver::onFeatureFunctionListChanged, this->id);
     }
     return;
   }
@@ -397,7 +404,7 @@ void Feature::removeFunction(const int& index) {
   if (index < this->transformFunctions.size()) {
     this->transformFunctions.removeAt(index);
     this->isUpdated = false;
-    emit this->featureFunctionListChanged(this->id);
+    this->notify(&FeatureObserver::onFeatureFunctionListChanged, this->id);
   }
 }
 
@@ -416,7 +423,7 @@ const bool& Feature::getIsActiveFeature() const {
 void Feature::setActiveFeatureState(const bool& isActiveFeature) {
   if (isActiveFeature != this->isActiveFeature) {
     this->isActiveFeature = isActiveFeature;
-    emit this->featureIsActiveChanged(this->id);
+    this->notify(&FeatureObserver::onFeatureIsActiveChanged, this->id);
   }
 }
 

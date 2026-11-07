@@ -27,9 +27,6 @@ Station::Station(QObject* parent) : Feature(parent), isActiveStation(false) {
 
   // create a coordinate system object as the station's coordinate system
   this->stationSystem = new CoordinateSystem(QPointer<Station>(this));
-  QObject::connect(this, SIGNAL(featureNameChanged(const int&, const QString&)),
-                   this, SLOT(stationNameChanged(const int&, const QString&)),
-                   Qt::DirectConnection);
 
   // create a sensor control object and connect it
   QPointer<Station> stationPointer(this);
@@ -58,9 +55,6 @@ Station::Station(const QString& name, QObject* parent)
   // create a coordinate system object as the station's coordinate system
   this->stationSystem = new CoordinateSystem(QPointer<Station>(this));
   this->stationSystem->setFeatureName(this->name);
-  QObject::connect(this, SIGNAL(featureNameChanged(const int&, const QString&)),
-                   this, SLOT(stationNameChanged(const int&, const QString&)),
-                   Qt::DirectConnection);
 
   // create a sensor control object and connect it
   QPointer<Station> stationPointer(this);
@@ -694,6 +688,15 @@ void Station::stationNameChanged(const int& /*featureId*/,
   if (!this->stationSystem.isNull()) {
     this->stationSystem->setFeatureName(this->name);
   }
+}
+
+/*!
+ * \brief Station::nameWasChanged
+ * Keeps the station system's name in step (used to be a self-connection of
+ * Feature::featureNameChanged)
+ */
+void Station::nameWasChanged(const QString& oldName) {
+  this->stationNameChanged(this->id, oldName);
 }
 
 /*!

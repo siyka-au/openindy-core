@@ -205,7 +205,7 @@ void SlottedHole::setSlottedHole(const Position& center,
                                 (this->length / 2 - this->radius.getRadius()) *
                                     axis);
 
-  emit this->geomParametersChanged(this->id);
+  this->notify(&FeatureObserver::onGeomParametersChanged, this->id);
 }
 
 /*!
@@ -235,7 +235,7 @@ void SlottedHole::setSlottedHole(const Position& circleCenterA,
   axis.normalize();
   this->holeAxis.setVector(axis);
 
-  emit this->geomParametersChanged(this->id);
+  this->notify(&FeatureObserver::onGeomParametersChanged, this->id);
 }
 
 /*!

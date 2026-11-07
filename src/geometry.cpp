@@ -106,7 +106,7 @@ const bool& Geometry::getIsCommon() const { return this->isCommon; }
 void Geometry::setCommonState(const bool& isCommon) {
   if (isCommon != this->isCommon) {
     this->isCommon = isCommon;
-    emit this->geomIsCommonChanged(this->id);
+    this->notify(&FeatureObserver::onGeomIsCommonChanged, this->id);
   }
 }
 
@@ -200,7 +200,7 @@ bool Geometry::setRealises(const QPointer<Geometry>& nominal) {
   }
 
   this->realises = nominal;
-  emit this->geomRealisesChanged(this->id);
+  this->notify(&FeatureObserver::onGeomRealisesChanged, this->id);
 
   return true;
 }
@@ -211,7 +211,7 @@ bool Geometry::setRealises(const QPointer<Geometry>& nominal) {
 void Geometry::clearRealises() {
   if (this->realises.has_value()) {
     this->realises = std::nullopt;
-    emit this->geomRealisesChanged(this->id);
+    this->notify(&FeatureObserver::onGeomRealisesChanged, this->id);
   }
 }
 
@@ -247,7 +247,7 @@ bool Geometry::setOwnerFeature(const QPointer<Geometry>& owner) {
     owner->ownedSubGeometries.append(self);
   }
 
-  emit this->geomOwnerFeatureChanged(this->id);
+  this->notify(&FeatureObserver::onGeomOwnerFeatureChanged, this->id);
 
   return true;
 }
@@ -295,7 +295,7 @@ void Geometry::addObservation(const QPointer<Observation>& obs) {
 
     this->isUpdated = false;
 
-    emit this->geomObservationsChanged(this->id);
+    this->notify(&FeatureObserver::onGeomObservationsChanged, this->id);
   }
 }
 
@@ -323,7 +323,7 @@ void Geometry::removeObservation(const QPointer<Observation>& obs) {
 
     this->isUpdated = false;
 
-    emit this->geomObservationsChanged(this->id);
+    this->notify(&FeatureObserver::onGeomObservationsChanged, this->id);
   }
 }
 
@@ -359,7 +359,7 @@ bool Geometry::setNominalSystem(const QPointer<CoordinateSystem>& nomSys) {
 
     nomSys->addNominal(this->selfFeature);
 
-    emit this->geomNominalSystemChanged(this->id);
+    this->notify(&FeatureObserver::onGeomNominalSystemChanged, this->id);
 
     return true;
   }
@@ -383,7 +383,8 @@ void Geometry::setMeasurementConfig(const MeasurementConfigKey& myConfig) {
   QString oldName = this->activeMeasurementConfig.getName();
   MeasurementConfigKey oldKey = this->activeMeasurementConfig;
   this->activeMeasurementConfig = myConfig;
-  emit this->geomMeasurementConfigChanged(this->id, oldName, oldKey);
+  this->notify(&FeatureObserver::onGeomMeasurementConfigChanged, this->id,
+               oldName, oldKey);
 }
 
 /*!
@@ -456,7 +457,7 @@ const Direction& Geometry::getDirection() const { return this->ijk; }
 
 void Geometry::setDirection(Direction& ijk) {
   this->ijk = ijk;
-  emit this->geomParametersChanged(this->id);
+  this->notify(&FeatureObserver::onGeomParametersChanged, this->id);
 }
 
 /*!
@@ -467,7 +468,7 @@ const Position& Geometry::getPosition() const { return this->xyz; }
 
 void Geometry::setPosition(Position& xyz) {
   this->xyz = xyz;
-  emit this->geomParametersChanged(this->id);
+  this->notify(&FeatureObserver::onGeomParametersChanged, this->id);
 }
 /*!
  * \brief Geometry::getUnknownParameters

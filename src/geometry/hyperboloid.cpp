@@ -117,7 +117,7 @@ void Hyperboloid::setHyperboloid(const Position& center, const Direction& axis,
   this->a = a;
   this->c = c;
 
-  emit this->geomParametersChanged(this->id);
+  this->notify(&FeatureObserver::onGeomParametersChanged, this->id);
 }
 
 /*!

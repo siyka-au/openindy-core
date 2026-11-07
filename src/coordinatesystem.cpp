@@ -171,7 +171,7 @@ void CoordinateSystem::setActiveCoordinateSystemState(
     const bool& isActiveCoordinateSystem) {
   if (this->isActiveCoordinateSystem != isActiveCoordinateSystem) {
     this->isActiveCoordinateSystem = isActiveCoordinateSystem;
-    emit this->activeCoordinateSystemChanged(this->id);
+    this->notify(&FeatureObserver::onActiveCoordinateSystemChanged, this->id);
   }
 }
 
@@ -313,7 +313,8 @@ bool CoordinateSystem::addObservation(
     this->observationsList.append(observation);
     this->observationsMap.insert(observation->getId(), observation);
 
-    emit this->observationsChanged(this->id, observation->getId());
+    this->notify(&FeatureObserver::onObservationsChanged, this->id,
+                 observation->getId());
 
     return true;
   }
@@ -388,7 +389,7 @@ bool CoordinateSystem::addTransformationParameter(
 
     this->trafoParams.append(trafoParam);
 
-    emit this->transformationParametersChanged(this->id);
+    this->notify(&FeatureObserver::onTransformationParametersChanged, this->id);
 
     return true;
   }
@@ -405,7 +406,7 @@ bool CoordinateSystem::removeTransformationParameter(
     const QPointer<TrafoParam>& trafoParam) {
   if (!trafoParam.isNull()) {
     bool result = this->trafoParams.removeOne(trafoParam);
-    emit this->transformationParametersChanged(this->id);
+    this->notify(&FeatureObserver::onTransformationParametersChanged, this->id);
     return result;
   }
   return false;
@@ -453,7 +454,7 @@ bool CoordinateSystem::addNominal(const QPointer<FeatureWrapper>& nominal) {
     this->nominalsList.append(nominal);
     this->nominalsMap.insert(nominal->getGeometry()->getId(), nominal);
 
-    emit this->nominalsChanged(this->id);
+    this->notify(&FeatureObserver::onNominalsChanged, this->id);
 
     return true;
   }
@@ -479,7 +480,7 @@ bool CoordinateSystem::addNominals(
     this->blockSignals(false);
 
     if (this->nominalsList.size() > oldSize) {
-      emit this->nominalsChanged(this->id);
+      this->notify(&FeatureObserver::onNominalsChanged, this->id);
       return true;
     }
   }
@@ -502,7 +503,7 @@ bool CoordinateSystem::removeNominal(const QPointer<FeatureWrapper>& nominal) {
 
     if (this->nominalsMap.remove(nominal->getGeometry()->getId()) == 1) {
       this->nominalsList.removeOne(removeNominal);
-      emit this->nominalsChanged(this->id);
+      this->notify(&FeatureObserver::onNominalsChanged, this->id);
       return true;
     }
   }
@@ -522,7 +523,7 @@ bool CoordinateSystem::removeNominal(const int& featureId) {
   if (!nominal.isNull()) {
     this->nominalsMap.remove(featureId);
     this->nominalsList.removeOne(nominal);
-    emit this->nominalsChanged(this->id);
+    this->notify(&FeatureObserver::onNominalsChanged, this->id);
     return true;
   }
 
@@ -574,7 +575,8 @@ void CoordinateSystem::setBundlePlugin(
 
   // set bundle
   this->bundlePlugin = bundle;
-  emit this->bundlePluginChanged(this->id);  // TODO OI-932 not used
+  this->notify(&FeatureObserver::onBundlePluginChanged,
+               this->id);  // TODO OI-932 not used
 }
 
 /*!

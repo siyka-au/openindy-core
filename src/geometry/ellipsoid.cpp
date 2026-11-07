@@ -123,7 +123,7 @@ void Ellipsoid::setEllipsoid(const Position& center, const Direction& majorAxis,
   this->a = a;
   this->b = b;
 
-  emit this->geomParametersChanged(this->id);
+  this->notify(&FeatureObserver::onGeomParametersChanged, this->id);
 }
 
 /*!

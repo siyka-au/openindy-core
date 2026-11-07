@@ -118,7 +118,7 @@ void Torus::setTorus(const Position& center, const Direction& normal,
   this->radius = radiusA;
   this->radiusB = radiusB;
 
-  emit this->geomParametersChanged(this->id);
+  this->notify(&FeatureObserver::onGeomParametersChanged, this->id);
 }
 
 /*!

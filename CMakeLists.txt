@@ -194,6 +194,7 @@ add_library(OpenIndyCore SHARED
     include/element.h
     include/feature.h
     include/featureattributes.h
+    include/featureobserver.h
     include/featurecontainer.h
     include/featurewrapper.h
     include/geometry.h
@@ -362,6 +363,15 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 endif()
 
 add_test(NAME ownership COMMAND tst_ownership)
+
+add_executable(tst_featureobserver test/featureobserver/tst_featureobserver.cpp)
+target_link_libraries(tst_featureobserver PRIVATE Qt6::Test OpenIndyCore OpenIndyMath)
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(tst_featureobserver PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+
+add_test(NAME featureobserver COMMAND tst_featureobserver)
 
 add_executable(tst_ownedsubgeometry test/ownedsubgeometry/tst_ownedsubgeometry.cpp)
 target_link_libraries(tst_ownedsubgeometry PRIVATE Qt6::Test OpenIndyCore OpenIndyMath)

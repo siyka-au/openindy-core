@@ -78,7 +78,7 @@ bool Group::addMember(const QPointer<FeatureWrapper>& feature) {
 
   this->members.append(feature);
 
-  emit this->groupMembersChanged(this->id);
+  this->notify(&FeatureObserver::onGroupMembersChanged, this->id);
 
   return true;
 }
@@ -100,7 +100,7 @@ bool Group::removeMemberById(const int& featureId) {
 
     if (member->getFeature()->getId() == featureId) {
       this->members.removeAt(i);
-      emit this->groupMembersChanged(this->id);
+      this->notify(&FeatureObserver::onGroupMembersChanged, this->id);
       return true;
     }
   }
@@ -162,7 +162,7 @@ void Group::compact() {
   this->members = live;
 
   if (this->members.size() != before) {
-    emit this->groupMembersChanged(this->id);
+    this->notify(&FeatureObserver::onGroupMembersChanged, this->id);
   }
 }
 

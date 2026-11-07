@@ -123,20 +123,6 @@ class OI_CORE_EXPORT TrafoParam : public Feature {
   [[nodiscard]] QString getDisplayIsUsed() const override;
   [[nodiscard]] QString getDisplayIsDatumTransformation() const override;
 
- signals:
-
-  // ###########################################
-  // signals to inform about trafo param changes
-  // ###########################################
-
-  void transformationParameterChanged(const int& tpId);
-  void coordinateSystemsChanged(const int& tpId);
-  void isUsedChanged(const int& tpId);
-  // void validTimeChanged(const int &tpId);
-  // void isMovementChanged(const int &tpId);
-  void isBundleChanged(const int& tpId);
-  void isDatumTrafoChanged(const int& tpId);
-
  private:
   // ##############################
   // general trafo param attributes

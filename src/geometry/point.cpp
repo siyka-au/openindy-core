@@ -103,7 +103,7 @@ void Point::setPoint(const Position& xyz) {
   // set the given parameters
   this->xyz = xyz;
 
-  emit this->geomParametersChanged(this->id);
+  this->notify(&FeatureObserver::onGeomParametersChanged, this->id);
 }
 
 /*!
@@ -113,7 +113,7 @@ void Point::setPoint(const Position& xyz) {
 void Point::setDistance(const double distance) {
   this->distance = distance;
 
-  emit this->geomParametersChanged(this->id);
+  this->notify(&FeatureObserver::onGeomParametersChanged, this->id);
 }
 
 /*!

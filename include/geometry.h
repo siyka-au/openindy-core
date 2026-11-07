@@ -193,23 +193,12 @@ class OI_CORE_EXPORT Geometry : public Feature {
       const UnitType& type, const int& digits,
       const bool& showDiff = false) const override;
 
- signals:
-
-  // ########################################
-  // signals to inform about geometry changes
-  // ########################################
-
-  void geomIsCommonChanged(const int& featureId);
-  void geomRealisesChanged(const int& featureId);
-  void geomOwnerFeatureChanged(const int& featureId);
-  void geomObservationsChanged(const int& featureId);
-  void geomNominalSystemChanged(const int& featureId);
-  void geomStatisticChanged(const int& featureId);
-  void geomSimulationDataChanged(const int& featureId);
-  void geomMeasurementConfigChanged(const int& featureId,
-                                    const QString& oldMConfig,
-                                    const MeasurementConfigKey oldKey);
-  void geomParametersChanged(const int& featureId);
+ public:
+  //! re-announce that the observations changed (used after bulk edits done
+  //! with signals blocked)
+  void announceObservationsChanged() {
+    this->notify(&FeatureObserver::onGeomObservationsChanged, this->id);
+  }
 
  protected:
   // #############################

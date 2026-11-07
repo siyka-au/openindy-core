@@ -89,7 +89,7 @@ QPointer<OiJob> MeasurementIntentTest::makeJobWithActiveStation(
   stationFeature->setStation(station);
   job->addFeature(stationFeature);
 
-  // Station::activeStationChanged is connected (OiJob::connectFeature) to
+  // Station::activeStationChanged is connected (OiJob::attachFeature) to
   // OiJob::setActiveStation - this is the ordinary way a station becomes
   // the job's active one, not a test-only shortcut
   station->setActiveStationState(true);

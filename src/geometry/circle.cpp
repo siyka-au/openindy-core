@@ -102,7 +102,7 @@ void Circle::setCircle(const Position& center, const Direction& normal,
   this->ijk = normal;
   this->radius = radius;
 
-  emit this->geomParametersChanged(this->id);
+  this->notify(&FeatureObserver::onGeomParametersChanged, this->id);
 }
 
 /*!

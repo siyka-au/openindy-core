@@ -7,15 +7,49 @@
 using namespace oi;
 
 /*!
+ * \brief The feature observer installed on a station's own coordinate system.
+ * That system is not a feature of the job, so (as the old signal connections
+ * did) only its observations, transformation parameters and active state are
+ * passed on - nothing else, in particular not its deletion.
+ */
+class OiJob::StationSystemObserver : public FeatureObserver {
+ public:
+  explicit StationSystemObserver(OiJob* job) : job(job) {}
+
+  void onObservationsChanged(const int& coordId, const int& obsId) override {
+    this->job->setSystemObservations(coordId, obsId);
+  }
+  void onTransformationParametersChanged(const int& coordId) override {
+    this->job->setSystemTrafoParams(coordId);
+  }
+  void onActiveCoordinateSystemChanged(const int& coordId) override {
+    this->job->setActiveCoordinateSystem(coordId);
+  }
+
+ private:
+  OiJob* job;
+};
+
+/*!
  * \brief OiJob::OiJob
  * \param parent
  */
-OiJob::OiJob(QObject* parent) : QObject(parent), activeGroup("All Groups") {}
+OiJob::OiJob(QObject* parent)
+    : QObject(parent),
+      stationSystemObserver(std::make_unique<StationSystemObserver>(this)),
+      activeGroup("All Groups") {}
 
 /*!
  * \brief OiJob::~OiJob
  */
 OiJob::~OiJob() {
+  // no feature may keep a pointer to this job (or to the station system
+  // observer) past this point
+  for (const QPointer<FeatureWrapper>& feature :
+       oi::snapshot(this->featureContainer.getFeaturesList())) {
+    this->detachFeature(feature);
+  }
+
   // remove all features
   this->featureContainer.removeAll();
 
@@ -424,7 +458,7 @@ bool OiJob::addFeature(const QPointer<FeatureWrapper>& feature) {
   }
 
   // connect the feature's signals to slots in OiJob
-  this->connectFeature(feature);
+  this->attachFeature(feature);
 
   // if a group is set for the new feature emit the group changed signal
   if (feature->getFeature()->getGroupName().compare("") != 0 &&
@@ -579,7 +613,7 @@ QList<QPointer<FeatureWrapper> > OiJob::addFeatures(
 
       // add and connect feature
       this->featureContainer.addFeature(feature);
-      this->connectFeature(feature);
+      this->attachFeature(feature);
 
       // add feature to result list
       result.append(feature);
@@ -638,7 +672,7 @@ QList<QPointer<FeatureWrapper> > OiJob::addFeatures(
 
       // add and connect feature
       this->featureContainer.addFeature(feature);
-      this->connectFeature(feature);
+      this->attachFeature(feature);
 
       // add feature to result list
       result.append(feature);
@@ -685,7 +719,7 @@ bool OiJob::addFeatures(const QList<QPointer<FeatureWrapper> >& features,
     }
 
     // connect the feature's signals to slots in OiJob
-    this->connectFeature(feature);
+    this->attachFeature(feature);
 
     // add feature type to list of added feature types
     if (!addedFeatureTypes.contains(feature->getFeatureTypeEnum())) {
@@ -746,7 +780,7 @@ bool OiJob::removeFeature(const int& featureId) {
     emit this->activeGroupChanged();
   }
 
-  this->disconnectFeature(feature);
+  this->detachFeature(feature);
 
   bool success = this->featureContainer.removeFeature(featureId);
 
@@ -790,7 +824,7 @@ bool OiJob::removeFeature(const QPointer<FeatureWrapper>& feature) {
     emit this->activeGroupChanged();
   }
 
-  this->disconnectFeature(feature);
+  this->detachFeature(feature);
 
   bool success =
       this->featureContainer.removeFeature(feature->getFeature()->getId());
@@ -1786,7 +1820,7 @@ void OiJob::addMeasurementResults(const int& geomId,
       QString("P%1").arg(pointFeature->getFeature()->getId());
 
   this->featureContainer.addFeature(pointFeature);
-  this->connectFeature(pointFeature);
+  this->attachFeature(pointFeature);
 
   QPointer<Point> point = pointFeature->getPoint();
   point->blockSignals(true);
@@ -1794,7 +1828,7 @@ void OiJob::addMeasurementResults(const int& geomId,
     point->addObservation(observation);
   }
   point->blockSignals(false);
-  point->geomObservationsChanged(point->getId());
+  point->announceObservationsChanged();
 
   // D12: stamp the tag and feed any function that already declares a
   // matching role - "no binding step" (Stage 7f acceptance criteria).
@@ -2543,106 +2577,25 @@ void OiJob::elementAboutToBeDeleted(const int& elementId, const QString& name,
                                     const FeatureTypes& type) {
   QPointer<FeatureWrapper> feature =
       this->featureContainer.getFeatureById(elementId);
-  this->disconnectFeature(feature);
+  this->detachFeature(feature);
   this->featureContainer.checkAndClean(elementId, name, group, type);
 }
 
 /*!
- * \brief OiJob::connectFeature
+ * \brief OiJob::attachFeature
+ * Make the job the observer of the feature (and of the station system a
+ * station owns), and connect the station's own signals.
  * \param feature
  */
-void OiJob::connectFeature(const QPointer<FeatureWrapper>& feature) {
+void OiJob::attachFeature(const QPointer<FeatureWrapper>& feature) {
   // check feature
   if (feature.isNull() || feature->getFeature().isNull()) {
     return;
   }
 
-  // general element connects
-  QObject::connect(feature->getFeature().data(),
-                   &Element::elementAboutToBeDeleted, this,
-                   &OiJob::elementAboutToBeDeleted, Qt::AutoConnection);
+  feature->getFeature()->setObserver(this);
 
-  // general feature connects
-  QObject::connect(feature->getFeature().data(), &Feature::featureNameChanged,
-                   this, &OiJob::setFeatureName, Qt::AutoConnection);
-  QObject::connect(feature->getFeature().data(), &Feature::featureGroupChanged,
-                   this, &OiJob::setFeatureGroup, Qt::AutoConnection);
-  QObject::connect(feature->getFeature().data(),
-                   &Feature::featureCommentChanged, this,
-                   &OiJob::setFeatureComment, Qt::AutoConnection);
-  // QObject::connect(feature->getFeature().data(),
-  // &Feature::featureIsUpdatedChanged,
-  //                  this, &OiJob::setFeatureIsUpdated, Qt::AutoConnection);
-  QObject::connect(feature->getFeature().data(),
-                   &Feature::featureIsSolvedChanged, this,
-                   &OiJob::setFeatureIsSolved, Qt::QueuedConnection);
-  QObject::connect(feature->getFeature().data(),
-                   &Feature::featureFunctionListChanged, this,
-                   &OiJob::setFeatureFunctions, Qt::AutoConnection);
-  QObject::connect(feature->getFeature().data(),
-                   &Feature::featureUsedForChanged, this,
-                   &OiJob::setFeatureUsedFor, Qt::AutoConnection);
-  QObject::connect(feature->getFeature().data(),
-                   &Feature::featurePreviouslyNeededChanged, this,
-                   &OiJob::setFeaturePreviouslyNeeded, Qt::AutoConnection);
-  QObject::connect(feature->getFeature().data(),
-                   &Feature::featureIsActiveChanged, this,
-                   &OiJob::setActiveFeature, Qt::AutoConnection);
-
-  // general geometry connects
-  if (getIsGeometry(feature->getFeatureTypeEnum())) {
-    QObject::connect(feature->getGeometry().data(),
-                     &Geometry::geomIsCommonChanged, this,
-                     &OiJob::setGeometryIsCommon, Qt::AutoConnection);
-    QObject::connect(feature->getGeometry().data(),
-                     &Geometry::geomRealisesChanged, this,
-                     &OiJob::setGeometryRealises, Qt::AutoConnection);
-    QObject::connect(feature->getGeometry().data(),
-                     &Geometry::geomObservationsChanged, this,
-                     &OiJob::setGeometryObservations, Qt::AutoConnection);
-    QObject::connect(feature->getGeometry().data(),
-                     &Geometry::geomNominalSystemChanged, this,
-                     &OiJob::setGeometryNominalSystem, Qt::AutoConnection);
-    QObject::connect(feature->getGeometry().data(),
-                     &Geometry::geomStatisticChanged, this,
-                     &OiJob::setGeometryStatistic, Qt::AutoConnection);
-    QObject::connect(feature->getGeometry().data(),
-                     &Geometry::geomSimulationDataChanged, this,
-                     &OiJob::setGeometrySimulationData, Qt::AutoConnection);
-    QObject::connect(feature->getGeometry().data(),
-                     &Geometry::geomMeasurementConfigChanged, this,
-                     &OiJob::setGeometryMeasurementConfig, Qt::AutoConnection);
-  }
-
-  // group connects
-  if (!feature->getGroup().isNull()) {
-    QObject::connect(feature->getGroup().data(), &Group::groupMembersChanged,
-                     this, &OiJob::setGroupMembers, Qt::AutoConnection);
-  }
-
-  // trafo param connects
-  if (feature->getFeatureTypeEnum() == FeatureTypes::eTrafoParamFeature) {
-    QObject::connect(feature->getTrafoParam().data(),
-                     &TrafoParam::transformationParameterChanged, this,
-                     &OiJob::setTrafoParamParameters, Qt::AutoConnection);
-    QObject::connect(feature->getTrafoParam().data(),
-                     &TrafoParam::coordinateSystemsChanged, this,
-                     &OiJob::setTrafoParamSystems, Qt::AutoConnection);
-    QObject::connect(feature->getTrafoParam().data(),
-                     &TrafoParam::isUsedChanged, this,
-                     &OiJob::setTrafoParamIsUsed, Qt::AutoConnection);
-    /*QObject::connect(feature->getTrafoParam().data(),
-       &TrafoParam::validTimeChanged, this, &OiJob::setTrafoParamValidTime,
-       Qt::AutoConnection);*/
-    /*QObject::connect(feature->getTrafoParam().data(),
-       &TrafoParam::isMovementChanged, this, &OiJob::setTrafoParamIsMovement,
-       Qt::AutoConnection);*/
-    QObject::connect(feature->getTrafoParam().data(),
-                     &TrafoParam::isDatumTrafoChanged, this,
-                     &OiJob::setTrafoParamIsDatum, Qt::AutoConnection);
-  }
-
-  // station connects
+  // station connects (sensor/station signals are not feature-model signals)
   if (feature->getFeatureTypeEnum() == FeatureTypes::eStationFeature) {
     QObject::connect(feature->getStation().data(),
                      &Station::activeStationChanged, this,
@@ -2650,119 +2603,25 @@ void OiJob::connectFeature(const QPointer<FeatureWrapper>& feature) {
     QObject::connect(feature->getStation().data(), &Station::sensorChanged,
                      this, &OiJob::setStationSensor, Qt::AutoConnection);
     if (!feature->getStation()->getCoordinateSystem().isNull()) {
-      QObject::connect(feature->getStation()->getCoordinateSystem().data(),
-                       &CoordinateSystem::observationsChanged, this,
-                       &OiJob::setSystemObservations, Qt::AutoConnection);
-      QObject::connect(feature->getStation()->getCoordinateSystem().data(),
-                       &CoordinateSystem::transformationParametersChanged, this,
-                       &OiJob::setSystemTrafoParams, Qt::AutoConnection);
-      QObject::connect(feature->getStation()->getCoordinateSystem().data(),
-                       &CoordinateSystem::activeCoordinateSystemChanged, this,
-                       &OiJob::setActiveCoordinateSystem, Qt::AutoConnection);
+      feature->getStation()->getCoordinateSystem()->setObserver(
+          this->stationSystemObserver.get());
     }
-  }
-
-  // coordinate system connects
-  if (feature->getFeatureTypeEnum() == FeatureTypes::eCoordinateSystemFeature) {
-    QObject::connect(feature->getCoordinateSystem().data(),
-                     &CoordinateSystem::nominalsChanged, this,
-                     &OiJob::setSystemsNominals, Qt::AutoConnection);
-    QObject::connect(feature->getCoordinateSystem().data(),
-                     &CoordinateSystem::transformationParametersChanged, this,
-                     &OiJob::setSystemTrafoParams, Qt::AutoConnection);
-    QObject::connect(feature->getCoordinateSystem().data(),
-                     &CoordinateSystem::activeCoordinateSystemChanged, this,
-                     &OiJob::setActiveCoordinateSystem, Qt::AutoConnection);
   }
 }
 
 /*!
- * \brief OiJob::disconnectFeature
+ * \brief OiJob::detachFeature
+ * Undo attachFeature: the feature (and station system) forgets the job.
  * \param feature
  */
-void OiJob::disconnectFeature(const QPointer<FeatureWrapper>& feature) {
+void OiJob::detachFeature(const QPointer<FeatureWrapper>& feature) {
   // check feature
   if (feature.isNull() || feature->getFeature().isNull()) {
     return;
   }
 
-  // general element connects
-  QObject::disconnect(feature->getFeature().data(),
-                      &Element::elementAboutToBeDeleted, this,
-                      &OiJob::elementAboutToBeDeleted);
-
-  // general feature connects
-  QObject::disconnect(feature->getFeature().data(),
-                      &Feature::featureNameChanged, this,
-                      &OiJob::setFeatureName);
-  QObject::disconnect(feature->getFeature().data(),
-                      &Feature::featureGroupChanged, this,
-                      &OiJob::setFeatureGroup);
-  QObject::disconnect(feature->getFeature().data(),
-                      &Feature::featureCommentChanged, this,
-                      &OiJob::setFeatureComment);
-  // QObject::disconnect(feature->getFeature().data(),
-  // &Feature::featureIsUpdatedChanged,
-  //                  this, &OiJob::setFeatureIsUpdated);
-  QObject::disconnect(feature->getFeature().data(),
-                      &Feature::featureIsSolvedChanged, this,
-                      &OiJob::setFeatureIsSolved);
-  QObject::disconnect(feature->getFeature().data(),
-                      &Feature::featureFunctionListChanged, this,
-                      &OiJob::setFeatureFunctions);
-  QObject::disconnect(feature->getFeature().data(),
-                      &Feature::featureUsedForChanged, this,
-                      &OiJob::setFeatureUsedFor);
-  QObject::disconnect(feature->getFeature().data(),
-                      &Feature::featurePreviouslyNeededChanged, this,
-                      &OiJob::setFeaturePreviouslyNeeded);
-  QObject::disconnect(feature->getFeature().data(),
-                      &Feature::featureIsActiveChanged, this,
-                      &OiJob::setActiveFeature);
-
-  // general geometry connects
-  if (getIsGeometry(feature->getFeatureTypeEnum())) {
-    QObject::connect(feature->getGeometry().data(),
-                     &Geometry::geomIsCommonChanged, this,
-                     &OiJob::setGeometryIsCommon);
-    QObject::disconnect(feature->getGeometry().data(),
-                        &Geometry::geomRealisesChanged, this,
-                        &OiJob::setGeometryRealises);
-    QObject::disconnect(feature->getGeometry().data(),
-                        &Geometry::geomObservationsChanged, this,
-                        &OiJob::setGeometryObservations);
-    QObject::disconnect(feature->getGeometry().data(),
-                        &Geometry::geomNominalSystemChanged, this,
-                        &OiJob::setGeometryNominalSystem);
-    QObject::disconnect(feature->getGeometry().data(),
-                        &Geometry::geomStatisticChanged, this,
-                        &OiJob::setGeometryStatistic);
-    QObject::disconnect(feature->getGeometry().data(),
-                        &Geometry::geomSimulationDataChanged, this,
-                        &OiJob::setGeometrySimulationData);
-    QObject::disconnect(feature->getGeometry().data(),
-                        &Geometry::geomMeasurementConfigChanged, this,
-                        &OiJob::setGeometryMeasurementConfig);
-  }
-
-  // trafo param connects
-  if (feature->getFeatureTypeEnum() == FeatureTypes::eTrafoParamFeature) {
-    QObject::disconnect(feature->getTrafoParam().data(),
-                        &TrafoParam::transformationParameterChanged, this,
-                        &OiJob::setTrafoParamParameters);
-    QObject::disconnect(feature->getTrafoParam().data(),
-                        &TrafoParam::coordinateSystemsChanged, this,
-                        &OiJob::setTrafoParamSystems);
-    QObject::disconnect(feature->getTrafoParam().data(),
-                        &TrafoParam::isUsedChanged, this,
-                        &OiJob::setTrafoParamIsUsed);
-    /*QObject::disconnect(feature->getTrafoParam().data(),
-       &TrafoParam::validTimeChanged, this, &OiJob::setTrafoParamValidTime);*/
-    /*QObject::disconnect(feature->getTrafoParam().data(),
-       &TrafoParam::isMovementChanged, this, &OiJob::setTrafoParamIsMovement);*/
-    QObject::disconnect(feature->getTrafoParam().data(),
-                        &TrafoParam::isDatumTrafoChanged, this,
-                        &OiJob::setTrafoParamIsDatum);
+  if (feature->getFeature()->getObserver() == this) {
+    feature->getFeature()->setObserver(nullptr);
   }
 
   // station connects
@@ -2772,31 +2631,122 @@ void OiJob::disconnectFeature(const QPointer<FeatureWrapper>& feature) {
                         &OiJob::setActiveStation);
     QObject::disconnect(feature->getStation().data(), &Station::sensorChanged,
                         this, &OiJob::setStationSensor);
-    if (!feature->getStation()->getCoordinateSystem().isNull()) {
-      QObject::disconnect(feature->getStation()->getCoordinateSystem().data(),
-                          &CoordinateSystem::observationsChanged, this,
-                          &OiJob::setSystemObservations);
-      QObject::disconnect(feature->getStation()->getCoordinateSystem().data(),
-                          &CoordinateSystem::transformationParametersChanged,
-                          this, &OiJob::setSystemTrafoParams);
-      QObject::disconnect(feature->getStation()->getCoordinateSystem().data(),
-                          &CoordinateSystem::activeCoordinateSystemChanged,
-                          this, &OiJob::setActiveCoordinateSystem);
+    if (!feature->getStation()->getCoordinateSystem().isNull() &&
+        feature->getStation()->getCoordinateSystem()->getObserver() ==
+            this->stationSystemObserver.get()) {
+      feature->getStation()->getCoordinateSystem()->setObserver(nullptr);
     }
   }
+}
 
-  // coordinate system connects
-  if (feature->getFeatureTypeEnum() == FeatureTypes::eCoordinateSystemFeature) {
-    QObject::disconnect(feature->getCoordinateSystem().data(),
-                        &CoordinateSystem::nominalsChanged, this,
-                        &OiJob::setSystemsNominals);
-    QObject::disconnect(feature->getCoordinateSystem().data(),
-                        &CoordinateSystem::transformationParametersChanged,
-                        this, &OiJob::setSystemTrafoParams);
-    QObject::disconnect(feature->getCoordinateSystem().data(),
-                        &CoordinateSystem::activeCoordinateSystemChanged, this,
-                        &OiJob::setActiveCoordinateSystem);
-  }
+// ###########################################################################
+// FeatureObserver: the feature model reports to the job, which relays it into
+// its own signals exactly as the former signal/slot connections did
+// ###########################################################################
+
+void OiJob::onElementAboutToBeDeleted(const int& elementId, const QString& name,
+                                      const QString& group,
+                                      const FeatureTypes& type) {
+  this->elementAboutToBeDeleted(elementId, name, group, type);
+}
+
+void OiJob::onFeatureNameChanged(const int& featureId, const QString& oldName) {
+  this->setFeatureName(featureId, oldName);
+}
+
+void OiJob::onFeatureGroupChanged(const int& featureId,
+                                  const QString& oldGroup) {
+  this->setFeatureGroup(featureId, oldGroup);
+}
+
+void OiJob::onFeatureCommentChanged(const int& featureId) {
+  this->setFeatureComment(featureId);
+}
+
+// the one notification that has always been delivered later, through the
+// event loop (temporary: goes away with the signals themselves)
+void OiJob::onFeatureIsSolvedChanged(const int& featureId) {
+  QMetaObject::invokeMethod(
+      this, [this, featureId]() { this->setFeatureIsSolved(featureId); },
+      Qt::QueuedConnection);
+}
+
+void OiJob::onFeatureFunctionListChanged(const int& featureId) {
+  this->setFeatureFunctions(featureId);
+}
+
+void OiJob::onFeatureUsedForChanged(const int& featureId) {
+  this->setFeatureUsedFor(featureId);
+}
+
+void OiJob::onFeaturePreviouslyNeededChanged(const int& featureId) {
+  this->setFeaturePreviouslyNeeded(featureId);
+}
+
+void OiJob::onFeatureIsActiveChanged(const int& featureId) {
+  this->setActiveFeature(featureId);
+}
+
+void OiJob::onGeomIsCommonChanged(const int& featureId) {
+  this->setGeometryIsCommon(featureId);
+}
+
+void OiJob::onGeomRealisesChanged(const int& featureId) {
+  this->setGeometryRealises(featureId);
+}
+
+void OiJob::onGeomObservationsChanged(const int& featureId) {
+  this->setGeometryObservations(featureId);
+}
+
+void OiJob::onGeomNominalSystemChanged(const int& featureId) {
+  this->setGeometryNominalSystem(featureId);
+}
+
+void OiJob::onGeomStatisticChanged(const int& featureId) {
+  this->setGeometryStatistic(featureId);
+}
+
+void OiJob::onGeomSimulationDataChanged(const int& featureId) {
+  this->setGeometrySimulationData(featureId);
+}
+
+void OiJob::onGeomMeasurementConfigChanged(const int& featureId,
+                                           const QString& oldMConfig,
+                                           const MeasurementConfigKey oldKey) {
+  this->setGeometryMeasurementConfig(featureId, oldMConfig, oldKey);
+}
+
+void OiJob::onGroupMembersChanged(const int& featureId) {
+  this->setGroupMembers(featureId);
+}
+
+void OiJob::onTransformationParameterChanged(const int& tpId) {
+  this->setTrafoParamParameters(tpId);
+}
+
+void OiJob::onCoordinateSystemsChanged(const int& tpId) {
+  this->setTrafoParamSystems(tpId);
+}
+
+void OiJob::onIsUsedChanged(const int& tpId) {
+  this->setTrafoParamIsUsed(tpId);
+}
+
+void OiJob::onIsDatumTrafoChanged(const int& tpId) {
+  this->setTrafoParamIsDatum(tpId);
+}
+
+void OiJob::onTransformationParametersChanged(const int& coordId) {
+  this->setSystemTrafoParams(coordId);
+}
+
+void OiJob::onNominalsChanged(const int& coordId) {
+  this->setSystemsNominals(coordId);
+}
+
+void OiJob::onActiveCoordinateSystemChanged(const int& coordId) {
+  this->setActiveCoordinateSystem(coordId);
 }
 
 /*!
@@ -3731,7 +3681,7 @@ void OiJob::addFeaturesFromXml(
     }
 
     // connect the feature's signals to slots in OiJob
-    this->connectFeature(feature);
+    this->attachFeature(feature);
 
     // add the feature
     this->featureContainer.addFeature(feature);

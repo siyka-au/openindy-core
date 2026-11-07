@@ -92,7 +92,7 @@ void Line::setLine(const Position& xyz, const Direction& axis) {
   this->xyz = xyz;
   this->ijk = axis;
 
-  emit this->geomParametersChanged(this->id);
+  this->notify(&FeatureObserver::onGeomParametersChanged, this->id);
 }
 
 /*!

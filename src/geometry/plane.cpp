@@ -122,7 +122,7 @@ void Plane::setPlane(const Position& xyz, const Direction& normal) {
   n0.normalize();
   OiVec::dot(this->d, this->xyz.getVector(), n0);
 
-  emit this->geomParametersChanged(this->id);
+  this->notify(&FeatureObserver::onGeomParametersChanged, this->id);
 }
 
 /*!
@@ -138,7 +138,7 @@ void Plane::setPlane(const Direction& /*normal*/, const double& d) {
   // calculate the other parameters
   this->xyz.setVector(this->d * this->ijk.getVector());
 
-  emit this->geomParametersChanged(this->id);
+  this->notify(&FeatureObserver::onGeomParametersChanged, this->id);
 }
 
 /*!

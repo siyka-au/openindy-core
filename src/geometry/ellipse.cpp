@@ -135,7 +135,7 @@ void Ellipse::setEllipse(const Position& center, const Direction& normal,
   this->b = b;
   this->semiMajorAxis = semiMajorAxis;
 
-  emit this->geomParametersChanged(this->id);
+  this->notify(&FeatureObserver::onGeomParametersChanged, this->id);
 }
 
 /*!

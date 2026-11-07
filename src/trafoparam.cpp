@@ -128,7 +128,7 @@ void TrafoParam::setIsUsed(const bool& isUsed) {
     // set used state
     this->isUsed = isUsed;
 
-    emit this->isUsedChanged(this->id);
+    this->notify(&FeatureObserver::onIsUsedChanged, this->id);
   }
 }
 
@@ -181,7 +181,7 @@ bool TrafoParam::setCoordinateSystems(const QPointer<CoordinateSystem>& from,
     from->addTransformationParameter(this);
     to->addTransformationParameter(this);
 
-    emit this->coordinateSystemsChanged(this->id);
+    this->notify(&FeatureObserver::onCoordinateSystemsChanged, this->id);
 
     return true;
   }
@@ -231,7 +231,7 @@ void TrafoParam::setIsDatumTrafo(const bool& isDatumTrafo) {
     this->isDatumTrafo = isDatumTrafo;
   }
 
-  emit this->isDatumTrafoChanged(this->id);
+  this->notify(&FeatureObserver::onIsDatumTrafoChanged, this->id);
 }
 
 /*!
@@ -328,7 +328,7 @@ bool TrafoParam::setTransformationParameters(const OiVec& rotation,
     this->homogenMatrix = tMat * rMat * sMat;
     this->isSolved = true;
 
-    emit this->transformationParameterChanged(this->id);
+    this->notify(&FeatureObserver::onTransformationParameterChanged, this->id);
 
     return true;
   }
@@ -377,7 +377,7 @@ bool TrafoParam::setTransformationParameters(const OiMat& rotation,
     this->homogenMatrix = translation * rotation * scale;
     this->isSolved = true;
 
-    emit this->transformationParameterChanged(this->id);
+    this->notify(&FeatureObserver::onTransformationParameterChanged, this->id);
 
   } else {
     return false;

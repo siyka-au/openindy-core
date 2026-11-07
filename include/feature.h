@@ -7,9 +7,11 @@
 #include <QString>
 #include <QtCore>
 #include <optional>
+#include <type_traits>
 
 #include "core_export.h"
 #include "element.h"
+#include "featureobserver.h"
 
 namespace oi {
 
@@ -226,23 +228,30 @@ class OI_CORE_EXPORT Feature : public Element {
   [[nodiscard]] virtual QString getDisplayIsMovement() const;
   [[nodiscard]] virtual QString getDisplayIsDatumTransformation() const;
 
- signals:
+ public:
+  // ###################################################################
+  // change notifications: a plain, non-owning observer (see
+  // featureobserver.h); null (nobody is told) until a job attaches itself
+  // ###################################################################
 
-  // #######################################
-  // signals to inform about feature changes
-  // #######################################
-
-  void featureNameChanged(const int& featureId, const QString& oldName);
-  void featureGroupChanged(const int& featureId, const QString& oldGroup);
-  void featureCommentChanged(const int& featureId);
-  void featureIsUpdatedChanged(const int& featureId);
-  void featureIsSolvedChanged(const int& featureId);
-  void featureFunctionListChanged(const int& featureId);
-  void featureUsedForChanged(const int& featureId);
-  void featurePreviouslyNeededChanged(const int& featureId);
-  void featureIsActiveChanged(const int& featureId);
+  void setObserver(FeatureObserver* observer) { this->observer = observer; }
+  [[nodiscard]] FeatureObserver* getObserver() const { return this->observer; }
 
  protected:
+  // called (unless signals are blocked) after the name changed, before the
+  // observer is told - lets a subclass react to its own rename
+  virtual void nameWasChanged(const QString& /*oldName*/) {}
+
+  // tell the observer, if there is one (and the object's signals are not
+  // blocked - the old Qt signals honoured QObject::blockSignals too)
+  template <typename... Params>
+  void notify(void (FeatureObserver::*method)(Params...),
+              std::type_identity_t<Params>... args) {
+    if (this->observer != nullptr && !this->signalsBlocked()) {
+      (this->observer->*method)(args...);
+    }
+  }
+
   // ###############################################################
   // enforcement helper for D19 - call at the top of any setter that
   // represents a direct user edit (not a function/exec write, which
@@ -263,6 +272,8 @@ class OI_CORE_EXPORT Feature : public Element {
   // ##################
   // feature attributes
   // ##################
+
+  FeatureObserver* observer{nullptr};  // not owned, never copied
 
   QString name;
   QString group;

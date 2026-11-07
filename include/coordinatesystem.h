@@ -150,18 +150,6 @@ class OI_CORE_EXPORT CoordinateSystem : public Feature {
   [[nodiscard]] QString getDisplayZAxisJ(const int& digits) const override;
   [[nodiscard]] QString getDisplayZAxisK(const int& digits) const override;
 
- signals:
-
-  // #################################################
-  // signals to inform about coordinate system changes
-  // #################################################
-
-  void observationsChanged(const int& coordId, const int& obsId);
-  void transformationParametersChanged(const int& coordId);
-  void nominalsChanged(const int& coordId);
-  void activeCoordinateSystemChanged(const int& coordId);
-  void bundlePluginChanged(const int& coordId);
-
  protected:
   // ######################################
   // update feature id when the job was set

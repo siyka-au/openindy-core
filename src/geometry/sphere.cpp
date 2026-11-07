@@ -92,7 +92,7 @@ void Sphere::setSphere(const Position& center, const Radius& radius) {
   this->xyz = center;
   this->radius = radius;
 
-  emit this->geomParametersChanged(this->id);
+  this->notify(&FeatureObserver::onGeomParametersChanged, this->id);
 }
 
 /*!

@@ -106,7 +106,7 @@ void Cylinder::setCylinder(const Position& axisPoint, const Direction& axis,
   this->ijk = axis;
   this->radius = radius;
 
-  emit this->geomParametersChanged(this->id);
+  this->notify(&FeatureObserver::onGeomParametersChanged, this->id);
 }
 
 /*!

@@ -259,6 +259,10 @@ class OI_CORE_EXPORT Station : public Feature {
   QList<QPointer<Reading>> temperatureRadings;
   QList<QPointer<Reading>> undefinedReadings;
 
+ protected:
+  // keep the station system's name in step with the station's
+  void nameWasChanged(const QString& oldName) override;
+
  private slots:
 
   // ##############

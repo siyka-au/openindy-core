@@ -105,7 +105,7 @@ void Paraboloid::setParaboloid(const Position& apex, const Direction& axis,
   this->ijk = axis;
   this->a = a;
 
-  emit this->geomParametersChanged(this->id);
+  this->notify(&FeatureObserver::onGeomParametersChanged, this->id);
 }
 
 /*!

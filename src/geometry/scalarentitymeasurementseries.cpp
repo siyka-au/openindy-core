@@ -87,7 +87,7 @@ const double& ScalarEntityMeasurementSeries::getSeriesValue() const {
 void ScalarEntityMeasurementSeries::setSeriesValue(const double& seriesValue) {
   this->seriesValue = seriesValue;
 
-  emit this->geomParametersChanged(this->id);
+  this->notify(&FeatureObserver::onGeomParametersChanged, this->id);
 }
 
 /*!

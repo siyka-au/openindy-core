@@ -10,10 +10,12 @@
 #include <QSet>
 #include <QString>
 #include <QStringList>
+#include <memory>
 
 #include "core_export.h"
 #include "featureattributes.h"
 #include "featurecontainer.h"
+#include "featureobserver.h"
 #include "function.h"
 #include "types.h"
 #include "util.h"
@@ -35,7 +37,7 @@ enum class CompatibilyCheckResult {
  * \brief The OiJob class
  * Represents an OpenIndy job (holds all features and active states)
  */
-class OI_CORE_EXPORT OiJob : public QObject {
+class OI_CORE_EXPORT OiJob : public QObject, public FeatureObserver {
   friend class ::ProjectExchanger;
   friend struct codec::Access;  // the protobuf codec (see src/codec)
   Q_OBJECT
@@ -392,8 +394,47 @@ class OI_CORE_EXPORT OiJob : public QObject {
   // connect or disconnect features
   // ##############################
 
-  void connectFeature(const QPointer<FeatureWrapper>& feature);
-  void disconnectFeature(const QPointer<FeatureWrapper>& feature);
+  void attachFeature(const QPointer<FeatureWrapper>& feature);
+  void detachFeature(const QPointer<FeatureWrapper>& feature);
+
+  // ##########################################################
+  // FeatureObserver: relay the feature model's notifications
+  // into the job's handlers (and from there into its signals)
+  // ##########################################################
+
+  void onElementAboutToBeDeleted(const int& elementId, const QString& name,
+                                 const QString& group,
+                                 const FeatureTypes& type) override;
+  void onFeatureNameChanged(const int& featureId,
+                            const QString& oldName) override;
+  void onFeatureGroupChanged(const int& featureId,
+                             const QString& oldGroup) override;
+  void onFeatureCommentChanged(const int& featureId) override;
+  void onFeatureIsSolvedChanged(const int& featureId) override;
+  void onFeatureFunctionListChanged(const int& featureId) override;
+  void onFeatureUsedForChanged(const int& featureId) override;
+  void onFeaturePreviouslyNeededChanged(const int& featureId) override;
+  void onFeatureIsActiveChanged(const int& featureId) override;
+  void onGeomIsCommonChanged(const int& featureId) override;
+  void onGeomRealisesChanged(const int& featureId) override;
+  void onGeomObservationsChanged(const int& featureId) override;
+  void onGeomNominalSystemChanged(const int& featureId) override;
+  void onGeomStatisticChanged(const int& featureId) override;
+  void onGeomSimulationDataChanged(const int& featureId) override;
+  void onGeomMeasurementConfigChanged(
+      const int& featureId, const QString& oldMConfig,
+      const MeasurementConfigKey oldKey) override;
+  void onGroupMembersChanged(const int& featureId) override;
+  void onTransformationParameterChanged(const int& tpId) override;
+  void onCoordinateSystemsChanged(const int& tpId) override;
+  void onIsUsedChanged(const int& tpId) override;
+  void onIsDatumTrafoChanged(const int& tpId) override;
+  void onTransformationParametersChanged(const int& coordId) override;
+  void onNominalsChanged(const int& coordId) override;
+  void onActiveCoordinateSystemChanged(const int& coordId) override;
+
+  class StationSystemObserver;
+  std::unique_ptr<StationSystemObserver> stationSystemObserver;
 
   // ##############
   // helper methods

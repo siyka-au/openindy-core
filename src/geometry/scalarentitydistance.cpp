@@ -86,7 +86,7 @@ const double& ScalarEntityDistance::getDistance() const {
 void ScalarEntityDistance::setDistance(const double& distance) {
   this->distance = distance;
 
-  emit this->geomParametersChanged(this->id);
+  this->notify(&FeatureObserver::onGeomParametersChanged, this->id);
 }
 
 /*!

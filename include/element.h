@@ -41,15 +41,6 @@ class OI_CORE_EXPORT Element : public QObject {
 
   bool isNull();
 
- signals:
-
-  // #######################################
-  // signals to inform about element changes
-  // #######################################
-
-  void elementAboutToBeDeleted(const int& elementId, const QString& name,
-                               const QString& group, const FeatureTypes& type);
-
  protected:
   int id{-1};
   // indicates null object or invalid object

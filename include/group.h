@@ -109,13 +109,6 @@ class OI_CORE_EXPORT Group : public Feature {
 
   [[nodiscard]] QString getDisplayType() const override;
 
- signals:
-
-  //! membership changed - anything computed from this group's contents is
-  //! now stale. OiJob relays this into the existing recalculation graph so
-  //! a fit bound to this group re-solves without being touched.
-  void groupMembersChanged(const int& featureId);
-
  protected:
   QList<QPointer<FeatureWrapper>> members;
   std::optional<FeatureTypes> constraint;

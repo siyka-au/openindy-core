@@ -106,7 +106,7 @@ void Cone::setCone(const Position& apex, const Direction& axis,
   this->ijk = axis;
   this->aperture = aperture;
 
-  emit this->geomParametersChanged(this->id);
+  this->notify(&FeatureObserver::onGeomParametersChanged, this->id);
 }
 
 /*!

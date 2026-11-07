@@ -82,7 +82,7 @@ const double& ScalarEntityAngle::getAngle() const { return this->angle; }
 void ScalarEntityAngle::setAngle(const double& angle) {
   this->angle = angle;
 
-  emit this->geomParametersChanged(this->id);
+  this->notify(&FeatureObserver::onGeomParametersChanged, this->id);
 }
 
 /*!

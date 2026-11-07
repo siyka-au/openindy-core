@@ -87,7 +87,7 @@ const double& ScalarEntityTemperature::getTemperature() const {
 void ScalarEntityTemperature::setTemperature(const double& temperature) {
   this->temperature = temperature;
 
-  emit this->geomParametersChanged(this->id);
+  this->notify(&FeatureObserver::onGeomParametersChanged, this->id);
 }
 
 /*!
