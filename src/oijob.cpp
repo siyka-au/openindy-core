@@ -97,6 +97,18 @@ void OiJob::removeObserver(JobObserver* observer) {
       this->observers.end());
 }
 
+void OiJob::setExecutor(Executor* executor) {
+  this->executor = executor != nullptr ? executor : &InlineExecutor::instance();
+  for (const QPointer<Station>& station :
+       oi::snapshot(this->featureContainer.getStationsList())) {
+    if (!station.isNull()) {
+      station->setExecutor(this->executor);
+    }
+  }
+}
+
+Executor* OiJob::getExecutor() const { return this->executor; }
+
 /*!
  * \brief OiJob::sendMessage
  * Reports a job issue to the observers.
@@ -2583,6 +2595,16 @@ void OiJob::setSystemsNominals(const int& featureId) {
   this->notifyObservers(&JobObserver::onSystemsNominalsChanged, featureId);
 }
 
+// a station became (in)active / got another sensor: it reports through the
+// feature observer, which is the job once the station was added
+void OiJob::onActiveStationChanged(const int& stationId) {
+  this->setActiveStation(stationId);
+}
+
+void OiJob::onSensorChanged(const int& stationId) {
+  this->setStationSensor(stationId);
+}
+
 /*!
  * \brief OiJob::setStationSensor
  * \param featureId
@@ -2669,13 +2691,9 @@ void OiJob::attachFeature(const QPointer<FeatureWrapper>& feature) {
 
   feature->getFeature()->setObserver(this);
 
-  // station connects (sensor/station signals are not feature-model signals)
+  // station: results of its sensor go where the job wants them
   if (feature->getFeatureTypeEnum() == FeatureTypes::eStationFeature) {
-    QObject::connect(feature->getStation().data(),
-                     &Station::activeStationChanged, this,
-                     &OiJob::setActiveStation, Qt::AutoConnection);
-    QObject::connect(feature->getStation().data(), &Station::sensorChanged,
-                     this, &OiJob::setStationSensor, Qt::AutoConnection);
+    feature->getStation()->setExecutor(this->executor);
     if (!feature->getStation()->getCoordinateSystem().isNull()) {
       feature->getStation()->getCoordinateSystem()->setObserver(
           this->stationSystemObserver.get());
@@ -2713,11 +2731,6 @@ void OiJob::detachFeature(const QPointer<FeatureWrapper>& feature) {
 
   // station connects
   if (feature->getFeatureTypeEnum() == FeatureTypes::eStationFeature) {
-    QObject::disconnect(feature->getStation().data(),
-                        &Station::activeStationChanged, this,
-                        &OiJob::setActiveStation);
-    QObject::disconnect(feature->getStation().data(), &Station::sensorChanged,
-                        this, &OiJob::setStationSensor);
     if (!feature->getStation()->getCoordinateSystem().isNull() &&
         feature->getStation()->getCoordinateSystem()->getObserver() ==
             this->stationSystemObserver.get()) {

@@ -1,42 +1,190 @@
 #include "sensorcontrol.h"
 
+#include <atomic>
+#include <condition_variable>
+#include <functional>
+#include <mutex>
+#include <utility>
+
 using namespace oi;
 
 /*!
- * \brief SensorControl::SensorControl
- * \param station
- * \param parent
+ * Carries the results from the worker thread to the observer. Shared with
+ * every task posted to the executor, so a task that is still queued when the
+ * control is destroyed finds the delivery closed instead of a dangling
+ * pointer.
  */
-SensorControl::SensorControl(QPointer<Station>& station, QObject* parent)
-    : QObject(parent), station(station) {
-  this->worker = new SensorWorker();
-  this->connectSensorWorker();
+class SensorControl::Delivery
+    : public std::enable_shared_from_this<SensorControl::Delivery> {
+ public:
+  using Call = std::function<void(StationObserver&)>;
+
+  void setObserver(StationObserver* observer) {
+    const std::scoped_lock lock(this->mutex);
+    this->observer = observer;
+  }
+
+  // Returns once no post() that might still use the previous executor is
+  // running on another thread, so the host may destroy that executor right
+  // away (a post running on this very thread - an inline delivery calling
+  // back - cannot be waited for and is skipped).
+  void setExecutor(Executor* executor) {
+    this->executor =
+        executor != nullptr ? executor : &InlineExecutor::instance();
+    if (postDepth() == 0) {
+      std::unique_lock lock(this->postingMutex);
+      this->postingDone.wait(lock, [this] { return this->posting == 0; });
+    }
+  }
+
+  [[nodiscard]] Executor* getExecutor() const { return this->executor; }
+
+  // after this returns no call is running and none will ever start. Waits for
+  // a call that is in progress on another thread.
+  void close() {
+    const std::scoped_lock lock(this->mutex);
+    this->observer = nullptr;
+    this->closed = true;
+  }
+
+  void post(Call call) {
+    ++postDepth();
+    ++this->posting;
+    this->executor.load()->post(
+        [self = this->shared_from_this(), call = std::move(call)] {
+          self->deliver(call);
+        });
+    --postDepth();
+    if (--this->posting == 0) {
+      const std::scoped_lock lock(this->postingMutex);
+      this->postingDone.notify_all();
+    }
+  }
+
+ private:
+  void deliver(const Call& call) {
+    const std::scoped_lock lock(this->mutex);
+    if (!this->closed && this->observer != nullptr) {
+      call(*this->observer);
+    }
+  }
+
+  static int& postDepth() {
+    thread_local int depth = 0;
+    return depth;
+  }
+
+  std::atomic<int> posting{0};
+  std::mutex postingMutex;
+  std::condition_variable postingDone;
+
+  // recursive: an inline executor delivers while the worker still runs, and the
+  // observer may call back into the control
+  std::recursive_mutex mutex;
+  StationObserver* observer{nullptr};
+  bool closed{false};
+  std::atomic<Executor*> executor{&InlineExecutor::instance()};
+};
+
+/*!
+ * The observer of the worker: every result becomes a task for the executor.
+ */
+class SensorControl::Relay final : public StationObserver {
+ public:
+  explicit Relay(std::shared_ptr<Delivery> delivery)
+      : delivery(std::move(delivery)) {}
+
+  void onRealTimeReading(const QVariantMap& reading) override {
+    this->delivery->post(
+        [reading](StationObserver& o) { o.onRealTimeReading(reading); });
+  }
+  void onRealTimeStatus(const QMap<QString, QString>& status) override {
+    this->delivery->post(
+        [status](StationObserver& o) { o.onRealTimeStatus(status); });
+  }
+  void onConnectionLost() override {
+    this->delivery->post([](StationObserver& o) { o.onConnectionLost(); });
+  }
+  void onConnectionReceived() override {
+    this->delivery->post([](StationObserver& o) { o.onConnectionReceived(); });
+  }
+  void onIsReadyForMeasurement(bool isReady) override {
+    this->delivery->post(
+        [isReady](StationObserver& o) { o.onIsReadyForMeasurement(isReady); });
+  }
+  void onCommandFinished(bool success, const QString& msg,
+                         SensorAction action) override {
+    this->delivery->post([success, msg, action](StationObserver& o) {
+      o.onCommandFinished(success, msg, action);
+    });
+  }
+  void onMeasurementFinished(
+      int geomId, const QList<QPointer<Reading>>& readings) override {
+    this->delivery->post([geomId, readings](StationObserver& o) {
+      o.onMeasurementFinished(geomId, readings);
+    });
+  }
+  void onMeasurementDone(bool success) override {
+    this->delivery->post(
+        [success](StationObserver& o) { o.onMeasurementDone(success); });
+  }
+  void onSensorMessage(const QString& msg, MessageTypes msgType,
+                       MessageDestinations msgDest) override {
+    this->delivery->post([msg, msgType, msgDest](StationObserver& o) {
+      o.onSensorMessage(msg, msgType, msgDest);
+    });
+  }
+  void onSensorStatus(SensorStatus status, const QString& msg) override {
+    this->delivery->post(
+        [status, msg](StationObserver& o) { o.onSensorStatus(status, msg); });
+  }
+
+ private:
+  std::shared_ptr<Delivery> delivery;
+};
+
+/*!
+ * \brief SensorControl::SensorControl
+ * \param observer
+ * \param executor
+ */
+SensorControl::SensorControl(StationObserver* observer, Executor* executor)
+    : delivery(std::make_shared<Delivery>()),
+      relay(std::make_unique<Relay>(this->delivery)) {
+  this->delivery->setObserver(observer);
+  this->delivery->setExecutor(executor);
+  this->worker = std::make_unique<SensorWorker>(*this->relay);
 }
 
 /*!
  * \brief SensorControl::~SensorControl
  */
-SensorControl::~SensorControl() { this->disconnectSensorWorker(); }
+SensorControl::~SensorControl() {
+  // nothing reaches the observer any more, then stop the worker (members are
+  // destroyed in reverse order, but the worker would still be able to post
+  // before it is stopped)
+  this->delivery->close();
+  this->worker.reset();
+}
+
+void SensorControl::setObserver(StationObserver* observer) {
+  this->delivery->setObserver(observer);
+}
+
+void SensorControl::setExecutor(Executor* executor) {
+  this->delivery->setExecutor(executor);
+}
+
+Executor* SensorControl::getExecutor() const {
+  return this->delivery->getExecutor();
+}
 
 /*!
  * \brief SensorControl::getSensor
  * Returns a copy of the current sensor
  * \return
  */
-Sensor SensorControl::getSensor() {
-  // get sensor
-  Sensor sensor;
-  bool hasInvoked =
-      QMetaObject::invokeMethod(this->worker, "getSensor", Qt::DirectConnection,
-                                Q_RETURN_ARG(Sensor, sensor));
-  if (!hasInvoked) {
-    emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             MessageTypes::eErrorMessage,
-                             MessageDestinations::eConsoleMessage);
-  }
-
-  return sensor;
-}
+Sensor SensorControl::getSensor() { return this->worker->getSensor(); }
 
 /*!
  * \brief SensorControl::setSensor
@@ -50,19 +198,11 @@ void SensorControl::setSensor(const QPointer<Sensor>& sensor) {
   }
 
   // check old sensor and add it to the list of used sensors
-  if (sensorValid) {
+  if (this->sensorValid) {
     this->usedSensors.append(this->getSensor());
   }
 
-  // call method of sensor worker
-  bool hasInvoked =
-      QMetaObject::invokeMethod(this->worker, "setSensor", Qt::DirectConnection,
-                                Q_ARG(QPointer<Sensor>, sensor));
-  if (!hasInvoked) {
-    emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             MessageTypes::eErrorMessage,
-                             MessageDestinations::eConsoleMessage);
-  }
+  this->worker->setSensor(sensor);
 
   // set sensor valid
   this->sensorValid = true;
@@ -76,20 +216,11 @@ void SensorControl::setSensor(const QPointer<Sensor>& sensor) {
  */
 QPointer<Sensor> SensorControl::takeSensor() {
   // check old sensor and add it to the list of used sensors
-  if (sensorValid) {
+  if (this->sensorValid) {
     this->usedSensors.append(this->getSensor());
   }
 
-  // call method of sensor worker
-  QPointer<Sensor> sensor(nullptr);
-  bool hasInvoked = QMetaObject::invokeMethod(
-      this->worker, "takeSensor", Qt::DirectConnection,
-      Q_RETURN_ARG(QPointer<Sensor>, sensor));
-  if (!hasInvoked) {
-    emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             MessageTypes::eErrorMessage,
-                             MessageDestinations::eConsoleMessage);
-  }
+  QPointer<Sensor> sensor = this->worker->takeSensor();
 
   // set sensor invalid
   this->sensorValid = false;
@@ -103,648 +234,124 @@ QPointer<Sensor> SensorControl::takeSensor() {
  */
 void SensorControl::resetSensor() {
   // check old sensor and add it to the list of used sensors
-  if (sensorValid) {
+  if (this->sensorValid) {
     this->usedSensors.append(this->getSensor());
   }
 
-  // call method of sensor worker
-  bool hasInvoked = QMetaObject::invokeMethod(this->worker, "resetSensor",
-                                              Qt::QueuedConnection);
-  if (!hasInvoked) {
-    emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             MessageTypes::eErrorMessage,
-                             MessageDestinations::eConsoleMessage);
-  }
+  this->worker->resetSensor();
 
   // set sensor invalid
   this->sensorValid = false;
 }
 
-/*!
- * \brief SensorControl::getUsedSensors
- * \return
- */
 const QList<Sensor>& SensorControl::getUsedSensors() {
   return this->usedSensors;
 }
 
-/*!
- * \brief SensorControl::setUsedSensors
- * \param sensors
- */
 void SensorControl::setUsedSensors(const QList<Sensor>& sensors) {
   this->usedSensors = sensors;
 }
 
-/*!
- * \brief SensorControl::getStreamFormat
- * \return
- */
 ReadingTypes SensorControl::getStreamFormat() {
-  // call method of sensor worker
-  ReadingTypes type = ReadingTypes::eUndefinedReading;
-  bool hasInvoked = QMetaObject::invokeMethod(this->worker, "getStreamFormat",
-                                              Qt::DirectConnection,
-                                              Q_RETURN_ARG(ReadingTypes, type));
-  if (!hasInvoked) {
-    emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             MessageTypes::eErrorMessage,
-                             MessageDestinations::eConsoleMessage);
-  }
-
-  return type;
+  return this->worker->getStreamFormat();
 }
 
-/*!
- * \brief SensorControl::setStreamFormat
- * \param streamFormat
- */
 void SensorControl::setStreamFormat(ReadingTypes streamFormat) {
-  // call method of sensor worker
-  bool hasInvoked = QMetaObject::invokeMethod(
-      this->worker, "setStreamFormat", Qt::QueuedConnection,
-      Q_ARG(ReadingTypes, streamFormat));
-  if (!hasInvoked) {
-    emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             MessageTypes::eErrorMessage,
-                             MessageDestinations::eConsoleMessage);
-  }
+  this->worker->setStreamFormat(streamFormat);
 }
 
-/*!
- * \brief SensorControl::getIsSensorSet
- * \return
- */
 bool SensorControl::getIsSensorSet() { return this->sensorValid; }
 
-/*!
- * \brief SensorControl::getIsSensorConnected
- * \return
- */
 bool SensorControl::getIsSensorConnected() {
-  // call method of sensor worker
-  bool isConnected = false;
-  bool hasInvoked = QMetaObject::invokeMethod(
-      this->worker, "getIsSensorConnected", Qt::DirectConnection,
-      Q_RETURN_ARG(bool, isConnected));
-  if (!hasInvoked) {
-    emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             MessageTypes::eErrorMessage,
-                             MessageDestinations::eConsoleMessage);
-  }
-
-  return isConnected;
+  return this->worker->getIsSensorConnected();
 }
 
-/*!
- * \brief SensorControl::getIsReadyForMeasurement
- * \return
- */
 bool SensorControl::getIsReadyForMeasurement() {
-  // call method of sensor worker
-  bool isReady = false;
-  bool hasInvoked = QMetaObject::invokeMethod(
-      this->worker, "getIsReadyForMeasurement", Qt::DirectConnection,
-      Q_RETURN_ARG(bool, isReady));
-  if (!hasInvoked) {
-    emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             MessageTypes::eErrorMessage,
-                             MessageDestinations::eConsoleMessage);
-  }
-
-  return isReady;
+  return this->worker->getIsReadyForMeasurement();
 }
 
-/*!
- * \brief SensorControl::getIsBusy
- * \return
- */
-bool SensorControl::getIsBusy() {
-  // call method of sensor worker
-  bool isBusy = false;
-  bool hasInvoked =
-      QMetaObject::invokeMethod(this->worker, "getIsBusy", Qt::DirectConnection,
-                                Q_RETURN_ARG(bool, isBusy));
-  if (!hasInvoked) {
-    emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             MessageTypes::eErrorMessage,
-                             MessageDestinations::eConsoleMessage);
-  }
+bool SensorControl::getIsBusy() { return this->worker->getIsBusy(); }
 
-  return isBusy;
-}
-
-/*!
- * \brief SensorControl::getSensorStatus
- * \return
- */
 QMap<QString, QString> SensorControl::getSensorStatus() {
-  // call method of sensor worker
-  QMap<QString, QString> status;
-  bool hasInvoked = QMetaObject::invokeMethod(
-      this->worker, "getSensorStatus", Qt::DirectConnection,
-      Q_RETURN_ARG(StringStringMap, status));
-  if (!hasInvoked) {
-    emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             MessageTypes::eErrorMessage,
-                             MessageDestinations::eConsoleMessage);
-  }
-
-  return status;
+  return this->worker->getSensorStatus();
 }
 
-/*!
- * \brief SensorControl::getActiveSensorType
- * \return
- */
 SensorType SensorControl::getActiveSensorType() {
-  // call method of sensor worker
-  SensorType type;
-  bool hasInvoked = QMetaObject::invokeMethod(
-      this->worker, "getActiveSensorType", Qt::DirectConnection,
-      Q_RETURN_ARG(SensorType, type));
-  if (!hasInvoked) {
-    emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             MessageTypes::eErrorMessage,
-                             MessageDestinations::eConsoleMessage);
-  }
-
-  return type;
+  return this->worker->getActiveSensorType();
 }
 
-/*!
- * \brief SensorControl::getSupportedReadingTypes
- * \return
- */
 QList<ReadingTypes> SensorControl::getSupportedReadingTypes() {
-  // call method of sensor worker
-  QList<ReadingTypes> types;
-  bool hasInvoked = QMetaObject::invokeMethod(
-      this->worker, "getSupportedReadingTypes", Qt::DirectConnection,
-      Q_RETURN_ARG(QList<ReadingTypes>, types));
-  if (!hasInvoked) {
-    emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             MessageTypes::eErrorMessage,
-                             MessageDestinations::eConsoleMessage);
-  }
-
-  return types;
+  return this->worker->getSupportedReadingTypes();
 }
 
-/*!
- * \brief SensorControl::getSupportedConnectionTypes
- * \return
- */
 QList<ConnectionKind> SensorControl::getSupportedConnectionTypes() {
-  // call method of sensor worker
-  QList<ConnectionKind> types;
-  bool hasInvoked = QMetaObject::invokeMethod(
-      this->worker, "getSupportedConnectionTypes", Qt::DirectConnection,
-      Q_RETURN_ARG(QList<ConnectionKind>, types));
-  if (!hasInvoked) {
-    emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             MessageTypes::eErrorMessage,
-                             MessageDestinations::eConsoleMessage);
-  }
-
-  return types;
+  return this->worker->getSupportedConnectionTypes();
 }
 
-/*!
- * \brief SensorControl::getSupportedSensorActions
- * \return
- */
 QList<SensorFunctions> SensorControl::getSupportedSensorActions() {
-  // call method of sensor worker
-  QList<SensorFunctions> actions;
-  bool hasInvoked = QMetaObject::invokeMethod(
-      this->worker, "getSupportedSensorActions", Qt::DirectConnection,
-      Q_RETURN_ARG(QList<SensorFunctions>, actions));
-  if (!hasInvoked) {
-    emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             MessageTypes::eErrorMessage,
-                             MessageDestinations::eConsoleMessage);
-  }
-
-  return actions;
+  return this->worker->getSupportedSensorActions();
 }
 
-/*!
- * \brief SensorControl::getSelfDefinedActions
- * \return
- */
 QStringList SensorControl::getSelfDefinedActions() {
-  // call method of sensor worker
-  QStringList actions;
-  bool hasInvoked = QMetaObject::invokeMethod(
-      this->worker, "getSelfDefinedActions", Qt::DirectConnection,
-      Q_RETURN_ARG(QStringList, actions));
-  if (!hasInvoked) {
-    emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             MessageTypes::eErrorMessage,
-                             MessageDestinations::eConsoleMessage);
-  }
-
-  return actions;
+  return this->worker->getSelfDefinedActions();
 }
 
-/*!
- * \brief SensorControl::getSensorConfiguration
- * \return
- */
 SensorConfiguration SensorControl::getSensorConfiguration() {
-  // call method of sensor worker
-  SensorConfiguration sConfig;
-  bool hasInvoked = QMetaObject::invokeMethod(
-      this->worker, "getSensorConfiguration", Qt::DirectConnection,
-      Q_RETURN_ARG(SensorConfiguration, sConfig));
-  if (!hasInvoked) {
-    emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             MessageTypes::eErrorMessage,
-                             MessageDestinations::eConsoleMessage);
-  }
-
-  return sConfig;
+  return this->worker->getSensorConfiguration();
 }
 
-/*!
- * \brief SensorControl::setSensorConfiguration
- * \param sConfig
- */
 void SensorControl::setSensorConfiguration(const SensorConfiguration& sConfig) {
-  // call method of sensor worker
-  bool hasInvoked = QMetaObject::invokeMethod(
-      this->worker, "setSensorConfiguration",
-      this->worker->getSensor().isSensorAsync() ? Qt::AutoConnection
-                                                : Qt::QueuedConnection,
-      Q_ARG(SensorConfiguration, sConfig));
-  if (!hasInvoked) {
-    emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             MessageTypes::eErrorMessage,
-                             MessageDestinations::eConsoleMessage);
-  }
+  this->worker->setSensorConfiguration(sConfig);
 }
 
-/*!
- * \brief SensorControl::connectSensor
- */
-void SensorControl::connectSensor() {
-  // call method of sensor worker
-  bool hasInvoked = QMetaObject::invokeMethod(
-      this->worker, "connectSensor",
-      this->worker->getSensor().isSensorAsync() ? Qt::AutoConnection
-                                                : Qt::QueuedConnection);
-  if (!hasInvoked) {
-    emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             MessageTypes::eErrorMessage,
-                             MessageDestinations::eConsoleMessage);
-  }
-}
+void SensorControl::connectSensor() { this->worker->connectSensor(); }
 
-/*!
- * \brief SensorControl::disconnectSensor
- */
-void SensorControl::disconnectSensor() {
-  // call method of sensor worker
-  bool hasInvoked = QMetaObject::invokeMethod(
-      this->worker, "disconnectSensor",
-      this->worker->getSensor().isSensorAsync() ? Qt::AutoConnection
-                                                : Qt::QueuedConnection);
-  if (!hasInvoked) {
-    emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             MessageTypes::eErrorMessage,
-                             MessageDestinations::eConsoleMessage);
-  }
-}
+void SensorControl::disconnectSensor() { this->worker->disconnectSensor(); }
 
-/*!
- * \brief SensorControl::measure
- * \param geomId
- * \param mConfig
- */
 void SensorControl::measure(const int& geomId,
                             const MeasurementConfig& mConfig) {
-  // call method of sensor worker
-  bool hasInvoked = QMetaObject::invokeMethod(
-      this->worker, "measure",
-      this->worker->getSensor().isSensorAsync() ? Qt::AutoConnection
-                                                : Qt::QueuedConnection,
-      Q_ARG(int, geomId), Q_ARG(MeasurementConfig, mConfig));
-  if (!hasInvoked) {
-    emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             MessageTypes::eErrorMessage,
-                             MessageDestinations::eConsoleMessage);
-  }
+  this->worker->measure(geomId, mConfig);
 }
 
-/*!
- * \brief SensorControl::move
- * \param azimuth
- * \param zenith
- * \param distance
- * \param isRelative
- * \param measure
- * \param geomId
- * \param mConfig
- */
 void SensorControl::move(const double& azimuth, const double& zenith,
                          const double& distance, const bool& isRelative,
                          const bool& measure, const int& geomId,
                          const MeasurementConfig& mConfig) {
-  // call method of sensor worker
-  bool hasInvoked = QMetaObject::invokeMethod(
-      this->worker, "move",
-      this->worker->getSensor().isSensorAsync() ? Qt::AutoConnection
-                                                : Qt::QueuedConnection,
-      Q_ARG(double, azimuth), Q_ARG(double, zenith), Q_ARG(double, distance),
-      Q_ARG(bool, isRelative), Q_ARG(bool, measure), Q_ARG(int, geomId),
-      Q_ARG(MeasurementConfig, mConfig));
-  if (!hasInvoked) {
-    emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             MessageTypes::eErrorMessage,
-                             MessageDestinations::eConsoleMessage);
-  }
+  this->worker->move(azimuth, zenith, distance, isRelative, measure, geomId,
+                     mConfig);
 }
 
-/*!
- * \brief SensorControl::move
- * \param x
- * \param y
- * \param z
- * \param measure
- * \param geomId
- * \param mConfig
- */
 void SensorControl::move(const double& x, const double& y, const double& z,
                          const bool& measure, const int& geomId,
                          const MeasurementConfig& mConfig) {
-  // call method of sensor worker
-  bool hasInvoked = QMetaObject::invokeMethod(
-      this->worker, "move",
-      this->worker->getSensor().isSensorAsync() ? Qt::AutoConnection
-                                                : Qt::QueuedConnection,
-      Q_ARG(double, x), Q_ARG(double, y), Q_ARG(double, z),
-      Q_ARG(bool, measure), Q_ARG(int, geomId),
-      Q_ARG(MeasurementConfig, mConfig));
-  if (!hasInvoked) {
-    emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             MessageTypes::eErrorMessage,
-                             MessageDestinations::eConsoleMessage);
-  }
+  this->worker->move(x, y, z, measure, geomId, mConfig);
 }
 
-/*!
- * \brief SensorControl::initialize
- */
-void SensorControl::initialize() {
-  // call method of sensor worker
-  bool hasInvoked = QMetaObject::invokeMethod(
-      this->worker, "initialize",
-      this->worker->getSensor().isSensorAsync() ? Qt::AutoConnection
-                                                : Qt::QueuedConnection);
-  if (!hasInvoked) {
-    emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             MessageTypes::eErrorMessage,
-                             MessageDestinations::eConsoleMessage);
-  }
-}
+void SensorControl::initialize() { this->worker->initialize(); }
+void SensorControl::motorState() { this->worker->motorState(); }
+void SensorControl::home() { this->worker->home(); }
+void SensorControl::toggleSight() { this->worker->toggleSight(); }
+void SensorControl::compensation() { this->worker->compensation(); }
 
-/*!
- * \brief SensorControl::motorState
- */
-void SensorControl::motorState() {
-  // call method of sensor worker
-  bool hasInvoked = QMetaObject::invokeMethod(
-      this->worker, "motorState",
-      this->worker->getSensor().isSensorAsync() ? Qt::AutoConnection
-                                                : Qt::QueuedConnection);
-  if (!hasInvoked) {
-    emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             MessageTypes::eErrorMessage,
-                             MessageDestinations::eConsoleMessage);
-  }
-}
-
-/*!
- * \brief SensorControl::home
- */
-void SensorControl::home() {
-  // call method of sensor worker
-  bool hasInvoked = QMetaObject::invokeMethod(
-      this->worker, "home",
-      this->worker->getSensor().isSensorAsync() ? Qt::AutoConnection
-                                                : Qt::QueuedConnection);
-  if (!hasInvoked) {
-    emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             MessageTypes::eErrorMessage,
-                             MessageDestinations::eConsoleMessage);
-  }
-}
-
-/*!
- * \brief SensorControl::toggleSight
- */
-void SensorControl::toggleSight() {
-  // call method of sensor worker
-  bool hasInvoked = QMetaObject::invokeMethod(
-      this->worker, "toggleSight",
-      this->worker->getSensor().isSensorAsync() ? Qt::AutoConnection
-                                                : Qt::QueuedConnection);
-  if (!hasInvoked) {
-    emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             MessageTypes::eErrorMessage,
-                             MessageDestinations::eConsoleMessage);
-  }
-}
-
-/*!
- * \brief SensorControl::compensation
- */
-void SensorControl::compensation() {
-  // call method of sensor worker
-  bool hasInvoked = QMetaObject::invokeMethod(
-      this->worker, "compensation",
-      this->worker->getSensor().isSensorAsync() ? Qt::AutoConnection
-                                                : Qt::QueuedConnection);
-  if (!hasInvoked) {
-    emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             MessageTypes::eErrorMessage,
-                             MessageDestinations::eConsoleMessage);
-  }
-}
-
-/*!
- * \brief SensorControl::selfDefinedAction
- * \param action
- */
 void SensorControl::selfDefinedAction(const QString& action) {
-  // call method of sensor worker
-  bool hasInvoked = QMetaObject::invokeMethod(
-      this->worker, "selfDefinedAction",
-      this->worker->getSensor().isSensorAsync() ? Qt::AutoConnection
-                                                : Qt::QueuedConnection,
-      Q_ARG(QString, action));
-  if (!hasInvoked) {
-    emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             MessageTypes::eErrorMessage,
-                             MessageDestinations::eConsoleMessage);
-  }
-}
-void SensorControl::search() {
-  // call method of sensor worker
-  bool hasInvoked = QMetaObject::invokeMethod(
-      this->worker, "search",
-      this->worker->getSensor().isSensorAsync() ? Qt::AutoConnection
-                                                : Qt::QueuedConnection);
-  if (!hasInvoked) {
-    emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             MessageTypes::eErrorMessage,
-                             MessageDestinations::eConsoleMessage);
-  }
+  this->worker->selfDefinedAction(action);
 }
 
-/*!
- * \brief SensorControl::startReadingStream
- */
-void SensorControl::startReadingStream() {
-  // call method of sensor worker
-  bool hasInvoked = QMetaObject::invokeMethod(
-      this->worker, "startReadingStream",
-      this->worker->getSensor().isSensorAsync() ? Qt::AutoConnection
-                                                : Qt::QueuedConnection);
-  if (!hasInvoked) {
-    emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             MessageTypes::eErrorMessage,
-                             MessageDestinations::eConsoleMessage);
-  }
-}
+void SensorControl::search() { this->worker->search(); }
 
-/*!
- * \brief SensorControl::stopReadingStream
- */
-void SensorControl::stopReadingStream() {
-  // call method of sensor worker
-  bool hasInvoked = QMetaObject::invokeMethod(
-      this->worker, "stopReadingStream",
-      this->worker->getSensor().isSensorAsync() ? Qt::AutoConnection
-                                                : Qt::QueuedConnection);
-  if (!hasInvoked) {
-    emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             MessageTypes::eErrorMessage,
-                             MessageDestinations::eConsoleMessage);
-  }
-}
-
-/*!
- * \brief SensorControl::startConnectionMonitoringStream
- */
+void SensorControl::startReadingStream() { this->worker->startReadingStream(); }
+void SensorControl::stopReadingStream() { this->worker->stopReadingStream(); }
 void SensorControl::startConnectionMonitoringStream() {
-  // call method of sensor worker
-  bool hasInvoked = QMetaObject::invokeMethod(
-      this->worker, "startConnectionMonitoringStream",
-      this->worker->getSensor().isSensorAsync() ? Qt::AutoConnection
-                                                : Qt::QueuedConnection);
-  if (!hasInvoked) {
-    emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             MessageTypes::eErrorMessage,
-                             MessageDestinations::eConsoleMessage);
-  }
+  this->worker->startConnectionMonitoringStream();
 }
-
-/*!
- * \brief SensorControl::stopConnectionMonitoringStream
- */
 void SensorControl::stopConnectionMonitoringStream() {
-  // call method of sensor worker
-  bool hasInvoked = QMetaObject::invokeMethod(
-      this->worker, "stopConnectionMonitoringStream",
-      this->worker->getSensor().isSensorAsync() ? Qt::AutoConnection
-                                                : Qt::QueuedConnection);
-  if (!hasInvoked) {
-    emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             MessageTypes::eErrorMessage,
-                             MessageDestinations::eConsoleMessage);
-  }
+  this->worker->stopConnectionMonitoringStream();
 }
-
-/*!
- * \brief SensorControl::startStatusMonitoringStream
- */
 void SensorControl::startStatusMonitoringStream() {
-  // call method of sensor worker
-  bool hasInvoked = QMetaObject::invokeMethod(
-      this->worker, "startStatusMonitoringStream",
-      this->worker->getSensor().isSensorAsync() ? Qt::AutoConnection
-                                                : Qt::QueuedConnection);
-  if (!hasInvoked) {
-    emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             MessageTypes::eErrorMessage,
-                             MessageDestinations::eConsoleMessage);
-  }
+  this->worker->startStatusMonitoringStream();
 }
-
-/*!
- * \brief SensorControl::stopStatusMonitoringStream
- */
 void SensorControl::stopStatusMonitoringStream() {
-  // call method of sensor worker
-  bool hasInvoked = QMetaObject::invokeMethod(
-      this->worker, "stopStatusMonitoringStream",
-      this->worker->getSensor().isSensorAsync() ? Qt::AutoConnection
-                                                : Qt::QueuedConnection);
-  if (!hasInvoked) {
-    emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             MessageTypes::eErrorMessage,
-                             MessageDestinations::eConsoleMessage);
-  }
+  this->worker->stopStatusMonitoringStream();
 }
 
-void SensorControl::finishMeasurement() {
-  // call method of sensor worker
-  bool hasInvoked = QMetaObject::invokeMethod(
-      this->worker, "finishMeasurement",
-      this->worker->getSensor().isSensorAsync() ? Qt::AutoConnection
-                                                : Qt::QueuedConnection);
-  if (!hasInvoked) {
-    emit this->sensorMessage("Cannot invoke getSensor method of sensor worker",
-                             MessageTypes::eErrorMessage,
-                             MessageDestinations::eConsoleMessage);
-  }
-}
-/*!
- * \brief SensorControl::connectSensorWorker
- */
-void SensorControl::connectSensorWorker() {
-  // connect sensor action results
-  QObject::connect(this->worker, &SensorWorker::commandFinished, this,
-                   &SensorControl::commandFinished, Qt::QueuedConnection);
-  QObject::connect(this->worker, &SensorWorker::measurementFinished, this,
-                   &SensorControl::measurementFinished, Qt::QueuedConnection);
-  QObject::connect(this->worker, &SensorWorker::measurementDone, this,
-                   &SensorControl::measurementDone, Qt::QueuedConnection);
-
-  // connect streaming results
-  QObject::connect(this->worker, &SensorWorker::realTimeReading, this,
-                   &SensorControl::realTimeReading, Qt::QueuedConnection);
-  QObject::connect(this->worker, &SensorWorker::realTimeStatus, this,
-                   &SensorControl::realTimeStatus, Qt::QueuedConnection);
-  QObject::connect(this->worker, &SensorWorker::connectionLost, this,
-                   &SensorControl::connectionLost, Qt::QueuedConnection);
-  QObject::connect(this->worker, &SensorWorker::connectionReceived, this,
-                   &SensorControl::connectionReceived, Qt::QueuedConnection);
-  QObject::connect(this->worker, &SensorWorker::isReadyForMeasurement, this,
-                   &SensorControl::isReadyForMeasurement, Qt::QueuedConnection);
-
-  // connect sensor messages
-  QObject::connect(this->worker, &SensorWorker::sensorMessage, this,
-                   &SensorControl::sensorMessage, Qt::QueuedConnection);
-}
-
-/*!
- * \brief SensorControl::disconnectSensorWorker
- */
-void SensorControl::disconnectSensorWorker() {}
-
-void SensorControl::setSensorWorkerThread(QPointer<QThread> t) {
-  this->worker->moveToThread(t);
-}
+void SensorControl::finishMeasurement() { this->worker->finishMeasurement(); }

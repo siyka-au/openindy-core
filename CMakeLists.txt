@@ -126,6 +126,7 @@ add_library(OpenIndyCore SHARED
     src/coordinatesystem.cpp
     src/direction.cpp
     src/element.cpp
+    src/executor.cpp
     src/feature.cpp
     src/featurecontainer.cpp
     src/featurewrapper.cpp
@@ -186,6 +187,7 @@ add_library(OpenIndyCore SHARED
     include/plugin/function/specialfunction.h
     include/plugin/sensor/lasertracker.h
     include/plugin/sensor/sensor.h
+    include/plugin/sensor/sensorsink.h
     include/plugin/sensor/totalstation.h
     include/plugin/simulation/simulationmodel.h
     include/plugin/tool/tool.h
@@ -199,6 +201,8 @@ add_library(OpenIndyCore SHARED
     include/featureobserver.h
     include/jobobserver.h
     include/messagesink.h
+    include/executor.h
+    include/stationobserver.h
     include/featurecontainer.h
     include/featurewrapper.h
     include/geometry.h
@@ -416,6 +420,14 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 endif()
 
 add_test(NAME measurementintent COMMAND tst_measurementintent)
+
+add_executable(tst_sensorworker test/sensorworker/tst_sensorworker.cpp)
+target_link_libraries(tst_sensorworker PRIVATE Qt6::Test OpenIndyCore OpenIndyMath)
+target_include_directories(tst_sensorworker PRIVATE test/common)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(tst_sensorworker PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+add_test(NAME sensorworker COMMAND tst_sensorworker)
 
 add_executable(tst_pluginabi test/pluginabi/tst_pluginabi.cpp)
 target_link_libraries(tst_pluginabi PRIVATE Qt6::Test OpenIndyCore OpenIndyMath)

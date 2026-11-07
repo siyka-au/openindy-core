@@ -1,38 +1,54 @@
 #ifndef SENSORCONTROL_H
 #define SENSORCONTROL_H
 
-#include <QMutex>
-#include <QObject>
+#include <QList>
+#include <QMap>
 #include <QPointer>
-#include <QThread>
+#include <memory>
 
 #include "core_export.h"
+#include "executor.h"
 #include "measurementconfig.h"
 #include "sensor.h"
 #include "sensorworker.h"
+#include "stationobserver.h"
 
 namespace oi {
-
-using StringStringMap = QMap<QString, QString>;
-
-class Station;
 
 /*!
  * \brief The SensorControl class
  * A sensor control object belongs to a station and executes all sensor actions
- * on a seperate thread.
+ * on a separate thread (its SensorWorker). The sensor actions are plain method
+ * calls that enqueue a command and return at once; what the sensor reports
+ * back is handed to the StationObserver through the Executor, in the order the
+ * worker produced it. Without an executor results are delivered inline, on the
+ * worker thread.
+ *
+ * Destroying the control closes the delivery first - no callback reaches the
+ * observer afterwards, not even one the executor still has queued - and then
+ * stops the worker (see SensorWorker for what happens to queued commands).
+ * The executor is only used while the control exists; it has to outlive the
+ * worker thread's last post, i.e. the control.
  */
-class OI_CORE_EXPORT SensorControl : public QObject {
-  Q_OBJECT
-  Q_DISABLE_COPY_MOVE(SensorControl)
-
+class OI_CORE_EXPORT SensorControl final {
  public:
-  explicit SensorControl(QPointer<Station>& station, QObject* parent = nullptr);
+  explicit SensorControl(StationObserver* observer = nullptr,
+                         Executor* executor = nullptr);
 
-  ~SensorControl() override;
+  ~SensorControl();
 
-  void setSensorWorkerThread(QPointer<QThread> t);
- public slots:
+  SensorControl(const SensorControl&) = delete;
+  SensorControl& operator=(const SensorControl&) = delete;
+  SensorControl(SensorControl&&) = delete;
+  SensorControl& operator=(SensorControl&&) = delete;
+
+  // who the results go to / on which thread (null executor: inline)
+  void setObserver(StationObserver* observer);
+  void setExecutor(Executor* executor);
+  [[nodiscard]] Executor* getExecutor() const;
+
+  // the worker (for tests)
+  [[nodiscard]] SensorWorker& getWorker() { return *this->worker; }
 
   // ####################################
   // get or set sensor control attributes
@@ -121,57 +137,10 @@ class OI_CORE_EXPORT SensorControl : public QObject {
   void stopStatusMonitoringStream();
 
   void finishMeasurement();
- signals:
-
-  // ##############################
-  // inform about streaming results
-  // ##############################
-
-  // real time data
-  void realTimeReading(QVariantMap reading);
-  void realTimeStatus(QMap<QString, QString> status);
-
-  // connection information
-  void connectionLost();
-  void connectionReceived();
-
-  // ready state
-  void isReadyForMeasurement(bool isReady);
-
-  // ##############################################
-  // signals emitted after sensor actions were done
-  // ##############################################
-
-  // sensor action callbacks
-  void commandFinished(
-      bool success, QString msg,
-      SensorAction sensorAction = SensorAction::eSensorActionUndefind);
-  void measurementFinished(int geomId, QList<QPointer<Reading> > readings);
-  void measurementDone(bool success);
-
-  // #######################
-  // special sensor messages
-  // #######################
-
-  void sensorMessage(
-      QString msg, MessageTypes msgType,
-      MessageDestinations msgDest = MessageDestinations::eConsoleMessage);
 
  private:
-  // ##############
-  // helper methods
-  // ##############
-
-  // connect or disconnect sensor worker
-  void connectSensorWorker();
-  void disconnectSensorWorker();
-
-  // #################################
-  // general sensor control attributes
-  // #################################
-
-  // corresponding station
-  QPointer<Station> station;
+  class Delivery;
+  class Relay;
 
   // previously used sensors
   QList<Sensor> usedSensors;
@@ -179,8 +148,12 @@ class OI_CORE_EXPORT SensorControl : public QObject {
   // current sensor state
   bool sensorValid{false};
 
-  // sensor worker
-  QPointer<SensorWorker> worker;
+  // hands worker results to the observer through the executor
+  std::shared_ptr<Delivery> delivery;
+  std::unique_ptr<Relay> relay;
+
+  // the worker (declared last: stopped first)
+  std::unique_ptr<SensorWorker> worker;
 };
 
 }  // namespace oi

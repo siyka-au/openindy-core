@@ -8,6 +8,64 @@ using namespace oi;
 
 SensorInterface::SensorInterface(QObject* parent) : QObject(parent) {}
 
+void SensorInterface::setSensorSink(SensorSink* sink) {
+  const std::scoped_lock lock(this->sinkMutex);
+  this->sink = sink;
+}
+
+SensorSink* SensorInterface::getSensorSink() const {
+  const std::scoped_lock lock(this->sinkMutex);
+  return this->sink;
+}
+
+void SensorInterface::sensorStatus(const SensorStatus& status,
+                                   const QString& msg) {
+  const std::scoped_lock lock(this->sinkMutex);
+  if (this->sink != nullptr) {
+    this->sink->onSensorStatus(status, msg);
+  }
+}
+
+void SensorInterface::sensorMessage(const QString& msg,
+                                    const MessageTypes& msgType,
+                                    const MessageDestinations& msgDest) {
+  const std::scoped_lock lock(this->sinkMutex);
+  if (this->sink != nullptr) {
+    this->sink->onSensorMessage(msg, msgType, msgDest);
+  }
+}
+
+void SensorInterface::asyncSensorResponse(const QJsonObject& response,
+                                          const SensorAction sensorAction) {
+  const std::scoped_lock lock(this->sinkMutex);
+  if (this->sink != nullptr) {
+    this->sink->onAsyncSensorResponse(response, sensorAction);
+  }
+}
+
+void SensorInterface::asyncMeasurementResult(
+    const int& geomId, const QList<QPointer<Reading>>& measurements,
+    const SensorAction sensorAction) {
+  const std::scoped_lock lock(this->sinkMutex);
+  if (this->sink != nullptr) {
+    this->sink->onAsyncMeasurementResult(geomId, measurements, sensorAction);
+  }
+}
+
+void SensorInterface::asyncStreamResult(const QVariantMap& reading) {
+  const std::scoped_lock lock(this->sinkMutex);
+  if (this->sink != nullptr) {
+    this->sink->onAsyncStreamResult(reading);
+  }
+}
+
+void SensorInterface::asyncSensorNotification(const QJsonObject& response) {
+  const std::scoped_lock lock(this->sinkMutex);
+  if (this->sink != nullptr) {
+    this->sink->onAsyncSensorNotification(response);
+  }
+}
+
 /*!
  * \brief Sensor::Sensor
  * \param parent
@@ -98,7 +156,7 @@ void Sensor::setMeasurementConfig(const MeasurementConfig& mConfig) {
  * \brief Sensor::getLastReading
  * \return
  */
-const std::pair<ReadingTypes, QPointer<Reading> >& Sensor::getLastReading()
+const std::pair<ReadingTypes, QPointer<Reading>>& Sensor::getLastReading()
     const {
   return this->lastReading;
 }
@@ -267,12 +325,11 @@ bool Sensor::disconnectSensor() {
  * \param mConfig
  * \return
  */
-QList<QPointer<Reading> > Sensor::measure(
-    const MeasurementConfig& /*mConfig*/) {
+QList<QPointer<Reading>> Sensor::measure(const MeasurementConfig& /*mConfig*/) {
   emit this->sensorMessage(
       QString("Sensor not implemented correctly: measure method missing"),
       MessageTypes::eCriticalMessage, MessageDestinations::eMessageBoxMessage);
-  return QList<QPointer<Reading> >();
+  return QList<QPointer<Reading>>();
 }
 
 /*!

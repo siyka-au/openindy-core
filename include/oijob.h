@@ -17,6 +17,7 @@
 #include <vector>
 
 #include "core_export.h"
+#include "executor.h"
 #include "featureattributes.h"
 #include "featurecontainer.h"
 #include "featureobserver.h"
@@ -282,6 +283,16 @@ class OI_CORE_EXPORT OiJob : public QObject,
   void addObserver(JobObserver* observer);
   void removeObserver(JobObserver* observer);
 
+  // ###########################################################
+  // where the stations' sensor results are delivered (executor.h):
+  // handed to every station of the job, now and when it is added.
+  // Non-owning; it has to outlive the job. The default delivers
+  // inline, on the sensors' worker threads.
+  // ###########################################################
+
+  void setExecutor(Executor* executor);
+  [[nodiscard]] Executor* getExecutor() const;
+
  private slots:
 
   // ###########################################################################
@@ -360,6 +371,8 @@ class OI_CORE_EXPORT OiJob : public QObject,
   mutable QMutex observersMutex;
   std::vector<JobObserver*> observers;
 
+  Executor* executor{&InlineExecutor::instance()};
+
   // ##############################
   // connect or disconnect features
   // ##############################
@@ -412,6 +425,8 @@ class OI_CORE_EXPORT OiJob : public QObject,
   void onTransformationParametersChanged(const int& coordId) override;
   void onNominalsChanged(const int& coordId) override;
   void onActiveCoordinateSystemChanged(const int& coordId) override;
+  void onActiveStationChanged(const int& stationId) override;
+  void onSensorChanged(const int& stationId) override;
 
   class StationSystemObserver;
   std::unique_ptr<StationSystemObserver> stationSystemObserver;

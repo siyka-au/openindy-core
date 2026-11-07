@@ -75,6 +75,10 @@ class OI_CORE_EXPORT FeatureObserver {
   virtual void onIsBundleChanged(const int& /*tpId*/) {}
   virtual void onIsDatumTrafoChanged(const int& /*tpId*/) {}
 
+  // Station (from Station::setActiveStationState and the sensor setters)
+  virtual void onActiveStationChanged(const int& /*stationId*/) {}
+  virtual void onSensorChanged(const int& /*stationId*/) {}
+
   // CoordinateSystem
   virtual void onObservationsChanged(const int& /*coordId*/,
                                      const int& /*obsId*/) {}

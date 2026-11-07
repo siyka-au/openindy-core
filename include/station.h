@@ -4,11 +4,15 @@
 #include <QList>
 #include <QObject>
 #include <QPointer>
+#include <atomic>
+#include <memory>
 
 #include "core_export.h"
+#include "executor.h"
 #include "feature.h"
 #include "point.h"
 #include "sensorcontrol.h"
+#include "stationobserver.h"
 
 class ProjectExchanger;
 
@@ -128,18 +132,11 @@ class OI_CORE_EXPORT Station : public Feature {
   [[nodiscard]] QString getDisplayPrimaryK(
       const int& digits, const bool& showDiff = false) const override;
 
-  void setSensorWorkerThread(QPointer<QThread> t);
- signals:
-
-  // #######################################
-  // signals to inform about station changes
-  // #######################################
-
-  void activeStationChanged(const int& stationId);
-  void sensorChanged(const int& featureId);
-
   // ###############################
-  // signals to start sensor actions
+  // start sensor actions: plain calls that enqueue the action for the
+  // station's sensor worker thread and return at once (they used to be
+  // signals connected to the SensorControl). The outcome arrives through the
+  // StationObserver.
   // ###############################
 
   // connect or disconnect
@@ -148,8 +145,6 @@ class OI_CORE_EXPORT Station : public Feature {
 
   // measure
   void measure(const int& geomId, const MeasurementConfig& mConfig);
-
-  void measurementDone(bool success);
 
   // general sensor actions
   void move(const double& azimuth, const double& zenith, const double& distance,
@@ -182,40 +177,24 @@ class OI_CORE_EXPORT Station : public Feature {
   void startStatusMonitoringStream();
   void stopStatusMonitoringStream();
 
-  // ##############################
-  // inform about streaming results
-  // ##############################
-
-  // real time data
-  void realTimeReading(QVariantMap reading);
-  void realTimeStatus(QMap<QString, QString> status);
-
-  // connection information
-  void connectionLost();
-  void connectionReceived();
-
-  // ready state
-  void isReadyForMeasurement(bool isReady);
-
-  // ##############################################
-  // signals emitted after sensor actions were done
-  // ##############################################
-
-  // sensor action callbacks
-  void commandFinished(
-      bool success, QString msg,
-      SensorAction sensorAction = SensorAction::eSensorActionUndefind);
-  void measurementFinished(int geomId, QList<QPointer<Reading>> readings);
-
-  // #######################
-  // special sensor messages
-  // #######################
-
-  void sensorMessage(
-      QString msg, MessageTypes msgType,
-      MessageDestinations msgDest = MessageDestinations::eConsoleMessage);
-
   void finishMeasurement();
+
+  // ##############################################################
+  // what the sensor reports back (command results, streams, messages)
+  // goes to this observer (see stationobserver.h); at most one, not
+  // owned, null until someone sets it
+  // ##############################################################
+
+  void setStationObserver(StationObserver* observer);
+  [[nodiscard]] StationObserver* getStationObserver() const;
+
+  // on which thread those reports are delivered (see executor.h). OiJob hands
+  // its executor to every station it owns; a station without a job delivers
+  // inline, on the sensor worker thread.
+  void setExecutor(Executor* executor);
+
+  // the sensor control (for tests and hosts that need the worker)
+  [[nodiscard]] SensorControl* getSensorControl() const;
 
  protected:
   // ######################################
@@ -241,7 +220,10 @@ class OI_CORE_EXPORT Station : public Feature {
                     // current display coordinate system
 
   // sensor communication
-  QPointer<SensorControl> sensorControl;
+  class SensorResults;  // the observer of the sensor control
+  std::unique_ptr<SensorResults> sensorResults;
+  std::unique_ptr<SensorControl> sensorControl;
+  std::atomic<StationObserver*> stationObserver{nullptr};
 
   // the corresponding coordinate system
   QPointer<CoordinateSystem> stationSystem;
@@ -272,9 +254,9 @@ class OI_CORE_EXPORT Station : public Feature {
   // station attribute changes
   void stationNameChanged(const int& featureId, const QString& oldName);
 
-  // connect or disconnect sensor control
-  void connectSensorControl();
-  void disconnectSensorControl();
+  // the sensor control with the observer that feeds the station's own
+  // observer
+  void createSensorControl();
 
   // add or remove readings
   void addReadings(const int& geomId, const QList<QPointer<Reading>>& readings);

@@ -8,6 +8,7 @@
 #include <QString>
 #include <QStringList>
 #include <QVariant>
+#include <mutex>
 #include <utility>
 
 #include "core_export.h"
@@ -15,6 +16,7 @@
 #include "pluginmetadata.h"
 #include "reading.h"
 #include "sensorconfiguration.h"
+#include "sensorsink.h"
 #include "types.h"
 #include "util.h"
 
@@ -141,11 +143,20 @@ class OI_CORE_EXPORT SensorInterface : public QObject {
   [[nodiscard]] virtual ReadingTypes getReadingType(
       const MeasurementConfig& mConfig) const = 0;
 
- signals:
+  // ##############################################################
+  // reporting to OpenIndy: replaces the former Qt signals of this
+  // class. The names, parameters and default arguments are unchanged,
+  // so a driver keeps writing `emit this->sensorMessage(...)`; each
+  // call is forwarded to the sink, or dropped if there is none. They
+  // may be called from any thread the driver owns.
+  // ##############################################################
 
-  // ##############################################
-  // signals to inform OpenIndy about sensor issues
-  // ##############################################
+  // the sink the reports go to (nullptr: drop them). Setting it waits for a
+  // report that is being delivered on another thread to finish, so the old
+  // sink may be destroyed right after setSensorSink returns.
+  void setSensorSink(SensorSink* sink);
+  [[nodiscard]] SensorSink* getSensorSink() const;
+
   void sensorStatus(const SensorStatus& status, const QString& msg);
   void sensorMessage(const QString& msg, const MessageTypes& msgType,
                      const MessageDestinations& msgDest =
@@ -158,6 +169,12 @@ class OI_CORE_EXPORT SensorInterface : public QObject {
       const SensorAction sensorAction = SensorAction::eSensorActionUndefind);
   void asyncStreamResult(const QVariantMap& reading);
   void asyncSensorNotification(const QJsonObject& response);
+
+ private:
+  // recursive: a sink may call back into the sensor (or swap itself) from
+  // within a report that is being delivered on the same thread
+  mutable std::recursive_mutex sinkMutex;
+  SensorSink* sink{nullptr};
 };
 
 /*!
