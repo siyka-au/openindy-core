@@ -1,7 +1,10 @@
 #include "trafoparam.h"
 
 #include <cmath>
+#include <map>
+#include <vector>
 
+#include "containers.h"
 #include "featurewrapper.h"
 #include "oijob.h"
 #include "snapshot.h"
@@ -396,50 +399,56 @@ bool TrafoParam::setTransformationParameters(const OiMat& /*homogenMatrix*/) {
  * \param displayDigits
  * \return
  */
-QMap<TrafoParamParameters, QString> TrafoParam::getUnknownParameters(
-    const QMap<DimensionType, UnitType>& displayUnits,
-    const QMap<DimensionType, int>& displayDigits) const {
-  QMap<TrafoParamParameters, QString> parameters;
+std::map<TrafoParamParameters, QString> TrafoParam::getUnknownParameters(
+    const std::map<DimensionType, UnitType>& displayUnits,
+    const std::map<DimensionType, int>& displayDigits) const {
+  std::map<TrafoParamParameters, QString> parameters;
 
-  parameters.insert(
+  parameters.insert_or_assign(
       TrafoParamParameters::eUnknownTX,
       this->getDisplayTranslationX(
-          displayUnits.value(DimensionType::eMetric, UnitType::eUnitMeter),
-          displayDigits.value(DimensionType::eMetric, 0)));
-  parameters.insert(
+          oi::value(displayUnits, DimensionType::eMetric, UnitType::eUnitMeter),
+          oi::value(displayDigits, DimensionType::eMetric, 0)));
+  parameters.insert_or_assign(
       TrafoParamParameters::eUnknownTY,
       this->getDisplayTranslationY(
-          displayUnits.value(DimensionType::eMetric, UnitType::eUnitMeter),
-          displayDigits.value(DimensionType::eMetric, 0)));
-  parameters.insert(
+          oi::value(displayUnits, DimensionType::eMetric, UnitType::eUnitMeter),
+          oi::value(displayDigits, DimensionType::eMetric, 0)));
+  parameters.insert_or_assign(
       TrafoParamParameters::eUnknownTZ,
       this->getDisplayTranslationZ(
-          displayUnits.value(DimensionType::eMetric, UnitType::eUnitMeter),
-          displayDigits.value(DimensionType::eMetric, 0)));
-  parameters.insert(
+          oi::value(displayUnits, DimensionType::eMetric, UnitType::eUnitMeter),
+          oi::value(displayDigits, DimensionType::eMetric, 0)));
+  parameters.insert_or_assign(
       TrafoParamParameters::eUnknownRX,
       this->getDisplayRotationX(
-          displayUnits.value(DimensionType::eAngular, UnitType::eUnitRadiant),
-          displayDigits.value(DimensionType::eAngular, 0)));
-  parameters.insert(
+          oi::value(displayUnits, DimensionType::eAngular,
+                    UnitType::eUnitRadiant),
+          oi::value(displayDigits, DimensionType::eAngular, 0)));
+  parameters.insert_or_assign(
       TrafoParamParameters::eUnknownRY,
       this->getDisplayRotationY(
-          displayUnits.value(DimensionType::eAngular, UnitType::eUnitRadiant),
-          displayDigits.value(DimensionType::eAngular, 0)));
-  parameters.insert(
+          oi::value(displayUnits, DimensionType::eAngular,
+                    UnitType::eUnitRadiant),
+          oi::value(displayDigits, DimensionType::eAngular, 0)));
+  parameters.insert_or_assign(
       TrafoParamParameters::eUnknownRZ,
       this->getDisplayRotationZ(
-          displayUnits.value(DimensionType::eAngular, UnitType::eUnitRadiant),
-          displayDigits.value(DimensionType::eAngular, 0)));
-  parameters.insert(TrafoParamParameters::eUnknownSX,
-                    this->getDisplayScaleX(
-                        displayDigits.value(DimensionType::eDimensionless, 0)));
-  parameters.insert(TrafoParamParameters::eUnknownSY,
-                    this->getDisplayScaleY(
-                        displayDigits.value(DimensionType::eDimensionless, 0)));
-  parameters.insert(TrafoParamParameters::eUnknownSZ,
-                    this->getDisplayScaleZ(
-                        displayDigits.value(DimensionType::eDimensionless, 0)));
+          oi::value(displayUnits, DimensionType::eAngular,
+                    UnitType::eUnitRadiant),
+          oi::value(displayDigits, DimensionType::eAngular, 0)));
+  parameters.insert_or_assign(
+      TrafoParamParameters::eUnknownSX,
+      this->getDisplayScaleX(
+          oi::value(displayDigits, DimensionType::eDimensionless, 0)));
+  parameters.insert_or_assign(
+      TrafoParamParameters::eUnknownSY,
+      this->getDisplayScaleY(
+          oi::value(displayDigits, DimensionType::eDimensionless, 0)));
+  parameters.insert_or_assign(
+      TrafoParamParameters::eUnknownSZ,
+      this->getDisplayScaleZ(
+          oi::value(displayDigits, DimensionType::eDimensionless, 0)));
 
   return parameters;
 }
@@ -449,45 +458,48 @@ QMap<TrafoParamParameters, QString> TrafoParam::getUnknownParameters(
  * \param parameters
  */
 void TrafoParam::setUnknownParameters(
-    const QMap<TrafoParamParameters, double>& parameters) {
+    const std::map<TrafoParamParameters, double>& parameters) {
   // get current parameters
   OiVec translation = this->translation;
   OiVec rotation = this->rotation;
   OiVec scale = this->scale;
 
   // update parameters
-  QList<TrafoParamParameters> keys = parameters.keys();
+  std::vector<TrafoParamParameters> keys = oi::keys(parameters);
   for (const TrafoParamParameters& key : oi::snapshot(keys)) {
     switch (key) {
       case TrafoParamParameters::eUnknownTX:
-        translation.setAt(0,
-                          parameters.value(TrafoParamParameters::eUnknownTX));
+        translation.setAt(
+            0, oi::value(parameters, TrafoParamParameters::eUnknownTX));
         break;
       case TrafoParamParameters::eUnknownTY:
-        translation.setAt(1,
-                          parameters.value(TrafoParamParameters::eUnknownTY));
+        translation.setAt(
+            1, oi::value(parameters, TrafoParamParameters::eUnknownTY));
         break;
       case TrafoParamParameters::eUnknownTZ:
-        translation.setAt(2,
-                          parameters.value(TrafoParamParameters::eUnknownTZ));
+        translation.setAt(
+            2, oi::value(parameters, TrafoParamParameters::eUnknownTZ));
         break;
       case TrafoParamParameters::eUnknownRX:
-        rotation.setAt(0, parameters.value(TrafoParamParameters::eUnknownRX));
+        rotation.setAt(0,
+                       oi::value(parameters, TrafoParamParameters::eUnknownRX));
         break;
       case TrafoParamParameters::eUnknownRY:
-        rotation.setAt(1, parameters.value(TrafoParamParameters::eUnknownRY));
+        rotation.setAt(1,
+                       oi::value(parameters, TrafoParamParameters::eUnknownRY));
         break;
       case TrafoParamParameters::eUnknownRZ:
-        rotation.setAt(2, parameters.value(TrafoParamParameters::eUnknownRZ));
+        rotation.setAt(2,
+                       oi::value(parameters, TrafoParamParameters::eUnknownRZ));
         break;
       case TrafoParamParameters::eUnknownSX:
-        scale.setAt(0, parameters.value(TrafoParamParameters::eUnknownSX));
+        scale.setAt(0, oi::value(parameters, TrafoParamParameters::eUnknownSX));
         break;
       case TrafoParamParameters::eUnknownSY:
-        scale.setAt(1, parameters.value(TrafoParamParameters::eUnknownSY));
+        scale.setAt(1, oi::value(parameters, TrafoParamParameters::eUnknownSY));
         break;
       case TrafoParamParameters::eUnknownSZ:
-        scale.setAt(2, parameters.value(TrafoParamParameters::eUnknownSZ));
+        scale.setAt(2, oi::value(parameters, TrafoParamParameters::eUnknownSZ));
         break;
     }
   }

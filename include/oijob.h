@@ -1,18 +1,13 @@
 #ifndef OIJOB_H
 #define OIJOB_H
-
 #include <QIODevice>
-#include <QList>
-#include <QMap>
-#include <QMultiMap>
 #include <QMutex>
 #include <QMutexLocker>
 #include <QPointer>
-#include <QSet>
 #include <QString>
-#include <QStringList>
 #include <algorithm>
 #include <memory>
+#include <set>
 #include <vector>
 
 #include "core_export.h"
@@ -86,37 +81,38 @@ class OI_CORE_EXPORT OiJob : public oi::Trackable,
   [[nodiscard]] int getFeatureCount(const QString& group) const;
 
   // access a list of all feature ids and names
-  [[nodiscard]] const QList<int>& getFeatureIdList() const;
-  [[nodiscard]] const QStringList& getFeatureNameList() const;
-  [[nodiscard]] const QStringList& getFeatureGroupList() const;
-  [[nodiscard]] const QList<MeasurementConfigKey>& getUsedMeasurementConfigs()
-      const;
+  [[nodiscard]] const std::vector<int>& getFeatureIdList() const;
+  [[nodiscard]] const std::vector<QString>& getFeatureNameList() const;
+  [[nodiscard]] const std::vector<QString>& getFeatureGroupList() const;
+  [[nodiscard]] const std::vector<MeasurementConfigKey>&
+  getUsedMeasurementConfigs() const;
 
   // access feature lists
-  [[nodiscard]] const QList<oi::Guarded<FeatureWrapper>>& getFeaturesList()
-      const;
-  [[nodiscard]] const QList<oi::Guarded<CoordinateSystem>>&
+  [[nodiscard]] const std::vector<oi::Guarded<FeatureWrapper>>&
+  getFeaturesList() const;
+  [[nodiscard]] const std::vector<oi::Guarded<CoordinateSystem>>&
   getCoordinateSystemsList() const;
-  [[nodiscard]] QList<oi::Guarded<CoordinateSystem>> getStationSystemsList()
+  [[nodiscard]] std::vector<oi::Guarded<CoordinateSystem>>
+  getStationSystemsList() const;
+  [[nodiscard]] std::vector<oi::Guarded<CoordinateSystem>> getBundleSystemList()
       const;
-  [[nodiscard]] QList<oi::Guarded<CoordinateSystem>> getBundleSystemList()
+  [[nodiscard]] const std::vector<oi::Guarded<Station>>& getStationsList()
       const;
-  [[nodiscard]] const QList<oi::Guarded<Station>>& getStationsList() const;
-  [[nodiscard]] const QList<oi::Guarded<TrafoParam>>&
+  [[nodiscard]] const std::vector<oi::Guarded<TrafoParam>>&
   getTransformationParametersList() const;
-  [[nodiscard]] const QList<oi::Guarded<FeatureWrapper>>& getGeometriesList()
-      const;
+  [[nodiscard]] const std::vector<oi::Guarded<FeatureWrapper>>&
+  getGeometriesList() const;
 
   // access specific features
   [[nodiscard]] oi::Guarded<FeatureWrapper> getFeatureById(
       const int& featureId) const;
-  [[nodiscard]] QList<oi::Guarded<FeatureWrapper>> getFeaturesByName(
+  [[nodiscard]] std::vector<oi::Guarded<FeatureWrapper>> getFeaturesByName(
       const QString& name, const bool startWith = false) const;
-  [[nodiscard]] QList<oi::Guarded<FeatureWrapper>> getFeaturesByGroup(
+  [[nodiscard]] std::vector<oi::Guarded<FeatureWrapper>> getFeaturesByGroup(
       const QString& group) const;
-  [[nodiscard]] QList<oi::Guarded<FeatureWrapper>> getFeaturesByType(
+  [[nodiscard]] std::vector<oi::Guarded<FeatureWrapper>> getFeaturesByType(
       const FeatureTypes& type) const;
-  [[nodiscard]] QList<oi::Guarded<Geometry>> getGeometriesByMConfig(
+  [[nodiscard]] std::vector<oi::Guarded<Geometry>> getGeometriesByMConfig(
       const MeasurementConfigKey& key) const;
 
   // access active features
@@ -140,16 +136,16 @@ class OI_CORE_EXPORT OiJob : public oi::Trackable,
 
   // add features
   bool addFeature(const oi::Guarded<FeatureWrapper>& feature);
-  QList<oi::Guarded<FeatureWrapper>> addFeatures(
+  std::vector<oi::Guarded<FeatureWrapper>> addFeatures(
       const FeatureAttributes& fAttr);
-  bool addFeatures(const QList<oi::Guarded<FeatureWrapper>>& features,
+  bool addFeatures(const std::vector<oi::Guarded<FeatureWrapper>>& features,
                    bool overwrite = false);
 
   // remove features
   bool removeFeature(const int& featureId);
   bool removeFeature(const oi::Guarded<FeatureWrapper>& feature);
-  bool removeFeatures(const QSet<int>& featureIds);
-  bool removeFeatures(const QList<oi::Guarded<FeatureWrapper>>& features);
+  bool removeFeatures(const std::set<int>& featureIds);
+  bool removeFeatures(const std::vector<oi::Guarded<FeatureWrapper>>& features);
   void removeAll();
 
   // ##########################################
@@ -218,11 +214,12 @@ class OI_CORE_EXPORT OiJob : public oi::Trackable,
 
   // add new observations
   void addMeasurementResults(const int& geomId,
-                             const QList<oi::Guarded<Reading>>& readings);
+                             const std::vector<oi::Guarded<Reading>>& readings);
 
   // remove existing observations
   void removeObservations(const int& featureId);
-  void removeObservations(const int& featureId, const QList<int> selectedIds);
+  void removeObservations(const int& featureId,
+                          const std::vector<int> selectedIds);
   void removeAllObservations();
   void enableObservations(const int& featureId);
   void disableObservations(const int& featureId);
@@ -246,7 +243,8 @@ class OI_CORE_EXPORT OiJob : public oi::Trackable,
   // optionally force the recalc that makes it take effect.
   void setPipeline(const oi::Guarded<FeatureWrapper>& target,
                    const int& functionIndex, const int& neededElementIndex,
-                   const QList<PipelineStage>& stages, const bool& recalc);
+                   const std::vector<PipelineStage>& stages,
+                   const bool& recalc);
 
   // convenience for the single most common declared stage - D16's
   // hand-picking case: reject one specific element with a reason,
@@ -436,8 +434,8 @@ class OI_CORE_EXPORT OiJob : public oi::Trackable,
   // helper methods
   // ##############
 
-  [[nodiscard]] QStringList createFeatureNames(const QString& name,
-                                               const int& count) const;
+  [[nodiscard]] std::vector<QString> createFeatureNames(const QString& name,
+                                                        const int& count) const;
   [[nodiscard]] oi::Guarded<FeatureWrapper> createFeatureWrapper(
       const FeatureTypes& type) const;
   bool checkAndSetUpNewFeature(const oi::Guarded<FeatureWrapper>& feature,
@@ -475,7 +473,8 @@ class OI_CORE_EXPORT OiJob : public oi::Trackable,
   // ProjectExchanger)
   // ###################################################################################
 
-  void addFeaturesFromXml(const QList<oi::Guarded<FeatureWrapper>>& features);
+  void addFeaturesFromXml(
+      const std::vector<oi::Guarded<FeatureWrapper>>& features);
 
  private:
   // #########################

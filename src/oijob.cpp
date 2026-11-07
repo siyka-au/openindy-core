@@ -1,8 +1,14 @@
 #include "oijob.h"
 
+#include <iterator>
+#include <map>
+#include <set>
 #include <utility>
+#include <vector>
 
 #include "bundleadjustment.h"
+#include "containers.h"
+#include "qtinterop.h"
 #include "snapshot.h"
 using namespace oi;
 
@@ -172,16 +178,17 @@ void OiJob::setDigest(const QString& digest) { this->digest = digest; }
  * \return true if the project file version compatible with this program version
  */
 CompatibilyCheckResult OiJob::checkCompatibilty() const {
-  QStringList jobParts = loadedVersion.split(".");
-  if (jobParts.length() < 2) {
+  std::vector<QString> jobParts = oi::toVector(loadedVersion.split("."));
+  if (jobParts.size() < 2) {
     return CompatibilyCheckResult::eCheckResult_job_wo_valid_version;
   }
 
   int jobMajor = jobParts.at(0).toInt();
   int jobMinor = jobParts.at(1).toInt();
 
-  QStringList oiParts = QString(OPENINDY_VERSION).split(".");
-  if (oiParts.length() < 2) {
+  std::vector<QString> oiParts =
+      oi::toVector(QString(OPENINDY_VERSION).split("."));
+  if (oiParts.size() < 2) {
     return CompatibilyCheckResult::eCheckResult_oi_wo_valid_version;
   }
 
@@ -236,7 +243,7 @@ bool OiJob::validateFeatureName(const QString& name, const FeatureTypes& type) {
   }
 
   // get a list of features with name name
-  QList<oi::Guarded<FeatureWrapper> > features =
+  std::vector<oi::Guarded<FeatureWrapper> > features =
       this->featureContainer.getFeaturesByName(name);
 
   // accept name if no other feature with that name exists
@@ -305,7 +312,7 @@ int OiJob::getFeatureCount(const QString& group) const {
  * \brief OiJob::getFeatureIdList
  * \return
  */
-const QList<int>& OiJob::getFeatureIdList() const {
+const std::vector<int>& OiJob::getFeatureIdList() const {
   return this->featureContainer.getFeatureIdList();
 }
 
@@ -313,7 +320,7 @@ const QList<int>& OiJob::getFeatureIdList() const {
  * \brief OiJob::getFeatureNameList
  * \return
  */
-const QStringList& OiJob::getFeatureNameList() const {
+const std::vector<QString>& OiJob::getFeatureNameList() const {
   return this->featureContainer.getFeatureNameList();
 }
 
@@ -321,7 +328,7 @@ const QStringList& OiJob::getFeatureNameList() const {
  * \brief OiJob::getFeatureGroupList
  * \return
  */
-const QStringList& OiJob::getFeatureGroupList() const {
+const std::vector<QString>& OiJob::getFeatureGroupList() const {
   return this->featureContainer.getFeatureGroupList();
 }
 
@@ -329,7 +336,8 @@ const QStringList& OiJob::getFeatureGroupList() const {
  * \brief OiJob::getUsedMeasurementConfigs
  * \return
  */
-const QList<MeasurementConfigKey>& OiJob::getUsedMeasurementConfigs() const {
+const std::vector<MeasurementConfigKey>& OiJob::getUsedMeasurementConfigs()
+    const {
   return this->featureContainer.getUsedMeasurementConfigs();
 }
 
@@ -337,7 +345,8 @@ const QList<MeasurementConfigKey>& OiJob::getUsedMeasurementConfigs() const {
  * \brief OiJob::getFeaturesList
  * \return
  */
-const QList<oi::Guarded<FeatureWrapper> >& OiJob::getFeaturesList() const {
+const std::vector<oi::Guarded<FeatureWrapper> >& OiJob::getFeaturesList()
+    const {
   return this->featureContainer.getFeaturesList();
 }
 
@@ -346,8 +355,8 @@ const QList<oi::Guarded<FeatureWrapper> >& OiJob::getFeaturesList() const {
  * Returns a list of all nominal systems
  * \return
  */
-const QList<oi::Guarded<CoordinateSystem> >& OiJob::getCoordinateSystemsList()
-    const {
+const std::vector<oi::Guarded<CoordinateSystem> >&
+OiJob::getCoordinateSystemsList() const {
   return this->featureContainer.getCoordinateSystemsList();
 }
 
@@ -355,7 +364,8 @@ const QList<oi::Guarded<CoordinateSystem> >& OiJob::getCoordinateSystemsList()
  * \brief OiJob::getStationSystems
  * \return
  */
-QList<oi::Guarded<CoordinateSystem> > OiJob::getStationSystemsList() const {
+std::vector<oi::Guarded<CoordinateSystem> > OiJob::getStationSystemsList()
+    const {
   return this->featureContainer.getStationSystemsList();
 }
 
@@ -364,7 +374,8 @@ QList<oi::Guarded<CoordinateSystem> > OiJob::getStationSystemsList() const {
  * \return
  */
 /*
-QList<oi::Guarded<CoordinateSystem> > OiJob::getBundleSystemList() const{ //
+std::vector<oi::Guarded<CoordinateSystem> > OiJob::getBundleSystemList() const{
+//
 TODO OI-982 remove return this->featureContainer.getBundleSystemList();
 }
 */
@@ -373,7 +384,7 @@ TODO OI-982 remove return this->featureContainer.getBundleSystemList();
  * \brief OiJob::getStationsList
  * \return
  */
-const QList<oi::Guarded<Station> >& OiJob::getStationsList() const {
+const std::vector<oi::Guarded<Station> >& OiJob::getStationsList() const {
   return this->featureContainer.getStationsList();
 }
 
@@ -381,8 +392,8 @@ const QList<oi::Guarded<Station> >& OiJob::getStationsList() const {
  * \brief OiJob::getTransformationParametersList
  * \return
  */
-const QList<oi::Guarded<TrafoParam> >& OiJob::getTransformationParametersList()
-    const {
+const std::vector<oi::Guarded<TrafoParam> >&
+OiJob::getTransformationParametersList() const {
   return this->featureContainer.getTransformationParametersList();
 }
 
@@ -390,7 +401,8 @@ const QList<oi::Guarded<TrafoParam> >& OiJob::getTransformationParametersList()
  * \brief OiJob::getGeometriesList
  * \return
  */
-const QList<oi::Guarded<FeatureWrapper> >& OiJob::getGeometriesList() const {
+const std::vector<oi::Guarded<FeatureWrapper> >& OiJob::getGeometriesList()
+    const {
   return this->featureContainer.getGeometriesList();
 }
 
@@ -409,7 +421,7 @@ oi::Guarded<FeatureWrapper> OiJob::getFeatureById(const int& featureId) const {
  * \param startWith use name as "start with" pattern
  * \return
  */
-QList<oi::Guarded<FeatureWrapper> > OiJob::getFeaturesByName(
+std::vector<oi::Guarded<FeatureWrapper> > OiJob::getFeaturesByName(
     const QString& name, const bool startWith) const {
   return this->featureContainer.getFeaturesByName(name, startWith);
 }
@@ -419,7 +431,7 @@ QList<oi::Guarded<FeatureWrapper> > OiJob::getFeaturesByName(
  * \param group
  * \return
  */
-QList<oi::Guarded<FeatureWrapper> > OiJob::getFeaturesByGroup(
+std::vector<oi::Guarded<FeatureWrapper> > OiJob::getFeaturesByGroup(
     const QString& group) const {
   return this->featureContainer.getFeaturesByGroup(group);
 }
@@ -429,7 +441,7 @@ QList<oi::Guarded<FeatureWrapper> > OiJob::getFeaturesByGroup(
  * \param type
  * \return
  */
-QList<oi::Guarded<FeatureWrapper> > OiJob::getFeaturesByType(
+std::vector<oi::Guarded<FeatureWrapper> > OiJob::getFeaturesByType(
     const FeatureTypes& type) const {
   return this->featureContainer.getFeaturesByType(type);
 }
@@ -439,7 +451,7 @@ QList<oi::Guarded<FeatureWrapper> > OiJob::getFeaturesByType(
  * \param mConfig
  * \return
  */
-QList<oi::Guarded<Geometry> > OiJob::getGeometriesByMConfig(
+std::vector<oi::Guarded<Geometry> > OiJob::getGeometriesByMConfig(
     const MeasurementConfigKey& key) const {
   return this->featureContainer.getGeometriesByMConfig(key);
 }
@@ -500,7 +512,7 @@ const QString& OiJob::getActiveGroup() const { return this->activeGroup; }
  * \return
  */
 bool OiJob::setActiveGroup(const QString& group) {
-  if (this->featureContainer.getFeatureGroupList().contains(group) &&
+  if (oi::contains(this->featureContainer.getFeatureGroupList(), group) &&
       this->activeGroup.compare(group) != 0) {
     this->activeGroup = group;
     this->notifyObservers(&JobObserver::onActiveGroupChanged);
@@ -534,8 +546,8 @@ bool OiJob::addFeature(const oi::Guarded<FeatureWrapper>& feature) {
 
   // if a group is set for the new feature notify the group change
   if (feature->getFeature()->getGroupName().compare("") != 0 &&
-      !this->featureContainer.getFeatureGroupList().contains(
-          feature->getFeature()->getGroupName())) {
+      !oi::contains(this->featureContainer.getFeatureGroupList(),
+                    feature->getFeature()->getGroupName())) {
     this->notifyObservers(&JobObserver::onAvailableGroupsChanged);
   }
 
@@ -560,9 +572,9 @@ bool OiJob::addFeature(const oi::Guarded<FeatureWrapper>& feature) {
  * \param fAttr
  * \return
  */
-QList<oi::Guarded<FeatureWrapper> > OiJob::addFeatures(
+std::vector<oi::Guarded<FeatureWrapper> > OiJob::addFeatures(
     const FeatureAttributes& fAttr) {
-  QList<oi::Guarded<FeatureWrapper> > result;
+  std::vector<oi::Guarded<FeatureWrapper> > result;
 
   // at least one feature should be created
   if (fAttr.count <= 0) {
@@ -576,7 +588,7 @@ QList<oi::Guarded<FeatureWrapper> > OiJob::addFeatures(
   //(the ordinary case for a fit-produced actual).
   oi::Guarded<CoordinateSystem> nominalSystem;
   if (getIsGeometry(fAttr.typeOfFeature) && !fAttr.nominalSystem.isEmpty()) {
-    QList<oi::Guarded<FeatureWrapper> > features =
+    std::vector<oi::Guarded<FeatureWrapper> > features =
         this->featureContainer.getFeaturesByName(fAttr.nominalSystem);
     if (features.size() != 1 || features.at(0).isNull() ||
         features.at(0)->getCoordinateSystem().isNull() ||
@@ -592,9 +604,9 @@ QList<oi::Guarded<FeatureWrapper> > OiJob::addFeatures(
   // job
   oi::Guarded<CoordinateSystem> startSystem, destSystem;
   if (fAttr.typeOfFeature == FeatureTypes::eTrafoParamFeature) {
-    QList<oi::Guarded<FeatureWrapper> > startSystems =
+    std::vector<oi::Guarded<FeatureWrapper> > startSystems =
         this->featureContainer.getFeaturesByName(fAttr.startSystem);
-    QList<oi::Guarded<FeatureWrapper> > destinationSystems =
+    std::vector<oi::Guarded<FeatureWrapper> > destinationSystems =
         this->featureContainer.getFeaturesByName(fAttr.destinationSystem);
     if (startSystems.size() != 1 || destinationSystems.size() != 1 ||
         startSystems.at(0).isNull() || destinationSystems.at(0).isNull()) {
@@ -630,7 +642,8 @@ QList<oi::Guarded<FeatureWrapper> > OiJob::addFeatures(
   }
 
   // create and validate feature names
-  QStringList featureNames = this->createFeatureNames(fAttr.name, fAttr.count);
+  std::vector<QString> featureNames =
+      this->createFeatureNames(fAttr.name, fAttr.count);
   for (const QString& name : oi::snapshot(featureNames)) {
     if (!validateFeatureName(name, fAttr.typeOfFeature)) {
       this->sendMessage("No valid feature name specified",
@@ -642,7 +655,8 @@ QList<oi::Guarded<FeatureWrapper> > OiJob::addFeatures(
   // check if the group is a new group
   bool isNewGroup = false;
   if (fAttr.group.compare("") != 0 &&
-      !this->featureContainer.getFeatureGroupList().contains(fAttr.group)) {
+      !oi::contains(this->featureContainer.getFeatureGroupList(),
+                    fAttr.group)) {
     isNewGroup = true;
   }
 
@@ -671,9 +685,9 @@ QList<oi::Guarded<FeatureWrapper> > OiJob::addFeatures(
       // set nominal system, if one was named
       if (!nominalSystem.isNull()) {
         feature->getGeometry()->nominalSystem = nominalSystem;
-        nominalSystem->nominalsList.append(feature);
-        nominalSystem->nominalsMap.insert(feature->getGeometry()->getId(),
-                                          feature);
+        nominalSystem->nominalsList.push_back(feature);
+        nominalSystem->nominalsMap.insert_or_assign(
+            feature->getGeometry()->getId(), feature);
 
         // set solved state
         if (nominalSystem->getIsActiveCoordinateSystem()) {
@@ -686,7 +700,7 @@ QList<oi::Guarded<FeatureWrapper> > OiJob::addFeatures(
       this->attachFeature(feature);
 
       // add feature to result list
-      result.append(feature);
+      result.push_back(feature);
     }
 
     // create non-geometry feature
@@ -709,8 +723,8 @@ QList<oi::Guarded<FeatureWrapper> > OiJob::addFeatures(
       if (fAttr.typeOfFeature == FeatureTypes::eTrafoParamFeature) {
         feature->getTrafoParam()->from = startSystem;
         feature->getTrafoParam()->to = destSystem;
-        startSystem->trafoParams.append(feature->getTrafoParam());
-        destSystem->trafoParams.append(feature->getTrafoParam());
+        startSystem->trafoParams.push_back(feature->getTrafoParam());
+        destSystem->trafoParams.push_back(feature->getTrafoParam());
 
         // check if one system is station and one system is coordinate system,
         // then set datum to true
@@ -745,7 +759,7 @@ QList<oi::Guarded<FeatureWrapper> > OiJob::addFeatures(
       this->attachFeature(feature);
 
       // add feature to result list
-      result.append(feature);
+      result.push_back(feature);
     }
   }
 
@@ -773,9 +787,9 @@ QList<oi::Guarded<FeatureWrapper> > OiJob::addFeatures(
  * \param features
  * \return
  */
-bool OiJob::addFeatures(const QList<oi::Guarded<FeatureWrapper> >& features,
-                        bool overwrite) {
-  QList<FeatureTypes> addedFeatureTypes;
+bool OiJob::addFeatures(
+    const std::vector<oi::Guarded<FeatureWrapper> >& features, bool overwrite) {
+  std::vector<FeatureTypes> addedFeatureTypes;
 
   for (const oi::Guarded<FeatureWrapper>& feature : std::as_const(features)) {
     // check if feature is valid
@@ -792,22 +806,23 @@ bool OiJob::addFeatures(const QList<oi::Guarded<FeatureWrapper> >& features,
     this->attachFeature(feature);
 
     // add feature type to list of added feature types
-    if (!addedFeatureTypes.contains(feature->getFeatureTypeEnum())) {
-      addedFeatureTypes.append(feature->getFeatureTypeEnum());
+    if (!oi::contains(addedFeatureTypes, feature->getFeatureTypeEnum())) {
+      addedFeatureTypes.push_back(feature->getFeatureTypeEnum());
     }
   }
 
   // features added signals
   this->notifyObservers(&JobObserver::onFeatureSetChanged);
-  if (addedFeatureTypes.contains(FeatureTypes::eCoordinateSystemFeature)) {
+  if (oi::contains(addedFeatureTypes, FeatureTypes::eCoordinateSystemFeature)) {
     this->notifyObservers(&JobObserver::onCoordSystemSetChanged);
-    addedFeatureTypes.removeOne(FeatureTypes::eCoordinateSystemFeature);
-  } else if (addedFeatureTypes.contains(FeatureTypes::eStationFeature)) {
+    oi::removeOne(addedFeatureTypes, FeatureTypes::eCoordinateSystemFeature);
+  } else if (oi::contains(addedFeatureTypes, FeatureTypes::eStationFeature)) {
     this->notifyObservers(&JobObserver::onStationSetChanged);
-    addedFeatureTypes.removeOne(FeatureTypes::eStationFeature);
-  } else if (addedFeatureTypes.contains(FeatureTypes::eTrafoParamFeature)) {
+    oi::removeOne(addedFeatureTypes, FeatureTypes::eStationFeature);
+  } else if (oi::contains(addedFeatureTypes,
+                          FeatureTypes::eTrafoParamFeature)) {
     this->notifyObservers(&JobObserver::onTrafoParamSetChanged);
-    addedFeatureTypes.removeOne(FeatureTypes::eTrafoParamFeature);
+    oi::removeOne(addedFeatureTypes, FeatureTypes::eTrafoParamFeature);
   } else if (addedFeatureTypes.size() > 0) {
     this->notifyObservers(&JobObserver::onGeometrySetChanged);
   }
@@ -911,7 +926,7 @@ bool OiJob::removeFeature(const oi::Guarded<FeatureWrapper>& feature) {
  * \param featureIds
  * \return
  */
-bool OiJob::removeFeatures(const QSet<int>& featureIds) {
+bool OiJob::removeFeatures(const std::set<int>& featureIds) {
   bool success = true;
 
   // check all features wether they could be removed
@@ -950,7 +965,7 @@ bool OiJob::removeFeatures(const QSet<int>& featureIds) {
  * \return
  */
 bool OiJob::removeFeatures(
-    const QList<oi::Guarded<FeatureWrapper> >& features) {
+    const std::vector<oi::Guarded<FeatureWrapper> >& features) {
   bool success = true;
 
   // check all features wether they could be removed
@@ -1010,8 +1025,9 @@ void OiJob::addFunction(const oi::Guarded<Function>& function) {
   this->activeFeature->getFeature()->addFunction(function);
 
   // set up dependencies
-  QMap<int, QList<InputElement> > inputElements = function->getInputElements();
-  for (int key : inputElements.keys()) {
+  std::map<int, std::vector<InputElement> > inputElements =
+      function->getInputElements();
+  for (int key : oi::keys(inputElements)) {
     for (const InputElement& element : oi::snapshot(inputElements[key])) {
       this->setUpDependencies(element, this->activeFeature->getFeature());
     }
@@ -1058,7 +1074,7 @@ bool OiJob::addOwnedSubGeometry(const oi::Guarded<FeatureWrapper>& owner,
                       MessageTypes::eErrorMessage);
     return false;
   }
-  if (!subGeometry->getGeometry()->getFunctions().isEmpty()) {
+  if (!subGeometry->getGeometry()->getFunctions().empty()) {
     this->sendMessage("Feature already has a producer function",
                       MessageTypes::eErrorMessage);
     return false;
@@ -1119,18 +1135,19 @@ void OiJob::removeFunction(const int& functionIndex) {
   }
 
   // get a list of remaining function
-  QList<oi::Guarded<Function> > remainingFunctions;
+  std::vector<oi::Guarded<Function> > remainingFunctions;
   for (const oi::Guarded<Function>& f :
        oi::snapshot(this->activeFeature->getFeature()->getFunctions())) {
     if (f.isNull() || f == function) {
       continue;
     }
-    remainingFunctions.append(f);
+    remainingFunctions.push_back(f);
   }
 
   // get a list of input elements and reset dependencies
-  QMap<int, QList<InputElement> > inputElements = function->getInputElements();
-  for (int key : inputElements.keys()) {
+  std::map<int, std::vector<InputElement> > inputElements =
+      function->getInputElements();
+  for (int key : oi::keys(inputElements)) {
     for (const InputElement& element : oi::snapshot(inputElements[key])) {
       // check if element is contained by any other function of the feature
       bool isStillIncluded = false;
@@ -1173,7 +1190,7 @@ void OiJob::addInputObservation(const oi::Guarded<FeatureWrapper>& target,
 
   // check function position
   if (functionPosition < 0 ||
-      functionPosition >= target->getFeature()->getFunctions().size() ||
+      functionPosition >= std::ssize(target->getFeature()->getFunctions()) ||
       target->getFeature()->getFunctions().at(functionPosition).isNull()) {
     return;
   }
@@ -1215,7 +1232,7 @@ void OiJob::addInputPoint(const oi::Guarded<FeatureWrapper>& target,
 
   // check function position
   if (functionPosition < 0 ||
-      functionPosition >= target->getFeature()->getFunctions().size() ||
+      functionPosition >= std::ssize(target->getFeature()->getFunctions()) ||
       target->getFeature()->getFunctions().at(functionPosition).isNull()) {
     return;
   }
@@ -1260,17 +1277,17 @@ void OiJob::resolvePointIntent(const oi::Guarded<Point>& point,
     return;
   }
 
-  const QList<oi::Guarded<Function> >& functions =
+  const std::vector<oi::Guarded<Function> >& functions =
       target->getFeature()->getFunctions();
-  for (int functionPosition = 0; functionPosition < functions.size();
+  for (int functionPosition = 0; functionPosition < std::ssize(functions);
        ++functionPosition) {
     const oi::Guarded<Function>& function = functions.at(functionPosition);
     if (function.isNull()) {
       continue;
     }
 
-    const QList<NeededElement>& needed = function->getNeededElements();
-    for (int neededElementsIndex = 0; neededElementsIndex < needed.size();
+    const std::vector<NeededElement>& needed = function->getNeededElements();
+    for (int neededElementsIndex = 0; neededElementsIndex < std::ssize(needed);
          ++neededElementsIndex) {
       const NeededElement& ne = needed.at(neededElementsIndex);
       if (ne.typeOfElement == ElementTypes::ePointElement &&
@@ -1323,7 +1340,7 @@ void OiJob::addInputReading(const oi::Guarded<FeatureWrapper>& target,
 
   // check function position
   if (functionPosition < 0 ||
-      functionPosition >= target->getFeature()->getFunctions().size() ||
+      functionPosition >= std::ssize(target->getFeature()->getFunctions()) ||
       target->getFeature()->getFunctions().at(functionPosition).isNull()) {
     return;
   }
@@ -1381,7 +1398,7 @@ void OiJob::addInputFeature(const oi::Guarded<FeatureWrapper>& target,
 
   // check function position
   if (functionPosition < 0 ||
-      functionPosition >= target->getFeature()->getFunctions().size()) {
+      functionPosition >= std::ssize(target->getFeature()->getFunctions())) {
     return;
   }
 
@@ -1405,7 +1422,7 @@ void OiJob::addInputFeature(const oi::Guarded<FeatureWrapper>& target,
   // see function.h/fitfunction.h), so this is always a direct index
   // lookup.
   if (neededElementsIndex < 0 ||
-      neededElementsIndex >= function->getNeededElements().size()) {
+      neededElementsIndex >= std::ssize(function->getNeededElements())) {
     return;
   }
   InputElement element(feature->getFeature()->getId());
@@ -1750,7 +1767,7 @@ void OiJob::removeInputElement(const oi::Guarded<FeatureWrapper>& target,
 
   // check function position
   if (functionPosition < 0 ||
-      functionPosition >= target->getFeature()->getFunctions().size() ||
+      functionPosition >= std::ssize(target->getFeature()->getFunctions()) ||
       target->getFeature()->getFunctions().at(functionPosition).isNull()) {
     return;
   }
@@ -1805,7 +1822,7 @@ void OiJob::removeInputElement(const oi::Guarded<FeatureWrapper>& target,
  * \param readings
  */
 void OiJob::addMeasurementResults(
-    const int& geomId, const QList<oi::Guarded<Reading> >& readings) {
+    const int& geomId, const std::vector<oi::Guarded<Reading> >& readings) {
   // check active station
   oi::Guarded<Station> activeStation = this->activeStation;
   if (activeStation.isNull() || activeStation->getCoordinateSystem().isNull()) {
@@ -1841,7 +1858,7 @@ void OiJob::addMeasurementResults(
   // create one station-owned Observation per reading, unchanged from
   // before - these hold the raw shots and are what makes the new Point
   //"a measurement" (Point::getOwnerDescription, point.cpp)
-  QList<oi::Guarded<Observation> > observations;
+  std::vector<oi::Guarded<Observation> > observations;
   bool isDummyPoint = false;
   for (const oi::Guarded<Reading>& reading : oi::snapshot(readings)) {
     if (reading.isNull()) {
@@ -1851,11 +1868,11 @@ void OiJob::addMeasurementResults(
     oi::Guarded<Observation> observation = new Observation();
     reading->setObservation(observation);
     activeStation->getCoordinateSystem()->addObservation(observation);
-    observations.append(observation);
+    observations.push_back(observation);
     isDummyPoint = isDummyPoint || observation->getIsDummyPoint();
   }
 
-  if (observations.isEmpty()) {
+  if (observations.empty()) {
     return;
   }
 
@@ -1937,7 +1954,7 @@ void OiJob::removeObservations(const int& featureId) {
   }
 
   // run through all observations of the feature
-  QList<oi::Guarded<Observation> > observations =
+  std::vector<oi::Guarded<Observation> > observations =
       feature->getGeometry()->getObservations();
   for (const oi::Guarded<Observation>& obs : oi::snapshot(observations)) {
     delete obs.data();
@@ -1998,24 +2015,28 @@ void OiJob::enableOrDisableGeometryObservations(const int& featureId,
   }
 
   // run through all observations of the feature
-  QList<oi::Guarded<Observation> > observations =
+  std::vector<oi::Guarded<Observation> > observations =
       feature->getGeometry()->getObservations();
   for (const oi::Guarded<Observation>& obs : oi::snapshot(observations)) {
     if ((!station.isNull() && station->getId() != obs->getStation()->getId()) ||
-        functionIndex >= feature->getFeature()->getFunctions().size()) {
+        functionIndex >= std::ssize(feature->getFeature()->getFunctions())) {
       continue;  // skip
     }
     int elementId = obs->getId();
 
     // check if the current use state already equals the new use state
-    if (feature->getFeature()->getFunctions()[functionIndex]->getShouldBeUsed(
-            neededElementIndex, elementId) == enable) {
+    if (feature->getFeature()
+            ->getFunctions()
+            .at(static_cast<std::size_t>(functionIndex))
+            ->getShouldBeUsed(neededElementIndex, elementId) == enable) {
       continue;
     }
 
     // set should use
-    feature->getFeature()->getFunctions()[functionIndex]->setShouldBeUsed(
-        neededElementIndex, elementId, enable);
+    feature->getFeature()
+        ->getFunctions()
+        .at(static_cast<std::size_t>(functionIndex))
+        ->setShouldBeUsed(neededElementIndex, elementId, enable);
   }
 
   // recalculate the feature
@@ -2035,7 +2056,7 @@ void OiJob::disableObservations(const int& featureId) {
  * \param selectedIds
  */
 void OiJob::removeObservations(const int& featureId,
-                               const QList<int> selectedIds) {
+                               const std::vector<int> selectedIds) {
   // get and check feature with the id featureId
   oi::Guarded<FeatureWrapper> feature =
       this->featureContainer.getFeatureById(featureId);
@@ -2044,10 +2065,10 @@ void OiJob::removeObservations(const int& featureId,
   }
 
   // run through all observations of the feature
-  QList<oi::Guarded<Observation> > observations =
+  std::vector<oi::Guarded<Observation> > observations =
       feature->getGeometry()->getObservations();
   for (const oi::Guarded<Observation>& obs : oi::snapshot(observations)) {
-    if (selectedIds.contains(obs->getId())) {
+    if (oi::contains(selectedIds, obs->getId())) {
       delete obs.data();
     }
   }
@@ -2065,7 +2086,7 @@ void OiJob::removeObservations(const int& featureId,
  */
 void OiJob::removeAllObservations() {
   // get a list of all geometries
-  QList<oi::Guarded<FeatureWrapper> > geometries =
+  std::vector<oi::Guarded<FeatureWrapper> > geometries =
       this->featureContainer.getGeometriesList();
 
   // remove all observations
@@ -2100,20 +2121,24 @@ void OiJob::setShouldBeUsed(const oi::Guarded<FeatureWrapper>& target,
 
   // check function position
   if (functionIndex < 0 ||
-      functionIndex >= target->getFeature()->getFunctions().size() ||
+      functionIndex >= std::ssize(target->getFeature()->getFunctions()) ||
       target->getFeature()->getFunctions().at(functionIndex).isNull()) {
     return;
   }
 
   // check if the current use state already equals the new use state
-  if (target->getFeature()->getFunctions()[functionIndex]->getShouldBeUsed(
-          neededElementIndex, elementId) == use) {
+  if (target->getFeature()
+          ->getFunctions()
+          .at(static_cast<std::size_t>(functionIndex))
+          ->getShouldBeUsed(neededElementIndex, elementId) == use) {
     return;
   }
 
   // set should use
-  target->getFeature()->getFunctions()[functionIndex]->setShouldBeUsed(
-      neededElementIndex, elementId, use);
+  target->getFeature()
+      ->getFunctions()
+      .at(static_cast<std::size_t>(functionIndex))
+      ->setShouldBeUsed(neededElementIndex, elementId, use);
 
   // force recalculation if requested
   if (recalc) {
@@ -2136,20 +2161,22 @@ void OiJob::setShouldBeUsed(const oi::Guarded<FeatureWrapper>& target,
  */
 void OiJob::setPipeline(const oi::Guarded<FeatureWrapper>& target,
                         const int& functionIndex, const int& neededElementIndex,
-                        const QList<PipelineStage>& stages,
+                        const std::vector<PipelineStage>& stages,
                         const bool& recalc) {
   if (target.isNull() || target->getFeature().isNull()) {
     return;
   }
 
   if (functionIndex < 0 ||
-      functionIndex >= target->getFeature()->getFunctions().size() ||
+      functionIndex >= std::ssize(target->getFeature()->getFunctions()) ||
       target->getFeature()->getFunctions().at(functionIndex).isNull()) {
     return;
   }
 
-  target->getFeature()->getFunctions()[functionIndex]->setPipeline(
-      neededElementIndex, stages);
+  target->getFeature()
+      ->getFunctions()
+      .at(static_cast<std::size_t>(functionIndex))
+      ->setPipeline(neededElementIndex, stages);
 
   if (recalc) {
     this->notifyObservers(&JobObserver::onRecalcFeatureRequested,
@@ -2177,13 +2204,16 @@ void OiJob::excludeElement(const oi::Guarded<FeatureWrapper>& target,
   }
 
   if (functionIndex < 0 ||
-      functionIndex >= target->getFeature()->getFunctions().size() ||
+      functionIndex >= std::ssize(target->getFeature()->getFunctions()) ||
       target->getFeature()->getFunctions().at(functionIndex).isNull()) {
     return;
   }
 
-  target->getFeature()->getFunctions()[functionIndex]->addPipelineStage(
-      neededElementIndex, PipelineStage::exclude(elementId, reason));
+  target->getFeature()
+      ->getFunctions()
+      .at(static_cast<std::size_t>(functionIndex))
+      ->addPipelineStage(neededElementIndex,
+                         PipelineStage::exclude(elementId, reason));
 
   if (recalc) {
     this->notifyObservers(&JobObserver::onRecalcFeatureRequested,
@@ -2394,8 +2424,8 @@ void OiJob::setFeatureGroup(const int& featureId, const QString& oldGroup) {
 
   // check if the group is a new group
   bool isNewGroup = false;
-  if (!this->featureContainer.getFeatureGroupList().contains(
-          feature->getFeature()->getGroupName())) {
+  if (!oi::contains(this->featureContainer.getFeatureGroupList(),
+                    feature->getFeature()->getGroupName())) {
     isNewGroup = true;
   }
 
@@ -2404,7 +2434,7 @@ void OiJob::setFeatureGroup(const int& featureId, const QString& oldGroup) {
 
   // check if there is another feature with the group oldGroup
   bool wasLastGroup = false;
-  if (!this->featureContainer.getFeatureGroupList().contains(oldGroup)) {
+  if (!oi::contains(this->featureContainer.getFeatureGroupList(), oldGroup)) {
     wasLastGroup = true;
   }
 
@@ -2870,13 +2900,13 @@ void OiJob::onActiveCoordinateSystemChanged(const int& coordId) {
  * \param name
  * \return
  */
-QStringList OiJob::createFeatureNames(const QString& name,
-                                      const int& count) const {
-  QStringList result;
+std::vector<QString> OiJob::createFeatureNames(const QString& name,
+                                               const int& count) const {
+  std::vector<QString> result;
 
   // if only one feature shall be created take the hole name
   if (count == 1) {
-    result.append(name);
+    result.push_back(name);
     return result;
   }
 
@@ -2925,7 +2955,8 @@ QStringList OiJob::createFeatureNames(const QString& name,
       leadZeros.append("0");
     }
 
-    result.append(QString("%1%2%3").arg(baseName).arg(leadZeros).arg(postFix));
+    result.push_back(
+        QString("%1%2%3").arg(baseName).arg(leadZeros).arg(postFix));
   }
 
   return result;
@@ -3096,7 +3127,7 @@ bool OiJob::checkAndSetUpNewFeature(const oi::Guarded<FeatureWrapper>& feature,
         feature->getFeatureTypeEnum() == FeatureTypes::ePointFeature) {
       // get existing feature and set new values
       // get a list of features with name name
-      QList<oi::Guarded<FeatureWrapper> > features =
+      std::vector<oi::Guarded<FeatureWrapper> > features =
           this->featureContainer.getFeaturesByName(
               feature->getFeature()->getFeatureName());
 
@@ -3191,8 +3222,8 @@ bool OiJob::checkAndSetUpNewFeature(const oi::Guarded<FeatureWrapper>& feature,
     // to have one (only nominals do; a fit-produced actual ordinarily
     // has none)
     if (!feature->getGeometry()->getNominalSystem().isNull() &&
-        !this->getCoordinateSystemsList().contains(
-            feature->getGeometry()->getNominalSystem())) {
+        !oi::contains(this->getCoordinateSystemsList(),
+                      feature->getGeometry()->getNominalSystem())) {
       return false;
     }
 
@@ -3216,8 +3247,8 @@ bool OiJob::checkAndSetUpNewFeature(const oi::Guarded<FeatureWrapper>& feature,
   // check if the group is a new group
   bool isNewGroup = false;
   if (feature->getFeature()->getGroupName().compare("") != 0 &&
-      !this->featureContainer.getFeatureGroupList().contains(
-          feature->getFeature()->getGroupName())) {
+      !oi::contains(this->featureContainer.getFeatureGroupList(),
+                    feature->getFeature()->getGroupName())) {
     isNewGroup = true;
   }
 
@@ -3308,7 +3339,7 @@ void OiJob::removeOwnedSubGeometries(
 
   // copy first: removeFeature (via ~Geometry) mutates the owner's
   // ownedSubGeometries list as each child is actually deleted
-  const QList<oi::Guarded<Geometry> > owned =
+  const std::vector<oi::Guarded<Geometry> > owned =
       feature->getGeometry()->getOwnedSubGeometries();
 
   for (const oi::Guarded<Geometry>& child : oi::snapshot(owned)) {
@@ -3754,7 +3785,7 @@ void OiJob::resetDependencies(const InputElement& element,
  * \param features
  */
 void OiJob::addFeaturesFromXml(
-    const QList<oi::Guarded<FeatureWrapper> >& features) {
+    const std::vector<oi::Guarded<FeatureWrapper> >& features) {
   for (const oi::Guarded<FeatureWrapper>& feature : oi::snapshot(features)) {
     // check if feature is valid
     if (feature.isNull() || feature->getFeature().isNull()) {
@@ -3834,7 +3865,7 @@ void OiJob::createTemplateFromJob() {
   this->removeAllObservations();  // from geometries
 
   // set first station to active station
-  QList<oi::Guarded<Station> > stations = this->getStationsList();
+  std::vector<oi::Guarded<Station> > stations = this->getStationsList();
   std::sort(
       stations.begin(), stations.end(),
       [](const oi::Guarded<Station>& lhs, const oi::Guarded<Station>& rhs) {
@@ -3842,15 +3873,15 @@ void OiJob::createTemplateFromJob() {
       });
 
   // remove used sensors
-  QList<Sensor> usedSensors;
+  std::vector<Sensor> usedSensors;
   int i = 0;
   for (oi::Guarded<Station> station : stations) {
     if (++i == 1) {
-      stations.first()->setActiveStationState(true);
-      stations.first()->setActiveFeatureState(true);
+      stations.front()->setActiveStationState(true);
+      stations.front()->setActiveFeatureState(true);
     } else {
-      stations.first()->setActiveStationState(false);
-      stations.first()->setActiveFeatureState(false);
+      stations.front()->setActiveStationState(false);
+      stations.front()->setActiveFeatureState(false);
     }
     station->resetSensor();
     // remove used sensors
@@ -3864,7 +3895,7 @@ void OiJob::createTemplateFromJob() {
   }
 
   // remove observations from coordinate system
-  QList<oi::Guarded<CoordinateSystem> > coordianteSystems =
+  std::vector<oi::Guarded<CoordinateSystem> > coordianteSystems =
       this->getCoordinateSystemsList();
   for (oi::Guarded<CoordinateSystem> coordianteSystem : coordianteSystems) {
     for (oi::Guarded<Observation> obs : coordianteSystem->getObservations()) {
@@ -3878,7 +3909,7 @@ void OiJob::createTemplateFromJob() {
   }
 
   // remove transformations parameter
-  QList<oi::Guarded<TrafoParam> > trafoParams =
+  std::vector<oi::Guarded<TrafoParam> > trafoParams =
       this->getTransformationParametersList();
   OiVec rotation(3);
   OiVec translation(3);

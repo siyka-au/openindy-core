@@ -1,8 +1,12 @@
 #include "function.h"
 
 #include <cmath>
+#include <iterator>
+#include <map>
 #include <utility>
+#include <vector>
 
+#include "containers.h"
 #include "snapshot.h"
 #include "specialfunction.h"
 
@@ -462,7 +466,7 @@ bool Function::canActAsTransform(const FeatureTypes& type, Function* function) {
  * \brief Function::getNeededElements
  * \return
  */
-const QList<NeededElement>& Function::getNeededElements() const {
+const std::vector<NeededElement>& Function::getNeededElements() const {
   return this->neededElements;
 }
 
@@ -470,7 +474,7 @@ const QList<NeededElement>& Function::getNeededElements() const {
  * \brief Function::getApplicableFor
  * \return
  */
-const QList<FeatureTypes>& Function::getApplicableFor() const {
+const std::vector<FeatureTypes>& Function::getApplicableFor() const {
   return this->applicableFor;
 }
 
@@ -484,7 +488,7 @@ const PluginMetaData& Function::getMetaData() const { return this->metaData; }
  * \brief Function::getIntegerParameter
  * \return
  */
-const QMap<QString, int>& Function::getIntegerParameter() const {
+const std::map<QString, int>& Function::getIntegerParameter() const {
   return this->integerParameters;
 }
 
@@ -492,7 +496,7 @@ const QMap<QString, int>& Function::getIntegerParameter() const {
  * \brief Function::getDoubleParameter
  * \return
  */
-const QMap<QString, double>& Function::getDoubleParameter() const {
+const std::map<QString, double>& Function::getDoubleParameter() const {
   return this->doubleParameters;
 }
 
@@ -500,7 +504,7 @@ const QMap<QString, double>& Function::getDoubleParameter() const {
  * \brief Function::getStringParameter
  * \return
  */
-const QMultiMap<QString, QString>& Function::getStringParameter() const {
+const std::multimap<QString, QString>& Function::getStringParameter() const {
   return this->stringParameters;
 }
 
@@ -525,10 +529,10 @@ const ScalarInputParams& Function::getScalarInputParams() {
   if (!this->scalarInputParams.isValid) {
     this->scalarInputParams.doubleParameter = this->doubleParameters;
     this->scalarInputParams.intParameter = this->integerParameters;
-    QStringList keys = this->stringParameters.keys();
+    std::vector<QString> keys = oi::keys(this->stringParameters);
     for (const QString& key : std::as_const(keys)) {
-      this->scalarInputParams.stringParameter.insert(
-          key, this->stringParameters.value(key));
+      this->scalarInputParams.stringParameter.insert_or_assign(
+          key, oi::value(this->stringParameters, key));
     }
   }
 
@@ -539,7 +543,7 @@ const ScalarInputParams& Function::getScalarInputParams() {
  * \brief Function::getFixedParameters
  * \return
  */
-const QList<FixedParameter>& Function::getFixedParameters() const {
+const std::vector<FixedParameter>& Function::getFixedParameters() const {
   return this->fixedParameters;
 }
 
@@ -548,8 +552,8 @@ const QList<FixedParameter>& Function::getFixedParameters() const {
  * \param parameter
  */
 void Function::fixParameter(const FixedParameter& parameter) {
-  if (!this->fixedParameters.contains(parameter)) {
-    this->fixedParameters.append(parameter);
+  if (!oi::contains(this->fixedParameters, parameter)) {
+    this->fixedParameters.push_back(parameter);
   }
 }
 
@@ -558,7 +562,7 @@ void Function::fixParameter(const FixedParameter& parameter) {
  * \param parameter
  */
 void Function::unfixParameter(const GeometryParameters& parameter) {
-  this->fixedParameters.removeOne(FixedParameter(parameter));
+  oi::removeOne(this->fixedParameters, FixedParameter(parameter));
 }
 
 /*!
@@ -570,7 +574,7 @@ void Function::unfixAllParameters() { this->fixedParameters.clear(); }
  * \brief Function::getResultProtocol
  * \return
  */
-const QStringList& Function::getResultProtocol() const {
+const std::vector<QString>& Function::getResultProtocol() const {
   return this->resultProtocol;
 }
 
@@ -604,7 +608,8 @@ void Function::setSupportWeights(bool supports) {
  * \brief Function::getInputElements
  * \return
  */
-const QMap<int, QList<InputElement> >& Function::getInputElements() const {
+const std::map<int, std::vector<InputElement> >& Function::getInputElements()
+    const {
   return this->inputElements;
 }
 
@@ -615,9 +620,9 @@ const QMap<int, QList<InputElement> >& Function::getInputElements() const {
  * \return
  */
 InputElement Function::getInputElement(const int& id) const {
-  QList<int> keys = this->inputElements.keys();
+  std::vector<int> keys = oi::keys(this->inputElements);
   for (const int& key : std::as_const(keys)) {
-    for (const InputElement& element : oi::snapshot(this->inputElements[key])) {
+    for (const InputElement& element : oi::value(this->inputElements, key)) {
       if (element.id == id) {
         return element;
       }
@@ -637,7 +642,7 @@ InputElement Function::getInputElement(const int& id,
                                        const int& position) const {
   if (this->inputElements.contains(position)) {
     for (const InputElement& element :
-         oi::snapshot(this->inputElements[position])) {
+         oi::value(this->inputElements, position)) {
       if (element.id == id) {
         return element;
       }
@@ -653,9 +658,9 @@ InputElement Function::getInputElement(const int& id,
  * \return
  */
 bool Function::hasInputElement(const int& id) const {
-  QList<int> keys = this->inputElements.keys();
+  std::vector<int> keys = oi::keys(this->inputElements);
   for (const int& key : std::as_const(keys)) {
-    for (const InputElement& element : oi::snapshot(this->inputElements[key])) {
+    for (const InputElement& element : oi::value(this->inputElements, key)) {
       if (element.id == id) {
         return true;
       }
@@ -673,11 +678,11 @@ void Function::addInputElement(const InputElement& element,
                                const int& position) {
   // add the input element
   if (this->inputElements.contains(position)) {
-    this->inputElements[position].append(element);
+    this->inputElements[position].push_back(element);
   } else {
-    QList<InputElement> elements;
-    elements.append(element);
-    this->inputElements.insert(position, elements);
+    std::vector<InputElement> elements;
+    elements.push_back(element);
+    this->inputElements.insert_or_assign(position, elements);
   }
 
   this->notifyInputElementsChanged();
@@ -690,7 +695,7 @@ void Function::addInputElement(const InputElement& element,
  */
 void Function::removeInputElement(const int& id, const int& position) {
   if (this->inputElements.contains(position)) {
-    this->inputElements[position].removeOne(InputElement(id));
+    oi::removeOne(this->inputElements[position], InputElement(id));
     this->notifyInputElementsChanged();
   }
 }
@@ -700,8 +705,8 @@ void Function::removeInputElement(const int& id, const int& position) {
  * \param id
  */
 void Function::removeInputElement(const int& id) {
-  for (int i = 0; i < this->inputElements.size(); i++) {
-    this->inputElements[i].removeOne(InputElement(id));
+  for (int i = 0; i < std::ssize(this->inputElements); i++) {
+    oi::removeOne(this->inputElements[i], InputElement(id));
     this->notifyInputElementsChanged();
   }
 }
@@ -714,9 +719,9 @@ void Function::removeInputElement(const int& id) {
 void Function::replaceInputElement(const InputElement& element,
                                    const int& position) {
   if (this->inputElements.contains(position)) {
-    int index = this->inputElements[position].indexOf(element);
+    int index = oi::indexOf(this->inputElements[position], element);
     if (index > -1) {
-      this->inputElements[position].replace(index, element);
+      this->inputElements[position][static_cast<std::size_t>(index)] = element;
       this->notifyInputElementsChanged();
     }
   }
@@ -730,7 +735,7 @@ void Function::replaceInputElement(const InputElement& element,
  */
 bool Function::getIsUsed(const int& position, const int& id) {
   if (this->inputElements.contains(position)) {
-    int index = this->inputElements[position].indexOf(InputElement(id));
+    int index = oi::indexOf(this->inputElements[position], InputElement(id));
     if (index > -1) {
       return this->inputElements[position][index].isUsed;
     }
@@ -747,7 +752,7 @@ bool Function::getIsUsed(const int& position, const int& id) {
  */
 bool Function::getShouldBeUsed(const int& position, const int& id) {
   if (this->inputElements.contains(position)) {
-    int index = this->inputElements[position].indexOf(InputElement(id));
+    int index = oi::indexOf(this->inputElements[position], InputElement(id));
     if (index > -1) {
       return this->inputElements[position][index].shouldBeUsed;
     }
@@ -766,7 +771,7 @@ void Function::setShouldBeUsed(const int& position, const int& id,
                                const bool& state) {
   // get the element at position with id and set shouldBeUsed to state
   if (this->inputElements.contains(position)) {
-    int index = this->inputElements[position].indexOf(InputElement(id));
+    int index = oi::indexOf(this->inputElements[position], InputElement(id));
     if (index > -1) {
       this->inputElements[position][index].shouldBeUsed = state;
       this->notifyInputElementsChanged();
@@ -779,9 +784,10 @@ void Function::setShouldBeUsed(const int& position, const int& id,
  * \param position
  * \return
  */
-const QList<PipelineStage>& Function::getPipeline(const int& position) const {
-  static const QList<PipelineStage> empty;
-  if (position < 0 || position >= this->neededElements.size()) {
+const std::vector<PipelineStage>& Function::getPipeline(
+    const int& position) const {
+  static const std::vector<PipelineStage> empty;
+  if (position < 0 || position >= std::ssize(this->neededElements)) {
     return empty;
   }
   return this->neededElements.at(position).pipeline;
@@ -793,8 +799,8 @@ const QList<PipelineStage>& Function::getPipeline(const int& position) const {
  * \param stages
  */
 void Function::setPipeline(const int& position,
-                           const QList<PipelineStage>& stages) {
-  if (position < 0 || position >= this->neededElements.size()) {
+                           const std::vector<PipelineStage>& stages) {
+  if (position < 0 || position >= std::ssize(this->neededElements)) {
     return;
   }
   this->neededElements[position].pipeline = stages;
@@ -808,10 +814,10 @@ void Function::setPipeline(const int& position,
  */
 void Function::addPipelineStage(const int& position,
                                 const PipelineStage& stage) {
-  if (position < 0 || position >= this->neededElements.size()) {
+  if (position < 0 || position >= std::ssize(this->neededElements)) {
     return;
   }
-  this->neededElements[position].pipeline.append(stage);
+  this->neededElements[position].pipeline.push_back(stage);
   this->notifyInputElementsChanged();
 }
 
@@ -820,7 +826,7 @@ void Function::addPipelineStage(const int& position,
  * \param position
  */
 void Function::clearPipeline(const int& position) {
-  if (position < 0 || position >= this->neededElements.size()) {
+  if (position < 0 || position >= std::ssize(this->neededElements)) {
     return;
   }
   this->neededElements[position].pipeline.clear();
@@ -832,15 +838,15 @@ void Function::clearPipeline(const int& position) {
  * \param position
  * \return
  */
-const QList<PipelineExclusion>& Function::getPipelineExclusions(
+const std::vector<PipelineExclusion>& Function::getPipelineExclusions(
     const int& position) const {
-  static const QList<PipelineExclusion> empty;
-  QMap<int, QList<PipelineExclusion> >::const_iterator it =
-      this->pipelineExclusions.constFind(position);
-  if (it == this->pipelineExclusions.constEnd()) {
+  static const std::vector<PipelineExclusion> empty;
+  std::map<int, std::vector<PipelineExclusion> >::const_iterator it =
+      this->pipelineExclusions.find(position);
+  if (it == this->pipelineExclusions.cend()) {
     return empty;
   }
-  return it.value();
+  return it->second;
 }
 
 /*!
@@ -861,10 +867,11 @@ const QList<PipelineExclusion>& Function::getPipelineExclusions(
 bool Function::applyDeterministicPipelineStages() {
   bool anyPipelineDeclared = false;
 
-  for (int position = 0; position < this->neededElements.size(); position++) {
-    const QList<PipelineStage>& stages =
+  for (int position = 0; position < std::ssize(this->neededElements);
+       position++) {
+    const std::vector<PipelineStage>& stages =
         this->neededElements.at(position).pipeline;
-    if (stages.isEmpty()) {
+    if (stages.empty()) {
       continue;
     }
     anyPipelineDeclared = true;
@@ -873,23 +880,23 @@ bool Function::applyDeterministicPipelineStages() {
       continue;
     }
 
-    QList<int> survivors;
+    std::vector<int> survivors;
     for (const InputElement& element :
-         oi::snapshot(this->inputElements.value(position))) {
-      survivors.append(element.id);
+         oi::snapshot(oi::value(this->inputElements, position))) {
+      survivors.push_back(element.id);
     }
 
-    QList<PipelineExclusion> exclusions;
+    std::vector<PipelineExclusion> exclusions;
 
     for (const PipelineStage& stage : oi::snapshot(stages)) {
       switch (stage.type) {
         case PipelineStageType::eExplicitListStage: {
-          QList<int> next;
+          std::vector<int> next;
           for (int id : std::as_const(survivors)) {
-            if (stage.explicitIds.contains(id)) {
-              next.append(id);
+            if (oi::contains(stage.explicitIds, id)) {
+              next.push_back(id);
             } else {
-              exclusions.append(
+              exclusions.push_back(
                   PipelineExclusion(id, "not in the declared explicit list"));
             }
           }
@@ -900,8 +907,8 @@ bool Function::applyDeterministicPipelineStages() {
         case PipelineStageType::eExcludeStage: {
           for (const PipelineExclusion& excl :
                oi::snapshot(stage.explicitExclusions)) {
-            if (survivors.removeOne(excl.elementId)) {
-              exclusions.append(excl);
+            if (oi::removeOne(survivors, excl.elementId)) {
+              exclusions.push_back(excl);
             }
           }
           break;
@@ -913,9 +920,10 @@ bool Function::applyDeterministicPipelineStages() {
       }
     }
 
-    QList<InputElement> updated = this->inputElements.value(position);
-    for (int i = 0; i < updated.size(); i++) {
-      updated[i].shouldBeUsed = survivors.contains(updated[i].id);
+    std::vector<InputElement> updated =
+        oi::value(this->inputElements, position);
+    for (int i = 0; i < std::ssize(updated); i++) {
+      updated[i].shouldBeUsed = oi::contains(survivors, updated[i].id);
     }
     this->inputElements[position] = updated;
     this->pipelineExclusions[position] = exclusions;
@@ -943,8 +951,9 @@ bool Function::applyDeterministicPipelineStages() {
 bool Function::applyResidualPipelineStages() {
   bool changed = false;
 
-  for (int position = 0; position < this->neededElements.size(); position++) {
-    const QList<PipelineStage>& stages =
+  for (int position = 0; position < std::ssize(this->neededElements);
+       position++) {
+    const std::vector<PipelineStage>& stages =
         this->neededElements.at(position).pipeline;
 
     bool hasResidualStage = false;
@@ -967,12 +976,13 @@ bool Function::applyResidualPipelineStages() {
     }
     const double threshold = sigmaMultiplier * stdev;
 
-    QList<InputElement> current = this->inputElements.value(position);
-    QList<PipelineExclusion> exclusions =
-        this->pipelineExclusions.value(position);
+    std::vector<InputElement> current =
+        oi::value(this->inputElements, position);
+    std::vector<PipelineExclusion> exclusions =
+        oi::value(this->pipelineExclusions, position);
     bool changedHere = false;
 
-    for (int i = 0; i < current.size(); i++) {
+    for (int i = 0; i < std::ssize(current); i++) {
       if (!current[i].shouldBeUsed) {
         continue;  // already excluded by a deterministic stage
       }
@@ -985,7 +995,7 @@ bool Function::applyResidualPipelineStages() {
 
       if (std::abs(residual.value()) > threshold) {
         current[i].shouldBeUsed = false;
-        exclusions.append(PipelineExclusion(
+        exclusions.push_back(PipelineExclusion(
             current[i].id,
             QString("residual %1 exceeds %2 x sigma (stdev %3, threshold %4)")
                 .arg(residual.value())
@@ -1020,13 +1030,13 @@ std::optional<double> Function::residualMagnitude(int elementId) const {
   const QString vKey =
       getObservationDisplayAttributesName(eObservationDisplayV);
   if (residual.corrections.contains(vKey)) {
-    return residual.corrections.value(vKey);
+    return oi::value(residual.corrections, vKey);
   }
 
   const QString vrKey =
       getObservationDisplayAttributesName(eObservationDisplayVR);
   if (residual.corrections.contains(vrKey)) {
-    return residual.corrections.value(vrKey);
+    return oi::value(residual.corrections, vrKey);
   }
 
   return std::nullopt;
@@ -1055,9 +1065,9 @@ void Function::clearResults() {
   this->statistic.setIsValid(false);
 
   // set all elements to not have been used
-  QList<int> keys = this->inputElements.keys();
+  std::vector<int> keys = oi::keys(this->inputElements);
   for (const int& key : std::as_const(keys)) {
-    for (int i = 0; i < this->inputElements[key].size(); ++i) {
+    for (int i = 0; i < std::ssize(this->inputElements[key]); ++i) {
       this->inputElements[key][i].isUsed = false;
     }
   }
@@ -1073,7 +1083,7 @@ void Function::setIsUsed(const int& position, const int& id,
                          const bool& state) {
   // get the element at position with id and set isUsed to state
   if (this->inputElements.contains(position)) {
-    int index = this->inputElements[position].indexOf(InputElement(id));
+    int index = oi::indexOf(this->inputElements[position], InputElement(id));
     if (index > -1) {
       this->inputElements[position][index].isUsed = state;
     }
@@ -1081,16 +1091,15 @@ void Function::setIsUsed(const int& position, const int& id,
 }
 
 void Function::filterObservations(
-    QList<oi::Guarded<Observation> >& allUsableObservations,
-    QList<oi::Guarded<Observation> >& inputObservations) {
-  for (const InputElement& element :
-       oi::snapshot(this->getInputElements()[0])) {
+    std::vector<oi::Guarded<Observation> >& allUsableObservations,
+    std::vector<oi::Guarded<Observation> >& inputObservations) {
+  for (const InputElement& element : oi::value(this->getInputElements(), 0)) {
     if (!element.observation.isNull() && element.observation->getIsSolved() &&
         element.observation->getIsValid()) {
-      allUsableObservations.append(element.observation);
+      allUsableObservations.push_back(element.observation);
       this->setIsUsed(0, element.id, element.shouldBeUsed);
       if (element.shouldBeUsed) {
-        inputObservations.append(element.observation);
+        inputObservations.push_back(element.observation);
       }
       continue;
     }
@@ -1102,7 +1111,7 @@ void Function::addDisplayResidual(int elementId, double vr) {
   Residual residual;
   residual.elementId = elementId;
   residual.dimension = DimensionType::eMetric;
-  residual.corrections.insert(
+  residual.corrections.insert_or_assign(
       getObservationDisplayAttributesName(eObservationDisplayVR), vr);
   this->statistic.addDisplayResidual(residual);
 }
@@ -1112,13 +1121,13 @@ void Function::addDisplayResidual(int elementId, double vx, double vy,
   Residual residual;
   residual.elementId = elementId;
   residual.dimension = DimensionType::eMetric;
-  residual.corrections.insert(
+  residual.corrections.insert_or_assign(
       getObservationDisplayAttributesName(eObservationDisplayVX), vx);
-  residual.corrections.insert(
+  residual.corrections.insert_or_assign(
       getObservationDisplayAttributesName(eObservationDisplayVY), vy);
-  residual.corrections.insert(
+  residual.corrections.insert_or_assign(
       getObservationDisplayAttributesName(eObservationDisplayVZ), vz);
-  residual.corrections.insert(
+  residual.corrections.insert_or_assign(
       getObservationDisplayAttributesName(eObservationDisplayV), v);
   this->statistic.addDisplayResidual(residual);
 }
@@ -1129,19 +1138,19 @@ void Function::addDisplayResidual(int elementId, double vx, double vy,
   Residual residual;
   residual.elementId = elementId;
   residual.dimension = DimensionType::eMetric;
-  residual.corrections.insert(
+  residual.corrections.insert_or_assign(
       getObservationDisplayAttributesName(eObservationDisplayVX), vx);
-  residual.corrections.insert(
+  residual.corrections.insert_or_assign(
       getObservationDisplayAttributesName(eObservationDisplayVY), vy);
-  residual.corrections.insert(
+  residual.corrections.insert_or_assign(
       getObservationDisplayAttributesName(eObservationDisplayVZ), vz);
-  residual.corrections.insert(
+  residual.corrections.insert_or_assign(
       getObservationDisplayAttributesName(eObservationDisplayV), v);
-  residual.corrections.insert(
+  residual.corrections.insert_or_assign(
       getObservationDisplayAttributesName(eObservationDisplayVI), vi);
-  residual.corrections.insert(
+  residual.corrections.insert_or_assign(
       getObservationDisplayAttributesName(eObservationDisplayVJ), vj);
-  residual.corrections.insert(
+  residual.corrections.insert_or_assign(
       getObservationDisplayAttributesName(eObservationDisplayVK), vk);
   this->statistic.addDisplayResidual(residual);
 }

@@ -1,7 +1,10 @@
 #include "scalarentityangle.h"
 
+#include <map>
 #include <utility>
+#include <vector>
 
+#include "containers.h"
 #include "featurewrapper.h"
 
 using namespace oi;
@@ -86,16 +89,17 @@ void ScalarEntityAngle::setAngle(const double& angle) {
  * \param displayDigits
  * \return
  */
-QMap<GeometryParameters, QString> ScalarEntityAngle::getUnknownParameters(
-    const QMap<DimensionType, UnitType>& displayUnits,
-    const QMap<DimensionType, int>& displayDigits) const {
-  QMap<GeometryParameters, QString> parameters;
+std::map<GeometryParameters, QString> ScalarEntityAngle::getUnknownParameters(
+    const std::map<DimensionType, UnitType>& displayUnits,
+    const std::map<DimensionType, int>& displayDigits) const {
+  std::map<GeometryParameters, QString> parameters;
 
-  parameters.insert(
+  parameters.insert_or_assign(
       GeometryParameters::eUnknownAngle,
       this->getDisplayAngle(
-          displayUnits.value(DimensionType::eAngular, UnitType::eUnitRadiant),
-          displayDigits.value(DimensionType::eAngular, 0)));
+          oi::value(displayUnits, DimensionType::eAngular,
+                    UnitType::eUnitRadiant),
+          oi::value(displayDigits, DimensionType::eAngular, 0)));
 
   return parameters;
 }
@@ -105,16 +109,16 @@ QMap<GeometryParameters, QString> ScalarEntityAngle::getUnknownParameters(
  * \param parameters
  */
 void ScalarEntityAngle::applyUnknownParameters(
-    const QMap<GeometryParameters, double>& parameters) {
+    const std::map<GeometryParameters, double>& parameters) {
   // get current parameters
   double angle = this->angle;
 
   // update parameters
-  QList<GeometryParameters> keys = parameters.keys();
+  std::vector<GeometryParameters> keys = oi::keys(parameters);
   for (const GeometryParameters& key : std::as_const(keys)) {
     switch (key) {
       case GeometryParameters::eUnknownAngle:
-        angle = parameters.value(GeometryParameters::eUnknownAngle);
+        angle = oi::value(parameters, GeometryParameters::eUnknownAngle);
         break;
       default:
         break;

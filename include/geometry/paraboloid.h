@@ -1,7 +1,7 @@
 #ifndef PARABOLOID_H
 #define PARABOLOID_H
-
 #include <QtCore>
+#include <map>
 
 #include "core_export.h"
 #include "direction.h"
@@ -62,11 +62,11 @@ class OI_CORE_EXPORT Paraboloid : public Geometry {
   // get or set unknown parameters
   // #############################
 
-  [[nodiscard]] QMap<GeometryParameters, QString> getUnknownParameters(
-      const QMap<DimensionType, UnitType>& displayUnits,
-      const QMap<DimensionType, int>& displayDigits) const override;
+  [[nodiscard]] std::map<GeometryParameters, QString> getUnknownParameters(
+      const std::map<DimensionType, UnitType>& displayUnits,
+      const std::map<DimensionType, int>& displayDigits) const override;
   void applyUnknownParameters(
-      const QMap<GeometryParameters, double>& parameters) override;
+      const std::map<GeometryParameters, double>& parameters) override;
 
   // ###########################
   // reexecute the function list

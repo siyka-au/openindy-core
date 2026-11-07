@@ -1,5 +1,9 @@
 #include "point.h"
 
+#include <map>
+#include <vector>
+
+#include "containers.h"
 #include "featurewrapper.h"
 #include "observation.h"
 #include "snapshot.h"
@@ -123,26 +127,26 @@ const double& Point::getDistance() const { return this->distance; }
  * \param displayDigits
  * \return
  */
-QMap<GeometryParameters, QString> Point::getUnknownParameters(
-    const QMap<DimensionType, UnitType>& displayUnits,
-    const QMap<DimensionType, int>& displayDigits) const {
-  QMap<GeometryParameters, QString> parameters;
+std::map<GeometryParameters, QString> Point::getUnknownParameters(
+    const std::map<DimensionType, UnitType>& displayUnits,
+    const std::map<DimensionType, int>& displayDigits) const {
+  std::map<GeometryParameters, QString> parameters;
 
-  parameters.insert(
+  parameters.insert_or_assign(
       GeometryParameters::eUnknownX,
       this->getDisplayX(
-          displayUnits.value(DimensionType::eMetric, UnitType::eUnitMeter),
-          displayDigits.value(DimensionType::eMetric, 0)));
-  parameters.insert(
+          oi::value(displayUnits, DimensionType::eMetric, UnitType::eUnitMeter),
+          oi::value(displayDigits, DimensionType::eMetric, 0)));
+  parameters.insert_or_assign(
       GeometryParameters::eUnknownY,
       this->getDisplayY(
-          displayUnits.value(DimensionType::eMetric, UnitType::eUnitMeter),
-          displayDigits.value(DimensionType::eMetric, 0)));
-  parameters.insert(
+          oi::value(displayUnits, DimensionType::eMetric, UnitType::eUnitMeter),
+          oi::value(displayDigits, DimensionType::eMetric, 0)));
+  parameters.insert_or_assign(
       GeometryParameters::eUnknownZ,
       this->getDisplayZ(
-          displayUnits.value(DimensionType::eMetric, UnitType::eUnitMeter),
-          displayDigits.value(DimensionType::eMetric, 0)));
+          oi::value(displayUnits, DimensionType::eMetric, UnitType::eUnitMeter),
+          oi::value(displayDigits, DimensionType::eMetric, 0)));
 
   return parameters;
 }
@@ -152,22 +156,22 @@ QMap<GeometryParameters, QString> Point::getUnknownParameters(
  * \param parameters
  */
 void Point::applyUnknownParameters(
-    const QMap<GeometryParameters, double>& parameters) {
+    const std::map<GeometryParameters, double>& parameters) {
   // get current parameters
   OiVec position = this->xyz.getVector();
 
   // update parameters
-  QList<GeometryParameters> keys = parameters.keys();
+  std::vector<GeometryParameters> keys = oi::keys(parameters);
   for (const GeometryParameters& key : oi::snapshot(keys)) {
     switch (key) {
       case GeometryParameters::eUnknownX:
-        position.setAt(0, parameters.value(GeometryParameters::eUnknownX));
+        position.setAt(0, oi::value(parameters, GeometryParameters::eUnknownX));
         break;
       case GeometryParameters::eUnknownY:
-        position.setAt(1, parameters.value(GeometryParameters::eUnknownY));
+        position.setAt(1, oi::value(parameters, GeometryParameters::eUnknownY));
         break;
       case GeometryParameters::eUnknownZ:
-        position.setAt(2, parameters.value(GeometryParameters::eUnknownZ));
+        position.setAt(2, oi::value(parameters, GeometryParameters::eUnknownZ));
         break;
       default:
         break;
@@ -197,7 +201,7 @@ void Point::applyUnknownParameters(
 void Point::recalc() {
   Geometry::recalc();
 
-  if (!this->producerFunction.has_value() && !this->observations.isEmpty()) {
+  if (!this->producerFunction.has_value() && !this->observations.empty()) {
     OiVec centroid(3);
     centroid.setAt(0, 0.0);
     centroid.setAt(1, 0.0);
@@ -250,8 +254,8 @@ void Point::recalc() {
  * \return
  */
 std::optional<QString> Point::getOwnerDescription() const {
-  if (!this->producerFunction.has_value() && !this->observations.isEmpty()) {
-    const oi::Guarded<Observation> firstObs = this->observations.constFirst();
+  if (!this->producerFunction.has_value() && !this->observations.empty()) {
+    const oi::Guarded<Observation> firstObs = this->observations.front();
     if (!firstObs.isNull() && !firstObs->getStation().isNull()) {
       return QString("its station \"%1\"")
           .arg(firstObs->getStation()->getFeatureName());
@@ -267,7 +271,7 @@ std::optional<QString> Point::getOwnerDescription() const {
  * D12: what this point was shot for (domain-model.md S3). See point.h.
  * \return
  */
-const QList<MeasurementIntent>& Point::getIntents() const {
+const std::vector<MeasurementIntent>& Point::getIntents() const {
   return this->intents;
 }
 
@@ -276,8 +280,8 @@ const QList<MeasurementIntent>& Point::getIntents() const {
  * \param intent
  */
 void Point::addIntent(const MeasurementIntent& intent) {
-  if (!this->intents.contains(intent)) {
-    this->intents.append(intent);
+  if (!oi::contains(this->intents, intent)) {
+    this->intents.push_back(intent);
   }
 }
 
@@ -287,7 +291,7 @@ void Point::addIntent(const MeasurementIntent& intent) {
  * \return
  */
 bool Point::removeIntent(const MeasurementIntent& intent) {
-  return this->intents.removeOne(intent);
+  return oi::removeOne(this->intents, intent);
 }
 
 /*!
@@ -297,7 +301,7 @@ bool Point::removeIntent(const MeasurementIntent& intent) {
  * \return
  */
 bool Point::hasIntent(int featureId, const QString& roleName) const {
-  return this->intents.contains(MeasurementIntent(featureId, roleName));
+  return oi::contains(this->intents, MeasurementIntent(featureId, roleName));
 }
 
 /*!

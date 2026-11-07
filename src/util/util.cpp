@@ -1,7 +1,10 @@
 #include "util.h"
 
 #include <cmath>
+#include <map>
+#include <vector>
 
+#include "containers.h"
 #include "featurewrapper.h"
 
 namespace oi {
@@ -17,10 +20,10 @@ namespace internal {
 // settings keys. Changing one silently breaks loading. See util.h.
 // ############################################################################
 
-QMap<ElementTypes, QString> elementTypesMap;
-QMap<ElementTypes, QString> elementTypesPluralMap;
-QMap<FeatureTypes, QString> featureTypesMap;
-QMap<GeometryTypes, QString> geometryTypesMap;
+std::map<ElementTypes, QString> elementTypesMap;
+std::map<ElementTypes, QString> elementTypesPluralMap;
+std::map<FeatureTypes, QString> featureTypesMap;
+std::map<GeometryTypes, QString> geometryTypesMap;
 
 // ############################################################################
 // DISPLAY NAMES - shown to the user, never persisted, safe to edit freely.
@@ -28,42 +31,42 @@ QMap<GeometryTypes, QString> geometryTypesMap;
 // that changing what a user reads can never change what a file contains.
 // ############################################################################
 
-QMap<ElementTypes, QString> elementTypesDisplayMap;
-QMap<ElementTypes, QString> elementTypesDisplayPluralMap;
-QMap<FeatureTypes, QString> featureTypesDisplayMap;
-QMap<GeometryTypes, QString> geometryTypesDisplayMap;
+std::map<ElementTypes, QString> elementTypesDisplayMap;
+std::map<ElementTypes, QString> elementTypesDisplayPluralMap;
+std::map<FeatureTypes, QString> featureTypesDisplayMap;
+std::map<GeometryTypes, QString> geometryTypesDisplayMap;
 
-QMap<ElementTypes, QString> elementTypeIcons;
-QMap<FeatureTypes, QString> featureTypeIcons;
+std::map<ElementTypes, QString> elementTypeIcons;
+std::map<FeatureTypes, QString> featureTypeIcons;
 
-QMap<ReadingTypes, QString> readingTypesMap;
+std::map<ReadingTypes, QString> readingTypesMap;
 
-QMap<FeatureDisplayAttributes, QString> featureDisplayAttributesMap;
-QMap<TrafoParamDisplayAttributes, QString> trafoParamDisplayAttributesMap;
-QMap<ObservationDisplayAttributes, QString> observationDisplayAttributesMap;
-QMap<ReadingDisplayAttributes, QString> readingDisplayAttributesMap;
+std::map<FeatureDisplayAttributes, QString> featureDisplayAttributesMap;
+std::map<TrafoParamDisplayAttributes, QString> trafoParamDisplayAttributesMap;
+std::map<ObservationDisplayAttributes, QString> observationDisplayAttributesMap;
+std::map<ReadingDisplayAttributes, QString> readingDisplayAttributesMap;
 
-QList<int> featureDisplayAttributes;
-QList<ObservationDisplayAttributes> observationDisplayAttributes;
-QList<ReadingDisplayAttributes> readingDisplayAttributes;
+std::vector<int> featureDisplayAttributes;
+std::vector<ObservationDisplayAttributes> observationDisplayAttributes;
+std::vector<ReadingDisplayAttributes> readingDisplayAttributes;
 
-QMap<UnitType, QString> unitTypesMap;
+std::map<UnitType, QString> unitTypesMap;
 
-QMap<SensorFunctions, QString> sensorFunctionsMap;
+std::map<SensorFunctions, QString> sensorFunctionsMap;
 
-QMap<ToolTypes, QString> toolTypesMap;
+std::map<ToolTypes, QString> toolTypesMap;
 
-QMap<MessageTypes, QString> messageTypesMap;
+std::map<MessageTypes, QString> messageTypesMap;
 
-QMap<GeometryParameters, QString> geometryParametersMap;
-QMap<TrafoParamParameters, QString> trafoParamParametersMap;
+std::map<GeometryParameters, QString> geometryParametersMap;
+std::map<TrafoParamParameters, QString> trafoParamParametersMap;
 
-QMap<ActualNominalFilter, QString> actualNominalFilterMap;
+std::map<ActualNominalFilter, QString> actualNominalFilterMap;
 
 QString undefined = "";
 
-QMap<MaterialsTempComp, QString> materialStringsMap;
-QMap<MaterialsTempComp, double> materialValuesMap;
+std::map<MaterialsTempComp, QString> materialStringsMap;
+std::map<MaterialsTempComp, double> materialValuesMap;
 
 bool isInit = false;
 
@@ -94,561 +97,735 @@ void init() {
   materialValuesMap.clear();
 
   // fill element map
-  elementTypesMap.insert(ElementTypes::eCircleElement, "circle");
-  elementTypesMap.insert(ElementTypes::eConeElement, "cone");
-  elementTypesMap.insert(ElementTypes::eCylinderElement, "cylinder");
-  elementTypesMap.insert(ElementTypes::eEllipseElement, "ellipse");
-  elementTypesMap.insert(ElementTypes::eEllipsoidElement, "ellipsoid");
-  elementTypesMap.insert(ElementTypes::eHyperboloidElement, "hyperboloid");
-  elementTypesMap.insert(ElementTypes::eLineElement, "line");
-  elementTypesMap.insert(ElementTypes::eNurbsElement, "nurbs");
-  elementTypesMap.insert(ElementTypes::eParaboloidElement, "paraboloid");
-  elementTypesMap.insert(ElementTypes::ePlaneElement, "plane");
-  elementTypesMap.insert(ElementTypes::ePointElement, "point");
-  elementTypesMap.insert(ElementTypes::ePointCloudElement, "point cloud");
-  elementTypesMap.insert(ElementTypes::eScalarEntityAngleElement, "angle");
-  elementTypesMap.insert(ElementTypes::eScalarEntityDistanceElement,
-                         "distance");
-  elementTypesMap.insert(ElementTypes::eScalarEntityMeasurementSeriesElement,
-                         "measurement series");
-  elementTypesMap.insert(ElementTypes::eScalarEntityTemperatureElement,
-                         "temperature");
-  elementTypesMap.insert(ElementTypes::eSlottedHoleElement, "slotted hole");
-  elementTypesMap.insert(ElementTypes::eSphereElement, "sphere");
-  elementTypesMap.insert(ElementTypes::eTorusElement, "torus");
-  elementTypesMap.insert(ElementTypes::eDirectionElement, "direction");
-  elementTypesMap.insert(ElementTypes::ePositionElement, "position");
-  elementTypesMap.insert(ElementTypes::eRadiusElement, "radius");
-  elementTypesMap.insert(ElementTypes::eCoordinateSystemElement,
-                         "coordinate system");
-  elementTypesMap.insert(ElementTypes::eStationElement, "station");
-  elementTypesMap.insert(ElementTypes::eTrafoParamElement,
-                         "transformation parameters");
-  elementTypesMap.insert(ElementTypes::eObservationElement, "observation");
-  elementTypesMap.insert(ElementTypes::eReadingCartesianElement,
-                         "cartesian reading");
-  elementTypesMap.insert(ElementTypes::eReadingPolarElement, "polar reading");
-  elementTypesMap.insert(ElementTypes::eReadingDistanceElement,
-                         "distance reading");
-  elementTypesMap.insert(ElementTypes::eReadingDirectionElement,
-                         "direction reading");
-  elementTypesMap.insert(ElementTypes::eReadingTemperatureElement,
-                         "temperature reading");
-  elementTypesMap.insert(ElementTypes::eReadingLevelElement, "level reading");
-  elementTypesMap.insert(ElementTypes::eLevelElement, "level");
-  elementTypesMap.insert(ElementTypes::ePointCollectionElement,
-                         "point collection");
-
-  // fill element plural map
-  elementTypesPluralMap.insert(ElementTypes::eCircleElement, "circles");
-  elementTypesPluralMap.insert(ElementTypes::eConeElement, "cones");
-  elementTypesPluralMap.insert(ElementTypes::eCylinderElement, "cylinders");
-  elementTypesPluralMap.insert(ElementTypes::eEllipseElement, "ellipses");
-  elementTypesPluralMap.insert(ElementTypes::eEllipsoidElement, "ellipsoids");
-  elementTypesPluralMap.insert(ElementTypes::eHyperboloidElement,
-                               "hyperboloids");
-  elementTypesPluralMap.insert(ElementTypes::eLineElement, "lines");
-  elementTypesPluralMap.insert(ElementTypes::eNurbsElement, "nurbs");
-  elementTypesPluralMap.insert(ElementTypes::eParaboloidElement, "paraboloids");
-  elementTypesPluralMap.insert(ElementTypes::ePlaneElement, "planes");
-  elementTypesPluralMap.insert(ElementTypes::ePointElement, "points");
-  elementTypesPluralMap.insert(ElementTypes::ePointCloudElement,
-                               "point clouds");
-  elementTypesPluralMap.insert(ElementTypes::eScalarEntityAngleElement,
-                               "angles");
-  elementTypesPluralMap.insert(ElementTypes::eScalarEntityDistanceElement,
-                               "distances");
-  elementTypesPluralMap.insert(
+  elementTypesMap.insert_or_assign(ElementTypes::eCircleElement, "circle");
+  elementTypesMap.insert_or_assign(ElementTypes::eConeElement, "cone");
+  elementTypesMap.insert_or_assign(ElementTypes::eCylinderElement, "cylinder");
+  elementTypesMap.insert_or_assign(ElementTypes::eEllipseElement, "ellipse");
+  elementTypesMap.insert_or_assign(ElementTypes::eEllipsoidElement,
+                                   "ellipsoid");
+  elementTypesMap.insert_or_assign(ElementTypes::eHyperboloidElement,
+                                   "hyperboloid");
+  elementTypesMap.insert_or_assign(ElementTypes::eLineElement, "line");
+  elementTypesMap.insert_or_assign(ElementTypes::eNurbsElement, "nurbs");
+  elementTypesMap.insert_or_assign(ElementTypes::eParaboloidElement,
+                                   "paraboloid");
+  elementTypesMap.insert_or_assign(ElementTypes::ePlaneElement, "plane");
+  elementTypesMap.insert_or_assign(ElementTypes::ePointElement, "point");
+  elementTypesMap.insert_or_assign(ElementTypes::ePointCloudElement,
+                                   "point cloud");
+  elementTypesMap.insert_or_assign(ElementTypes::eScalarEntityAngleElement,
+                                   "angle");
+  elementTypesMap.insert_or_assign(ElementTypes::eScalarEntityDistanceElement,
+                                   "distance");
+  elementTypesMap.insert_or_assign(
       ElementTypes::eScalarEntityMeasurementSeriesElement,
       "measurement series");
-  elementTypesPluralMap.insert(ElementTypes::eScalarEntityTemperatureElement,
-                               "temperatures");
-  elementTypesPluralMap.insert(ElementTypes::eSlottedHoleElement,
-                               "slotted holes");
-  elementTypesPluralMap.insert(ElementTypes::eSphereElement, "spheres");
-  elementTypesPluralMap.insert(ElementTypes::eTorusElement, "tori");
-  elementTypesPluralMap.insert(ElementTypes::eDirectionElement, "directions");
-  elementTypesPluralMap.insert(ElementTypes::ePositionElement, "positions");
-  elementTypesPluralMap.insert(ElementTypes::eRadiusElement, "radii");
-  elementTypesPluralMap.insert(ElementTypes::eCoordinateSystemElement,
-                               "coordinate systems");
-  elementTypesPluralMap.insert(ElementTypes::eStationElement, "stations");
-  elementTypesPluralMap.insert(ElementTypes::eTrafoParamElement,
-                               "transformation parameters");
-  elementTypesPluralMap.insert(ElementTypes::eObservationElement,
-                               "observations");
-  elementTypesPluralMap.insert(ElementTypes::eReadingCartesianElement,
-                               "cartesian readings");
-  elementTypesPluralMap.insert(ElementTypes::eReadingPolarElement,
-                               "polar readings");
-  elementTypesPluralMap.insert(ElementTypes::eReadingDistanceElement,
-                               "distance readings");
-  elementTypesPluralMap.insert(ElementTypes::eReadingDirectionElement,
-                               "direction readings");
-  elementTypesPluralMap.insert(ElementTypes::eReadingTemperatureElement,
-                               "temperature readings");
-  elementTypesPluralMap.insert(ElementTypes::eReadingLevelElement,
-                               "level readings");
-  elementTypesPluralMap.insert(ElementTypes::ePointCollectionElement,
-                               "point collections");
+  elementTypesMap.insert_or_assign(
+      ElementTypes::eScalarEntityTemperatureElement, "temperature");
+  elementTypesMap.insert_or_assign(ElementTypes::eSlottedHoleElement,
+                                   "slotted hole");
+  elementTypesMap.insert_or_assign(ElementTypes::eSphereElement, "sphere");
+  elementTypesMap.insert_or_assign(ElementTypes::eTorusElement, "torus");
+  elementTypesMap.insert_or_assign(ElementTypes::eDirectionElement,
+                                   "direction");
+  elementTypesMap.insert_or_assign(ElementTypes::ePositionElement, "position");
+  elementTypesMap.insert_or_assign(ElementTypes::eRadiusElement, "radius");
+  elementTypesMap.insert_or_assign(ElementTypes::eCoordinateSystemElement,
+                                   "coordinate system");
+  elementTypesMap.insert_or_assign(ElementTypes::eStationElement, "station");
+  elementTypesMap.insert_or_assign(ElementTypes::eTrafoParamElement,
+                                   "transformation parameters");
+  elementTypesMap.insert_or_assign(ElementTypes::eObservationElement,
+                                   "observation");
+  elementTypesMap.insert_or_assign(ElementTypes::eReadingCartesianElement,
+                                   "cartesian reading");
+  elementTypesMap.insert_or_assign(ElementTypes::eReadingPolarElement,
+                                   "polar reading");
+  elementTypesMap.insert_or_assign(ElementTypes::eReadingDistanceElement,
+                                   "distance reading");
+  elementTypesMap.insert_or_assign(ElementTypes::eReadingDirectionElement,
+                                   "direction reading");
+  elementTypesMap.insert_or_assign(ElementTypes::eReadingTemperatureElement,
+                                   "temperature reading");
+  elementTypesMap.insert_or_assign(ElementTypes::eReadingLevelElement,
+                                   "level reading");
+  elementTypesMap.insert_or_assign(ElementTypes::eLevelElement, "level");
+  elementTypesMap.insert_or_assign(ElementTypes::ePointCollectionElement,
+                                   "point collection");
+
+  // fill element plural map
+  elementTypesPluralMap.insert_or_assign(ElementTypes::eCircleElement,
+                                         "circles");
+  elementTypesPluralMap.insert_or_assign(ElementTypes::eConeElement, "cones");
+  elementTypesPluralMap.insert_or_assign(ElementTypes::eCylinderElement,
+                                         "cylinders");
+  elementTypesPluralMap.insert_or_assign(ElementTypes::eEllipseElement,
+                                         "ellipses");
+  elementTypesPluralMap.insert_or_assign(ElementTypes::eEllipsoidElement,
+                                         "ellipsoids");
+  elementTypesPluralMap.insert_or_assign(ElementTypes::eHyperboloidElement,
+                                         "hyperboloids");
+  elementTypesPluralMap.insert_or_assign(ElementTypes::eLineElement, "lines");
+  elementTypesPluralMap.insert_or_assign(ElementTypes::eNurbsElement, "nurbs");
+  elementTypesPluralMap.insert_or_assign(ElementTypes::eParaboloidElement,
+                                         "paraboloids");
+  elementTypesPluralMap.insert_or_assign(ElementTypes::ePlaneElement, "planes");
+  elementTypesPluralMap.insert_or_assign(ElementTypes::ePointElement, "points");
+  elementTypesPluralMap.insert_or_assign(ElementTypes::ePointCloudElement,
+                                         "point clouds");
+  elementTypesPluralMap.insert_or_assign(
+      ElementTypes::eScalarEntityAngleElement, "angles");
+  elementTypesPluralMap.insert_or_assign(
+      ElementTypes::eScalarEntityDistanceElement, "distances");
+  elementTypesPluralMap.insert_or_assign(
+      ElementTypes::eScalarEntityMeasurementSeriesElement,
+      "measurement series");
+  elementTypesPluralMap.insert_or_assign(
+      ElementTypes::eScalarEntityTemperatureElement, "temperatures");
+  elementTypesPluralMap.insert_or_assign(ElementTypes::eSlottedHoleElement,
+                                         "slotted holes");
+  elementTypesPluralMap.insert_or_assign(ElementTypes::eSphereElement,
+                                         "spheres");
+  elementTypesPluralMap.insert_or_assign(ElementTypes::eTorusElement, "tori");
+  elementTypesPluralMap.insert_or_assign(ElementTypes::eDirectionElement,
+                                         "directions");
+  elementTypesPluralMap.insert_or_assign(ElementTypes::ePositionElement,
+                                         "positions");
+  elementTypesPluralMap.insert_or_assign(ElementTypes::eRadiusElement, "radii");
+  elementTypesPluralMap.insert_or_assign(ElementTypes::eCoordinateSystemElement,
+                                         "coordinate systems");
+  elementTypesPluralMap.insert_or_assign(ElementTypes::eStationElement,
+                                         "stations");
+  elementTypesPluralMap.insert_or_assign(ElementTypes::eTrafoParamElement,
+                                         "transformation parameters");
+  elementTypesPluralMap.insert_or_assign(ElementTypes::eObservationElement,
+                                         "observations");
+  elementTypesPluralMap.insert_or_assign(ElementTypes::eReadingCartesianElement,
+                                         "cartesian readings");
+  elementTypesPluralMap.insert_or_assign(ElementTypes::eReadingPolarElement,
+                                         "polar readings");
+  elementTypesPluralMap.insert_or_assign(ElementTypes::eReadingDistanceElement,
+                                         "distance readings");
+  elementTypesPluralMap.insert_or_assign(ElementTypes::eReadingDirectionElement,
+                                         "direction readings");
+  elementTypesPluralMap.insert_or_assign(
+      ElementTypes::eReadingTemperatureElement, "temperature readings");
+  elementTypesPluralMap.insert_or_assign(ElementTypes::eReadingLevelElement,
+                                         "level readings");
+  elementTypesPluralMap.insert_or_assign(ElementTypes::ePointCollectionElement,
+                                         "point collections");
 
   // fill feature map
-  featureTypesMap.insert(FeatureTypes::eCircleFeature, "circle");
-  featureTypesMap.insert(FeatureTypes::eConeFeature, "cone");
-  featureTypesMap.insert(FeatureTypes::eCylinderFeature, "cylinder");
-  featureTypesMap.insert(FeatureTypes::eEllipseFeature, "ellipse");
-  featureTypesMap.insert(FeatureTypes::eEllipsoidFeature, "ellipsoid");
-  featureTypesMap.insert(FeatureTypes::eHyperboloidFeature, "hyperboloid");
-  featureTypesMap.insert(FeatureTypes::eLineFeature, "line");
-  featureTypesMap.insert(FeatureTypes::eNurbsFeature, "nurbs");
-  featureTypesMap.insert(FeatureTypes::eParaboloidFeature, "paraboloid");
-  featureTypesMap.insert(FeatureTypes::ePlaneFeature, "plane");
-  featureTypesMap.insert(FeatureTypes::ePointFeature, "point");
-  featureTypesMap.insert(FeatureTypes::ePointCloudFeature, "point cloud");
-  featureTypesMap.insert(FeatureTypes::eScalarEntityAngleFeature, "angle");
-  featureTypesMap.insert(FeatureTypes::eScalarEntityDistanceFeature,
-                         "distance");
-  featureTypesMap.insert(FeatureTypes::eScalarEntityMeasurementSeriesFeature,
-                         "measurement series");
-  featureTypesMap.insert(FeatureTypes::eScalarEntityTemperatureFeature,
-                         "temperature");
-  featureTypesMap.insert(FeatureTypes::eSlottedHoleFeature, "slotted hole");
-  featureTypesMap.insert(FeatureTypes::eSphereFeature, "sphere");
-  featureTypesMap.insert(FeatureTypes::eTorusFeature, "torus");
-  featureTypesMap.insert(FeatureTypes::eCoordinateSystemFeature,
-                         "coordinate system");
-  featureTypesMap.insert(FeatureTypes::eStationFeature, "station");
-  featureTypesMap.insert(FeatureTypes::eTrafoParamFeature,
-                         "transformation parameters");
-  featureTypesMap.insert(FeatureTypes::eLevelFeature, "level");
-  featureTypesMap.insert(FeatureTypes::eGroupFeature, "group");
-  featureTypesMap.insert(FeatureTypes::ePointGroupFeature, "point group");
+  featureTypesMap.insert_or_assign(FeatureTypes::eCircleFeature, "circle");
+  featureTypesMap.insert_or_assign(FeatureTypes::eConeFeature, "cone");
+  featureTypesMap.insert_or_assign(FeatureTypes::eCylinderFeature, "cylinder");
+  featureTypesMap.insert_or_assign(FeatureTypes::eEllipseFeature, "ellipse");
+  featureTypesMap.insert_or_assign(FeatureTypes::eEllipsoidFeature,
+                                   "ellipsoid");
+  featureTypesMap.insert_or_assign(FeatureTypes::eHyperboloidFeature,
+                                   "hyperboloid");
+  featureTypesMap.insert_or_assign(FeatureTypes::eLineFeature, "line");
+  featureTypesMap.insert_or_assign(FeatureTypes::eNurbsFeature, "nurbs");
+  featureTypesMap.insert_or_assign(FeatureTypes::eParaboloidFeature,
+                                   "paraboloid");
+  featureTypesMap.insert_or_assign(FeatureTypes::ePlaneFeature, "plane");
+  featureTypesMap.insert_or_assign(FeatureTypes::ePointFeature, "point");
+  featureTypesMap.insert_or_assign(FeatureTypes::ePointCloudFeature,
+                                   "point cloud");
+  featureTypesMap.insert_or_assign(FeatureTypes::eScalarEntityAngleFeature,
+                                   "angle");
+  featureTypesMap.insert_or_assign(FeatureTypes::eScalarEntityDistanceFeature,
+                                   "distance");
+  featureTypesMap.insert_or_assign(
+      FeatureTypes::eScalarEntityMeasurementSeriesFeature,
+      "measurement series");
+  featureTypesMap.insert_or_assign(
+      FeatureTypes::eScalarEntityTemperatureFeature, "temperature");
+  featureTypesMap.insert_or_assign(FeatureTypes::eSlottedHoleFeature,
+                                   "slotted hole");
+  featureTypesMap.insert_or_assign(FeatureTypes::eSphereFeature, "sphere");
+  featureTypesMap.insert_or_assign(FeatureTypes::eTorusFeature, "torus");
+  featureTypesMap.insert_or_assign(FeatureTypes::eCoordinateSystemFeature,
+                                   "coordinate system");
+  featureTypesMap.insert_or_assign(FeatureTypes::eStationFeature, "station");
+  featureTypesMap.insert_or_assign(FeatureTypes::eTrafoParamFeature,
+                                   "transformation parameters");
+  featureTypesMap.insert_or_assign(FeatureTypes::eLevelFeature, "level");
+  featureTypesMap.insert_or_assign(FeatureTypes::eGroupFeature, "group");
+  featureTypesMap.insert_or_assign(FeatureTypes::ePointGroupFeature,
+                                   "point group");
 
   // fill geometry map
-  geometryTypesMap.insert(GeometryTypes::eCircleGeometry, "circle");
-  geometryTypesMap.insert(GeometryTypes::eConeGeometry, "cone");
-  geometryTypesMap.insert(GeometryTypes::eCylinderGeometry, "cylinder");
-  geometryTypesMap.insert(GeometryTypes::eEllipseGeometry, "ellipse");
-  geometryTypesMap.insert(GeometryTypes::eEllipsoidGeometry, "ellipsoid");
-  geometryTypesMap.insert(GeometryTypes::eHyperboloidGeometry, "hyperboloid");
-  geometryTypesMap.insert(GeometryTypes::eLineGeometry, "line");
-  geometryTypesMap.insert(GeometryTypes::eNurbsGeometry, "nurbs");
-  geometryTypesMap.insert(GeometryTypes::eParaboloidGeometry, "paraboloid");
-  geometryTypesMap.insert(GeometryTypes::ePlaneGeometry, "plane");
-  geometryTypesMap.insert(GeometryTypes::ePointGeometry, "point");
-  geometryTypesMap.insert(GeometryTypes::ePointCloudGeometry, "point cloud");
-  geometryTypesMap.insert(GeometryTypes::eScalarEntityAngleGeometry, "angle");
-  geometryTypesMap.insert(GeometryTypes::eScalarEntityDistanceGeometry,
-                          "distance");
-  geometryTypesMap.insert(GeometryTypes::eScalarEntityMeasurementSeriesGeometry,
-                          "measurement series");
-  geometryTypesMap.insert(GeometryTypes::eScalarEntityTemperatureGeometry,
-                          "temperature");
-  geometryTypesMap.insert(GeometryTypes::eSlottedHoleGeometry, "slotted hole");
-  geometryTypesMap.insert(GeometryTypes::eSphereGeometry, "sphere");
-  geometryTypesMap.insert(GeometryTypes::eTorusGeometry, "torus");
-  geometryTypesMap.insert(GeometryTypes::ePlaneLevelGeometry, "level");
+  geometryTypesMap.insert_or_assign(GeometryTypes::eCircleGeometry, "circle");
+  geometryTypesMap.insert_or_assign(GeometryTypes::eConeGeometry, "cone");
+  geometryTypesMap.insert_or_assign(GeometryTypes::eCylinderGeometry,
+                                    "cylinder");
+  geometryTypesMap.insert_or_assign(GeometryTypes::eEllipseGeometry, "ellipse");
+  geometryTypesMap.insert_or_assign(GeometryTypes::eEllipsoidGeometry,
+                                    "ellipsoid");
+  geometryTypesMap.insert_or_assign(GeometryTypes::eHyperboloidGeometry,
+                                    "hyperboloid");
+  geometryTypesMap.insert_or_assign(GeometryTypes::eLineGeometry, "line");
+  geometryTypesMap.insert_or_assign(GeometryTypes::eNurbsGeometry, "nurbs");
+  geometryTypesMap.insert_or_assign(GeometryTypes::eParaboloidGeometry,
+                                    "paraboloid");
+  geometryTypesMap.insert_or_assign(GeometryTypes::ePlaneGeometry, "plane");
+  geometryTypesMap.insert_or_assign(GeometryTypes::ePointGeometry, "point");
+  geometryTypesMap.insert_or_assign(GeometryTypes::ePointCloudGeometry,
+                                    "point cloud");
+  geometryTypesMap.insert_or_assign(GeometryTypes::eScalarEntityAngleGeometry,
+                                    "angle");
+  geometryTypesMap.insert_or_assign(
+      GeometryTypes::eScalarEntityDistanceGeometry, "distance");
+  geometryTypesMap.insert_or_assign(
+      GeometryTypes::eScalarEntityMeasurementSeriesGeometry,
+      "measurement series");
+  geometryTypesMap.insert_or_assign(
+      GeometryTypes::eScalarEntityTemperatureGeometry, "temperature");
+  geometryTypesMap.insert_or_assign(GeometryTypes::eSlottedHoleGeometry,
+                                    "slotted hole");
+  geometryTypesMap.insert_or_assign(GeometryTypes::eSphereGeometry, "sphere");
+  geometryTypesMap.insert_or_assign(GeometryTypes::eTorusGeometry, "torus");
+  geometryTypesMap.insert_or_assign(GeometryTypes::ePlaneLevelGeometry,
+                                    "level");
 
   // fill element type icons
-  elementTypeIcons.insert(ElementTypes::eCircleElement,
-                          ":/icons/icons/toolbars/feature/Circle.png");
-  elementTypeIcons.insert(ElementTypes::eConeElement,
-                          ":/icons/icons/toolbars/feature/Cone.png");
-  elementTypeIcons.insert(ElementTypes::eCylinderElement,
-                          ":/icons/icons/toolbars/feature/Cylinder.png");
-  elementTypeIcons.insert(ElementTypes::eEllipseElement,
-                          ":/icons/icons/toolbars/feature/Ellipse.png");
-  elementTypeIcons.insert(ElementTypes::eEllipsoidElement,
-                          ":/icons/icons/toolbars/feature/Ellipsoid.png");
-  elementTypeIcons.insert(ElementTypes::eHyperboloidElement,
-                          ":/icons/icons/toolbars/feature/Hyperboloid.png");
-  elementTypeIcons.insert(ElementTypes::eLineElement,
-                          ":/icons/icons/toolbars/feature/Line.png");
-  elementTypeIcons.insert(ElementTypes::eNurbsElement,
-                          ":/icons/icons/toolbars/feature/Nurbs Surface.png");
-  elementTypeIcons.insert(ElementTypes::eParaboloidElement,
-                          ":/icons/icons/toolbars/feature/Paraboloid.png");
-  elementTypeIcons.insert(ElementTypes::ePlaneElement,
-                          ":/icons/icons/toolbars/feature/Plane.png");
-  elementTypeIcons.insert(ElementTypes::ePointElement,
-                          ":/icons/icons/toolbars/feature/Point.png");
-  elementTypeIcons.insert(ElementTypes::ePointCloudElement,
-                          ":/icons/icons/toolbars/feature/Point Cloud.png");
-  elementTypeIcons.insert(ElementTypes::eScalarEntityAngleElement,
-                          ":/icons/icons/toolbars/feature/Scalar Entities.png");
-  elementTypeIcons.insert(ElementTypes::eScalarEntityDistanceElement,
-                          ":/icons/icons/toolbars/feature/Scalar Entities.png");
-  elementTypeIcons.insert(ElementTypes::eScalarEntityMeasurementSeriesElement,
-                          ":/icons/icons/toolbars/feature/Scalar Entities.png");
-  elementTypeIcons.insert(ElementTypes::eScalarEntityTemperatureElement,
-                          ":/icons/icons/toolbars/feature/Scalar Entities.png");
-  elementTypeIcons.insert(ElementTypes::eSlottedHoleElement,
-                          ":/icons/icons/toolbars/feature/Slotted Hole.png");
-  elementTypeIcons.insert(ElementTypes::eSphereElement,
-                          ":/icons/icons/toolbars/feature/Sphere.png");
-  elementTypeIcons.insert(ElementTypes::eTorusElement,
-                          ":/icons/icons/toolbars/feature/Torus.png");
-  elementTypeIcons.insert(ElementTypes::eDirectionElement, "");
-  elementTypeIcons.insert(ElementTypes::ePositionElement, "");
-  elementTypeIcons.insert(ElementTypes::eRadiusElement, "");
-  elementTypeIcons.insert(
+  elementTypeIcons.insert_or_assign(
+      ElementTypes::eCircleElement,
+      ":/icons/icons/toolbars/feature/Circle.png");
+  elementTypeIcons.insert_or_assign(ElementTypes::eConeElement,
+                                    ":/icons/icons/toolbars/feature/Cone.png");
+  elementTypeIcons.insert_or_assign(
+      ElementTypes::eCylinderElement,
+      ":/icons/icons/toolbars/feature/Cylinder.png");
+  elementTypeIcons.insert_or_assign(
+      ElementTypes::eEllipseElement,
+      ":/icons/icons/toolbars/feature/Ellipse.png");
+  elementTypeIcons.insert_or_assign(
+      ElementTypes::eEllipsoidElement,
+      ":/icons/icons/toolbars/feature/Ellipsoid.png");
+  elementTypeIcons.insert_or_assign(
+      ElementTypes::eHyperboloidElement,
+      ":/icons/icons/toolbars/feature/Hyperboloid.png");
+  elementTypeIcons.insert_or_assign(ElementTypes::eLineElement,
+                                    ":/icons/icons/toolbars/feature/Line.png");
+  elementTypeIcons.insert_or_assign(
+      ElementTypes::eNurbsElement,
+      ":/icons/icons/toolbars/feature/Nurbs Surface.png");
+  elementTypeIcons.insert_or_assign(
+      ElementTypes::eParaboloidElement,
+      ":/icons/icons/toolbars/feature/Paraboloid.png");
+  elementTypeIcons.insert_or_assign(ElementTypes::ePlaneElement,
+                                    ":/icons/icons/toolbars/feature/Plane.png");
+  elementTypeIcons.insert_or_assign(ElementTypes::ePointElement,
+                                    ":/icons/icons/toolbars/feature/Point.png");
+  elementTypeIcons.insert_or_assign(
+      ElementTypes::ePointCloudElement,
+      ":/icons/icons/toolbars/feature/Point Cloud.png");
+  elementTypeIcons.insert_or_assign(
+      ElementTypes::eScalarEntityAngleElement,
+      ":/icons/icons/toolbars/feature/Scalar Entities.png");
+  elementTypeIcons.insert_or_assign(
+      ElementTypes::eScalarEntityDistanceElement,
+      ":/icons/icons/toolbars/feature/Scalar Entities.png");
+  elementTypeIcons.insert_or_assign(
+      ElementTypes::eScalarEntityMeasurementSeriesElement,
+      ":/icons/icons/toolbars/feature/Scalar Entities.png");
+  elementTypeIcons.insert_or_assign(
+      ElementTypes::eScalarEntityTemperatureElement,
+      ":/icons/icons/toolbars/feature/Scalar Entities.png");
+  elementTypeIcons.insert_or_assign(
+      ElementTypes::eSlottedHoleElement,
+      ":/icons/icons/toolbars/feature/Slotted Hole.png");
+  elementTypeIcons.insert_or_assign(
+      ElementTypes::eSphereElement,
+      ":/icons/icons/toolbars/feature/Sphere.png");
+  elementTypeIcons.insert_or_assign(ElementTypes::eTorusElement,
+                                    ":/icons/icons/toolbars/feature/Torus.png");
+  elementTypeIcons.insert_or_assign(ElementTypes::eDirectionElement, "");
+  elementTypeIcons.insert_or_assign(ElementTypes::ePositionElement, "");
+  elementTypeIcons.insert_or_assign(ElementTypes::eRadiusElement, "");
+  elementTypeIcons.insert_or_assign(
       ElementTypes::eCoordinateSystemElement,
       ":/icons/icons/toolbars/feature/Coordinatesystem.png");
-  elementTypeIcons.insert(ElementTypes::eStationElement,
-                          ":/icons/icons/toolbars/feature/Station.png");
-  elementTypeIcons.insert(ElementTypes::eTrafoParamElement,
-                          ":/icons/icons/toolbars/feature/TrafoParam.png");
-  elementTypeIcons.insert(ElementTypes::eObservationElement, "");
-  elementTypeIcons.insert(ElementTypes::eReadingCartesianElement, "");
-  elementTypeIcons.insert(ElementTypes::eReadingPolarElement, "");
-  elementTypeIcons.insert(ElementTypes::eReadingDistanceElement, "");
-  elementTypeIcons.insert(ElementTypes::eReadingDirectionElement, "");
-  elementTypeIcons.insert(ElementTypes::eReadingTemperatureElement, "");
-  elementTypeIcons.insert(ElementTypes::eReadingLevelElement, "");
+  elementTypeIcons.insert_or_assign(
+      ElementTypes::eStationElement,
+      ":/icons/icons/toolbars/feature/Station.png");
+  elementTypeIcons.insert_or_assign(
+      ElementTypes::eTrafoParamElement,
+      ":/icons/icons/toolbars/feature/TrafoParam.png");
+  elementTypeIcons.insert_or_assign(ElementTypes::eObservationElement, "");
+  elementTypeIcons.insert_or_assign(ElementTypes::eReadingCartesianElement, "");
+  elementTypeIcons.insert_or_assign(ElementTypes::eReadingPolarElement, "");
+  elementTypeIcons.insert_or_assign(ElementTypes::eReadingDistanceElement, "");
+  elementTypeIcons.insert_or_assign(ElementTypes::eReadingDirectionElement, "");
+  elementTypeIcons.insert_or_assign(ElementTypes::eReadingTemperatureElement,
+                                    "");
+  elementTypeIcons.insert_or_assign(ElementTypes::eReadingLevelElement, "");
 
   // fill feature type icons
-  featureTypeIcons.insert(FeatureTypes::eCircleFeature,
-                          ":/icons/icons/toolbars/feature/Circle.png");
-  featureTypeIcons.insert(FeatureTypes::eConeFeature,
-                          ":/icons/icons/toolbars/feature/Cone.png");
-  featureTypeIcons.insert(FeatureTypes::eCylinderFeature,
-                          ":/icons/icons/toolbars/feature/Cylinder.png");
-  featureTypeIcons.insert(FeatureTypes::eEllipseFeature,
-                          ":/icons/icons/toolbars/feature/Ellipse.png");
-  featureTypeIcons.insert(FeatureTypes::eEllipsoidFeature,
-                          ":/icons/icons/toolbars/feature/Ellipsoid.png");
-  featureTypeIcons.insert(FeatureTypes::eHyperboloidFeature,
-                          ":/icons/icons/toolbars/feature/Hyperboloid.png");
-  featureTypeIcons.insert(FeatureTypes::eLineFeature,
-                          ":/icons/icons/toolbars/feature/Line.png");
-  featureTypeIcons.insert(FeatureTypes::eNurbsFeature,
-                          ":/icons/icons/toolbars/feature/Nurbs Surface.png");
-  featureTypeIcons.insert(FeatureTypes::eParaboloidFeature,
-                          ":/icons/icons/toolbars/feature/Paraboloid.png");
-  featureTypeIcons.insert(FeatureTypes::ePlaneFeature,
-                          ":/icons/icons/toolbars/feature/Plane.png");
-  featureTypeIcons.insert(FeatureTypes::ePointFeature,
-                          ":/icons/icons/toolbars/feature/Point.png");
-  featureTypeIcons.insert(FeatureTypes::ePointCloudFeature,
-                          ":/icons/icons/toolbars/feature/Point Cloud.png");
-  featureTypeIcons.insert(FeatureTypes::eScalarEntityAngleFeature,
-                          ":/icons/icons/toolbars/feature/Scalar Entities.png");
-  featureTypeIcons.insert(FeatureTypes::eScalarEntityDistanceFeature,
-                          ":/icons/icons/toolbars/feature/Scalar Entities.png");
-  featureTypeIcons.insert(FeatureTypes::eScalarEntityMeasurementSeriesFeature,
-                          ":/icons/icons/toolbars/feature/Scalar Entities.png");
-  featureTypeIcons.insert(FeatureTypes::eScalarEntityTemperatureFeature,
-                          ":/icons/icons/toolbars/feature/Scalar Entities.png");
-  featureTypeIcons.insert(FeatureTypes::eSlottedHoleFeature,
-                          ":/icons/icons/toolbars/feature/Slotted Hole.png");
-  featureTypeIcons.insert(FeatureTypes::eSphereFeature,
-                          ":/icons/icons/toolbars/feature/Sphere.png");
-  featureTypeIcons.insert(FeatureTypes::eTorusFeature,
-                          ":/icons/icons/toolbars/feature/Torus.png");
-  featureTypeIcons.insert(
+  featureTypeIcons.insert_or_assign(
+      FeatureTypes::eCircleFeature,
+      ":/icons/icons/toolbars/feature/Circle.png");
+  featureTypeIcons.insert_or_assign(FeatureTypes::eConeFeature,
+                                    ":/icons/icons/toolbars/feature/Cone.png");
+  featureTypeIcons.insert_or_assign(
+      FeatureTypes::eCylinderFeature,
+      ":/icons/icons/toolbars/feature/Cylinder.png");
+  featureTypeIcons.insert_or_assign(
+      FeatureTypes::eEllipseFeature,
+      ":/icons/icons/toolbars/feature/Ellipse.png");
+  featureTypeIcons.insert_or_assign(
+      FeatureTypes::eEllipsoidFeature,
+      ":/icons/icons/toolbars/feature/Ellipsoid.png");
+  featureTypeIcons.insert_or_assign(
+      FeatureTypes::eHyperboloidFeature,
+      ":/icons/icons/toolbars/feature/Hyperboloid.png");
+  featureTypeIcons.insert_or_assign(FeatureTypes::eLineFeature,
+                                    ":/icons/icons/toolbars/feature/Line.png");
+  featureTypeIcons.insert_or_assign(
+      FeatureTypes::eNurbsFeature,
+      ":/icons/icons/toolbars/feature/Nurbs Surface.png");
+  featureTypeIcons.insert_or_assign(
+      FeatureTypes::eParaboloidFeature,
+      ":/icons/icons/toolbars/feature/Paraboloid.png");
+  featureTypeIcons.insert_or_assign(FeatureTypes::ePlaneFeature,
+                                    ":/icons/icons/toolbars/feature/Plane.png");
+  featureTypeIcons.insert_or_assign(FeatureTypes::ePointFeature,
+                                    ":/icons/icons/toolbars/feature/Point.png");
+  featureTypeIcons.insert_or_assign(
+      FeatureTypes::ePointCloudFeature,
+      ":/icons/icons/toolbars/feature/Point Cloud.png");
+  featureTypeIcons.insert_or_assign(
+      FeatureTypes::eScalarEntityAngleFeature,
+      ":/icons/icons/toolbars/feature/Scalar Entities.png");
+  featureTypeIcons.insert_or_assign(
+      FeatureTypes::eScalarEntityDistanceFeature,
+      ":/icons/icons/toolbars/feature/Scalar Entities.png");
+  featureTypeIcons.insert_or_assign(
+      FeatureTypes::eScalarEntityMeasurementSeriesFeature,
+      ":/icons/icons/toolbars/feature/Scalar Entities.png");
+  featureTypeIcons.insert_or_assign(
+      FeatureTypes::eScalarEntityTemperatureFeature,
+      ":/icons/icons/toolbars/feature/Scalar Entities.png");
+  featureTypeIcons.insert_or_assign(
+      FeatureTypes::eSlottedHoleFeature,
+      ":/icons/icons/toolbars/feature/Slotted Hole.png");
+  featureTypeIcons.insert_or_assign(
+      FeatureTypes::eSphereFeature,
+      ":/icons/icons/toolbars/feature/Sphere.png");
+  featureTypeIcons.insert_or_assign(FeatureTypes::eTorusFeature,
+                                    ":/icons/icons/toolbars/feature/Torus.png");
+  featureTypeIcons.insert_or_assign(
       FeatureTypes::eCoordinateSystemFeature,
       ":/icons/icons/toolbars/feature/Coordinatesystem.png");
-  featureTypeIcons.insert(FeatureTypes::eStationFeature,
-                          ":/icons/icons/toolbars/feature/Station.png");
-  featureTypeIcons.insert(FeatureTypes::eTrafoParamFeature,
-                          ":/icons/icons/toolbars/feature/TrafoParam.png");
+  featureTypeIcons.insert_or_assign(
+      FeatureTypes::eStationFeature,
+      ":/icons/icons/toolbars/feature/Station.png");
+  featureTypeIcons.insert_or_assign(
+      FeatureTypes::eTrafoParamFeature,
+      ":/icons/icons/toolbars/feature/TrafoParam.png");
 
   // fill reading map
-  readingTypesMap.insert(ReadingTypes::eDistanceReading, "distance");
-  readingTypesMap.insert(ReadingTypes::eCartesianReading, "cartesian");
-  readingTypesMap.insert(ReadingTypes::eCartesianReading6D, "cartesian6D");
-  readingTypesMap.insert(ReadingTypes::ePolarReading, "polar");
-  readingTypesMap.insert(ReadingTypes::eDirectionReading, "direction");
-  readingTypesMap.insert(ReadingTypes::eTemperatureReading, "temperature");
-  readingTypesMap.insert(ReadingTypes::eLevelReading, "level");
+  readingTypesMap.insert_or_assign(ReadingTypes::eDistanceReading, "distance");
+  readingTypesMap.insert_or_assign(ReadingTypes::eCartesianReading,
+                                   "cartesian");
+  readingTypesMap.insert_or_assign(ReadingTypes::eCartesianReading6D,
+                                   "cartesian6D");
+  readingTypesMap.insert_or_assign(ReadingTypes::ePolarReading, "polar");
+  readingTypesMap.insert_or_assign(ReadingTypes::eDirectionReading,
+                                   "direction");
+  readingTypesMap.insert_or_assign(ReadingTypes::eTemperatureReading,
+                                   "temperature");
+  readingTypesMap.insert_or_assign(ReadingTypes::eLevelReading, "level");
 
   // fill feature display attributes map
-  featureDisplayAttributesMap.insert(eFeatureDisplayType, "type");
-  featureDisplayAttributesMap.insert(eFeatureDisplayName, "name");
-  featureDisplayAttributesMap.insert(eFeatureDisplayComment, "comment");
-  featureDisplayAttributesMap.insert(eFeatureDisplayGroup, "group");
-  featureDisplayAttributesMap.insert(eFeatureDisplayIsSolved, "solved");
-  featureDisplayAttributesMap.insert(eFeatureDisplayIsUpdated, "updated");
-  featureDisplayAttributesMap.insert(eFeatureDisplayFunctions, "functions");
-  featureDisplayAttributesMap.insert(eFeatureDisplayIsCommon, "common");
-  featureDisplayAttributesMap.insert(eFeatureDisplayUsedFor, "used for");
-  featureDisplayAttributesMap.insert(eFeatureDisplayPreviouslyNeeded,
-                                     "previously needed");
-  featureDisplayAttributesMap.insert(eFeatureDisplayStDev, "stdev");
-  featureDisplayAttributesMap.insert(eFeatureDisplayMeasurementConfig,
-                                     "measurement config");
-  featureDisplayAttributesMap.insert(eFeatureDisplayObservations,
-                                     "observations");
-  featureDisplayAttributesMap.insert(eFeatureDisplayX, "x");
-  featureDisplayAttributesMap.insert(eFeatureDisplayY, "y");
-  featureDisplayAttributesMap.insert(eFeatureDisplayZ, "z");
-  featureDisplayAttributesMap.insert(eFeatureDisplayPrimaryI, "i");
-  featureDisplayAttributesMap.insert(eFeatureDisplayPrimaryJ, "j");
-  featureDisplayAttributesMap.insert(eFeatureDisplayPrimaryK, "k");
-  featureDisplayAttributesMap.insert(eFeatureDisplayRadiusA, "radius");
-  featureDisplayAttributesMap.insert(eFeatureDisplayRadiusB, "radius 2");
-  featureDisplayAttributesMap.insert(eFeatureDisplaySecondaryI, "i 2");
-  featureDisplayAttributesMap.insert(eFeatureDisplaySecondaryJ, "j 2");
-  featureDisplayAttributesMap.insert(eFeatureDisplaySecondaryK, "k 2");
-  featureDisplayAttributesMap.insert(eFeatureDisplayAperture, "aperture");
-  featureDisplayAttributesMap.insert(eFeatureDisplayA, "a");
-  featureDisplayAttributesMap.insert(eFeatureDisplayB, "b");
-  featureDisplayAttributesMap.insert(eFeatureDisplayC, "c");
-  featureDisplayAttributesMap.insert(eFeatureDisplayAngle, "angle");
-  featureDisplayAttributesMap.insert(eFeatureDisplayDistance, "distance");
-  featureDisplayAttributesMap.insert(eFeatureDisplayMeasurementSeries,
-                                     "measurement series");
-  featureDisplayAttributesMap.insert(eFeatureDisplayTemperature, "temperature");
-  featureDisplayAttributesMap.insert(eFeatureDisplayLength, "length");
-  featureDisplayAttributesMap.insert(eFeatureDisplayExpansionOriginX,
-                                     "expansion x");
-  featureDisplayAttributesMap.insert(eFeatureDisplayExpansionOriginY,
-                                     "expansion y");
-  featureDisplayAttributesMap.insert(eFeatureDisplayExpansionOriginZ,
-                                     "expansion z");
-  featureDisplayAttributesMap.insert(eFeatureDisplayIsActual, "actual feature");
-  featureDisplayAttributesMap.insert(eFeatureDisplayFormError, "form error");
+  featureDisplayAttributesMap.insert_or_assign(eFeatureDisplayType, "type");
+  featureDisplayAttributesMap.insert_or_assign(eFeatureDisplayName, "name");
+  featureDisplayAttributesMap.insert_or_assign(eFeatureDisplayComment,
+                                               "comment");
+  featureDisplayAttributesMap.insert_or_assign(eFeatureDisplayGroup, "group");
+  featureDisplayAttributesMap.insert_or_assign(eFeatureDisplayIsSolved,
+                                               "solved");
+  featureDisplayAttributesMap.insert_or_assign(eFeatureDisplayIsUpdated,
+                                               "updated");
+  featureDisplayAttributesMap.insert_or_assign(eFeatureDisplayFunctions,
+                                               "functions");
+  featureDisplayAttributesMap.insert_or_assign(eFeatureDisplayIsCommon,
+                                               "common");
+  featureDisplayAttributesMap.insert_or_assign(eFeatureDisplayUsedFor,
+                                               "used for");
+  featureDisplayAttributesMap.insert_or_assign(eFeatureDisplayPreviouslyNeeded,
+                                               "previously needed");
+  featureDisplayAttributesMap.insert_or_assign(eFeatureDisplayStDev, "stdev");
+  featureDisplayAttributesMap.insert_or_assign(eFeatureDisplayMeasurementConfig,
+                                               "measurement config");
+  featureDisplayAttributesMap.insert_or_assign(eFeatureDisplayObservations,
+                                               "observations");
+  featureDisplayAttributesMap.insert_or_assign(eFeatureDisplayX, "x");
+  featureDisplayAttributesMap.insert_or_assign(eFeatureDisplayY, "y");
+  featureDisplayAttributesMap.insert_or_assign(eFeatureDisplayZ, "z");
+  featureDisplayAttributesMap.insert_or_assign(eFeatureDisplayPrimaryI, "i");
+  featureDisplayAttributesMap.insert_or_assign(eFeatureDisplayPrimaryJ, "j");
+  featureDisplayAttributesMap.insert_or_assign(eFeatureDisplayPrimaryK, "k");
+  featureDisplayAttributesMap.insert_or_assign(eFeatureDisplayRadiusA,
+                                               "radius");
+  featureDisplayAttributesMap.insert_or_assign(eFeatureDisplayRadiusB,
+                                               "radius 2");
+  featureDisplayAttributesMap.insert_or_assign(eFeatureDisplaySecondaryI,
+                                               "i 2");
+  featureDisplayAttributesMap.insert_or_assign(eFeatureDisplaySecondaryJ,
+                                               "j 2");
+  featureDisplayAttributesMap.insert_or_assign(eFeatureDisplaySecondaryK,
+                                               "k 2");
+  featureDisplayAttributesMap.insert_or_assign(eFeatureDisplayAperture,
+                                               "aperture");
+  featureDisplayAttributesMap.insert_or_assign(eFeatureDisplayA, "a");
+  featureDisplayAttributesMap.insert_or_assign(eFeatureDisplayB, "b");
+  featureDisplayAttributesMap.insert_or_assign(eFeatureDisplayC, "c");
+  featureDisplayAttributesMap.insert_or_assign(eFeatureDisplayAngle, "angle");
+  featureDisplayAttributesMap.insert_or_assign(eFeatureDisplayDistance,
+                                               "distance");
+  featureDisplayAttributesMap.insert_or_assign(eFeatureDisplayMeasurementSeries,
+                                               "measurement series");
+  featureDisplayAttributesMap.insert_or_assign(eFeatureDisplayTemperature,
+                                               "temperature");
+  featureDisplayAttributesMap.insert_or_assign(eFeatureDisplayLength, "length");
+  featureDisplayAttributesMap.insert_or_assign(eFeatureDisplayExpansionOriginX,
+                                               "expansion x");
+  featureDisplayAttributesMap.insert_or_assign(eFeatureDisplayExpansionOriginY,
+                                               "expansion y");
+  featureDisplayAttributesMap.insert_or_assign(eFeatureDisplayExpansionOriginZ,
+                                               "expansion z");
+  featureDisplayAttributesMap.insert_or_assign(eFeatureDisplayIsActual,
+                                               "actual feature");
+  featureDisplayAttributesMap.insert_or_assign(eFeatureDisplayFormError,
+                                               "form error");
 
   // fill observation display attributes map
-  observationDisplayAttributesMap.insert(eObservationDisplayId, "id");
-  observationDisplayAttributesMap.insert(eObservationDisplayStation, "station");
-  observationDisplayAttributesMap.insert(eObservationDisplayTargetGeometries,
-                                         "target geometries");
-  observationDisplayAttributesMap.insert(eObservationDisplayX, "x");
-  observationDisplayAttributesMap.insert(eObservationDisplayY, "y");
-  observationDisplayAttributesMap.insert(eObservationDisplayZ, "z");
-  observationDisplayAttributesMap.insert(eObservationDisplayI, "i");
-  observationDisplayAttributesMap.insert(eObservationDisplayJ, "j");
-  observationDisplayAttributesMap.insert(eObservationDisplayK, "k");
-  observationDisplayAttributesMap.insert(eObservationDisplaySigmaX, "sigma x");
-  observationDisplayAttributesMap.insert(eObservationDisplaySigmaY, "sigma y");
-  observationDisplayAttributesMap.insert(eObservationDisplaySigmaZ, "sigma z");
-  observationDisplayAttributesMap.insert(eObservationDisplaySigmaI, "sigma i");
-  observationDisplayAttributesMap.insert(eObservationDisplaySigmaJ, "sigma j");
-  observationDisplayAttributesMap.insert(eObservationDisplaySigmaK, "sigma k");
-  observationDisplayAttributesMap.insert(eObservationDisplayIsValid, "valid");
-  observationDisplayAttributesMap.insert(eObservationDisplayIsSolved, "solved");
-  observationDisplayAttributesMap.insert(eObservationDisplayVX, "vx");
-  observationDisplayAttributesMap.insert(eObservationDisplayVY, "vy");
-  observationDisplayAttributesMap.insert(eObservationDisplayVZ, "vz");
-  observationDisplayAttributesMap.insert(eObservationDisplayV, "v");
-  observationDisplayAttributesMap.insert(eObservationDisplayVR, "vr");
-  observationDisplayAttributesMap.insert(eObservationDisplayVI, "vi");
-  observationDisplayAttributesMap.insert(eObservationDisplayVJ, "vj");
-  observationDisplayAttributesMap.insert(eObservationDisplayVK, "vk");
-  observationDisplayAttributesMap.insert(eObservationDisplayIsUsed, "used");
-  observationDisplayAttributesMap.insert(eObservationDisplayIsDummyPoint,
-                                         "dummy point");
-  observationDisplayAttributesMap.insert(eObservationDisplayReadingTime,
-                                         "time");
+  observationDisplayAttributesMap.insert_or_assign(eObservationDisplayId, "id");
+  observationDisplayAttributesMap.insert_or_assign(eObservationDisplayStation,
+                                                   "station");
+  observationDisplayAttributesMap.insert_or_assign(
+      eObservationDisplayTargetGeometries, "target geometries");
+  observationDisplayAttributesMap.insert_or_assign(eObservationDisplayX, "x");
+  observationDisplayAttributesMap.insert_or_assign(eObservationDisplayY, "y");
+  observationDisplayAttributesMap.insert_or_assign(eObservationDisplayZ, "z");
+  observationDisplayAttributesMap.insert_or_assign(eObservationDisplayI, "i");
+  observationDisplayAttributesMap.insert_or_assign(eObservationDisplayJ, "j");
+  observationDisplayAttributesMap.insert_or_assign(eObservationDisplayK, "k");
+  observationDisplayAttributesMap.insert_or_assign(eObservationDisplaySigmaX,
+                                                   "sigma x");
+  observationDisplayAttributesMap.insert_or_assign(eObservationDisplaySigmaY,
+                                                   "sigma y");
+  observationDisplayAttributesMap.insert_or_assign(eObservationDisplaySigmaZ,
+                                                   "sigma z");
+  observationDisplayAttributesMap.insert_or_assign(eObservationDisplaySigmaI,
+                                                   "sigma i");
+  observationDisplayAttributesMap.insert_or_assign(eObservationDisplaySigmaJ,
+                                                   "sigma j");
+  observationDisplayAttributesMap.insert_or_assign(eObservationDisplaySigmaK,
+                                                   "sigma k");
+  observationDisplayAttributesMap.insert_or_assign(eObservationDisplayIsValid,
+                                                   "valid");
+  observationDisplayAttributesMap.insert_or_assign(eObservationDisplayIsSolved,
+                                                   "solved");
+  observationDisplayAttributesMap.insert_or_assign(eObservationDisplayVX, "vx");
+  observationDisplayAttributesMap.insert_or_assign(eObservationDisplayVY, "vy");
+  observationDisplayAttributesMap.insert_or_assign(eObservationDisplayVZ, "vz");
+  observationDisplayAttributesMap.insert_or_assign(eObservationDisplayV, "v");
+  observationDisplayAttributesMap.insert_or_assign(eObservationDisplayVR, "vr");
+  observationDisplayAttributesMap.insert_or_assign(eObservationDisplayVI, "vi");
+  observationDisplayAttributesMap.insert_or_assign(eObservationDisplayVJ, "vj");
+  observationDisplayAttributesMap.insert_or_assign(eObservationDisplayVK, "vk");
+  observationDisplayAttributesMap.insert_or_assign(eObservationDisplayIsUsed,
+                                                   "used");
+  observationDisplayAttributesMap.insert_or_assign(
+      eObservationDisplayIsDummyPoint, "dummy point");
+  observationDisplayAttributesMap.insert_or_assign(
+      eObservationDisplayReadingTime, "time");
 
   // fill reading display attributes map
-  readingDisplayAttributesMap.insert(eReadingDisplayId, "id");
-  readingDisplayAttributesMap.insert(eReadingDisplayType, "type");
-  readingDisplayAttributesMap.insert(eReadingDisplayTime, "time");
-  readingDisplayAttributesMap.insert(eReadingDisplaySensorConfigName,
-                                     "sensor config");
-  readingDisplayAttributesMap.insert(eReadingDisplayMeasurementConfigName,
-                                     "measurement config");
-  readingDisplayAttributesMap.insert(eReadingDisplaySide, "side");
-  readingDisplayAttributesMap.insert(eReadingDisplayAzimuth, "azimuth");
-  readingDisplayAttributesMap.insert(eReadingDisplayZenith, "zenith");
-  readingDisplayAttributesMap.insert(eReadingDisplayDistance, "distance");
-  readingDisplayAttributesMap.insert(eReadingDisplayX, "x");
-  readingDisplayAttributesMap.insert(eReadingDisplayY, "y");
-  readingDisplayAttributesMap.insert(eReadingDisplayZ, "z");
-  readingDisplayAttributesMap.insert(eReadingDisplayI, "i");
-  readingDisplayAttributesMap.insert(eReadingDisplayJ, "j");
-  readingDisplayAttributesMap.insert(eReadingDisplayK, "k");
-  readingDisplayAttributesMap.insert(eReadingDisplayTemperature, "temperature");
-  readingDisplayAttributesMap.insert(eReadingDisplaySigmaAzimuth,
-                                     "sigma azimuth");
-  readingDisplayAttributesMap.insert(eReadingDisplaySigmaZenith,
-                                     "sigma zenith");
-  readingDisplayAttributesMap.insert(eReadingDisplaySigmaDistance,
-                                     "sigma distance");
-  readingDisplayAttributesMap.insert(eReadingDisplaySigmaX, "sigma x");
-  readingDisplayAttributesMap.insert(eReadingDisplaySigmaY, "sigma y");
-  readingDisplayAttributesMap.insert(eReadingDisplaySigmaZ, "sigma z");
-  readingDisplayAttributesMap.insert(eReadingDisplaySigmaI, "sigma i");
-  readingDisplayAttributesMap.insert(eReadingDisplaySigmaJ, "sigma j");
-  readingDisplayAttributesMap.insert(eReadingDisplaySigmaK, "sigma k");
-  readingDisplayAttributesMap.insert(eReadingDisplaySigmaTemperature,
-                                     "sigma temperature");
-  readingDisplayAttributesMap.insert(eReadingDisplayImported, "imported");
+  readingDisplayAttributesMap.insert_or_assign(eReadingDisplayId, "id");
+  readingDisplayAttributesMap.insert_or_assign(eReadingDisplayType, "type");
+  readingDisplayAttributesMap.insert_or_assign(eReadingDisplayTime, "time");
+  readingDisplayAttributesMap.insert_or_assign(eReadingDisplaySensorConfigName,
+                                               "sensor config");
+  readingDisplayAttributesMap.insert_or_assign(
+      eReadingDisplayMeasurementConfigName, "measurement config");
+  readingDisplayAttributesMap.insert_or_assign(eReadingDisplaySide, "side");
+  readingDisplayAttributesMap.insert_or_assign(eReadingDisplayAzimuth,
+                                               "azimuth");
+  readingDisplayAttributesMap.insert_or_assign(eReadingDisplayZenith, "zenith");
+  readingDisplayAttributesMap.insert_or_assign(eReadingDisplayDistance,
+                                               "distance");
+  readingDisplayAttributesMap.insert_or_assign(eReadingDisplayX, "x");
+  readingDisplayAttributesMap.insert_or_assign(eReadingDisplayY, "y");
+  readingDisplayAttributesMap.insert_or_assign(eReadingDisplayZ, "z");
+  readingDisplayAttributesMap.insert_or_assign(eReadingDisplayI, "i");
+  readingDisplayAttributesMap.insert_or_assign(eReadingDisplayJ, "j");
+  readingDisplayAttributesMap.insert_or_assign(eReadingDisplayK, "k");
+  readingDisplayAttributesMap.insert_or_assign(eReadingDisplayTemperature,
+                                               "temperature");
+  readingDisplayAttributesMap.insert_or_assign(eReadingDisplaySigmaAzimuth,
+                                               "sigma azimuth");
+  readingDisplayAttributesMap.insert_or_assign(eReadingDisplaySigmaZenith,
+                                               "sigma zenith");
+  readingDisplayAttributesMap.insert_or_assign(eReadingDisplaySigmaDistance,
+                                               "sigma distance");
+  readingDisplayAttributesMap.insert_or_assign(eReadingDisplaySigmaX,
+                                               "sigma x");
+  readingDisplayAttributesMap.insert_or_assign(eReadingDisplaySigmaY,
+                                               "sigma y");
+  readingDisplayAttributesMap.insert_or_assign(eReadingDisplaySigmaZ,
+                                               "sigma z");
+  readingDisplayAttributesMap.insert_or_assign(eReadingDisplaySigmaI,
+                                               "sigma i");
+  readingDisplayAttributesMap.insert_or_assign(eReadingDisplaySigmaJ,
+                                               "sigma j");
+  readingDisplayAttributesMap.insert_or_assign(eReadingDisplaySigmaK,
+                                               "sigma k");
+  readingDisplayAttributesMap.insert_or_assign(eReadingDisplaySigmaTemperature,
+                                               "sigma temperature");
+  readingDisplayAttributesMap.insert_or_assign(eReadingDisplayImported,
+                                               "imported");
 
   // fill trafo param display attributes map
-  trafoParamDisplayAttributesMap.insert(eTrafoParamDisplayType, "type");
-  trafoParamDisplayAttributesMap.insert(eTrafoParamDisplayName, "name");
-  trafoParamDisplayAttributesMap.insert(eTrafoParamDisplayComment, "comment");
-  trafoParamDisplayAttributesMap.insert(eTrafoParamDisplayGroup, "group");
-  trafoParamDisplayAttributesMap.insert(eTrafoParamDisplayIsSolved, "solved");
-  trafoParamDisplayAttributesMap.insert(eTrafoParamDisplayIsUpdated, "updated");
-  trafoParamDisplayAttributesMap.insert(eTrafoParamDisplayFunctions,
-                                        "functions");
-  trafoParamDisplayAttributesMap.insert(eTrafoParamDisplayUsedFor, "used for");
-  trafoParamDisplayAttributesMap.insert(eTrafoParamDisplayPreviouslyNeeded,
-                                        "previously needed");
-  trafoParamDisplayAttributesMap.insert(eTrafoParamDisplayStDev, "stdev");
-  trafoParamDisplayAttributesMap.insert(eTrafoParamDisplayStartSystem, "start");
-  trafoParamDisplayAttributesMap.insert(eTrafoParamDisplayDestinationSystem,
-                                        "destination");
-  trafoParamDisplayAttributesMap.insert(eTrafoParamDisplayTranslationX, "tx");
-  trafoParamDisplayAttributesMap.insert(eTrafoParamDisplayTranslationY, "ty");
-  trafoParamDisplayAttributesMap.insert(eTrafoParamDisplayTranslationZ, "tz");
-  trafoParamDisplayAttributesMap.insert(eTrafoParamDisplayRotationX, "rx");
-  trafoParamDisplayAttributesMap.insert(eTrafoParamDisplayRotationY, "ry");
-  trafoParamDisplayAttributesMap.insert(eTrafoParamDisplayRotationZ, "rz");
-  trafoParamDisplayAttributesMap.insert(eTrafoParamDisplayScaleX, "sx");
-  trafoParamDisplayAttributesMap.insert(eTrafoParamDisplayScaleY, "sy");
-  trafoParamDisplayAttributesMap.insert(eTrafoParamDisplayScaleZ, "sz");
-  trafoParamDisplayAttributesMap.insert(eTrafoParamDisplayIsUsed, "used");
-  trafoParamDisplayAttributesMap.insert(eTrafoParamDisplayValidTime, "time");
-  trafoParamDisplayAttributesMap.insert(eTrafoParamDisplayIsMovement,
-                                        "movement");
-  trafoParamDisplayAttributesMap.insert(eTrafoParamDisplayIsDatumTransformation,
-                                        "datum transformation");
+  trafoParamDisplayAttributesMap.insert_or_assign(eTrafoParamDisplayType,
+                                                  "type");
+  trafoParamDisplayAttributesMap.insert_or_assign(eTrafoParamDisplayName,
+                                                  "name");
+  trafoParamDisplayAttributesMap.insert_or_assign(eTrafoParamDisplayComment,
+                                                  "comment");
+  trafoParamDisplayAttributesMap.insert_or_assign(eTrafoParamDisplayGroup,
+                                                  "group");
+  trafoParamDisplayAttributesMap.insert_or_assign(eTrafoParamDisplayIsSolved,
+                                                  "solved");
+  trafoParamDisplayAttributesMap.insert_or_assign(eTrafoParamDisplayIsUpdated,
+                                                  "updated");
+  trafoParamDisplayAttributesMap.insert_or_assign(eTrafoParamDisplayFunctions,
+                                                  "functions");
+  trafoParamDisplayAttributesMap.insert_or_assign(eTrafoParamDisplayUsedFor,
+                                                  "used for");
+  trafoParamDisplayAttributesMap.insert_or_assign(
+      eTrafoParamDisplayPreviouslyNeeded, "previously needed");
+  trafoParamDisplayAttributesMap.insert_or_assign(eTrafoParamDisplayStDev,
+                                                  "stdev");
+  trafoParamDisplayAttributesMap.insert_or_assign(eTrafoParamDisplayStartSystem,
+                                                  "start");
+  trafoParamDisplayAttributesMap.insert_or_assign(
+      eTrafoParamDisplayDestinationSystem, "destination");
+  trafoParamDisplayAttributesMap.insert_or_assign(
+      eTrafoParamDisplayTranslationX, "tx");
+  trafoParamDisplayAttributesMap.insert_or_assign(
+      eTrafoParamDisplayTranslationY, "ty");
+  trafoParamDisplayAttributesMap.insert_or_assign(
+      eTrafoParamDisplayTranslationZ, "tz");
+  trafoParamDisplayAttributesMap.insert_or_assign(eTrafoParamDisplayRotationX,
+                                                  "rx");
+  trafoParamDisplayAttributesMap.insert_or_assign(eTrafoParamDisplayRotationY,
+                                                  "ry");
+  trafoParamDisplayAttributesMap.insert_or_assign(eTrafoParamDisplayRotationZ,
+                                                  "rz");
+  trafoParamDisplayAttributesMap.insert_or_assign(eTrafoParamDisplayScaleX,
+                                                  "sx");
+  trafoParamDisplayAttributesMap.insert_or_assign(eTrafoParamDisplayScaleY,
+                                                  "sy");
+  trafoParamDisplayAttributesMap.insert_or_assign(eTrafoParamDisplayScaleZ,
+                                                  "sz");
+  trafoParamDisplayAttributesMap.insert_or_assign(eTrafoParamDisplayIsUsed,
+                                                  "used");
+  trafoParamDisplayAttributesMap.insert_or_assign(eTrafoParamDisplayValidTime,
+                                                  "time");
+  trafoParamDisplayAttributesMap.insert_or_assign(eTrafoParamDisplayIsMovement,
+                                                  "movement");
+  trafoParamDisplayAttributesMap.insert_or_assign(
+      eTrafoParamDisplayIsDatumTransformation, "datum transformation");
 
   // fill available display attributes
   for (int i = eFeatureDisplayType; i <= eFeatureDisplayStDev;
        i++) {  // general feature attributes
-    featureDisplayAttributes.append(i);
+    featureDisplayAttributes.push_back(i);
   }
   for (int i = eFeatureDisplayMeasurementConfig; i <= eFeatureDisplayIsActual;
        i++) {  // geometry specific attributes
-    featureDisplayAttributes.append(i);
+    featureDisplayAttributes.push_back(i);
   }
   for (int i = eFeatureDisplayX; i <= eFeatureDisplayFormError;
        i++) {  // unknown geometry parameters
-    featureDisplayAttributes.append(i);
+    featureDisplayAttributes.push_back(i);
   }
   for (int i = eFeatureDisplayExpansionOriginX;
        i <= eFeatureDisplayExpansionOriginZ;
        i++) {  // coordinate system specific
-    featureDisplayAttributes.append(i);
+    featureDisplayAttributes.push_back(i);
   }
   for (int i = eTrafoParamDisplayStartSystem;
        i <= eTrafoParamDisplayIsDatumTransformation;
        i++) {  // trafo param specific
-    featureDisplayAttributes.append(i);
+    featureDisplayAttributes.push_back(i);
   }
 
   // fill available observation display attributes
-  observationDisplayAttributes = observationDisplayAttributesMap.keys();
+  observationDisplayAttributes = oi::keys(observationDisplayAttributesMap);
 
   // fill available reading display attributes
-  readingDisplayAttributes = readingDisplayAttributesMap.keys();
+  readingDisplayAttributes = oi::keys(readingDisplayAttributesMap);
 
   // fill unit types map
-  unitTypesMap.insert(UnitType::eUnitArcSeconds, "[arcsec]");
-  unitTypesMap.insert(UnitType::eUnitDecimalDegree, "[°]");
-  unitTypesMap.insert(UnitType::eUnitFahrenheit, "[°F]");
-  unitTypesMap.insert(UnitType::eUnitGon, "[gon]");
-  unitTypesMap.insert(UnitType::eUnitGrad, "[°C]");
-  unitTypesMap.insert(UnitType::eUnitInch, "[inch]");
-  unitTypesMap.insert(UnitType::eUnitKelvin, "[°K]");
-  unitTypesMap.insert(UnitType::eUnitMeter, "[m]");
-  unitTypesMap.insert(UnitType::eUnitMilliMeter, "[mm]");
-  unitTypesMap.insert(UnitType::eUnitMilliRadians, "[mrad]");
-  unitTypesMap.insert(UnitType::eUnitRadiant, "[rad]");
+  unitTypesMap.insert_or_assign(UnitType::eUnitArcSeconds, "[arcsec]");
+  unitTypesMap.insert_or_assign(UnitType::eUnitDecimalDegree, "[°]");
+  unitTypesMap.insert_or_assign(UnitType::eUnitFahrenheit, "[°F]");
+  unitTypesMap.insert_or_assign(UnitType::eUnitGon, "[gon]");
+  unitTypesMap.insert_or_assign(UnitType::eUnitGrad, "[°C]");
+  unitTypesMap.insert_or_assign(UnitType::eUnitInch, "[inch]");
+  unitTypesMap.insert_or_assign(UnitType::eUnitKelvin, "[°K]");
+  unitTypesMap.insert_or_assign(UnitType::eUnitMeter, "[m]");
+  unitTypesMap.insert_or_assign(UnitType::eUnitMilliMeter, "[mm]");
+  unitTypesMap.insert_or_assign(UnitType::eUnitMilliRadians, "[mrad]");
+  unitTypesMap.insert_or_assign(UnitType::eUnitRadiant, "[rad]");
 
   // fill sensor functions map
-  sensorFunctionsMap.insert(SensorFunctions::eMoveAngle, "move (polar)");
-  sensorFunctionsMap.insert(SensorFunctions::eMoveXYZ, "move (cartesian)");
-  sensorFunctionsMap.insert(SensorFunctions::eMotorState, "change motor state");
-  sensorFunctionsMap.insert(SensorFunctions::eToggleSight,
-                            "toggle sight orientation");
-  sensorFunctionsMap.insert(SensorFunctions::eInitialize, "initialize");
-  sensorFunctionsMap.insert(SensorFunctions::eHome, "home");
-  sensorFunctionsMap.insert(SensorFunctions::eCompensation, "compensation");
-  sensorFunctionsMap.insert(SensorFunctions::eConnect, "connect");
-  sensorFunctionsMap.insert(SensorFunctions::eDisconnect, "disconnect");
-  sensorFunctionsMap.insert(SensorFunctions::eMeasure, "measure");
-  sensorFunctionsMap.insert(SensorFunctions::eStream, "stream");
+  sensorFunctionsMap.insert_or_assign(SensorFunctions::eMoveAngle,
+                                      "move (polar)");
+  sensorFunctionsMap.insert_or_assign(SensorFunctions::eMoveXYZ,
+                                      "move (cartesian)");
+  sensorFunctionsMap.insert_or_assign(SensorFunctions::eMotorState,
+                                      "change motor state");
+  sensorFunctionsMap.insert_or_assign(SensorFunctions::eToggleSight,
+                                      "toggle sight orientation");
+  sensorFunctionsMap.insert_or_assign(SensorFunctions::eInitialize,
+                                      "initialize");
+  sensorFunctionsMap.insert_or_assign(SensorFunctions::eHome, "home");
+  sensorFunctionsMap.insert_or_assign(SensorFunctions::eCompensation,
+                                      "compensation");
+  sensorFunctionsMap.insert_or_assign(SensorFunctions::eConnect, "connect");
+  sensorFunctionsMap.insert_or_assign(SensorFunctions::eDisconnect,
+                                      "disconnect");
+  sensorFunctionsMap.insert_or_assign(SensorFunctions::eMeasure, "measure");
+  sensorFunctionsMap.insert_or_assign(SensorFunctions::eStream, "stream");
 
   // fill connection types map
 
   // fill tool types map
-  toolTypesMap.insert(ToolTypes::eReportTool, "report");
-  toolTypesMap.insert(ToolTypes::eUnknownTool, "tool");
+  toolTypesMap.insert_or_assign(ToolTypes::eReportTool, "report");
+  toolTypesMap.insert_or_assign(ToolTypes::eUnknownTool, "tool");
 
   // fill message types map
-  messageTypesMap.insert(MessageTypes::eInformationMessage, "information");
-  messageTypesMap.insert(MessageTypes::eWarningMessage, "warning");
-  messageTypesMap.insert(MessageTypes::eErrorMessage, "error");
-  messageTypesMap.insert(MessageTypes::eCriticalMessage, "critical");
+  messageTypesMap.insert_or_assign(MessageTypes::eInformationMessage,
+                                   "information");
+  messageTypesMap.insert_or_assign(MessageTypes::eWarningMessage, "warning");
+  messageTypesMap.insert_or_assign(MessageTypes::eErrorMessage, "error");
+  messageTypesMap.insert_or_assign(MessageTypes::eCriticalMessage, "critical");
 
   // fill geometry parameters map
-  geometryParametersMap.insert(GeometryParameters::eUnknownX, "x");
-  geometryParametersMap.insert(GeometryParameters::eUnknownY, "y");
-  geometryParametersMap.insert(GeometryParameters::eUnknownZ, "z");
-  geometryParametersMap.insert(GeometryParameters::eUnknownPrimaryI, "i");
-  geometryParametersMap.insert(GeometryParameters::eUnknownPrimaryJ, "j");
-  geometryParametersMap.insert(GeometryParameters::eUnknownPrimaryK, "k");
-  geometryParametersMap.insert(GeometryParameters::eUnknownSecondaryI, "i 2");
-  geometryParametersMap.insert(GeometryParameters::eUnknownSecondaryJ, "j 2");
-  geometryParametersMap.insert(GeometryParameters::eUnknownSecondaryK, "k 2");
-  geometryParametersMap.insert(GeometryParameters::eUnknownRadiusA, "radius");
-  geometryParametersMap.insert(GeometryParameters::eUnknownRadiusB, "radius 2");
-  geometryParametersMap.insert(GeometryParameters::eUnknownAperture,
-                               "aperture");
-  geometryParametersMap.insert(GeometryParameters::eUnknownA, "a");
-  geometryParametersMap.insert(GeometryParameters::eUnknownB, "b");
-  geometryParametersMap.insert(GeometryParameters::eUnknownC, "c");
-  geometryParametersMap.insert(GeometryParameters::eUnknownAngle, "angle");
-  geometryParametersMap.insert(GeometryParameters::eUnknownDistance,
-                               "distance");
-  geometryParametersMap.insert(GeometryParameters::eUnknownMeasurementSeries,
-                               "measurement series");
-  geometryParametersMap.insert(GeometryParameters::eUnknownTemperature,
-                               "temperature");
-  geometryParametersMap.insert(GeometryParameters::eUnknownLength, "length");
+  geometryParametersMap.insert_or_assign(GeometryParameters::eUnknownX, "x");
+  geometryParametersMap.insert_or_assign(GeometryParameters::eUnknownY, "y");
+  geometryParametersMap.insert_or_assign(GeometryParameters::eUnknownZ, "z");
+  geometryParametersMap.insert_or_assign(GeometryParameters::eUnknownPrimaryI,
+                                         "i");
+  geometryParametersMap.insert_or_assign(GeometryParameters::eUnknownPrimaryJ,
+                                         "j");
+  geometryParametersMap.insert_or_assign(GeometryParameters::eUnknownPrimaryK,
+                                         "k");
+  geometryParametersMap.insert_or_assign(GeometryParameters::eUnknownSecondaryI,
+                                         "i 2");
+  geometryParametersMap.insert_or_assign(GeometryParameters::eUnknownSecondaryJ,
+                                         "j 2");
+  geometryParametersMap.insert_or_assign(GeometryParameters::eUnknownSecondaryK,
+                                         "k 2");
+  geometryParametersMap.insert_or_assign(GeometryParameters::eUnknownRadiusA,
+                                         "radius");
+  geometryParametersMap.insert_or_assign(GeometryParameters::eUnknownRadiusB,
+                                         "radius 2");
+  geometryParametersMap.insert_or_assign(GeometryParameters::eUnknownAperture,
+                                         "aperture");
+  geometryParametersMap.insert_or_assign(GeometryParameters::eUnknownA, "a");
+  geometryParametersMap.insert_or_assign(GeometryParameters::eUnknownB, "b");
+  geometryParametersMap.insert_or_assign(GeometryParameters::eUnknownC, "c");
+  geometryParametersMap.insert_or_assign(GeometryParameters::eUnknownAngle,
+                                         "angle");
+  geometryParametersMap.insert_or_assign(GeometryParameters::eUnknownDistance,
+                                         "distance");
+  geometryParametersMap.insert_or_assign(
+      GeometryParameters::eUnknownMeasurementSeries, "measurement series");
+  geometryParametersMap.insert_or_assign(
+      GeometryParameters::eUnknownTemperature, "temperature");
+  geometryParametersMap.insert_or_assign(GeometryParameters::eUnknownLength,
+                                         "length");
 
   // fill trafo param parameters map
-  trafoParamParametersMap.insert(TrafoParamParameters::eUnknownTX, "tx");
-  trafoParamParametersMap.insert(TrafoParamParameters::eUnknownTY, "ty");
-  trafoParamParametersMap.insert(TrafoParamParameters::eUnknownTZ, "tz");
-  trafoParamParametersMap.insert(TrafoParamParameters::eUnknownRX, "rx");
-  trafoParamParametersMap.insert(TrafoParamParameters::eUnknownRY, "ry");
-  trafoParamParametersMap.insert(TrafoParamParameters::eUnknownRZ, "rz");
-  trafoParamParametersMap.insert(TrafoParamParameters::eUnknownSX, "sx");
-  trafoParamParametersMap.insert(TrafoParamParameters::eUnknownSY, "sy");
-  trafoParamParametersMap.insert(TrafoParamParameters::eUnknownSZ, "sz");
+  trafoParamParametersMap.insert_or_assign(TrafoParamParameters::eUnknownTX,
+                                           "tx");
+  trafoParamParametersMap.insert_or_assign(TrafoParamParameters::eUnknownTY,
+                                           "ty");
+  trafoParamParametersMap.insert_or_assign(TrafoParamParameters::eUnknownTZ,
+                                           "tz");
+  trafoParamParametersMap.insert_or_assign(TrafoParamParameters::eUnknownRX,
+                                           "rx");
+  trafoParamParametersMap.insert_or_assign(TrafoParamParameters::eUnknownRY,
+                                           "ry");
+  trafoParamParametersMap.insert_or_assign(TrafoParamParameters::eUnknownRZ,
+                                           "rz");
+  trafoParamParametersMap.insert_or_assign(TrafoParamParameters::eUnknownSX,
+                                           "sx");
+  trafoParamParametersMap.insert_or_assign(TrafoParamParameters::eUnknownSY,
+                                           "sy");
+  trafoParamParametersMap.insert_or_assign(TrafoParamParameters::eUnknownSZ,
+                                           "sz");
 
   // fill actual nominal filter map
-  actualNominalFilterMap.insert(ActualNominalFilter::eFilterActualNominal,
-                                "All Features");
-  actualNominalFilterMap.insert(ActualNominalFilter::eFilterActual, "Actuals");
-  actualNominalFilterMap.insert(ActualNominalFilter::eFilterNominal,
-                                "Nominals");
+  actualNominalFilterMap.insert_or_assign(
+      ActualNominalFilter::eFilterActualNominal, "All Features");
+  actualNominalFilterMap.insert_or_assign(ActualNominalFilter::eFilterActual,
+                                          "Actuals");
+  actualNominalFilterMap.insert_or_assign(ActualNominalFilter::eFilterNominal,
+                                          "Nominals");
 
   // fill material maps
-  materialStringsMap.insert(MaterialsTempComp::eMaterialSteel, "steel");
-  materialStringsMap.insert(MaterialsTempComp::eMaterialAluminum, "aluminum");
-  materialStringsMap.insert(MaterialsTempComp::eMaterialPlumb, "plumb");
-  materialStringsMap.insert(MaterialsTempComp::eMaterialIron, "iron");
-  materialStringsMap.insert(MaterialsTempComp::eMaterialGrayCastIron,
-                            "gray cast iron");
-  materialStringsMap.insert(MaterialsTempComp::eMaterialCopper, "copper");
-  materialStringsMap.insert(MaterialsTempComp::eMaterialBrass, "brass");
-  materialStringsMap.insert(MaterialsTempComp::eMaterialZinc, "zinc");
-  materialStringsMap.insert(MaterialsTempComp::eMaterialPlatinum, "platinum");
-  materialStringsMap.insert(MaterialsTempComp::eMaterialConcrete, "concrete");
-  materialStringsMap.insert(MaterialsTempComp::eMaterialReinforcedConcrete,
-                            "reinforced concrete");
+  materialStringsMap.insert_or_assign(MaterialsTempComp::eMaterialSteel,
+                                      "steel");
+  materialStringsMap.insert_or_assign(MaterialsTempComp::eMaterialAluminum,
+                                      "aluminum");
+  materialStringsMap.insert_or_assign(MaterialsTempComp::eMaterialPlumb,
+                                      "plumb");
+  materialStringsMap.insert_or_assign(MaterialsTempComp::eMaterialIron, "iron");
+  materialStringsMap.insert_or_assign(MaterialsTempComp::eMaterialGrayCastIron,
+                                      "gray cast iron");
+  materialStringsMap.insert_or_assign(MaterialsTempComp::eMaterialCopper,
+                                      "copper");
+  materialStringsMap.insert_or_assign(MaterialsTempComp::eMaterialBrass,
+                                      "brass");
+  materialStringsMap.insert_or_assign(MaterialsTempComp::eMaterialZinc, "zinc");
+  materialStringsMap.insert_or_assign(MaterialsTempComp::eMaterialPlatinum,
+                                      "platinum");
+  materialStringsMap.insert_or_assign(MaterialsTempComp::eMaterialConcrete,
+                                      "concrete");
+  materialStringsMap.insert_or_assign(
+      MaterialsTempComp::eMaterialReinforcedConcrete, "reinforced concrete");
 
-  materialValuesMap.insert(MaterialsTempComp::eMaterialSteel, 0.00001139);
-  materialValuesMap.insert(MaterialsTempComp::eMaterialAluminum, 0.000024);
-  materialValuesMap.insert(MaterialsTempComp::eMaterialPlumb, 0.000030);
-  materialValuesMap.insert(MaterialsTempComp::eMaterialIron, 0.000012);
-  materialValuesMap.insert(MaterialsTempComp::eMaterialGrayCastIron, 0.000009);
-  materialValuesMap.insert(MaterialsTempComp::eMaterialCopper, 0.000017);
-  materialValuesMap.insert(MaterialsTempComp::eMaterialBrass, 0.000018);
-  materialValuesMap.insert(MaterialsTempComp::eMaterialZinc, 0.000027);
-  materialValuesMap.insert(MaterialsTempComp::eMaterialPlatinum, 0.000009);
-  materialValuesMap.insert(MaterialsTempComp::eMaterialConcrete, 0.000012);
-  materialValuesMap.insert(MaterialsTempComp::eMaterialReinforcedConcrete,
-                           0.000013);
+  materialValuesMap.insert_or_assign(MaterialsTempComp::eMaterialSteel,
+                                     0.00001139);
+  materialValuesMap.insert_or_assign(MaterialsTempComp::eMaterialAluminum,
+                                     0.000024);
+  materialValuesMap.insert_or_assign(MaterialsTempComp::eMaterialPlumb,
+                                     0.000030);
+  materialValuesMap.insert_or_assign(MaterialsTempComp::eMaterialIron,
+                                     0.000012);
+  materialValuesMap.insert_or_assign(MaterialsTempComp::eMaterialGrayCastIron,
+                                     0.000009);
+  materialValuesMap.insert_or_assign(MaterialsTempComp::eMaterialCopper,
+                                     0.000017);
+  materialValuesMap.insert_or_assign(MaterialsTempComp::eMaterialBrass,
+                                     0.000018);
+  materialValuesMap.insert_or_assign(MaterialsTempComp::eMaterialZinc,
+                                     0.000027);
+  materialValuesMap.insert_or_assign(MaterialsTempComp::eMaterialPlatinum,
+                                     0.000009);
+  materialValuesMap.insert_or_assign(MaterialsTempComp::eMaterialConcrete,
+                                     0.000012);
+  materialValuesMap.insert_or_assign(
+      MaterialsTempComp::eMaterialReinforcedConcrete, 0.000013);
 
   // ########################################################################
   // DISPLAY NAMES
@@ -663,188 +840,225 @@ void init() {
   // ########################################################################
 
   // elementTypesDisplayMap
-  elementTypesDisplayMap.insert(ElementTypes::eCircleElement, "Circle");
-  elementTypesDisplayMap.insert(ElementTypes::eConeElement, "Cone");
-  elementTypesDisplayMap.insert(ElementTypes::eCylinderElement, "Cylinder");
-  elementTypesDisplayMap.insert(ElementTypes::eEllipseElement, "Ellipse");
-  elementTypesDisplayMap.insert(ElementTypes::eEllipsoidElement, "Ellipsoid");
-  elementTypesDisplayMap.insert(ElementTypes::eHyperboloidElement,
-                                "Hyperboloid");
-  elementTypesDisplayMap.insert(ElementTypes::eLineElement, "Line");
-  elementTypesDisplayMap.insert(ElementTypes::eNurbsElement, "Nurbs");
-  elementTypesDisplayMap.insert(ElementTypes::eParaboloidElement, "Paraboloid");
-  elementTypesDisplayMap.insert(ElementTypes::ePlaneElement, "Plane");
-  elementTypesDisplayMap.insert(ElementTypes::ePointElement, "Point");
-  elementTypesDisplayMap.insert(ElementTypes::ePointCloudElement,
-                                "Point Cloud");
-  elementTypesDisplayMap.insert(ElementTypes::eScalarEntityAngleElement,
-                                "Angle");
-  elementTypesDisplayMap.insert(ElementTypes::eScalarEntityDistanceElement,
-                                "Distance");
-  elementTypesDisplayMap.insert(
+  elementTypesDisplayMap.insert_or_assign(ElementTypes::eCircleElement,
+                                          "Circle");
+  elementTypesDisplayMap.insert_or_assign(ElementTypes::eConeElement, "Cone");
+  elementTypesDisplayMap.insert_or_assign(ElementTypes::eCylinderElement,
+                                          "Cylinder");
+  elementTypesDisplayMap.insert_or_assign(ElementTypes::eEllipseElement,
+                                          "Ellipse");
+  elementTypesDisplayMap.insert_or_assign(ElementTypes::eEllipsoidElement,
+                                          "Ellipsoid");
+  elementTypesDisplayMap.insert_or_assign(ElementTypes::eHyperboloidElement,
+                                          "Hyperboloid");
+  elementTypesDisplayMap.insert_or_assign(ElementTypes::eLineElement, "Line");
+  elementTypesDisplayMap.insert_or_assign(ElementTypes::eNurbsElement, "Nurbs");
+  elementTypesDisplayMap.insert_or_assign(ElementTypes::eParaboloidElement,
+                                          "Paraboloid");
+  elementTypesDisplayMap.insert_or_assign(ElementTypes::ePlaneElement, "Plane");
+  elementTypesDisplayMap.insert_or_assign(ElementTypes::ePointElement, "Point");
+  elementTypesDisplayMap.insert_or_assign(ElementTypes::ePointCloudElement,
+                                          "Point Cloud");
+  elementTypesDisplayMap.insert_or_assign(
+      ElementTypes::eScalarEntityAngleElement, "Angle");
+  elementTypesDisplayMap.insert_or_assign(
+      ElementTypes::eScalarEntityDistanceElement, "Distance");
+  elementTypesDisplayMap.insert_or_assign(
       ElementTypes::eScalarEntityMeasurementSeriesElement,
       "Measurement Series");
-  elementTypesDisplayMap.insert(ElementTypes::eScalarEntityTemperatureElement,
-                                "Temperature");
-  elementTypesDisplayMap.insert(ElementTypes::eSlottedHoleElement,
-                                "Slotted Hole");
-  elementTypesDisplayMap.insert(ElementTypes::eSphereElement, "Sphere");
-  elementTypesDisplayMap.insert(ElementTypes::eTorusElement, "Torus");
-  elementTypesDisplayMap.insert(ElementTypes::eDirectionElement, "Direction");
-  elementTypesDisplayMap.insert(ElementTypes::ePositionElement, "Position");
-  elementTypesDisplayMap.insert(ElementTypes::eRadiusElement, "Radius");
-  elementTypesDisplayMap.insert(ElementTypes::eCoordinateSystemElement,
-                                "Coordinate System");
-  elementTypesDisplayMap.insert(ElementTypes::eStationElement, "Station");
-  elementTypesDisplayMap.insert(ElementTypes::eTrafoParamElement,
-                                "Transformation Parameters");
-  elementTypesDisplayMap.insert(ElementTypes::eObservationElement,
-                                "Observation");
-  elementTypesDisplayMap.insert(ElementTypes::eReadingCartesianElement,
-                                "Cartesian Reading");
-  elementTypesDisplayMap.insert(ElementTypes::eReadingPolarElement,
-                                "Polar Reading");
-  elementTypesDisplayMap.insert(ElementTypes::eReadingDistanceElement,
-                                "Distance Reading");
-  elementTypesDisplayMap.insert(ElementTypes::eReadingDirectionElement,
-                                "Direction Reading");
-  elementTypesDisplayMap.insert(ElementTypes::eReadingTemperatureElement,
-                                "Temperature Reading");
-  elementTypesDisplayMap.insert(ElementTypes::eReadingLevelElement,
-                                "Level Reading");
-  elementTypesDisplayMap.insert(ElementTypes::eLevelElement, "Level");
-  elementTypesDisplayMap.insert(ElementTypes::ePointCollectionElement,
-                                "Point Collection");
+  elementTypesDisplayMap.insert_or_assign(
+      ElementTypes::eScalarEntityTemperatureElement, "Temperature");
+  elementTypesDisplayMap.insert_or_assign(ElementTypes::eSlottedHoleElement,
+                                          "Slotted Hole");
+  elementTypesDisplayMap.insert_or_assign(ElementTypes::eSphereElement,
+                                          "Sphere");
+  elementTypesDisplayMap.insert_or_assign(ElementTypes::eTorusElement, "Torus");
+  elementTypesDisplayMap.insert_or_assign(ElementTypes::eDirectionElement,
+                                          "Direction");
+  elementTypesDisplayMap.insert_or_assign(ElementTypes::ePositionElement,
+                                          "Position");
+  elementTypesDisplayMap.insert_or_assign(ElementTypes::eRadiusElement,
+                                          "Radius");
+  elementTypesDisplayMap.insert_or_assign(
+      ElementTypes::eCoordinateSystemElement, "Coordinate System");
+  elementTypesDisplayMap.insert_or_assign(ElementTypes::eStationElement,
+                                          "Station");
+  elementTypesDisplayMap.insert_or_assign(ElementTypes::eTrafoParamElement,
+                                          "Transformation Parameters");
+  elementTypesDisplayMap.insert_or_assign(ElementTypes::eObservationElement,
+                                          "Observation");
+  elementTypesDisplayMap.insert_or_assign(
+      ElementTypes::eReadingCartesianElement, "Cartesian Reading");
+  elementTypesDisplayMap.insert_or_assign(ElementTypes::eReadingPolarElement,
+                                          "Polar Reading");
+  elementTypesDisplayMap.insert_or_assign(ElementTypes::eReadingDistanceElement,
+                                          "Distance Reading");
+  elementTypesDisplayMap.insert_or_assign(
+      ElementTypes::eReadingDirectionElement, "Direction Reading");
+  elementTypesDisplayMap.insert_or_assign(
+      ElementTypes::eReadingTemperatureElement, "Temperature Reading");
+  elementTypesDisplayMap.insert_or_assign(ElementTypes::eReadingLevelElement,
+                                          "Level Reading");
+  elementTypesDisplayMap.insert_or_assign(ElementTypes::eLevelElement, "Level");
+  elementTypesDisplayMap.insert_or_assign(ElementTypes::ePointCollectionElement,
+                                          "Point Collection");
 
   // elementTypesDisplayPluralMap
-  elementTypesDisplayPluralMap.insert(ElementTypes::eCircleElement, "Circles");
-  elementTypesDisplayPluralMap.insert(ElementTypes::eConeElement, "Cones");
-  elementTypesDisplayPluralMap.insert(ElementTypes::eCylinderElement,
-                                      "Cylinders");
-  elementTypesDisplayPluralMap.insert(ElementTypes::eEllipseElement,
-                                      "Ellipses");
-  elementTypesDisplayPluralMap.insert(ElementTypes::eEllipsoidElement,
-                                      "Ellipsoids");
-  elementTypesDisplayPluralMap.insert(ElementTypes::eHyperboloidElement,
-                                      "Hyperboloids");
-  elementTypesDisplayPluralMap.insert(ElementTypes::eLineElement, "Lines");
-  elementTypesDisplayPluralMap.insert(ElementTypes::eNurbsElement, "Nurbs");
-  elementTypesDisplayPluralMap.insert(ElementTypes::eParaboloidElement,
-                                      "Paraboloids");
-  elementTypesDisplayPluralMap.insert(ElementTypes::ePlaneElement, "Planes");
-  elementTypesDisplayPluralMap.insert(ElementTypes::ePointElement, "Points");
-  elementTypesDisplayPluralMap.insert(ElementTypes::ePointCloudElement,
-                                      "Point Clouds");
-  elementTypesDisplayPluralMap.insert(ElementTypes::eScalarEntityAngleElement,
-                                      "Angles");
-  elementTypesDisplayPluralMap.insert(
+  elementTypesDisplayPluralMap.insert_or_assign(ElementTypes::eCircleElement,
+                                                "Circles");
+  elementTypesDisplayPluralMap.insert_or_assign(ElementTypes::eConeElement,
+                                                "Cones");
+  elementTypesDisplayPluralMap.insert_or_assign(ElementTypes::eCylinderElement,
+                                                "Cylinders");
+  elementTypesDisplayPluralMap.insert_or_assign(ElementTypes::eEllipseElement,
+                                                "Ellipses");
+  elementTypesDisplayPluralMap.insert_or_assign(ElementTypes::eEllipsoidElement,
+                                                "Ellipsoids");
+  elementTypesDisplayPluralMap.insert_or_assign(
+      ElementTypes::eHyperboloidElement, "Hyperboloids");
+  elementTypesDisplayPluralMap.insert_or_assign(ElementTypes::eLineElement,
+                                                "Lines");
+  elementTypesDisplayPluralMap.insert_or_assign(ElementTypes::eNurbsElement,
+                                                "Nurbs");
+  elementTypesDisplayPluralMap.insert_or_assign(
+      ElementTypes::eParaboloidElement, "Paraboloids");
+  elementTypesDisplayPluralMap.insert_or_assign(ElementTypes::ePlaneElement,
+                                                "Planes");
+  elementTypesDisplayPluralMap.insert_or_assign(ElementTypes::ePointElement,
+                                                "Points");
+  elementTypesDisplayPluralMap.insert_or_assign(
+      ElementTypes::ePointCloudElement, "Point Clouds");
+  elementTypesDisplayPluralMap.insert_or_assign(
+      ElementTypes::eScalarEntityAngleElement, "Angles");
+  elementTypesDisplayPluralMap.insert_or_assign(
       ElementTypes::eScalarEntityDistanceElement, "Distances");
-  elementTypesDisplayPluralMap.insert(
+  elementTypesDisplayPluralMap.insert_or_assign(
       ElementTypes::eScalarEntityMeasurementSeriesElement,
       "Measurement Series");
-  elementTypesDisplayPluralMap.insert(
+  elementTypesDisplayPluralMap.insert_or_assign(
       ElementTypes::eScalarEntityTemperatureElement, "Temperatures");
-  elementTypesDisplayPluralMap.insert(ElementTypes::eSlottedHoleElement,
-                                      "Slotted Holes");
-  elementTypesDisplayPluralMap.insert(ElementTypes::eSphereElement, "Spheres");
-  elementTypesDisplayPluralMap.insert(ElementTypes::eTorusElement, "Tori");
-  elementTypesDisplayPluralMap.insert(ElementTypes::eDirectionElement,
-                                      "Directions");
-  elementTypesDisplayPluralMap.insert(ElementTypes::ePositionElement,
-                                      "Positions");
-  elementTypesDisplayPluralMap.insert(ElementTypes::eRadiusElement, "Radii");
-  elementTypesDisplayPluralMap.insert(ElementTypes::eCoordinateSystemElement,
-                                      "Coordinate Systems");
-  elementTypesDisplayPluralMap.insert(ElementTypes::eStationElement,
-                                      "Stations");
-  elementTypesDisplayPluralMap.insert(ElementTypes::eTrafoParamElement,
-                                      "Transformation Parameters");
-  elementTypesDisplayPluralMap.insert(ElementTypes::eObservationElement,
-                                      "Observations");
-  elementTypesDisplayPluralMap.insert(ElementTypes::eReadingCartesianElement,
-                                      "Cartesian Readings");
-  elementTypesDisplayPluralMap.insert(ElementTypes::eReadingPolarElement,
-                                      "Polar Readings");
-  elementTypesDisplayPluralMap.insert(ElementTypes::eReadingDistanceElement,
-                                      "Distance Readings");
-  elementTypesDisplayPluralMap.insert(ElementTypes::eReadingDirectionElement,
-                                      "Direction Readings");
-  elementTypesDisplayPluralMap.insert(ElementTypes::eReadingTemperatureElement,
-                                      "Temperature Readings");
-  elementTypesDisplayPluralMap.insert(ElementTypes::eReadingLevelElement,
-                                      "Level Readings");
-  elementTypesDisplayPluralMap.insert(ElementTypes::ePointCollectionElement,
-                                      "Point Collections");
+  elementTypesDisplayPluralMap.insert_or_assign(
+      ElementTypes::eSlottedHoleElement, "Slotted Holes");
+  elementTypesDisplayPluralMap.insert_or_assign(ElementTypes::eSphereElement,
+                                                "Spheres");
+  elementTypesDisplayPluralMap.insert_or_assign(ElementTypes::eTorusElement,
+                                                "Tori");
+  elementTypesDisplayPluralMap.insert_or_assign(ElementTypes::eDirectionElement,
+                                                "Directions");
+  elementTypesDisplayPluralMap.insert_or_assign(ElementTypes::ePositionElement,
+                                                "Positions");
+  elementTypesDisplayPluralMap.insert_or_assign(ElementTypes::eRadiusElement,
+                                                "Radii");
+  elementTypesDisplayPluralMap.insert_or_assign(
+      ElementTypes::eCoordinateSystemElement, "Coordinate Systems");
+  elementTypesDisplayPluralMap.insert_or_assign(ElementTypes::eStationElement,
+                                                "Stations");
+  elementTypesDisplayPluralMap.insert_or_assign(
+      ElementTypes::eTrafoParamElement, "Transformation Parameters");
+  elementTypesDisplayPluralMap.insert_or_assign(
+      ElementTypes::eObservationElement, "Observations");
+  elementTypesDisplayPluralMap.insert_or_assign(
+      ElementTypes::eReadingCartesianElement, "Cartesian Readings");
+  elementTypesDisplayPluralMap.insert_or_assign(
+      ElementTypes::eReadingPolarElement, "Polar Readings");
+  elementTypesDisplayPluralMap.insert_or_assign(
+      ElementTypes::eReadingDistanceElement, "Distance Readings");
+  elementTypesDisplayPluralMap.insert_or_assign(
+      ElementTypes::eReadingDirectionElement, "Direction Readings");
+  elementTypesDisplayPluralMap.insert_or_assign(
+      ElementTypes::eReadingTemperatureElement, "Temperature Readings");
+  elementTypesDisplayPluralMap.insert_or_assign(
+      ElementTypes::eReadingLevelElement, "Level Readings");
+  elementTypesDisplayPluralMap.insert_or_assign(
+      ElementTypes::ePointCollectionElement, "Point Collections");
 
   // featureTypesDisplayMap
-  featureTypesDisplayMap.insert(FeatureTypes::eCircleFeature, "Circle");
-  featureTypesDisplayMap.insert(FeatureTypes::eConeFeature, "Cone");
-  featureTypesDisplayMap.insert(FeatureTypes::eCylinderFeature, "Cylinder");
-  featureTypesDisplayMap.insert(FeatureTypes::eEllipseFeature, "Ellipse");
-  featureTypesDisplayMap.insert(FeatureTypes::eEllipsoidFeature, "Ellipsoid");
-  featureTypesDisplayMap.insert(FeatureTypes::eHyperboloidFeature,
-                                "Hyperboloid");
-  featureTypesDisplayMap.insert(FeatureTypes::eLineFeature, "Line");
-  featureTypesDisplayMap.insert(FeatureTypes::eNurbsFeature, "Nurbs");
-  featureTypesDisplayMap.insert(FeatureTypes::eParaboloidFeature, "Paraboloid");
-  featureTypesDisplayMap.insert(FeatureTypes::ePlaneFeature, "Plane");
-  featureTypesDisplayMap.insert(FeatureTypes::ePointFeature, "Point");
-  featureTypesDisplayMap.insert(FeatureTypes::ePointCloudFeature,
-                                "Point Cloud");
-  featureTypesDisplayMap.insert(FeatureTypes::eScalarEntityAngleFeature,
-                                "Angle");
-  featureTypesDisplayMap.insert(FeatureTypes::eScalarEntityDistanceFeature,
-                                "Distance");
-  featureTypesDisplayMap.insert(
+  featureTypesDisplayMap.insert_or_assign(FeatureTypes::eCircleFeature,
+                                          "Circle");
+  featureTypesDisplayMap.insert_or_assign(FeatureTypes::eConeFeature, "Cone");
+  featureTypesDisplayMap.insert_or_assign(FeatureTypes::eCylinderFeature,
+                                          "Cylinder");
+  featureTypesDisplayMap.insert_or_assign(FeatureTypes::eEllipseFeature,
+                                          "Ellipse");
+  featureTypesDisplayMap.insert_or_assign(FeatureTypes::eEllipsoidFeature,
+                                          "Ellipsoid");
+  featureTypesDisplayMap.insert_or_assign(FeatureTypes::eHyperboloidFeature,
+                                          "Hyperboloid");
+  featureTypesDisplayMap.insert_or_assign(FeatureTypes::eLineFeature, "Line");
+  featureTypesDisplayMap.insert_or_assign(FeatureTypes::eNurbsFeature, "Nurbs");
+  featureTypesDisplayMap.insert_or_assign(FeatureTypes::eParaboloidFeature,
+                                          "Paraboloid");
+  featureTypesDisplayMap.insert_or_assign(FeatureTypes::ePlaneFeature, "Plane");
+  featureTypesDisplayMap.insert_or_assign(FeatureTypes::ePointFeature, "Point");
+  featureTypesDisplayMap.insert_or_assign(FeatureTypes::ePointCloudFeature,
+                                          "Point Cloud");
+  featureTypesDisplayMap.insert_or_assign(
+      FeatureTypes::eScalarEntityAngleFeature, "Angle");
+  featureTypesDisplayMap.insert_or_assign(
+      FeatureTypes::eScalarEntityDistanceFeature, "Distance");
+  featureTypesDisplayMap.insert_or_assign(
       FeatureTypes::eScalarEntityMeasurementSeriesFeature,
       "Measurement Series");
-  featureTypesDisplayMap.insert(FeatureTypes::eScalarEntityTemperatureFeature,
-                                "Temperature");
-  featureTypesDisplayMap.insert(FeatureTypes::eSlottedHoleFeature,
-                                "Slotted Hole");
-  featureTypesDisplayMap.insert(FeatureTypes::eSphereFeature, "Sphere");
-  featureTypesDisplayMap.insert(FeatureTypes::eTorusFeature, "Torus");
-  featureTypesDisplayMap.insert(FeatureTypes::eCoordinateSystemFeature,
-                                "Coordinate System");
-  featureTypesDisplayMap.insert(FeatureTypes::eStationFeature, "Station");
-  featureTypesDisplayMap.insert(FeatureTypes::eTrafoParamFeature,
-                                "Transformation Parameters");
-  featureTypesDisplayMap.insert(FeatureTypes::eLevelFeature, "Level");
-  featureTypesDisplayMap.insert(FeatureTypes::eGroupFeature, "Group");
-  featureTypesDisplayMap.insert(FeatureTypes::ePointGroupFeature,
-                                "Point Group");
+  featureTypesDisplayMap.insert_or_assign(
+      FeatureTypes::eScalarEntityTemperatureFeature, "Temperature");
+  featureTypesDisplayMap.insert_or_assign(FeatureTypes::eSlottedHoleFeature,
+                                          "Slotted Hole");
+  featureTypesDisplayMap.insert_or_assign(FeatureTypes::eSphereFeature,
+                                          "Sphere");
+  featureTypesDisplayMap.insert_or_assign(FeatureTypes::eTorusFeature, "Torus");
+  featureTypesDisplayMap.insert_or_assign(
+      FeatureTypes::eCoordinateSystemFeature, "Coordinate System");
+  featureTypesDisplayMap.insert_or_assign(FeatureTypes::eStationFeature,
+                                          "Station");
+  featureTypesDisplayMap.insert_or_assign(FeatureTypes::eTrafoParamFeature,
+                                          "Transformation Parameters");
+  featureTypesDisplayMap.insert_or_assign(FeatureTypes::eLevelFeature, "Level");
+  featureTypesDisplayMap.insert_or_assign(FeatureTypes::eGroupFeature, "Group");
+  featureTypesDisplayMap.insert_or_assign(FeatureTypes::ePointGroupFeature,
+                                          "Point Group");
 
   // geometryTypesDisplayMap
-  geometryTypesDisplayMap.insert(GeometryTypes::eCircleGeometry, "Circle");
-  geometryTypesDisplayMap.insert(GeometryTypes::eConeGeometry, "Cone");
-  geometryTypesDisplayMap.insert(GeometryTypes::eCylinderGeometry, "Cylinder");
-  geometryTypesDisplayMap.insert(GeometryTypes::eEllipseGeometry, "Ellipse");
-  geometryTypesDisplayMap.insert(GeometryTypes::eEllipsoidGeometry,
-                                 "Ellipsoid");
-  geometryTypesDisplayMap.insert(GeometryTypes::eHyperboloidGeometry,
-                                 "Hyperboloid");
-  geometryTypesDisplayMap.insert(GeometryTypes::eLineGeometry, "Line");
-  geometryTypesDisplayMap.insert(GeometryTypes::eNurbsGeometry, "Nurbs");
-  geometryTypesDisplayMap.insert(GeometryTypes::eParaboloidGeometry,
-                                 "Paraboloid");
-  geometryTypesDisplayMap.insert(GeometryTypes::ePlaneGeometry, "Plane");
-  geometryTypesDisplayMap.insert(GeometryTypes::ePointGeometry, "Point");
-  geometryTypesDisplayMap.insert(GeometryTypes::ePointCloudGeometry,
-                                 "Point Cloud");
-  geometryTypesDisplayMap.insert(GeometryTypes::eScalarEntityAngleGeometry,
-                                 "Angle");
-  geometryTypesDisplayMap.insert(GeometryTypes::eScalarEntityDistanceGeometry,
-                                 "Distance");
-  geometryTypesDisplayMap.insert(
+  geometryTypesDisplayMap.insert_or_assign(GeometryTypes::eCircleGeometry,
+                                           "Circle");
+  geometryTypesDisplayMap.insert_or_assign(GeometryTypes::eConeGeometry,
+                                           "Cone");
+  geometryTypesDisplayMap.insert_or_assign(GeometryTypes::eCylinderGeometry,
+                                           "Cylinder");
+  geometryTypesDisplayMap.insert_or_assign(GeometryTypes::eEllipseGeometry,
+                                           "Ellipse");
+  geometryTypesDisplayMap.insert_or_assign(GeometryTypes::eEllipsoidGeometry,
+                                           "Ellipsoid");
+  geometryTypesDisplayMap.insert_or_assign(GeometryTypes::eHyperboloidGeometry,
+                                           "Hyperboloid");
+  geometryTypesDisplayMap.insert_or_assign(GeometryTypes::eLineGeometry,
+                                           "Line");
+  geometryTypesDisplayMap.insert_or_assign(GeometryTypes::eNurbsGeometry,
+                                           "Nurbs");
+  geometryTypesDisplayMap.insert_or_assign(GeometryTypes::eParaboloidGeometry,
+                                           "Paraboloid");
+  geometryTypesDisplayMap.insert_or_assign(GeometryTypes::ePlaneGeometry,
+                                           "Plane");
+  geometryTypesDisplayMap.insert_or_assign(GeometryTypes::ePointGeometry,
+                                           "Point");
+  geometryTypesDisplayMap.insert_or_assign(GeometryTypes::ePointCloudGeometry,
+                                           "Point Cloud");
+  geometryTypesDisplayMap.insert_or_assign(
+      GeometryTypes::eScalarEntityAngleGeometry, "Angle");
+  geometryTypesDisplayMap.insert_or_assign(
+      GeometryTypes::eScalarEntityDistanceGeometry, "Distance");
+  geometryTypesDisplayMap.insert_or_assign(
       GeometryTypes::eScalarEntityMeasurementSeriesGeometry,
       "Measurement Series");
-  geometryTypesDisplayMap.insert(
+  geometryTypesDisplayMap.insert_or_assign(
       GeometryTypes::eScalarEntityTemperatureGeometry, "Temperature");
-  geometryTypesDisplayMap.insert(GeometryTypes::eSlottedHoleGeometry,
-                                 "Slotted Hole");
-  geometryTypesDisplayMap.insert(GeometryTypes::eSphereGeometry, "Sphere");
-  geometryTypesDisplayMap.insert(GeometryTypes::eTorusGeometry, "Torus");
-  geometryTypesDisplayMap.insert(GeometryTypes::ePlaneLevelGeometry, "Level");
+  geometryTypesDisplayMap.insert_or_assign(GeometryTypes::eSlottedHoleGeometry,
+                                           "Slotted Hole");
+  geometryTypesDisplayMap.insert_or_assign(GeometryTypes::eSphereGeometry,
+                                           "Sphere");
+  geometryTypesDisplayMap.insert_or_assign(GeometryTypes::eTorusGeometry,
+                                           "Torus");
+  geometryTypesDisplayMap.insert_or_assign(GeometryTypes::ePlaneLevelGeometry,
+                                           "Level");
 
   isInit = true;
 }
@@ -859,39 +1073,39 @@ void init() {
  * \brief getAvailableElementTypes
  * \return
  */
-QList<ElementTypes> getAvailableElementTypes() {
+std::vector<ElementTypes> getAvailableElementTypes() {
   // fill helper maps if not yet done
   if (!internal::isInit) {
     internal::init();
   }
 
-  return internal::elementTypesMap.keys();
+  return oi::keys(internal::elementTypesMap);
 }
 
 /*!
  * \brief getAvailableFeatureTypes
  * \return
  */
-QList<FeatureTypes> getAvailableFeatureTypes() {
+std::vector<FeatureTypes> getAvailableFeatureTypes() {
   // fill helper maps if not yet done
   if (!internal::isInit) {
     internal::init();
   }
 
-  return internal::featureTypesMap.keys();
+  return oi::keys(internal::featureTypesMap);
 }
 
 /*!
  * \brief getAvailableGeometryTypes
  * \return
  */
-QList<GeometryTypes> getAvailableGeometryTypes() {
+std::vector<GeometryTypes> getAvailableGeometryTypes() {
   // fill helper maps if not yet done
   if (!internal::isInit) {
     internal::init();
   }
 
-  return internal::geometryTypesMap.keys();
+  return oi::keys(internal::geometryTypesMap);
 }
 
 /*!
@@ -943,10 +1157,10 @@ ElementTypes getElementTypeEnum(const QString& name) {
 
   // get the corresponding element enum value
   ElementTypes type =
-      internal::elementTypesMap.key(name, ElementTypes::eUndefinedElement);
+      oi::key(internal::elementTypesMap, name, ElementTypes::eUndefinedElement);
   if (type == ElementTypes::eUndefinedElement) {
-    type = internal::elementTypesPluralMap.key(name,
-                                               ElementTypes::eUndefinedElement);
+    type = oi::key(internal::elementTypesPluralMap, name,
+                   ElementTypes::eUndefinedElement);
     ;
   }
 
@@ -1073,7 +1287,8 @@ FeatureTypes getFeatureTypeEnum(const QString& name) {
   }
 
   // get the corresponding feature enum value
-  return internal::featureTypesMap.key(name, FeatureTypes::eUndefinedFeature);
+  return oi::key(internal::featureTypesMap, name,
+                 FeatureTypes::eUndefinedFeature);
 }
 
 /*!
@@ -1106,8 +1321,8 @@ GeometryTypes getGeometryTypeEnum(const QString& name) {
   }
 
   // get the corresponding geometry enum value
-  return internal::geometryTypesMap.key(name,
-                                        GeometryTypes::eUndefinedGeometry);
+  return oi::key(internal::geometryTypesMap, name,
+                 GeometryTypes::eUndefinedGeometry);
 }
 
 /*!
@@ -1397,7 +1612,8 @@ ReadingTypes getReadingTypeEnum(const QString& name) {
   }
 
   // get the corresponding reading enum value
-  return internal::readingTypesMap.key(name, ReadingTypes::eUndefinedReading);
+  return oi::key(internal::readingTypesMap, name,
+                 ReadingTypes::eUndefinedReading);
 }
 
 /*!
@@ -1405,7 +1621,7 @@ ReadingTypes getReadingTypeEnum(const QString& name) {
  * Returns a list of enum values (feature attributes and trafo param attributes)
  * \return
  */
-const QList<int>& getFeatureDisplayAttributes() {
+const std::vector<int>& getFeatureDisplayAttributes() {
   // fill helper maps if not yet done
   if (!internal::isInit) {
     internal::init();
@@ -1418,7 +1634,8 @@ const QList<int>& getFeatureDisplayAttributes() {
  * \brief getObservationDisplayAttributes
  * \return
  */
-const QList<ObservationDisplayAttributes>& getObservationDisplayAttributes() {
+const std::vector<ObservationDisplayAttributes>&
+getObservationDisplayAttributes() {
   // fill helper maps if not yet done
   if (!internal::isInit) {
     internal::init();
@@ -1431,7 +1648,7 @@ const QList<ObservationDisplayAttributes>& getObservationDisplayAttributes() {
  * \brief getReadingDisplayAttributes
  * \return
  */
-const QList<ReadingDisplayAttributes>& getReadingDisplayAttributes() {
+const std::vector<ReadingDisplayAttributes>& getReadingDisplayAttributes() {
   // fill helper maps if not yet done
   if (!internal::isInit) {
     internal::init();
@@ -1696,8 +1913,8 @@ ObservationDisplayAttributes getObservationDisplayAttributeEnum(
   }
 
   // get the corresponding observation enum value
-  return internal::observationDisplayAttributesMap.key(name,
-                                                       eObservationDisplayId);
+  return oi::key(internal::observationDisplayAttributesMap, name,
+                 eObservationDisplayId);
 }
 
 /*!
@@ -1712,7 +1929,8 @@ ReadingDisplayAttributes getReadingDisplayAttributeEnum(const QString& name) {
   }
 
   // get the corresponding reading enum value
-  return internal::readingDisplayAttributesMap.key(name, eReadingDisplayId);
+  return oi::key(internal::readingDisplayAttributesMap, name,
+                 eReadingDisplayId);
 }
 
 /*!
@@ -1805,7 +2023,7 @@ UnitType getUnitTypeEnum(const QString& name) {
   }
 
   // get the corresponding reading enum value
-  return internal::unitTypesMap.key(name, UnitType::eNoUnit);
+  return oi::key(internal::unitTypesMap, name, UnitType::eNoUnit);
 }
 
 /*!
@@ -1833,13 +2051,13 @@ bool almostEqual(const double& a, const double& b, const int& digits) {
  * \brief getAvailableSensorFunctions
  * \return
  */
-QList<SensorFunctions> getAvailableSensorFunctions() {
+std::vector<SensorFunctions> getAvailableSensorFunctions() {
   // fill helper maps if not yet done
   if (!internal::isInit) {
     internal::init();
   }
 
-  return internal::sensorFunctionsMap.keys();
+  return oi::keys(internal::sensorFunctionsMap);
 }
 
 /*!
@@ -1872,20 +2090,21 @@ SensorFunctions getSensorFunctionEnum(const QString& name) {
   }
 
   // get the corresponding sensor function enum value
-  return internal::sensorFunctionsMap.key(name, SensorFunctions::eInitialize);
+  return oi::key(internal::sensorFunctionsMap, name,
+                 SensorFunctions::eInitialize);
 }
 
 /*!
  * \brief getAvailableToolTypes
  * \return
  */
-QList<ToolTypes> getAvailableToolTypes() {
+std::vector<ToolTypes> getAvailableToolTypes() {
   // fill helper maps if not yet done
   if (!internal::isInit) {
     internal::init();
   }
 
-  return internal::toolTypesMap.keys();
+  return oi::keys(internal::toolTypesMap);
 }
 
 /*!
@@ -1918,20 +2137,20 @@ ToolTypes getToolTypeEnum(const QString& name) {
   }
 
   // get the corresponding tool type enum value
-  return internal::toolTypesMap.key(name, ToolTypes::eUnknownTool);
+  return oi::key(internal::toolTypesMap, name, ToolTypes::eUnknownTool);
 }
 
 /*!
  * \brief getAvailableMessageTypes
  * \return
  */
-QList<MessageTypes> getAvailableMessageTypes() {
+std::vector<MessageTypes> getAvailableMessageTypes() {
   // fill helper maps if not yet done
   if (!internal::isInit) {
     internal::init();
   }
 
-  return internal::messageTypesMap.keys();
+  return oi::keys(internal::messageTypesMap);
 }
 
 /*!
@@ -1964,20 +2183,21 @@ MessageTypes getMessageTypeEnum(const QString& name) {
   }
 
   // get the corresponding message type enum value
-  return internal::messageTypesMap.key(name, MessageTypes::eInformationMessage);
+  return oi::key(internal::messageTypesMap, name,
+                 MessageTypes::eInformationMessage);
 }
 
 /*!
  * \brief getAvailableUnknownParameters
  * \return
  */
-QList<GeometryParameters> getAvailableGeometryParameters() {
+std::vector<GeometryParameters> getAvailableGeometryParameters() {
   // fill helper maps if not yet done
   if (!internal::isInit) {
     internal::init();
   }
 
-  return internal::geometryParametersMap.keys();
+  return oi::keys(internal::geometryParametersMap);
 }
 
 /*!
@@ -2010,8 +2230,8 @@ GeometryParameters getGeometryParameterEnum(const QString& name) {
   }
 
   // get the corresponding geometry parameter enum value
-  return internal::geometryParametersMap.key(name,
-                                             GeometryParameters::eUnknownX);
+  return oi::key(internal::geometryParametersMap, name,
+                 GeometryParameters::eUnknownX);
 }
 
 /*!
@@ -2019,144 +2239,146 @@ GeometryParameters getGeometryParameterEnum(const QString& name) {
  * \param type
  * \return
  */
-QList<GeometryParameters> getGeometryParameters(const GeometryTypes& type) {
-  QList<GeometryParameters> unknownParameters;
+std::vector<GeometryParameters> getGeometryParameters(
+    const GeometryTypes& type) {
+  std::vector<GeometryParameters> unknownParameters;
 
   switch (type) {
     case GeometryTypes::eCircleGeometry:
-      unknownParameters.append(GeometryParameters::eUnknownX);
-      unknownParameters.append(GeometryParameters::eUnknownY);
-      unknownParameters.append(GeometryParameters::eUnknownZ);
-      unknownParameters.append(GeometryParameters::eUnknownPrimaryI);
-      unknownParameters.append(GeometryParameters::eUnknownPrimaryJ);
-      unknownParameters.append(GeometryParameters::eUnknownPrimaryK);
-      unknownParameters.append(GeometryParameters::eUnknownRadiusA);
+      unknownParameters.push_back(GeometryParameters::eUnknownX);
+      unknownParameters.push_back(GeometryParameters::eUnknownY);
+      unknownParameters.push_back(GeometryParameters::eUnknownZ);
+      unknownParameters.push_back(GeometryParameters::eUnknownPrimaryI);
+      unknownParameters.push_back(GeometryParameters::eUnknownPrimaryJ);
+      unknownParameters.push_back(GeometryParameters::eUnknownPrimaryK);
+      unknownParameters.push_back(GeometryParameters::eUnknownRadiusA);
       break;
     case GeometryTypes::eConeGeometry:
-      unknownParameters.append(GeometryParameters::eUnknownX);
-      unknownParameters.append(GeometryParameters::eUnknownY);
-      unknownParameters.append(GeometryParameters::eUnknownZ);
-      unknownParameters.append(GeometryParameters::eUnknownPrimaryI);
-      unknownParameters.append(GeometryParameters::eUnknownPrimaryJ);
-      unknownParameters.append(GeometryParameters::eUnknownPrimaryK);
-      unknownParameters.append(GeometryParameters::eUnknownAperture);
+      unknownParameters.push_back(GeometryParameters::eUnknownX);
+      unknownParameters.push_back(GeometryParameters::eUnknownY);
+      unknownParameters.push_back(GeometryParameters::eUnknownZ);
+      unknownParameters.push_back(GeometryParameters::eUnknownPrimaryI);
+      unknownParameters.push_back(GeometryParameters::eUnknownPrimaryJ);
+      unknownParameters.push_back(GeometryParameters::eUnknownPrimaryK);
+      unknownParameters.push_back(GeometryParameters::eUnknownAperture);
       break;
     case GeometryTypes::eCylinderGeometry:
-      unknownParameters.append(GeometryParameters::eUnknownX);
-      unknownParameters.append(GeometryParameters::eUnknownY);
-      unknownParameters.append(GeometryParameters::eUnknownZ);
-      unknownParameters.append(GeometryParameters::eUnknownPrimaryI);
-      unknownParameters.append(GeometryParameters::eUnknownPrimaryJ);
-      unknownParameters.append(GeometryParameters::eUnknownPrimaryK);
-      unknownParameters.append(GeometryParameters::eUnknownRadiusA);
+      unknownParameters.push_back(GeometryParameters::eUnknownX);
+      unknownParameters.push_back(GeometryParameters::eUnknownY);
+      unknownParameters.push_back(GeometryParameters::eUnknownZ);
+      unknownParameters.push_back(GeometryParameters::eUnknownPrimaryI);
+      unknownParameters.push_back(GeometryParameters::eUnknownPrimaryJ);
+      unknownParameters.push_back(GeometryParameters::eUnknownPrimaryK);
+      unknownParameters.push_back(GeometryParameters::eUnknownRadiusA);
       break;
     case GeometryTypes::eEllipseGeometry:
-      unknownParameters.append(GeometryParameters::eUnknownX);
-      unknownParameters.append(GeometryParameters::eUnknownY);
-      unknownParameters.append(GeometryParameters::eUnknownZ);
-      unknownParameters.append(GeometryParameters::eUnknownPrimaryI);
-      unknownParameters.append(GeometryParameters::eUnknownPrimaryJ);
-      unknownParameters.append(GeometryParameters::eUnknownPrimaryK);
-      unknownParameters.append(GeometryParameters::eUnknownA);
-      unknownParameters.append(GeometryParameters::eUnknownB);
-      unknownParameters.append(GeometryParameters::eUnknownSecondaryI);
-      unknownParameters.append(GeometryParameters::eUnknownSecondaryJ);
-      unknownParameters.append(GeometryParameters::eUnknownSecondaryK);
+      unknownParameters.push_back(GeometryParameters::eUnknownX);
+      unknownParameters.push_back(GeometryParameters::eUnknownY);
+      unknownParameters.push_back(GeometryParameters::eUnknownZ);
+      unknownParameters.push_back(GeometryParameters::eUnknownPrimaryI);
+      unknownParameters.push_back(GeometryParameters::eUnknownPrimaryJ);
+      unknownParameters.push_back(GeometryParameters::eUnknownPrimaryK);
+      unknownParameters.push_back(GeometryParameters::eUnknownA);
+      unknownParameters.push_back(GeometryParameters::eUnknownB);
+      unknownParameters.push_back(GeometryParameters::eUnknownSecondaryI);
+      unknownParameters.push_back(GeometryParameters::eUnknownSecondaryJ);
+      unknownParameters.push_back(GeometryParameters::eUnknownSecondaryK);
       break;
     case GeometryTypes::eEllipsoidGeometry:
-      unknownParameters.append(GeometryParameters::eUnknownX);
-      unknownParameters.append(GeometryParameters::eUnknownY);
-      unknownParameters.append(GeometryParameters::eUnknownZ);
-      unknownParameters.append(GeometryParameters::eUnknownPrimaryI);
-      unknownParameters.append(GeometryParameters::eUnknownPrimaryJ);
-      unknownParameters.append(GeometryParameters::eUnknownPrimaryK);
-      unknownParameters.append(GeometryParameters::eUnknownA);
-      unknownParameters.append(GeometryParameters::eUnknownB);
+      unknownParameters.push_back(GeometryParameters::eUnknownX);
+      unknownParameters.push_back(GeometryParameters::eUnknownY);
+      unknownParameters.push_back(GeometryParameters::eUnknownZ);
+      unknownParameters.push_back(GeometryParameters::eUnknownPrimaryI);
+      unknownParameters.push_back(GeometryParameters::eUnknownPrimaryJ);
+      unknownParameters.push_back(GeometryParameters::eUnknownPrimaryK);
+      unknownParameters.push_back(GeometryParameters::eUnknownA);
+      unknownParameters.push_back(GeometryParameters::eUnknownB);
       break;
     case GeometryTypes::eHyperboloidGeometry:
-      unknownParameters.append(GeometryParameters::eUnknownX);
-      unknownParameters.append(GeometryParameters::eUnknownY);
-      unknownParameters.append(GeometryParameters::eUnknownZ);
-      unknownParameters.append(GeometryParameters::eUnknownPrimaryI);
-      unknownParameters.append(GeometryParameters::eUnknownPrimaryJ);
-      unknownParameters.append(GeometryParameters::eUnknownPrimaryK);
-      unknownParameters.append(GeometryParameters::eUnknownA);
-      unknownParameters.append(GeometryParameters::eUnknownC);
+      unknownParameters.push_back(GeometryParameters::eUnknownX);
+      unknownParameters.push_back(GeometryParameters::eUnknownY);
+      unknownParameters.push_back(GeometryParameters::eUnknownZ);
+      unknownParameters.push_back(GeometryParameters::eUnknownPrimaryI);
+      unknownParameters.push_back(GeometryParameters::eUnknownPrimaryJ);
+      unknownParameters.push_back(GeometryParameters::eUnknownPrimaryK);
+      unknownParameters.push_back(GeometryParameters::eUnknownA);
+      unknownParameters.push_back(GeometryParameters::eUnknownC);
       break;
     case GeometryTypes::eLineGeometry:
-      unknownParameters.append(GeometryParameters::eUnknownX);
-      unknownParameters.append(GeometryParameters::eUnknownY);
-      unknownParameters.append(GeometryParameters::eUnknownZ);
-      unknownParameters.append(GeometryParameters::eUnknownPrimaryI);
-      unknownParameters.append(GeometryParameters::eUnknownPrimaryJ);
-      unknownParameters.append(GeometryParameters::eUnknownPrimaryK);
+      unknownParameters.push_back(GeometryParameters::eUnknownX);
+      unknownParameters.push_back(GeometryParameters::eUnknownY);
+      unknownParameters.push_back(GeometryParameters::eUnknownZ);
+      unknownParameters.push_back(GeometryParameters::eUnknownPrimaryI);
+      unknownParameters.push_back(GeometryParameters::eUnknownPrimaryJ);
+      unknownParameters.push_back(GeometryParameters::eUnknownPrimaryK);
       break;
     case GeometryTypes::eNurbsGeometry:
       break;
     case GeometryTypes::eParaboloidGeometry:
-      unknownParameters.append(GeometryParameters::eUnknownX);
-      unknownParameters.append(GeometryParameters::eUnknownY);
-      unknownParameters.append(GeometryParameters::eUnknownZ);
-      unknownParameters.append(GeometryParameters::eUnknownPrimaryI);
-      unknownParameters.append(GeometryParameters::eUnknownPrimaryJ);
-      unknownParameters.append(GeometryParameters::eUnknownPrimaryK);
-      unknownParameters.append(GeometryParameters::eUnknownA);
+      unknownParameters.push_back(GeometryParameters::eUnknownX);
+      unknownParameters.push_back(GeometryParameters::eUnknownY);
+      unknownParameters.push_back(GeometryParameters::eUnknownZ);
+      unknownParameters.push_back(GeometryParameters::eUnknownPrimaryI);
+      unknownParameters.push_back(GeometryParameters::eUnknownPrimaryJ);
+      unknownParameters.push_back(GeometryParameters::eUnknownPrimaryK);
+      unknownParameters.push_back(GeometryParameters::eUnknownA);
       break;
     case GeometryTypes::ePlaneGeometry:
-      unknownParameters.append(GeometryParameters::eUnknownX);
-      unknownParameters.append(GeometryParameters::eUnknownY);
-      unknownParameters.append(GeometryParameters::eUnknownZ);
-      unknownParameters.append(GeometryParameters::eUnknownPrimaryI);
-      unknownParameters.append(GeometryParameters::eUnknownPrimaryJ);
-      unknownParameters.append(GeometryParameters::eUnknownPrimaryK);
+      unknownParameters.push_back(GeometryParameters::eUnknownX);
+      unknownParameters.push_back(GeometryParameters::eUnknownY);
+      unknownParameters.push_back(GeometryParameters::eUnknownZ);
+      unknownParameters.push_back(GeometryParameters::eUnknownPrimaryI);
+      unknownParameters.push_back(GeometryParameters::eUnknownPrimaryJ);
+      unknownParameters.push_back(GeometryParameters::eUnknownPrimaryK);
       break;
     case GeometryTypes::ePointGeometry:
-      unknownParameters.append(GeometryParameters::eUnknownX);
-      unknownParameters.append(GeometryParameters::eUnknownY);
-      unknownParameters.append(GeometryParameters::eUnknownZ);
+      unknownParameters.push_back(GeometryParameters::eUnknownX);
+      unknownParameters.push_back(GeometryParameters::eUnknownY);
+      unknownParameters.push_back(GeometryParameters::eUnknownZ);
       break;
     case GeometryTypes::ePointCloudGeometry:
       break;
     case GeometryTypes::eScalarEntityAngleGeometry:
-      unknownParameters.append(GeometryParameters::eUnknownAngle);
+      unknownParameters.push_back(GeometryParameters::eUnknownAngle);
       break;
     case GeometryTypes::eScalarEntityDistanceGeometry:
-      unknownParameters.append(GeometryParameters::eUnknownDistance);
+      unknownParameters.push_back(GeometryParameters::eUnknownDistance);
       break;
     case GeometryTypes::eScalarEntityMeasurementSeriesGeometry:
-      unknownParameters.append(GeometryParameters::eUnknownMeasurementSeries);
+      unknownParameters.push_back(
+          GeometryParameters::eUnknownMeasurementSeries);
       break;
     case GeometryTypes::eScalarEntityTemperatureGeometry:
-      unknownParameters.append(GeometryParameters::eUnknownTemperature);
+      unknownParameters.push_back(GeometryParameters::eUnknownTemperature);
       break;
     case GeometryTypes::eSlottedHoleGeometry:
-      unknownParameters.append(GeometryParameters::eUnknownX);
-      unknownParameters.append(GeometryParameters::eUnknownY);
-      unknownParameters.append(GeometryParameters::eUnknownZ);
-      unknownParameters.append(GeometryParameters::eUnknownPrimaryI);
-      unknownParameters.append(GeometryParameters::eUnknownPrimaryJ);
-      unknownParameters.append(GeometryParameters::eUnknownPrimaryK);
-      unknownParameters.append(GeometryParameters::eUnknownRadiusA);
-      unknownParameters.append(GeometryParameters::eUnknownLength);
-      unknownParameters.append(GeometryParameters::eUnknownSecondaryI);
-      unknownParameters.append(GeometryParameters::eUnknownSecondaryJ);
-      unknownParameters.append(GeometryParameters::eUnknownSecondaryK);
+      unknownParameters.push_back(GeometryParameters::eUnknownX);
+      unknownParameters.push_back(GeometryParameters::eUnknownY);
+      unknownParameters.push_back(GeometryParameters::eUnknownZ);
+      unknownParameters.push_back(GeometryParameters::eUnknownPrimaryI);
+      unknownParameters.push_back(GeometryParameters::eUnknownPrimaryJ);
+      unknownParameters.push_back(GeometryParameters::eUnknownPrimaryK);
+      unknownParameters.push_back(GeometryParameters::eUnknownRadiusA);
+      unknownParameters.push_back(GeometryParameters::eUnknownLength);
+      unknownParameters.push_back(GeometryParameters::eUnknownSecondaryI);
+      unknownParameters.push_back(GeometryParameters::eUnknownSecondaryJ);
+      unknownParameters.push_back(GeometryParameters::eUnknownSecondaryK);
       break;
     case GeometryTypes::eSphereGeometry:
-      unknownParameters.append(GeometryParameters::eUnknownX);
-      unknownParameters.append(GeometryParameters::eUnknownY);
-      unknownParameters.append(GeometryParameters::eUnknownZ);
-      unknownParameters.append(GeometryParameters::eUnknownRadiusA);
+      unknownParameters.push_back(GeometryParameters::eUnknownX);
+      unknownParameters.push_back(GeometryParameters::eUnknownY);
+      unknownParameters.push_back(GeometryParameters::eUnknownZ);
+      unknownParameters.push_back(GeometryParameters::eUnknownRadiusA);
       break;
     case GeometryTypes::eTorusGeometry:
-      unknownParameters.append(GeometryParameters::eUnknownX);
-      unknownParameters.append(GeometryParameters::eUnknownY);
-      unknownParameters.append(GeometryParameters::eUnknownZ);
-      unknownParameters.append(GeometryParameters::eUnknownPrimaryI);
-      unknownParameters.append(GeometryParameters::eUnknownPrimaryJ);
-      unknownParameters.append(GeometryParameters::eUnknownPrimaryK);
-      unknownParameters.append(GeometryParameters::eUnknownRadiusA);
-      unknownParameters.append(GeometryParameters::eUnknownRadiusB);
+      unknownParameters.push_back(GeometryParameters::eUnknownX);
+      unknownParameters.push_back(GeometryParameters::eUnknownY);
+      unknownParameters.push_back(GeometryParameters::eUnknownZ);
+      unknownParameters.push_back(GeometryParameters::eUnknownPrimaryI);
+      unknownParameters.push_back(GeometryParameters::eUnknownPrimaryJ);
+      unknownParameters.push_back(GeometryParameters::eUnknownPrimaryK);
+      unknownParameters.push_back(GeometryParameters::eUnknownRadiusA);
+      unknownParameters.push_back(GeometryParameters::eUnknownRadiusB);
       break;
     default:
       break;
@@ -2169,13 +2391,13 @@ QList<GeometryParameters> getGeometryParameters(const GeometryTypes& type) {
  * \brief getAvailableTrafoParamParameters
  * \return
  */
-QList<TrafoParamParameters> getAvailableTrafoParamParameters() {
+std::vector<TrafoParamParameters> getAvailableTrafoParamParameters() {
   // fill helper maps if not yet done
   if (!internal::isInit) {
     internal::init();
   }
 
-  return internal::trafoParamParametersMap.keys();
+  return oi::keys(internal::trafoParamParametersMap);
 }
 
 /*!
@@ -2209,21 +2431,21 @@ TrafoParamParameters getTrafoParamParameterEnum(const QString& name) {
   }
 
   // get the corresponding trafo param parameter enum value
-  return internal::trafoParamParametersMap.key(
-      name, TrafoParamParameters::eUnknownTX);
+  return oi::key(internal::trafoParamParametersMap, name,
+                 TrafoParamParameters::eUnknownTX);
 }
 
 /*!
  * \brief getAvailableActualNominalFilters
  * \return
  */
-QList<ActualNominalFilter> getAvailableActualNominalFilters() {
+std::vector<ActualNominalFilter> getAvailableActualNominalFilters() {
   // fill helper maps if not yet done
   if (!internal::isInit) {
     internal::init();
   }
 
-  return internal::actualNominalFilterMap.keys();
+  return oi::keys(internal::actualNominalFilterMap);
 }
 
 /*!
@@ -2256,8 +2478,8 @@ ActualNominalFilter getActualNominalFilterEnum(const QString& name) {
   }
 
   // get the corresponding actual nominal filter enum value
-  return internal::actualNominalFilterMap.key(
-      name, ActualNominalFilter::eFilterActualNominal);
+  return oi::key(internal::actualNominalFilterMap, name,
+                 ActualNominalFilter::eFilterActualNominal);
 }
 
 /*!
@@ -2300,13 +2522,13 @@ double getMaterialValue(const MaterialsTempComp& material) {
  * \brief getMaterials
  * \return
  */
-QList<QString> getMaterials() {
+std::vector<QString> getMaterials() {
   // fill helper maps if not yet done
   if (!internal::isInit) {
     internal::init();
   }
 
-  return internal::materialStringsMap.values();
+  return oi::values(internal::materialStringsMap);
 }
 
 /*!
@@ -2323,8 +2545,8 @@ double getTemperatureExpansion(const QString material, double actual,
     internal::init();
   }
 
-  double exp = internal::materialValuesMap.value(
-      internal::materialStringsMap.key(material));
+  double exp = oi::value(internal::materialValuesMap,
+                         oi::key(internal::materialStringsMap, material));
   double expansion = (actual - nominal) * exp;
 
   return 1.0 / (1.0 + expansion);

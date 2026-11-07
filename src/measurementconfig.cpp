@@ -1,5 +1,9 @@
 #include "measurementconfig.h"
 
+#include <vector>
+
+#include "containers.h"
+
 using namespace oi;
 
 /*!
@@ -32,8 +36,6 @@ MeasurementConfig::MeasurementConfig(const MeasurementConfig& copy)
       timeInterval(copy.timeInterval),
       transientData(copy.transientData) {
   // copy measurement config attributes
-
-  this->transientData.detach();
 }
 
 /*!
@@ -56,7 +58,6 @@ MeasurementConfig& MeasurementConfig::operator=(const MeasurementConfig& copy) {
   this->sensorType = copy.sensorType;
 
   this->transientData = copy.transientData;
-  this->transientData.detach();
 
   return *this;
 }
@@ -158,11 +159,11 @@ void MeasurementConfig::setSensorType(const SensorType& type) {
 }
 
 const QVariant MeasurementConfig::getTransientData(const QString key) const {
-  return this->transientData.value(key);
+  return oi::value(this->transientData, key);
 }
 void MeasurementConfig::setTransientData(const QString key,
                                          const QVariant value) {
-  this->transientData.insert(key, value);
+  this->transientData.insert_or_assign(key, value);
 }
 
 /**
@@ -174,7 +175,7 @@ void MeasurementConfig::setTransientData(const QString key,
  */
 bool MeasurementConfig::applicableFor(
     const ElementTypes elementType,
-    QList<FeatureTypes> functionIsApplicableFor) {
+    std::vector<FeatureTypes> functionIsApplicableFor) {
   if (ElementTypes::eUndefinedElement ==
       elementType) {  // used to filter all configs:
                       // CreateFeatureDialog::initMeasurementConfigUI
@@ -182,7 +183,7 @@ bool MeasurementConfig::applicableFor(
   }
 
   // handle level ->
-  if (functionIsApplicableFor.contains(FeatureTypes::eLevelFeature)) {
+  if (oi::contains(functionIsApplicableFor, FeatureTypes::eLevelFeature)) {
     return this->measurementType == MeasurementTypes::eLevel_MeasurementType;
   }
   if (this->measurementType == MeasurementTypes::eLevel_MeasurementType) {

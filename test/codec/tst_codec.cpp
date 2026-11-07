@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <functional>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -11,6 +12,7 @@
 #include "chooselalib.h"
 #include "config_codec.h"
 #include "constructfunction.h"
+#include "containers.h"
 #include "convert.h"
 #include "digest.h"
 #include "fitfunction.h"
@@ -91,13 +93,13 @@ TEST_CASE("every measurement mode and type maps both ways") {
 
 TEST_CASE("a known sensor type id survives, an unknown one is dropped") {
   const auto known = SensorTypeRegistry::all();
-  REQUIRE_FALSE(known.isEmpty());
+  REQUIRE_FALSE(known.empty());
 
   MeasurementConfig gated = sampleConfig();
-  gated.setSensorType(known.first());
+  gated.setSensorType(known.front());
   const auto back = codec::fromProto(codec::toProto(gated));
   REQUIRE(back.has_value());
-  CHECK(back->getSensorType().id() == known.first().id());
+  CHECK(back->getSensorType().id() == known.front().id());
 
   oipb::MeasurementConfig message = codec::toProto(sampleConfig());
   message.set_sensor_type("noSuchSensorType");
@@ -583,15 +585,15 @@ class TestFit : public FitFunction, public Producer<Point> {
     points.typeOfElement = ElementTypes::ePointElement;
     points.infinite = true;
     points.roleName = "points";
-    neededElements.append(points);
+    neededElements.push_back(points);
     NeededElement plane;
     plane.typeOfElement = ElementTypes::ePlaneElement;
     plane.roleName = "plane";
-    neededElements.append(plane);
-    applicableFor.append(FeatureTypes::ePointFeature);
-    integerParameters.insert("iterations", 5);
-    doubleParameters.insert("tolerance", 0.001);
-    stringParameters.insert("method", "robust");
+    neededElements.push_back(plane);
+    applicableFor.push_back(FeatureTypes::ePointFeature);
+    integerParameters.insert_or_assign("iterations", 5);
+    doubleParameters.insert_or_assign("tolerance", 0.001);
+    stringParameters.emplace("method", "robust");
   }
 
   std::expected<Point, QString> exec() override {
@@ -600,22 +602,22 @@ class TestFit : public FitFunction, public Producer<Point> {
 
   void declare(int position, std::vector<PipelineStage> stages) {
     for (const PipelineStage& stage : stages) {
-      neededElements[position].pipeline.append(stage);
+      neededElements[position].pipeline.push_back(stage);
     }
   }
   void addInput(int position, InputElement input) {
-    inputElements[position].append(input);
+    inputElements[position].push_back(input);
   }
   void setUserParameters() {
-    scalarInputParams.intParameter.insert("iterations", 12);
-    scalarInputParams.doubleParameter.insert("tolerance", 0.25);
-    scalarInputParams.stringParameter.insert("method", "plain");
+    scalarInputParams.intParameter.insert_or_assign("iterations", 12);
+    scalarInputParams.doubleParameter.insert_or_assign("tolerance", 0.25);
+    scalarInputParams.stringParameter.insert_or_assign("method", "plain");
     scalarInputParams.isValid = true;
   }
   void fix(GeometryParameters parameter, double value) {
     FixedParameter fixed(parameter);
     fixed.value = value;
-    fixedParameters.append(fixed);
+    fixedParameters.push_back(fixed);
   }
 };
 
@@ -1001,33 +1003,33 @@ TEST_CASE("loading links the references the file only holds as ids") {
   // loaded points
   const auto c = job.getFeaturesByName("C");
   REQUIRE(c.size() == 1);
-  const auto functions = c.first()->getFeature()->getFunctions();
+  const auto functions = c.front()->getFeature()->getFunctions();
   REQUIRE(functions.size() == 1);
-  const auto& inputs = functions.first()->getInputElements();
+  const auto& inputs = functions.front()->getInputElements();
   REQUIRE(inputs.contains(0));
-  REQUIRE(inputs.value(0).size() == 2);
+  REQUIRE(oi::value(inputs, 0).size() == 2);
   const auto a = job.getFeaturesByName("A");
   REQUIRE(a.size() == 1);
-  CHECK(inputs.value(0).at(0).point == a.first()->getPoint());
-  CHECK(inputs.value(0).at(0).geometry == a.first()->getGeometry());
+  CHECK(oi::value(inputs, 0).at(0).point == a.front()->getPoint());
+  CHECK(oi::value(inputs, 0).at(0).geometry == a.front()->getGeometry());
 
   // the group's members are the loaded features, not the saved ones
   const auto group = job.getFeaturesByName("Both");
   REQUIRE(group.size() == 1);
-  CHECK(group.first()->getGroup()->getMembers().size() == 2);
-  CHECK(group.first()->getGroup()->getMembers().contains(a.first()));
+  CHECK(group.front()->getGroup()->getMembers().size() == 2);
+  CHECK(oi::contains(group.front()->getGroup()->getMembers(), a.front()));
 
   // the transformation knows its two systems
   const auto trafo = job.getFeaturesByName("T1");
   REQUIRE(trafo.size() == 1);
-  CHECK(trafo.first()->getTrafoParam()->getStartSystem() ==
+  CHECK(trafo.front()->getTrafoParam()->getStartSystem() ==
         station->getCoordinateSystem());
 
   // the bundle adjustment is attached to its system and knows it
   const auto bundle = job.getFeaturesByName("Bundle01");
   REQUIRE(bundle.size() == 1);
   REQUIRE_FALSE(
-      bundle.first()->getCoordinateSystem()->getBundlePlugin().isNull());
+      bundle.front()->getCoordinateSystem()->getBundlePlugin().isNull());
 
   // ids carry on from where the saved job left off
   CHECK(job.generateUniqueId() == w.job->generateUniqueId());
@@ -1179,17 +1181,17 @@ SensorConfiguration sampleSensorConfig() {
   accuracy.sigmaI = 0.01;
   accuracy.sigmaJ = 0.02;
   accuracy.sigmaK = 0.03;
-  accuracy.sigmaUndefined.insert("custom sigma", 7.25);
-  accuracy.sigmaUndefined.insert("other", -1.0);
+  accuracy.sigmaUndefined.insert_or_assign("custom sigma", 7.25);
+  accuracy.sigmaUndefined.insert_or_assign("other", -1.0);
   config.setAccuracy(accuracy);
 
   config.setIntegerParameter({{"count", 3}, {"negative", -42}});
   config.setDoubleParameter({{"gain", 0.125}, {"huge", 1e300}});
   config.setStringParameter({{"probe", "1.5''"}, {"empty", ""}});
-  QMultiMap<QString, QString> ordered;
+  std::multimap<QString, QString> ordered;
   for (const QString& v :
        {QString("third"), QString("second"), QString("first")}) {
-    ordered.insert("probe", v);
+    ordered.emplace("probe", v);
   }
   config.setAvailableStringParameter(ordered);
   return config;
@@ -1305,14 +1307,14 @@ TEST_CASE("SensorConfiguration survives a protobuf round trip") {
   CHECK(a.sigmaJ == 0.02);
   CHECK(a.sigmaK == 0.03);
   CHECK(a.sigmaUndefined.size() == 2);
-  CHECK(a.sigmaUndefined.value("custom sigma") == 7.25);
-  CHECK(a.sigmaUndefined.value("other") == -1.0);
+  CHECK(oi::value(a.sigmaUndefined, "custom sigma") == 7.25);
+  CHECK(oi::value(a.sigmaUndefined, "other") == -1.0);
 
   CHECK(out->getIntegerParameter() == in.getIntegerParameter());
   CHECK(out->getDoubleParameter() == in.getDoubleParameter());
   CHECK(out->getStringParameter() == in.getStringParameter());
-  CHECK(out->getAvailableStringParameter().values("probe") ==
-        in.getAvailableStringParameter().values("probe"));
+  CHECK(oi::values(out->getAvailableStringParameter(), "probe") ==
+        oi::values(in.getAvailableStringParameter(), "probe"));
 }
 
 TEST_CASE("SensorConfiguration survives a JSON round trip, repeatedly") {
@@ -1321,9 +1323,9 @@ TEST_CASE("SensorConfiguration survives a JSON round trip, repeatedly") {
   const auto out = codec::decodeSensorConfiguration(once);
   REQUIRE(out.has_value());
   CHECK(out->getName() == in.getName());
-  CHECK(out->getDoubleParameter().value("huge") == 1e300);
-  CHECK(out->getAvailableStringParameter().values("probe") ==
-        QStringList({"first", "second", "third"}));
+  CHECK(oi::value(out->getDoubleParameter(), "huge") == 1e300);
+  CHECK(oi::values(out->getAvailableStringParameter(), "probe") ==
+        std::vector<QString>({"first", "second", "third"}));
   // the option order must not flip on every save
   CHECK(codec::encodeSensorConfiguration(*out) == once);
 }
@@ -1338,11 +1340,11 @@ TEST_CASE("an empty SensorConfiguration with just a name round trips") {
   CHECK_FALSE(out->getIsSaved());
   CHECK_FALSE(out->getTypeOfSensor().isValid());
   CHECK_FALSE(out->getConnectionConfig().typeOfConnection.isValid());
-  CHECK(out->getIntegerParameter().isEmpty());
-  CHECK(out->getDoubleParameter().isEmpty());
-  CHECK(out->getStringParameter().isEmpty());
-  CHECK(out->getAvailableStringParameter().isEmpty());
-  CHECK(out->getAccuracy().sigmaUndefined.isEmpty());
+  CHECK(out->getIntegerParameter().empty());
+  CHECK(out->getDoubleParameter().empty());
+  CHECK(out->getStringParameter().empty());
+  CHECK(out->getAvailableStringParameter().empty());
+  CHECK(out->getAccuracy().sigmaUndefined.empty());
   CHECK(out->getAccuracy().sigmaXyz.getAt(2) == 0.0);
 }
 

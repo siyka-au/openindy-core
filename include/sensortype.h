@@ -1,10 +1,9 @@
 #ifndef SENSORTYPE_H
 #define SENSORTYPE_H
-
-#include <QList>
 #include <QMetaType>
 #include <QString>
 #include <optional>
+#include <vector>
 
 #include "core_export.h"
 
@@ -63,7 +62,7 @@ class OI_CORE_EXPORT SensorTypeRegistry {
 
   static std::optional<SensorType> byId(const QString& id);
 
-  static QList<SensorType> all();
+  static std::vector<SensorType> all();
 
  private:
   static void ensureSeeded();

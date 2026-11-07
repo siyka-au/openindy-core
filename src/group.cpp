@@ -1,5 +1,9 @@
 #include "group.h"
 
+#include <iterator>
+#include <vector>
+
+#include "containers.h"
 #include "featurewrapper.h"
 #include "snapshot.h"
 
@@ -51,7 +55,7 @@ bool Group::accepts(const oi::Guarded<FeatureWrapper>& feature) const {
   return feature->getFeatureTypeEnum() == this->constraint.value();
 }
 
-const QList<oi::Guarded<FeatureWrapper> >& Group::getMembers() const {
+const std::vector<oi::Guarded<FeatureWrapper> >& Group::getMembers() const {
   return this->members;
 }
 
@@ -70,7 +74,7 @@ bool Group::addMember(const oi::Guarded<FeatureWrapper>& feature) {
     return false;
   }
 
-  this->members.append(feature);
+  this->members.push_back(feature);
 
   this->notify(&FeatureObserver::onGroupMembersChanged, this->id);
 
@@ -86,14 +90,14 @@ bool Group::removeMember(const oi::Guarded<FeatureWrapper>& feature) {
 }
 
 bool Group::removeMemberById(const int& featureId) {
-  for (int i = 0; i < this->members.size(); ++i) {
+  for (int i = 0; i < std::ssize(this->members); ++i) {
     const oi::Guarded<FeatureWrapper>& member = this->members.at(i);
     if (member.isNull() || member->getFeature().isNull()) {
       continue;
     }
 
     if (member->getFeature()->getId() == featureId) {
-      this->members.removeAt(i);
+      oi::removeAt(this->members, i);
       this->notify(&FeatureObserver::onGroupMembersChanged, this->id);
       return true;
     }
@@ -150,16 +154,16 @@ int Group::memberCount() const {
 void Group::compact() {
   const int before = this->members.size();
 
-  QList<oi::Guarded<FeatureWrapper> > live;
+  std::vector<oi::Guarded<FeatureWrapper> > live;
   for (const oi::Guarded<FeatureWrapper>& member :
        oi::snapshot(this->members)) {
     if (!member.isNull() && !member->getFeature().isNull()) {
-      live.append(member);
+      live.push_back(member);
     }
   }
   this->members = live;
 
-  if (this->members.size() != before) {
+  if (std::ssize(this->members) != before) {
     this->notify(&FeatureObserver::onGroupMembersChanged, this->id);
   }
 }

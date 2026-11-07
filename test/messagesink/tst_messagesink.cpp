@@ -1,10 +1,11 @@
 #include <QString>
-#include <QStringList>
 #include <QtTest>
+#include <vector>
 
 #include "bundleadjustment.h"
 #include "chooselalib.h"
 #include "constructfunction.h"
+#include "containers.h"
 #include "exchangeinterface.h"
 #include "featurewrapper.h"
 #include "geometry/point.h"
@@ -19,10 +20,10 @@ namespace {
 
 class RecordingSink : public MessageSink {
  public:
-  QStringList messages;
+  std::vector<QString> messages;
   void onMessage(const QString& msg, const MessageTypes& /*type*/,
                  const MessageDestinations& /*dest*/) override {
-    this->messages << msg;
+    this->messages.push_back(msg);
   }
 };
 
@@ -30,9 +31,9 @@ class RecordingFunctionObserver : public FunctionObserver {
  public:
   int inputElementsChanged = 0;
   int scalarInputParametersChanged = 0;
-  QList<Function*> destroyed;
+  std::vector<Function*> destroyed;
   void onFunctionDestroyed(Function* function) override {
-    this->destroyed << function;
+    this->destroyed.push_back(function);
   }
   void onInputElementsChanged() override { ++this->inputElementsChanged; }
   void onScalarInputParametersChanged() override {
@@ -42,15 +43,15 @@ class RecordingFunctionObserver : public FunctionObserver {
 
 class RecordingExchangeObserver : public ExchangeObserver {
  public:
-  QStringList events;
+  std::vector<QString> events;
   void onProgress(int percent, const QString& message) override {
-    this->events << QString("progress:%1:%2").arg(percent).arg(message);
+    this->events.push_back(QString("progress:%1:%2").arg(percent).arg(message));
   }
   void onImportFinished(bool success) override {
-    this->events << QString("import:%1").arg(success);
+    this->events.push_back(QString("import:%1").arg(success));
   }
   void onExportFinished(bool success) override {
-    this->events << QString("export:%1").arg(success);
+    this->events.push_back(QString("export:%1").arg(success));
   }
 };
 
@@ -61,8 +62,8 @@ class ChattyFunction : public ConstructFunction, public Producer<Point> {
     this->metaData.name = "ChattyFunction";
     NeededElement param;
     param.typeOfElement = ElementTypes::ePointElement;
-    this->neededElements.append(param);
-    this->applicableFor.append(FeatureTypes::ePointFeature);
+    this->neededElements.push_back(param);
+    this->applicableFor.push_back(FeatureTypes::ePointFeature);
   }
   std::expected<Point, QString> exec() override {
     emit this->sendMessage("chatty exec", MessageTypes::eInformationMessage);
@@ -140,7 +141,8 @@ void MessageSinkTest::
 
   function->sendMessage("hello from the function",
                         MessageTypes::eWarningMessage);
-  QVERIFY(rec.calls.contains(
+  QVERIFY(oi::contains(
+      rec.calls,
       QString("sendMessage:hello from the function:%1:%2")
           .arg(static_cast<int>(MessageTypes::eWarningMessage))
           .arg(static_cast<int>(MessageDestinations::eConsoleMessage))));
@@ -148,8 +150,8 @@ void MessageSinkTest::
   // a message sent from inside exec reaches the job as well
   rec.calls.clear();
   f.point->recalc();
-  QVERIFY2(rec.calls.join(";").contains("sendMessage:chatty exec"),
-           qPrintable(rec.calls.join(";")));
+  QVERIFY2(rec.joined().contains("sendMessage:chatty exec"),
+           qPrintable(rec.joined()));
 }
 
 void MessageSinkTest::removingAFunctionFromTheJobStopsItReportingToTheJob() {
@@ -199,7 +201,7 @@ void MessageSinkTest::aFunctionOutlivingItsJobDoesNotReportToADeadJob() {
     function->sendMessage("after", MessageTypes::eInformationMessage);
     delete function.data();
   }
-  QVERIFY(after.messages.isEmpty());
+  QVERIFY(after.messages.empty());
 }
 
 void MessageSinkTest::aFunctionWithoutSinkDropsMessages() {
@@ -212,7 +214,7 @@ void MessageSinkTest::aFunctionWithoutSinkDropsMessages() {
   function.sendMessage("heard", MessageTypes::eInformationMessage);
   function.setMessageSink(nullptr);
   function.sendMessage("not heard", MessageTypes::eInformationMessage);
-  QCOMPARE(sink.messages, QStringList{"heard"});
+  QCOMPARE(sink.messages, std::vector<QString>{"heard"});
 }
 
 void MessageSinkTest::aBundleAdjustmentReportsToItsJob() {
@@ -225,7 +227,7 @@ void MessageSinkTest::aBundleAdjustmentReportsToItsJob() {
   QCOMPARE(bundle.getMessageSink(), static_cast<MessageSink*>(&job));
   QVERIFY(!bundle.runBundle());
   QVERIFY(rec.count("sendMessage") == 1);
-  QVERIFY(rec.calls.last().contains("not implemented"));
+  QVERIFY(rec.calls.back().contains("not implemented"));
 
   // switching the job away stops the reports
   bundle.setCurrentJob(nullptr);
@@ -266,7 +268,7 @@ void MessageSinkTest::simulationModelReportsToItsSink() {
   UncertaintyData data;
   QVERIFY(!model.analyseSimulationData(data));
   QCOMPARE(sink.messages.size(), 1);
-  QVERIFY(sink.messages.first().contains("analyse method missing"));
+  QVERIFY(sink.messages.front().contains("analyse method missing"));
   model.setMessageSink(nullptr);
   QVERIFY(!model.analyseSimulationData(data));
   QCOMPARE(sink.messages.size(), 1);
@@ -280,17 +282,18 @@ void MessageSinkTest::exchangeReportsMessagesProgressAndCompletion() {
   exchange.setObserver(&observer);
 
   exchange.importOiData();
-  QCOMPARE(sink.messages, QStringList{"importing"});
-  QCOMPARE(observer.events, (QStringList{"progress:50:half", "import:1"}));
+  QCOMPARE(sink.messages, std::vector<QString>{"importing"});
+  QCOMPARE(observer.events,
+           (std::vector<QString>{"progress:50:half", "import:1"}));
 
   observer.events.clear();
   exchange.exportOiData();
-  QCOMPARE(observer.events, QStringList{"export:0"});
+  QCOMPARE(observer.events, std::vector<QString>{"export:0"});
 
   // without an observer nothing happens (and nothing crashes)
   exchange.setObserver(nullptr);
   exchange.importOiData();
-  QCOMPARE(observer.events, QStringList{"export:0"});
+  QCOMPARE(observer.events, std::vector<QString>{"export:0"});
 }
 
 void MessageSinkTest::functionObserverSeesInputElementAndParameterChanges() {
@@ -326,7 +329,7 @@ void MessageSinkTest::functionObserverIsToldWhenTheFunctionIsDestroyed() {
   Function* raw = function;
   function->setObserver(&observer);
   delete function;
-  QCOMPARE(observer.destroyed, QList<Function*>{raw});
+  QCOMPARE(observer.destroyed, std::vector<Function*>{raw});
 }
 
 QTEST_GUILESS_MAIN(MessageSinkTest)

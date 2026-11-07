@@ -1,5 +1,8 @@
 #include "observation.h"
 
+#include <vector>
+
+#include "containers.h"
 #include "coordinatesystem.h"
 #include "function.h"
 #include "geometry.h"
@@ -151,7 +154,7 @@ Observation::~Observation() {
     return;
   }
 
-  QList<oi::Guarded<Geometry> > targetGeometries;
+  std::vector<oi::Guarded<Geometry> > targetGeometries;
 
   // remove observation and reading from its target geometries
   for (const oi::Guarded<Geometry>& geom :
@@ -160,7 +163,7 @@ Observation::~Observation() {
     if (geom.isNull()) {
       continue;
     }
-    targetGeometries.append(geom);
+    targetGeometries.push_back(geom);
 
     // remove observation and reading from functions of the targte geometry
     for (const oi::Guarded<Function>& function :
@@ -344,14 +347,15 @@ void Observation::setStation(const oi::Guarded<Station>& station) {
  * Resolves the inherited Point::intents (D12) back into live Geometry
  * pointers via this observation's job, for the pre-existing callers that
  * want "what geometry is this for" rather than a bare feature id. Returned
- * by value (rather than the old by-reference QList<oi::Guarded<Geometry>>&)
- * since there is no single stored list left to bind a reference to - a
- * const& binding a caller takes to the returned temporary is still safe
- * (lifetime extension), so this did not require touching call sites.
+ * by value (rather than the old by-reference
+ * std::vector<oi::Guarded<Geometry>>&) since there is no single stored list
+ * left to bind a reference to - a const& binding a caller takes to the returned
+ * temporary is still safe (lifetime extension), so this did not require
+ * touching call sites.
  * \return
  */
-QList<oi::Guarded<Geometry> > Observation::getTargetGeometries() const {
-  QList<oi::Guarded<Geometry> > result;
+std::vector<oi::Guarded<Geometry> > Observation::getTargetGeometries() const {
+  std::vector<oi::Guarded<Geometry> > result;
 
   if (this->job.isNull()) {
     return result;
@@ -361,8 +365,8 @@ QList<oi::Guarded<Geometry> > Observation::getTargetGeometries() const {
     const oi::Guarded<FeatureWrapper> feature =
         this->job->getFeatureById(intent.featureId);
     if (!feature.isNull() && !feature->getGeometry().isNull() &&
-        !result.contains(feature->getGeometry())) {
-      result.append(feature->getGeometry());
+        !oi::contains(result, feature->getGeometry())) {
+      result.push_back(feature->getGeometry());
     }
   }
 
@@ -411,13 +415,13 @@ void Observation::removeTargetGeometry(
     return;
   }
 
-  QList<MeasurementIntent> matching;
+  std::vector<MeasurementIntent> matching;
   for (const MeasurementIntent& intent : oi::snapshot(this->getIntents())) {
     if (intent.featureId == targetGeometry->getId()) {
-      matching.append(intent);
+      matching.push_back(intent);
     }
   }
-  if (matching.isEmpty()) {
+  if (matching.empty()) {
     return;
   }
   for (const MeasurementIntent& intent : oi::snapshot(matching)) {
@@ -440,7 +444,8 @@ void Observation::removeTargetGeometry(const int& geomId) {
     }
   }
 
-  const QList<oi::Guarded<Geometry> > remaining = this->getTargetGeometries();
+  const std::vector<oi::Guarded<Geometry> > remaining =
+      this->getTargetGeometries();
   if (this->measuredTargetGeometry.isNull() && remaining.size() == 1) {
     this->measuredTargetGeometry = remaining.at(0);
   }

@@ -73,7 +73,7 @@ QString PluginAbiTest::normalize(const QString& source) {
   text.remove(QRegularExpression("//[^\n]*"));
 
   QStringList significantLines;
-  foreach (const QString& rawLine, text.split('\n')) {
+  for (const QString& rawLine : text.split('\n')) {
     const QString line = rawLine.simplified();
     if (!line.isEmpty()) {
       significantLines.append(line);
@@ -109,7 +109,7 @@ QString PluginAbiTest::digestOfInterfaceHeaders(QStringList& filesOut) {
   headers.sort();
 
   QCryptographicHash hash(QCryptographicHash::Sha256);
-  foreach (const QString& relative, headers) {
+  for (const QString& relative : headers) {
     QFile file(pluginIncludeDir.absoluteFilePath(relative));
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
       return QString();
@@ -246,7 +246,7 @@ void PluginAbiTest::everyInterfaceIidCarriesTheAbiVersion() {
   // and they must be distinct, or two interface categories would be
   // mutually castable
   QSet<QString> distinct;
-  foreach (const QString& iid, iids.values()) {
+  for (const QString& iid : iids.values()) {
     distinct.insert(iid);
   }
   QCOMPARE(distinct.size(), iids.size());

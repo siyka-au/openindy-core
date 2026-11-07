@@ -1,7 +1,7 @@
 #ifndef ELEMENT_H
 #define ELEMENT_H
-
 #include <QtCore>
+#include <map>
 
 #include "core_export.h"
 #include "guarded.h"
@@ -55,7 +55,7 @@ class OI_CORE_EXPORT Element : public oi::Trackable {
   bool isNullObject{false};
 
  private:
-  QMap<QString, QVariant> transientAttributes;
+  std::map<QString, QVariant> transientAttributes;
 };
 
 }  // namespace oi

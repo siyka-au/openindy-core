@@ -1,7 +1,6 @@
 #ifndef PLUGIN_H
 #define PLUGIN_H
-
-#include <QList>
+#include <vector>
 
 #include "bundleadjustment.h"
 #include "exchangedefinedformat.h"
@@ -24,13 +23,14 @@ class Plugin {
   // create instances of all available plugin types in a plugin
   // ##########################################################
 
-  virtual QList<oi::Guarded<Sensor> > createSensors() = 0;
-  virtual QList<oi::Guarded<Function> > createFunctions() = 0;
-  virtual QList<oi::Guarded<BundleAdjustment> > createBundleAdjustments() = 0;
-  virtual QList<oi::Guarded<SimulationModel> > createSimulations() = 0;
-  virtual QList<oi::Guarded<ExchangeSimpleAscii> >
+  virtual std::vector<oi::Guarded<Sensor> > createSensors() = 0;
+  virtual std::vector<oi::Guarded<Function> > createFunctions() = 0;
+  virtual std::vector<oi::Guarded<BundleAdjustment> >
+  createBundleAdjustments() = 0;
+  virtual std::vector<oi::Guarded<SimulationModel> > createSimulations() = 0;
+  virtual std::vector<oi::Guarded<ExchangeSimpleAscii> >
   createSimpleAsciiExchanges() = 0;
-  virtual QList<oi::Guarded<ExchangeDefinedFormat> >
+  virtual std::vector<oi::Guarded<ExchangeDefinedFormat> >
   createDefinedFormatExchanges() = 0;
 
   // ###################################################

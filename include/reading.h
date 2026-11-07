@@ -1,10 +1,10 @@
 #ifndef READING_H
 #define READING_H
-
 #include <QtCore/qmath.h>
 
 #include <QtCore>
 #include <chrono>
+#include <map>
 
 #include "core_export.h"
 #include "element.h"
@@ -120,8 +120,8 @@ class OI_CORE_EXPORT ReadingUndefined {
  public:
   ReadingUndefined() {}
 
-  QMap<QString, double> values;
-  QMap<QString, double> sigmaValues;
+  std::map<QString, double> values;
+  std::map<QString, double> sigmaValues;
   bool isValid{false};
 };
 

@@ -2,11 +2,11 @@
 #define OI_CODEC_WIRE_H_
 
 // Internal helpers shared by the codec's translation units.
-
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/timestamp.pb.h>
 
 #include <chrono>
+#include <vector>
 
 #include "convert.h"
 #include "feature.h"
@@ -48,7 +48,7 @@ inline OiVec toVec(const oipb::Vec3& v) {
 
 inline int idOf(const Feature* f) { return f != nullptr ? f->getId() : 0; }
 
-inline void appendIds(const QList<oi::Guarded<FeatureWrapper>>& wrappers,
+inline void appendIds(const std::vector<oi::Guarded<FeatureWrapper>>& wrappers,
                       google::protobuf::RepeatedField<int32_t>* out) {
   for (const auto& wrapper : wrappers) {
     if (!wrapper.isNull() && !wrapper->getFeature().isNull()) {

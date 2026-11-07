@@ -1,9 +1,7 @@
 #ifndef UTIL_H
 #define UTIL_H
-
-#include <QMap>
 #include <QString>
-#include <QStringList>
+#include <vector>
 
 #include "core_export.h"
 #include "types.h"
@@ -16,9 +14,9 @@ class FeatureWrapper;
 // global functions to query element types
 // #######################################
 
-QList<ElementTypes> OI_CORE_EXPORT getAvailableElementTypes();
-QList<FeatureTypes> OI_CORE_EXPORT getAvailableFeatureTypes();
-QList<GeometryTypes> OI_CORE_EXPORT getAvailableGeometryTypes();
+std::vector<ElementTypes> OI_CORE_EXPORT getAvailableElementTypes();
+std::vector<FeatureTypes> OI_CORE_EXPORT getAvailableFeatureTypes();
+std::vector<GeometryTypes> OI_CORE_EXPORT getAvailableGeometryTypes();
 
 // #############################################################################
 // TYPE NAMES - two separate lookups, and the difference matters
@@ -101,10 +99,10 @@ ReadingTypes OI_CORE_EXPORT getReadingTypeEnum(const QString& name);
 // global functions to query display attributes
 // ############################################
 
-const QList<int> OI_CORE_EXPORT& getFeatureDisplayAttributes();
-const QList<ObservationDisplayAttributes> OI_CORE_EXPORT&
+const std::vector<int> OI_CORE_EXPORT& getFeatureDisplayAttributes();
+const std::vector<ObservationDisplayAttributes> OI_CORE_EXPORT&
 getObservationDisplayAttributes();
-const QList<ReadingDisplayAttributes> OI_CORE_EXPORT&
+const std::vector<ReadingDisplayAttributes> OI_CORE_EXPORT&
 getReadingDisplayAttributes();
 
 bool OI_CORE_EXPORT getIsFeatureDisplayAttribute(const int& attr);
@@ -156,7 +154,7 @@ bool OI_CORE_EXPORT almostEqual(const double& a, const double& b,
 // global functions to query sensor functions
 // ##########################################
 
-QList<SensorFunctions> OI_CORE_EXPORT getAvailableSensorFunctions();
+std::vector<SensorFunctions> OI_CORE_EXPORT getAvailableSensorFunctions();
 const QString OI_CORE_EXPORT& getSensorFunctionName(
     const SensorFunctions& type);
 SensorFunctions OI_CORE_EXPORT getSensorFunctionEnum(const QString& name);
@@ -169,7 +167,7 @@ SensorFunctions OI_CORE_EXPORT getSensorFunctionEnum(const QString& name);
 // global functions to query tool types
 // ####################################
 
-QList<ToolTypes> OI_CORE_EXPORT getAvailableToolTypes();
+std::vector<ToolTypes> OI_CORE_EXPORT getAvailableToolTypes();
 const QString OI_CORE_EXPORT& getToolTypeName(const ToolTypes& type);
 ToolTypes OI_CORE_EXPORT getToolTypeEnum(const QString& name);
 
@@ -177,7 +175,7 @@ ToolTypes OI_CORE_EXPORT getToolTypeEnum(const QString& name);
 // global functions to query message types
 // #######################################
 
-QList<MessageTypes> OI_CORE_EXPORT getAvailableMessageTypes();
+std::vector<MessageTypes> OI_CORE_EXPORT getAvailableMessageTypes();
 const QString OI_CORE_EXPORT& getMessageTypeName(const MessageTypes& type);
 MessageTypes OI_CORE_EXPORT getMessageTypeEnum(const QString& name);
 
@@ -185,15 +183,16 @@ MessageTypes OI_CORE_EXPORT getMessageTypeEnum(const QString& name);
 // global functions to query unknown parameters
 // ############################################
 
-QList<GeometryParameters> OI_CORE_EXPORT getAvailableGeometryParameters();
+std::vector<GeometryParameters> OI_CORE_EXPORT getAvailableGeometryParameters();
 const QString OI_CORE_EXPORT& getGeometryParameterName(
     const GeometryParameters& parameter);
 GeometryParameters OI_CORE_EXPORT getGeometryParameterEnum(const QString& name);
 
-QList<GeometryParameters> OI_CORE_EXPORT
+std::vector<GeometryParameters> OI_CORE_EXPORT
 getGeometryParameters(const GeometryTypes& type);
 
-QList<TrafoParamParameters> OI_CORE_EXPORT getAvailableTrafoParamParameters();
+std::vector<TrafoParamParameters> OI_CORE_EXPORT
+getAvailableTrafoParamParameters();
 const QString OI_CORE_EXPORT& getTrafoParamParameterName(
     const TrafoParamParameters& parameter);
 TrafoParamParameters OI_CORE_EXPORT
@@ -203,7 +202,8 @@ getTrafoParamParameterEnum(const QString& name);
 // global functions to query actual nominal filter options
 // #######################################################
 
-QList<ActualNominalFilter> OI_CORE_EXPORT getAvailableActualNominalFilters();
+std::vector<ActualNominalFilter> OI_CORE_EXPORT
+getAvailableActualNominalFilters();
 const QString OI_CORE_EXPORT& getActualNominalFilterName(
     const ActualNominalFilter& type);
 ActualNominalFilter OI_CORE_EXPORT
@@ -214,7 +214,7 @@ const QString OI_CORE_EXPORT& getMaterialName(
 double OI_CORE_EXPORT getMaterialValue(const MaterialsTempComp& material);
 double OI_CORE_EXPORT getTemperatureExpansion(const QString material,
                                               double actual, double nominal);
-QList<QString> OI_CORE_EXPORT getMaterials();
+std::vector<QString> OI_CORE_EXPORT getMaterials();
 
 }  // namespace oi
 

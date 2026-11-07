@@ -1,8 +1,11 @@
 #include "feature.h"
 
 #include <expected>
+#include <iterator>
 #include <stdexcept>
+#include <vector>
 
+#include "containers.h"
 #include "featurewrapper.h"
 #include "function.h"
 #include "oijob.h"
@@ -81,7 +84,8 @@ Feature::~Feature() {
       }
 
       // remove this feature from previously needed list
-      feature->getFeature()->previouslyNeededList.removeOne(this->selfFeature);
+      oi::removeOne(feature->getFeature()->previouslyNeededList,
+                    this->selfFeature);
     }
   }
 
@@ -92,7 +96,7 @@ Feature::~Feature() {
       // remove this feature from usedFor list
       if (!this->selfFeature.isNull() && !feature.isNull() &&
           !feature->getFeature().isNull()) {
-        feature->getFeature()->usedForList.removeOne(this->selfFeature);
+        oi::removeOne(feature->getFeature()->usedForList, this->selfFeature);
       }
     }
   }
@@ -270,16 +274,16 @@ void Feature::setIsSolved(const bool& isSolved) {
  * \brief Feature::getFunctions
  * Computed view - see the member comment on producerFunction/
  * transformFunctions (feature.h) and the class-level comment on the
- * accessor declarations for why this stays a QList rather than exposing
+ * accessor declarations for why this stays a vector rather than exposing
  * the split directly to every caller.
  * \return
  */
-QList<oi::Guarded<Function> > Feature::getFunctions() const {
-  QList<oi::Guarded<Function> > functions;
+std::vector<oi::Guarded<Function> > Feature::getFunctions() const {
+  std::vector<oi::Guarded<Function> > functions;
   if (this->producerFunction.has_value() && !this->producerFunction->isNull()) {
-    functions.append(this->producerFunction.value());
+    functions.push_back(this->producerFunction.value());
   }
-  functions.append(this->transformFunctions);
+  oi::appendAll(functions, this->transformFunctions);
   return functions;
 }
 
@@ -296,7 +300,8 @@ const std::optional<oi::Guarded<Function> >& Feature::getProducerFunction()
  * \brief Feature::getTransformFunctions
  * \return
  */
-const QList<oi::Guarded<Function> >& Feature::getTransformFunctions() const {
+const std::vector<oi::Guarded<Function> >& Feature::getTransformFunctions()
+    const {
   return this->transformFunctions;
 }
 
@@ -364,7 +369,7 @@ void Feature::addFunction(const oi::Guarded<Function>& function) {
   if (attachAsProducer) {
     this->producerFunction = function;
   } else {
-    this->transformFunctions.append(function);
+    this->transformFunctions.push_back(function);
   }
 
   this->isUpdated = false;
@@ -390,16 +395,16 @@ void Feature::removeFunction(const int& index) {
       return;
     }
     const int transformIndex = index - 1;
-    if (transformIndex < this->transformFunctions.size()) {
-      this->transformFunctions.removeAt(transformIndex);
+    if (transformIndex < std::ssize(this->transformFunctions)) {
+      oi::removeAt(this->transformFunctions, transformIndex);
       this->isUpdated = false;
       this->notify(&FeatureObserver::onFeatureFunctionListChanged, this->id);
     }
     return;
   }
 
-  if (index < this->transformFunctions.size()) {
-    this->transformFunctions.removeAt(index);
+  if (index < std::ssize(this->transformFunctions)) {
+    oi::removeAt(this->transformFunctions, index);
     this->isUpdated = false;
     this->notify(&FeatureObserver::onFeatureFunctionListChanged, this->id);
   }
@@ -428,7 +433,7 @@ void Feature::setActiveFeatureState(const bool& isActiveFeature) {
  * \brief Feature::getUsedFor
  * \return
  */
-const QList<oi::Guarded<FeatureWrapper> >& Feature::getUsedFor() const {
+const std::vector<oi::Guarded<FeatureWrapper> >& Feature::getUsedFor() const {
   return this->usedForList;
 }
 
@@ -458,8 +463,8 @@ bool Feature::addUsedFor(const oi::Guarded<FeatureWrapper>& feature) {
     }
   }
 
-  this->usedForList.append(feature);
-  this->usedForMap.insert(feature->getFeature()->getId(), feature);
+  this->usedForList.push_back(feature);
+  this->usedForMap.insert_or_assign(feature->getFeature()->getId(), feature);
 
   // add this feature to the previously needed features of feature
   if (!this->selfFeature.isNull()) {
@@ -495,8 +500,8 @@ bool Feature::removeUsedFor(const oi::Guarded<FeatureWrapper>& feature) {
     }
   }
 
-  this->usedForList.removeOne(feature);
-  this->usedForMap.remove(feature->getFeature()->getId());
+  oi::removeOne(this->usedForList, feature);
+  this->usedForMap.erase(feature->getFeature()->getId());
 
   // remove this feature from the previously needed features of feature
   if (!this->selfFeature.isNull()) {
@@ -510,7 +515,7 @@ bool Feature::removeUsedFor(const oi::Guarded<FeatureWrapper>& feature) {
  * \brief Feature::getPreviouslyNeeded
  * \return
  */
-const QList<oi::Guarded<FeatureWrapper> >& Feature::getPreviouslyNeeded()
+const std::vector<oi::Guarded<FeatureWrapper> >& Feature::getPreviouslyNeeded()
     const {
   return this->previouslyNeededList;
 }
@@ -541,8 +546,9 @@ bool Feature::addPreviouslyNeeded(const oi::Guarded<FeatureWrapper>& feature) {
     }
   }
 
-  this->previouslyNeededList.append(feature);
-  this->previouslyNeededMap.insert(feature->getFeature()->getId(), feature);
+  this->previouslyNeededList.push_back(feature);
+  this->previouslyNeededMap.insert_or_assign(feature->getFeature()->getId(),
+                                             feature);
 
   this->isUpdated = false;
 
@@ -581,8 +587,8 @@ bool Feature::removePreviouslyNeeded(
     }
   }
 
-  this->previouslyNeededList.removeOne(feature);
-  this->previouslyNeededMap.remove(feature->getFeature()->getId());
+  oi::removeOne(this->previouslyNeededList, feature);
+  this->previouslyNeededMap.erase(feature->getFeature()->getId());
 
   this->isUpdated = false;
 
@@ -686,12 +692,12 @@ QString Feature::getDisplayIsUpdated() const {
  */
 QString Feature::getDisplayFunctions() const {
   QString display = "";
-  const QList<oi::Guarded<Function> > functions = this->getFunctions();
-  for (int i = 0; i < functions.size(); i++) {
+  const std::vector<oi::Guarded<Function> > functions = this->getFunctions();
+  for (int i = 0; i < std::ssize(functions); i++) {
     oi::Guarded<Function> function = functions.at(i);
     if (!function.isNull()) {
-      display +=
-          function->getMetaData().name + (i < functions.size() - 1 ? ", " : "");
+      display += function->getMetaData().name +
+                 (i < std::ssize(functions) - 1 ? ", " : "");
     }
   }
   return display;
@@ -703,11 +709,11 @@ QString Feature::getDisplayFunctions() const {
  */
 QString Feature::getDisplayUsedFor() const {
   QString display = "";
-  for (int i = 0; i < this->usedForList.size(); i++) {
+  for (int i = 0; i < std::ssize(this->usedForList); i++) {
     oi::Guarded<FeatureWrapper> feature = this->usedForList.at(i);
     if (!feature.isNull() && !feature->getFeature().isNull()) {
       display += feature->getFeature()->getFeatureName() +
-                 (i < this->usedForList.size() - 1 ? ", " : "");
+                 (i < std::ssize(this->usedForList) - 1 ? ", " : "");
     }
   }
   return display;
@@ -719,11 +725,11 @@ QString Feature::getDisplayUsedFor() const {
  */
 QString Feature::getDisplayPreviouslyNeeded() const {
   QString display = "";
-  for (int i = 0; i < this->previouslyNeededList.size(); i++) {
+  for (int i = 0; i < std::ssize(this->previouslyNeededList); i++) {
     oi::Guarded<FeatureWrapper> feature = this->previouslyNeededList.at(i);
     if (!feature.isNull() && !feature->getFeature().isNull()) {
       display += feature->getFeature()->getFeatureName() +
-                 (i < this->previouslyNeededList.size() - 1 ? ", " : "");
+                 (i < std::ssize(this->previouslyNeededList) - 1 ? ", " : "");
     }
   }
   return display;

@@ -1,7 +1,10 @@
 #include "geometry.h"
 
+#include <map>
 #include <utility>
+#include <vector>
 
+#include "containers.h"
 #include "coordinatesystem.h"
 #include "fitfunction.h"
 #include "function.h"
@@ -86,8 +89,8 @@ Geometry::~Geometry() {
   // owner itself is destroyed - but this keeps the owner's list correct
   // even if an owned geometry is ever destroyed some other way.
   if (this->ownerFeature.has_value() && !this->ownerFeature->isNull()) {
-    this->ownerFeature.value()->ownedSubGeometries.removeAll(
-        oi::Guarded<Geometry>(this));
+    oi::removeAll(this->ownerFeature.value()->ownedSubGeometries,
+                  oi::Guarded<Geometry>(this));
   }
 }
 
@@ -241,8 +244,8 @@ bool Geometry::setOwnerFeature(const oi::Guarded<Geometry>& owner) {
   this->ownerFeature = owner;
 
   oi::Guarded<Geometry> self(this);
-  if (!owner->ownedSubGeometries.contains(self)) {
-    owner->ownedSubGeometries.append(self);
+  if (!oi::contains(owner->ownedSubGeometries, self)) {
+    owner->ownedSubGeometries.push_back(self);
   }
 
   this->notify(&FeatureObserver::onGeomOwnerFeatureChanged, this->id);
@@ -254,7 +257,8 @@ bool Geometry::setOwnerFeature(const oi::Guarded<Geometry>& owner) {
  * \brief Geometry::getOwnedSubGeometries
  * \return
  */
-const QList<oi::Guarded<Geometry> >& Geometry::getOwnedSubGeometries() const {
+const std::vector<oi::Guarded<Geometry> >& Geometry::getOwnedSubGeometries()
+    const {
   return this->ownedSubGeometries;
 }
 
@@ -262,7 +266,8 @@ const QList<oi::Guarded<Geometry> >& Geometry::getOwnedSubGeometries() const {
  * \brief Geometry::getObservations
  * \return
  */
-const QList<oi::Guarded<Observation> >& Geometry::getObservations() const {
+const std::vector<oi::Guarded<Observation> >& Geometry::getObservations()
+    const {
   return this->observations;
 }
 
@@ -275,20 +280,20 @@ void Geometry::addObservation(const oi::Guarded<Observation>& obs) {
   // into (an actual), not a user edit, so it is not gated by D19
   if (!obs.isNull()) {
     // check if obs is already included
-    if (this->observations.contains(obs)) {
+    if (oi::contains(this->observations, obs)) {
       return;
     }
 
-    this->observations.append(obs);
+    this->observations.push_back(obs);
 
     // update target geometries
     obs->addTargetGeometry(this);
 
     // update used reading types
     if (!obs->getReading().isNull() &&
-        !this->usedReadingTypes.contains(
-            obs->getReading()->getTypeOfReading())) {
-      this->usedReadingTypes.append(obs->getReading()->getTypeOfReading());
+        !oi::contains(this->usedReadingTypes,
+                      obs->getReading()->getTypeOfReading())) {
+      this->usedReadingTypes.push_back(obs->getReading()->getTypeOfReading());
     }
 
     this->isUpdated = false;
@@ -308,15 +313,16 @@ void Geometry::removeObservation(const oi::Guarded<Observation>& obs) {
   }
 
   // remove observation
-  if (this->observations.removeOne(obs)) {
+  if (oi::removeOne(this->observations, obs)) {
     // update target geometries
     obs->removeTargetGeometry(this);
 
     // update used reading types
     if (!obs->getReading().isNull() &&
-        this->usedReadingTypes.contains(
-            obs->getReading()->getTypeOfReading())) {
-      this->usedReadingTypes.removeOne(obs->getReading()->getTypeOfReading());
+        oi::contains(this->usedReadingTypes,
+                     obs->getReading()->getTypeOfReading())) {
+      oi::removeOne(this->usedReadingTypes,
+                    obs->getReading()->getTypeOfReading());
     }
 
     this->isUpdated = false;
@@ -419,7 +425,7 @@ void Geometry::setSimulationData(const SimulationData& s) {
  * \brief Geometry::getUsedReadingTypes
  * \return
  */
-const QList<ReadingTypes>& Geometry::getUsedReadingTypes() const {
+const std::vector<ReadingTypes>& Geometry::getUsedReadingTypes() const {
   return this->usedReadingTypes;
 }
 
@@ -474,10 +480,10 @@ void Geometry::setPosition(Position& xyz) {
  * \param displayDigits
  * \return
  */
-QMap<GeometryParameters, QString> Geometry::getUnknownParameters(
-    const QMap<DimensionType, UnitType>& /*displayUnits*/,
-    const QMap<DimensionType, int>& /*displayDigits*/) const {
-  return QMap<GeometryParameters, QString>();
+std::map<GeometryParameters, QString> Geometry::getUnknownParameters(
+    const std::map<DimensionType, UnitType>& /*displayUnits*/,
+    const std::map<DimensionType, int>& /*displayDigits*/) const {
+  return std::map<GeometryParameters, QString>();
 }
 
 /*!
@@ -489,7 +495,7 @@ QMap<GeometryParameters, QString> Geometry::getUnknownParameters(
  * \param parameters
  */
 void Geometry::setUnknownParameters(
-    const QMap<GeometryParameters, double>& parameters) {
+    const std::map<GeometryParameters, double>& parameters) {
   if (this->rejectIfNotEditable("parameters")) {
     return;
   }
@@ -503,7 +509,7 @@ void Geometry::setUnknownParameters(
  * \param parameters
  */
 void Geometry::applyUnknownParameters(
-    const QMap<GeometryParameters, double>& /*parameters*/) {
+    const std::map<GeometryParameters, double>& /*parameters*/) {
   return;
 }
 
@@ -525,7 +531,7 @@ void Geometry::applyUnknownParameters(
  */
 void Geometry::recalc() {
   const bool wasSolved = this->isSolved;
-  const bool hadOwnedSubGeometries = !this->ownedSubGeometries.isEmpty();
+  const bool hadOwnedSubGeometries = !this->ownedSubGeometries.empty();
   const OiVec previousPosition =
       hadOwnedSubGeometries ? this->xyz.getVector() : OiVec();
   const OiVec previousDirection =
@@ -634,9 +640,9 @@ QString Geometry::getDisplayObservations() const {
     }
 
     // get the number of used observations
-    QMap<int, QList<InputElement> > inputElements =
+    std::map<int, std::vector<InputElement> > inputElements =
         firstFunction->getInputElements();
-    QList<int> keys = inputElements.keys();
+    std::vector<int> keys = oi::keys(inputElements);
     for (const int& key : std::as_const(keys)) {
       // check if input alements at key are observations
       if (inputElements[key].size() > 0 &&

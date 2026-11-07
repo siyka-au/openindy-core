@@ -1,17 +1,15 @@
 #ifndef SENSORWORKER_H
 #define SENSORWORKER_H
-
-#include <QList>
-#include <QMap>
-#include <QVariantMap>
 #include <atomic>
 #include <condition_variable>
 #include <cstdint>
 #include <deque>
 #include <functional>
+#include <map>
 #include <memory>
 #include <mutex>
 #include <thread>
+#include <vector>
 
 #include "core_export.h"
 #include "guarded.h"
@@ -101,14 +99,14 @@ class OI_CORE_EXPORT SensorWorker final : public SensorSink {
   [[nodiscard]] bool getIsSensorConnected();
   [[nodiscard]] bool getIsReadyForMeasurement();
   [[nodiscard]] bool getIsBusy();
-  [[nodiscard]] QMap<QString, QString> getSensorStatus();
+  [[nodiscard]] std::map<QString, QString> getSensorStatus();
 
   // static properties; answered from the snapshot
   [[nodiscard]] SensorType getActiveSensorType() const;
-  [[nodiscard]] QList<ReadingTypes> getSupportedReadingTypes() const;
-  [[nodiscard]] QList<ConnectionKind> getSupportedConnectionTypes() const;
-  [[nodiscard]] QList<SensorFunctions> getSupportedSensorActions() const;
-  [[nodiscard]] QStringList getSelfDefinedActions() const;
+  [[nodiscard]] std::vector<ReadingTypes> getSupportedReadingTypes() const;
+  [[nodiscard]] std::vector<ConnectionKind> getSupportedConnectionTypes() const;
+  [[nodiscard]] std::vector<SensorFunctions> getSupportedSensorActions() const;
+  [[nodiscard]] std::vector<QString> getSelfDefinedActions() const;
   [[nodiscard]] SensorConfiguration getSensorConfiguration() const;
   void setSensorConfiguration(const SensorConfiguration& sConfig);
 
@@ -156,10 +154,10 @@ class OI_CORE_EXPORT SensorWorker final : public SensorSink {
                        const MessageDestinations& msgDest) override;
   void onAsyncSensorResponse(const QJsonObject& response,
                              SensorAction sensorAction) override;
-  void onAsyncMeasurementResult(const int& geomId,
-                                const QList<oi::Guarded<Reading>>& measurements,
-                                SensorAction sensorAction) override;
-  void onAsyncStreamResult(const QVariantMap& reading) override;
+  void onAsyncMeasurementResult(
+      const int& geomId, const std::vector<oi::Guarded<Reading>>& measurements,
+      SensorAction sensorAction) override;
+  void onAsyncStreamResult(const std::map<QString, QVariant>& reading) override;
   void onAsyncSensorNotification(const QJsonObject& response) override;
 
  private:
@@ -200,7 +198,7 @@ class OI_CORE_EXPORT SensorWorker final : public SensorSink {
                 SensorAction action = SensorAction::eSensorActionUndefind);
   void finishedMeasurement(bool success, const QString& msg,
                            SensorAction action, int geomId,
-                           const QList<oi::Guarded<Reading>>& readings);
+                           const std::vector<oi::Guarded<Reading>>& readings);
 
   // streams (worker thread)
   void runStartReadingStream();

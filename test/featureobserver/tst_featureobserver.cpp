@@ -1,9 +1,11 @@
 #include <QCoreApplication>
 #include <QString>
 #include <QtTest>
+#include <vector>
 
 #include "chooselalib.h"
 #include "constructfunction.h"
+#include "containers.h"
 #include "featureobserver.h"
 #include "fitfunction.h"
 #include "group.h"
@@ -28,7 +30,7 @@ class FakeFit : public FitFunction, public Producer<Point> {
 // Remembers every notification as "name:arg:arg..." in arrival order
 class RecordingObserver : public FeatureObserver {
  public:
-  QStringList calls;
+  std::vector<QString> calls;
 
   [[nodiscard]] int count(const QString& name) const {
     int n = 0;
@@ -42,44 +44,45 @@ class RecordingObserver : public FeatureObserver {
 
   void onElementAboutToBeDeleted(const int& id, const QString&, const QString&,
                                  const FeatureTypes&) override {
-    this->calls << QString("elementAboutToBeDeleted:%1").arg(id);
+    this->calls.push_back(QString("elementAboutToBeDeleted:%1").arg(id));
   }
   void onFeatureNameChanged(const int& id, const QString& old) override {
-    this->calls << QString("featureName:%1:%2").arg(id).arg(old);
+    this->calls.push_back(QString("featureName:%1:%2").arg(id).arg(old));
   }
   void onFeatureGroupChanged(const int& id, const QString& old) override {
-    this->calls << QString("featureGroup:%1:%2").arg(id).arg(old);
+    this->calls.push_back(QString("featureGroup:%1:%2").arg(id).arg(old));
   }
   void onFeatureCommentChanged(const int& id) override {
-    this->calls << QString("featureComment:%1").arg(id);
+    this->calls.push_back(QString("featureComment:%1").arg(id));
   }
   void onFeatureIsSolvedChanged(const int& id) override {
-    this->calls << QString("featureIsSolved:%1").arg(id);
+    this->calls.push_back(QString("featureIsSolved:%1").arg(id));
   }
   void onFeatureFunctionListChanged(const int& id) override {
-    this->calls << QString("featureFunctionList:%1").arg(id);
+    this->calls.push_back(QString("featureFunctionList:%1").arg(id));
   }
   void onFeatureUsedForChanged(const int& id) override {
-    this->calls << QString("featureUsedFor:%1").arg(id);
+    this->calls.push_back(QString("featureUsedFor:%1").arg(id));
   }
   void onGeomIsCommonChanged(const int& id) override {
-    this->calls << QString("geomIsCommon:%1").arg(id);
+    this->calls.push_back(QString("geomIsCommon:%1").arg(id));
   }
   void onGeomMeasurementConfigChanged(const int& id, const QString& old,
                                       const MeasurementConfigKey) override {
-    this->calls << QString("geomMeasurementConfig:%1:%2").arg(id).arg(old);
+    this->calls.push_back(
+        QString("geomMeasurementConfig:%1:%2").arg(id).arg(old));
   }
   void onGroupMembersChanged(const int& id) override {
-    this->calls << QString("groupMembers:%1").arg(id);
+    this->calls.push_back(QString("groupMembers:%1").arg(id));
   }
   void onIsUsedChanged(const int& id) override {
-    this->calls << QString("trafoIsUsed:%1").arg(id);
+    this->calls.push_back(QString("trafoIsUsed:%1").arg(id));
   }
   void onIsDatumTrafoChanged(const int& id) override {
-    this->calls << QString("trafoIsDatum:%1").arg(id);
+    this->calls.push_back(QString("trafoIsDatum:%1").arg(id));
   }
   void onObservationsChanged(const int& id, const int& obs) override {
-    this->calls << QString("systemObservations:%1:%2").arg(id).arg(obs);
+    this->calls.push_back(QString("systemObservations:%1:%2").arg(id).arg(obs));
   }
 };
 
@@ -128,7 +131,7 @@ void FeatureObserverTest::renameCommentGroupSolved() {
 
   point.setFeatureName("P1");
   QCOMPARE(rec.count("featureName"), 1);
-  QCOMPARE(rec.calls.last(), QString("featureName:%1:").arg(point.getId()));
+  QCOMPARE(rec.calls.back(), QString("featureName:%1:").arg(point.getId()));
 
   point.setFeatureName("P1");  // unchanged: nothing
   QCOMPARE(rec.count("featureName"), 1);
@@ -227,7 +230,7 @@ void FeatureObserverTest::blockedSignalsStaySilent() {
   point.setFeatureName("quiet");
   point.setCommonState(true);
   point.blockSignals(false);
-  QVERIFY(rec.calls.isEmpty());
+  QVERIFY(rec.calls.empty());
 
   point.announceObservationsChanged();
   QCOMPARE(rec.count("geomObservations"), 0);  // not recorded by this observer
@@ -263,7 +266,7 @@ void FeatureObserverTest::destroyingTheFeatureTellsTheObserverOnce() {
     point.setObserver(&rec);
   }
   QCOMPARE(rec.count("elementAboutToBeDeleted"), 1);
-  QCOMPARE(rec.calls.last(), QString("elementAboutToBeDeleted:%1").arg(id));
+  QCOMPARE(rec.calls.back(), QString("elementAboutToBeDeleted:%1").arg(id));
 }
 
 void FeatureObserverTest::observerIsClearedWhenFeatureIsRemovedFromJob() {
@@ -340,8 +343,8 @@ void FeatureObserverTest::jobRelaysIntoItsOwnSignals() {
 
   point.setFeatureName("renamed");
   QCOMPARE(rec.count("featureNameChanged"), 1);  // synchronous
-  QVERIFY(rec.calls.contains(
-      QString("featureNameChanged:%1:P1").arg(point.getId())));
+  QVERIFY(oi::contains(rec.calls,
+                       QString("featureNameChanged:%1:P1").arg(point.getId())));
 
   point.setComment("c");
   QCOMPARE(rec.count("featureCommentChanged"), 1);
@@ -367,8 +370,8 @@ void FeatureObserverTest::jobDeliversIsSolvedDeferred() {
   QCOMPARE(spy.count("featureIsSolvedChanged"), 0);  // queued, not delivered
   executor.flush();
   QCOMPARE(spy.count("featureIsSolvedChanged"), 1);
-  QVERIFY(spy.calls.contains(
-      QString("featureIsSolvedChanged:%1").arg(point.getId())));
+  QVERIFY(oi::contains(
+      spy.calls, QString("featureIsSolvedChanged:%1").arg(point.getId())));
 }
 
 QTEST_MAIN(FeatureObserverTest)

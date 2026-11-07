@@ -1,5 +1,7 @@
 #include "element.h"
 
+#include "containers.h"
+
 using namespace oi;
 
 Element::Element() {}
@@ -40,9 +42,9 @@ bool Element::isNull() { return isNullObject; }
 
 void Element::setTransientAttribute(const QString& name,
                                     const QVariant& value) {
-  this->transientAttributes.insert(name, value);
+  this->transientAttributes.insert_or_assign(name, value);
 }
 
 QVariant Element::getTransientAttribute(const QString& name) const {
-  return this->transientAttributes.value(name);
+  return oi::value(this->transientAttributes, name);
 }

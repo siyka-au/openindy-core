@@ -1,7 +1,8 @@
 #ifndef TRAFOPARAM_H
 #define TRAFOPARAM_H
-
 #include <QtCore/qmath.h>
+
+#include <map>
 
 #include "core_export.h"
 #include "feature.h"
@@ -82,11 +83,11 @@ class OI_CORE_EXPORT TrafoParam : public Feature {
   // #############################
 
   // unknown parameters
-  [[nodiscard]] virtual QMap<TrafoParamParameters, QString>
-  getUnknownParameters(const QMap<DimensionType, UnitType>& displayUnits,
-                       const QMap<DimensionType, int>& displayDigits) const;
+  [[nodiscard]] virtual std::map<TrafoParamParameters, QString>
+  getUnknownParameters(const std::map<DimensionType, UnitType>& displayUnits,
+                       const std::map<DimensionType, int>& displayDigits) const;
   virtual void setUnknownParameters(
-      const QMap<TrafoParamParameters, double>& parameters);
+      const std::map<TrafoParamParameters, double>& parameters);
 
   // ###########################
   // reexecute the function list

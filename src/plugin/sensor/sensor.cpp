@@ -1,5 +1,9 @@
 #include "sensor.h"
 
+#include <map>
+#include <vector>
+
+#include "containers.h"
 #include "measurementconfig.h"
 #include "reading.h"
 #include "sensorcontrol.h"
@@ -44,7 +48,7 @@ void SensorInterface::asyncSensorResponse(const QJsonObject& response,
 }
 
 void SensorInterface::asyncMeasurementResult(
-    const int& geomId, const QList<oi::Guarded<Reading>>& measurements,
+    const int& geomId, const std::vector<oi::Guarded<Reading>>& measurements,
     const SensorAction sensorAction) {
   const std::scoped_lock lock(this->sinkMutex);
   if (this->sink != nullptr) {
@@ -52,7 +56,8 @@ void SensorInterface::asyncMeasurementResult(
   }
 }
 
-void SensorInterface::asyncStreamResult(const QVariantMap& reading) {
+void SensorInterface::asyncStreamResult(
+    const std::map<QString, QVariant>& reading) {
   const std::scoped_lock lock(this->sinkMutex);
   if (this->sink != nullptr) {
     this->sink->onAsyncStreamResult(reading);
@@ -163,7 +168,7 @@ const std::pair<ReadingTypes, oi::Guarded<Reading>>& Sensor::getLastReading()
  * \brief Sensor::getSupportedReadingTypes
  * \return
  */
-const QList<ReadingTypes>& Sensor::getSupportedReadingTypes() const {
+const std::vector<ReadingTypes>& Sensor::getSupportedReadingTypes() const {
   return this->supportedReadingTypes;
 }
 
@@ -177,7 +182,7 @@ bool Sensor::isSensorAsync() const { return false; }
  * \brief Sensor::getSupportedSensorActions
  * \return
  */
-const QList<SensorFunctions>& Sensor::getSupportedSensorActions() const {
+const std::vector<SensorFunctions>& Sensor::getSupportedSensorActions() const {
   return this->supportedSensorActions;
 }
 
@@ -185,7 +190,7 @@ const QList<SensorFunctions>& Sensor::getSupportedSensorActions() const {
  * \brief Sensor::getSupportedConnectionTypes
  * \return
  */
-const QList<ConnectionKind>& Sensor::getSupportedConnectionTypes() const {
+const std::vector<ConnectionKind>& Sensor::getSupportedConnectionTypes() const {
   return this->supportedConnectionTypes;
 }
 
@@ -193,7 +198,8 @@ const QList<ConnectionKind>& Sensor::getSupportedConnectionTypes() const {
  * \brief Sensor::getSupportedMeasurementConfigs
  * \return
  */
-const QList<MeasurementConfig>& Sensor::getSupportedMeasurementConfigs() const {
+const std::vector<MeasurementConfig>& Sensor::getSupportedMeasurementConfigs()
+    const {
   return this->supportedMeasurementConfigs;
 }
 
@@ -201,7 +207,8 @@ const QList<MeasurementConfig>& Sensor::getSupportedMeasurementConfigs() const {
  * \brief Sensor::getSupportedAcquisitionModes
  * \return
  */
-const QList<AcquisitionMode>& Sensor::getSupportedAcquisitionModes() const {
+const std::vector<AcquisitionMode>& Sensor::getSupportedAcquisitionModes()
+    const {
   return this->supportedAcquisitionModes;
 }
 
@@ -223,7 +230,7 @@ const PluginMetaData& Sensor::getMetaData() const { return this->metaData; }
  * \brief Sensor::getIntegerParameter
  * \return
  */
-const QMap<QString, int>& Sensor::getIntegerParameter() const {
+const std::map<QString, int>& Sensor::getIntegerParameter() const {
   return this->integerParameters;
 }
 
@@ -231,7 +238,7 @@ const QMap<QString, int>& Sensor::getIntegerParameter() const {
  * \brief Sensor::getDoubleParameter
  * \return
  */
-const QMap<QString, double>& Sensor::getDoubleParameter() const {
+const std::map<QString, double>& Sensor::getDoubleParameter() const {
   return this->doubleParameters;
 }
 
@@ -239,7 +246,7 @@ const QMap<QString, double>& Sensor::getDoubleParameter() const {
  * \brief Sensor::getStringParameter
  * \return
  */
-const QMultiMap<QString, QString>& Sensor::getStringParameter() const {
+const std::multimap<QString, QString>& Sensor::getStringParameter() const {
   return this->stringParameters;
 }
 
@@ -247,7 +254,7 @@ const QMultiMap<QString, QString>& Sensor::getStringParameter() const {
  * \brief Sensor::getSelfDefinedActions
  * \return
  */
-const QStringList& Sensor::getSelfDefinedActions() const {
+const std::vector<QString>& Sensor::getSelfDefinedActions() const {
   return this->selfDefinedActions;
 }
 
@@ -323,12 +330,12 @@ bool Sensor::disconnectSensor() {
  * \param mConfig
  * \return
  */
-QList<oi::Guarded<Reading>> Sensor::measure(
+std::vector<oi::Guarded<Reading>> Sensor::measure(
     const MeasurementConfig& /*mConfig*/) {
   this->sensorMessage(
       QString("Sensor not implemented correctly: measure method missing"),
       MessageTypes::eCriticalMessage, MessageDestinations::eMessageBoxMessage);
-  return QList<oi::Guarded<Reading>>();
+  return std::vector<oi::Guarded<Reading>>();
 }
 
 /*!
@@ -336,12 +343,13 @@ QList<oi::Guarded<Reading>> Sensor::measure(
  * \param streamFormat
  * \return
  */
-QVariantMap Sensor::readingStream(const ReadingTypes& /*streamFormat*/) {
+std::map<QString, QVariant> Sensor::readingStream(
+    const ReadingTypes& /*streamFormat*/) {
   this->sensorMessage(
       QString(
           "Sensor not implemented correctly: reading stream method missing"),
       MessageTypes::eCriticalMessage, MessageDestinations::eMessageBoxMessage);
-  return QVariantMap();
+  return std::map<QString, QVariant>();
 }
 
 /*!
@@ -382,11 +390,11 @@ bool Sensor::getIsBusy() {
  * \brief Sensor::getSensorStatus
  * \return
  */
-QMap<QString, QString> Sensor::getSensorStatus() {
+std::map<QString, QString> Sensor::getSensorStatus() {
   this->sensorMessage(
       QString("Sensor not implemented correctly: sensor status method missing"),
       MessageTypes::eCriticalMessage, MessageDestinations::eMessageBoxMessage);
-  return QMap<QString, QString>();
+  return std::map<QString, QString>();
 }
 
 /*!
@@ -409,8 +417,8 @@ ReadingTypes Sensor::getReadingType(const MeasurementConfig& mConfig) const {
     case MeasurementTypes::eScanDistanceDependent_MeasurementType:
     case MeasurementTypes::eScanTimeDependent_MeasurementType:
       return getReadingTypeEnum(
-          this->sensorConfiguration.getStringParameter().value("reading type",
-                                                               "cartesian"));
+          oi::value(this->sensorConfiguration.getStringParameter(),
+                    "reading type", "cartesian"));
     case MeasurementTypes::eDistance_MeasurementType:
       return ReadingTypes::eDistanceReading;
     case MeasurementTypes::eDirection_MeasurementType:

@@ -3,8 +3,10 @@
 #include <atomic>
 #include <condition_variable>
 #include <functional>
+#include <map>
 #include <mutex>
 #include <utility>
+#include <vector>
 
 using namespace oi;
 
@@ -94,11 +96,11 @@ class SensorControl::Relay final : public StationObserver {
   explicit Relay(std::shared_ptr<Delivery> delivery)
       : delivery(std::move(delivery)) {}
 
-  void onRealTimeReading(const QVariantMap& reading) override {
+  void onRealTimeReading(const std::map<QString, QVariant>& reading) override {
     this->delivery->post(
         [reading](StationObserver& o) { o.onRealTimeReading(reading); });
   }
-  void onRealTimeStatus(const QMap<QString, QString>& status) override {
+  void onRealTimeStatus(const std::map<QString, QString>& status) override {
     this->delivery->post(
         [status](StationObserver& o) { o.onRealTimeStatus(status); });
   }
@@ -119,7 +121,7 @@ class SensorControl::Relay final : public StationObserver {
     });
   }
   void onMeasurementFinished(
-      int geomId, const QList<oi::Guarded<Reading>>& readings) override {
+      int geomId, const std::vector<oi::Guarded<Reading>>& readings) override {
     this->delivery->post([geomId, readings](StationObserver& o) {
       o.onMeasurementFinished(geomId, readings);
     });
@@ -199,7 +201,7 @@ void SensorControl::setSensor(const oi::Guarded<Sensor>& sensor) {
 
   // check old sensor and add it to the list of used sensors
   if (this->sensorValid) {
-    this->usedSensors.append(this->getSensor());
+    this->usedSensors.push_back(this->getSensor());
   }
 
   this->worker->setSensor(sensor);
@@ -217,7 +219,7 @@ void SensorControl::setSensor(const oi::Guarded<Sensor>& sensor) {
 oi::Guarded<Sensor> SensorControl::takeSensor() {
   // check old sensor and add it to the list of used sensors
   if (this->sensorValid) {
-    this->usedSensors.append(this->getSensor());
+    this->usedSensors.push_back(this->getSensor());
   }
 
   oi::Guarded<Sensor> sensor = this->worker->takeSensor();
@@ -235,7 +237,7 @@ oi::Guarded<Sensor> SensorControl::takeSensor() {
 void SensorControl::resetSensor() {
   // check old sensor and add it to the list of used sensors
   if (this->sensorValid) {
-    this->usedSensors.append(this->getSensor());
+    this->usedSensors.push_back(this->getSensor());
   }
 
   this->worker->resetSensor();
@@ -244,11 +246,11 @@ void SensorControl::resetSensor() {
   this->sensorValid = false;
 }
 
-const QList<Sensor>& SensorControl::getUsedSensors() {
+const std::vector<Sensor>& SensorControl::getUsedSensors() {
   return this->usedSensors;
 }
 
-void SensorControl::setUsedSensors(const QList<Sensor>& sensors) {
+void SensorControl::setUsedSensors(const std::vector<Sensor>& sensors) {
   this->usedSensors = sensors;
 }
 
@@ -272,7 +274,7 @@ bool SensorControl::getIsReadyForMeasurement() {
 
 bool SensorControl::getIsBusy() { return this->worker->getIsBusy(); }
 
-QMap<QString, QString> SensorControl::getSensorStatus() {
+std::map<QString, QString> SensorControl::getSensorStatus() {
   return this->worker->getSensorStatus();
 }
 
@@ -280,19 +282,19 @@ SensorType SensorControl::getActiveSensorType() {
   return this->worker->getActiveSensorType();
 }
 
-QList<ReadingTypes> SensorControl::getSupportedReadingTypes() {
+std::vector<ReadingTypes> SensorControl::getSupportedReadingTypes() {
   return this->worker->getSupportedReadingTypes();
 }
 
-QList<ConnectionKind> SensorControl::getSupportedConnectionTypes() {
+std::vector<ConnectionKind> SensorControl::getSupportedConnectionTypes() {
   return this->worker->getSupportedConnectionTypes();
 }
 
-QList<SensorFunctions> SensorControl::getSupportedSensorActions() {
+std::vector<SensorFunctions> SensorControl::getSupportedSensorActions() {
   return this->worker->getSupportedSensorActions();
 }
 
-QStringList SensorControl::getSelfDefinedActions() {
+std::vector<QString> SensorControl::getSelfDefinedActions() {
   return this->worker->getSelfDefinedActions();
 }
 

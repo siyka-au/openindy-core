@@ -1,5 +1,8 @@
 #include "exchangeinterface.h"
 
+#include <map>
+#include <vector>
+
 using namespace oi;
 
 /*!
@@ -7,9 +10,11 @@ using namespace oi;
  */
 ExchangeInterface::ExchangeInterface() {
   // init units
-  this->units.insert(DimensionType::eMetric, UnitType::eUnitMeter);
-  this->units.insert(DimensionType::eAngular, UnitType::eUnitDecimalDegree);
-  this->units.insert(DimensionType::eTemperature, UnitType::eUnitGrad);
+  this->units.insert_or_assign(DimensionType::eMetric, UnitType::eUnitMeter);
+  this->units.insert_or_assign(DimensionType::eAngular,
+                               UnitType::eUnitDecimalDegree);
+  this->units.insert_or_assign(DimensionType::eTemperature,
+                               UnitType::eUnitGrad);
 }
 
 /*!
@@ -34,7 +39,7 @@ const PluginMetaData& ExchangeInterface::getMetaData() const {
  * \brief ExchangeInterface::getSupportedGeometries
  * \return
  */
-const QList<GeometryTypes>& ExchangeInterface::getSupportedGeometries() {
+const std::vector<GeometryTypes>& ExchangeInterface::getSupportedGeometries() {
   return this->supportedGeometries;
 }
 
@@ -58,8 +63,8 @@ void ExchangeInterface::setDevice(const QPointer<QIODevice>& device) {
  * \brief ExchangeInterface::getFeatures
  * \return
  */
-const QList<oi::Guarded<FeatureWrapper> >& ExchangeInterface::getFeatures()
-    const {
+const std::vector<oi::Guarded<FeatureWrapper> >&
+ExchangeInterface::getFeatures() const {
   return this->features;
 }
 
@@ -68,7 +73,7 @@ const QList<oi::Guarded<FeatureWrapper> >& ExchangeInterface::getFeatures()
  * \param features
  */
 void ExchangeInterface::setFeatures(
-    const QList<oi::Guarded<FeatureWrapper> >& features) {
+    const std::vector<oi::Guarded<FeatureWrapper> >& features) {
   this->features = features;
 }
 
@@ -126,7 +131,7 @@ void ExchangeInterface::setNominalSystem(
  * \brief ExchangeInterface::getUnits
  * \return
  */
-const QMap<DimensionType, UnitType>& ExchangeInterface::getUnits() const {
+const std::map<DimensionType, UnitType>& ExchangeInterface::getUnits() const {
   return this->units;
 }
 
@@ -137,7 +142,7 @@ const QMap<DimensionType, UnitType>& ExchangeInterface::getUnits() const {
  */
 void ExchangeInterface::setUnit(const DimensionType& dimension,
                                 const UnitType& unit) {
-  this->units.insert(dimension, unit);
+  this->units.insert_or_assign(dimension, unit);
 }
 
 /*!

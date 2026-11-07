@@ -1,7 +1,10 @@
 #include "bundleadjustment.h"
 
+#include <map>
 #include <utility>
+#include <vector>
 
+#include "containers.h"
 #include "snapshot.h"
 
 using namespace oi;
@@ -44,7 +47,7 @@ const PluginMetaData& BundleAdjustment::getMetaData() const {
  * \brief BundleAdjustment::getIntegerParameter
  * \return
  */
-const QMap<QString, int>& BundleAdjustment::getIntegerParameter() const {
+const std::map<QString, int>& BundleAdjustment::getIntegerParameter() const {
   return this->integerParameters;
 }
 
@@ -52,7 +55,7 @@ const QMap<QString, int>& BundleAdjustment::getIntegerParameter() const {
  * \brief BundleAdjustment::getDoubleParameter
  * \return
  */
-const QMap<QString, double>& BundleAdjustment::getDoubleParameter() const {
+const std::map<QString, double>& BundleAdjustment::getDoubleParameter() const {
   return this->doubleParameters;
 }
 
@@ -60,7 +63,7 @@ const QMap<QString, double>& BundleAdjustment::getDoubleParameter() const {
  * \brief BundleAdjustment::getStringParameter
  * \return
  */
-const QMultiMap<QString, QString>& BundleAdjustment::getStringParameter()
+const std::multimap<QString, QString>& BundleAdjustment::getStringParameter()
     const {
   return this->stringParameters;
 }
@@ -74,10 +77,10 @@ const ScalarInputParams& BundleAdjustment::getScalarInputParams() {
   if (!this->scalarInputParams.isValid) {
     this->scalarInputParams.doubleParameter = this->doubleParameters;
     this->scalarInputParams.intParameter = this->integerParameters;
-    QStringList keys = this->stringParameters.keys();
+    std::vector<QString> keys = oi::keys(this->stringParameters);
     for (const QString& key : std::as_const(keys)) {
-      this->scalarInputParams.stringParameter.insert(
-          key, this->stringParameters.value(key));
+      this->scalarInputParams.stringParameter.insert_or_assign(
+          key, oi::value(this->stringParameters, key));
     }
   }
 
@@ -97,7 +100,7 @@ void BundleAdjustment::setScalarInputParams(const ScalarInputParams& params) {
  * \brief BundleAdjustment::getInputStations
  * \return
  */
-const QList<BundleStation>& BundleAdjustment::getInputStations() const {
+const std::vector<BundleStation>& BundleAdjustment::getInputStations() const {
   return this->stations;
 }
 
@@ -105,7 +108,8 @@ const QList<BundleStation>& BundleAdjustment::getInputStations() const {
  * \brief BundleAdjustment::setInputStations
  * \param stations
  */
-void BundleAdjustment::setInputStations(const QList<BundleStation>& stations) {
+void BundleAdjustment::setInputStations(
+    const std::vector<BundleStation>& stations) {
   this->stations = stations;
 }
 
@@ -173,7 +177,8 @@ const int& BundleAdjustment::getId() const { return this->id; }
  * \brief BundleAdjustment::getOutputGeometries
  * \return
  */
-const QList<BundleGeometry>& BundleAdjustment::getOutputGeometries() const {
+const std::vector<BundleGeometry>& BundleAdjustment::getOutputGeometries()
+    const {
   return this->geometries;
 }
 
@@ -181,8 +186,8 @@ const QList<BundleGeometry>& BundleAdjustment::getOutputGeometries() const {
  * \brief BundleAdjustment::getOutputTransformations
  * \return
  */
-const QList<BundleTransformation>& BundleAdjustment::getOutputTransformations()
-    const {
+const std::vector<BundleTransformation>&
+BundleAdjustment::getOutputTransformations() const {
   return this->transformations;
 }
 

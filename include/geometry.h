@@ -1,9 +1,9 @@
 #ifndef GEOMETRY_H
 #define GEOMETRY_H
-
-#include <QList>
 #include <QtCore>
+#include <map>
 #include <optional>
+#include <vector>
 
 #include "core_export.h"
 #include "direction.h"
@@ -95,10 +95,11 @@ class OI_CORE_EXPORT Geometry : public Feature {
   // children when this geometry's own value actually changes, and by
   // OiJob::removeFeature to cascade-delete them when this geometry is
   // removed.
-  [[nodiscard]] const QList<oi::Guarded<Geometry>>& getOwnedSubGeometries()
-      const;
+  [[nodiscard]] const std::vector<oi::Guarded<Geometry>>&
+  getOwnedSubGeometries() const;
 
-  [[nodiscard]] const QList<oi::Guarded<Observation>>& getObservations() const;
+  [[nodiscard]] const std::vector<oi::Guarded<Observation>>& getObservations()
+      const;
   void addObservation(const oi::Guarded<Observation>& obs);
   void removeObservation(const oi::Guarded<Observation>& obs);
 
@@ -114,7 +115,7 @@ class OI_CORE_EXPORT Geometry : public Feature {
   const SimulationData& getSimulationData();
   void setSimulationData(const SimulationData& s);
 
-  [[nodiscard]] const QList<ReadingTypes>& getUsedReadingTypes() const;
+  [[nodiscard]] const std::vector<ReadingTypes>& getUsedReadingTypes() const;
 
   // ###################################################################
   // check wether this geometry has a direction, a position and a radius
@@ -138,9 +139,9 @@ class OI_CORE_EXPORT Geometry : public Feature {
   // get or set unknown parameters
   // #############################
 
-  [[nodiscard]] virtual QMap<GeometryParameters, QString> getUnknownParameters(
-      const QMap<DimensionType, UnitType>& displayUnits,
-      const QMap<DimensionType, int>& displayDigits) const;
+  [[nodiscard]] virtual std::map<GeometryParameters, QString>
+  getUnknownParameters(const std::map<DimensionType, UnitType>& displayUnits,
+                       const std::map<DimensionType, int>& displayDigits) const;
 
   // D19: not virtual any more. This is the direct-user-edit entry point
   //(reached from the nominal properties dialog), so it enforces
@@ -150,7 +151,8 @@ class OI_CORE_EXPORT Geometry : public Feature {
   // known to be allowed. A function's own exec() does not go through
   // here - it writes via setPosition/setDirection/setPoint etc, which
   // is the producer's own right to write, not a user edit.
-  void setUnknownParameters(const QMap<GeometryParameters, double>& parameters);
+  void setUnknownParameters(
+      const std::map<GeometryParameters, double>& parameters);
 
   // ###########################
   // reexecute the function list
@@ -207,7 +209,7 @@ class OI_CORE_EXPORT Geometry : public Feature {
   // overriding setUnknownParameters() directly - see that method's
   // comment. Default is a no-op, matching the previous base behaviour.
   virtual void applyUnknownParameters(
-      const QMap<GeometryParameters, double>& parameters);
+      const std::map<GeometryParameters, double>& parameters);
 
   // ###################
   // geometry attributes
@@ -228,7 +230,7 @@ class OI_CORE_EXPORT Geometry : public Feature {
   // geometry can be an owner, an owned accessor, or neither, but not both
   // at once in this stage - nothing nests owned accessors yet.
   std::optional<oi::Guarded<Geometry>> ownerFeature;
-  QList<oi::Guarded<Geometry>> ownedSubGeometries;
+  std::vector<oi::Guarded<Geometry>> ownedSubGeometries;
 
   // the coordinate system a *nominal* geometry is defined in (unused by
   // an actual). Kept as a plain field rather than being nominal-only by
@@ -236,14 +238,14 @@ class OI_CORE_EXPORT Geometry : public Feature {
   oi::Guarded<CoordinateSystem> nominalSystem;
 
   // observations
-  QList<oi::Guarded<Observation>> observations;
+  std::vector<oi::Guarded<Observation>> observations;
 
   // statistic
   Statistic statistic;
   SimulationData simulationData;
 
   // reading types
-  QList<ReadingTypes> usedReadingTypes;
+  std::vector<ReadingTypes> usedReadingTypes;
 
   // current measurement config that is used to create readings until the user
   // selects another one

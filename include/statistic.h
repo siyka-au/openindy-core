@@ -1,7 +1,7 @@
 #ifndef STATISTIC_H
 #define STATISTIC_H
-
-#include <QList>
+#include <map>
+#include <vector>
 
 #include "core_export.h"
 #include "oimat.h"
@@ -20,8 +20,8 @@ class OI_CORE_EXPORT Residual {
   Residual() {}
 
   int elementId{-1};  // id of the element this residual belongs to
-  QMap<QString, double> corrections;  // the correction values (key: name)
-  DimensionType dimension;            // dimension of the correction values
+  std::map<QString, double> corrections;  // the correction values (key: name)
+  DimensionType dimension;                // dimension of the correction values
 };
 
 /*!
@@ -65,7 +65,7 @@ class OI_CORE_EXPORT Statistic {
   [[nodiscard]] const OiVec& getV() const;
   void setV(const OiVec& v);
 
-  [[nodiscard]] const QList<Residual> getDisplayResiduals() const;
+  [[nodiscard]] const std::vector<Residual> getDisplayResiduals() const;
   [[nodiscard]] Residual getDisplayResidual(const int& elementId) const;
   void addDisplayResidual(const Residual& residual);
 
@@ -89,7 +89,7 @@ class OI_CORE_EXPORT Statistic {
   OiMat qxx;
 
   OiVec v;  // vertical distances from geometry surface
-  QMap<int, Residual>
+  std::map<int, Residual>
       displayResidualsMap;  // map of display residuals (key: element id that
                             // the residual belongs to)
 

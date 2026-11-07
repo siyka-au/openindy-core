@@ -1,9 +1,8 @@
 #ifndef SENSORCONFIGURATION_H
 #define SENSORCONFIGURATION_H
-
-#include <QMap>
 #include <QString>
 #include <QtSerialPort/QSerialPort>
+#include <map>
 
 #include "connectionkind.h"
 #include "core_export.h"
@@ -72,7 +71,7 @@ class OI_CORE_EXPORT Accuracy {
   double sigmaK{0.0};
 
   // undefined
-  QMap<QString, double> sigmaUndefined;
+  std::map<QString, double> sigmaUndefined;
 };
 
 // ###########################
@@ -125,19 +124,19 @@ class OI_CORE_EXPORT SensorConfiguration {
   [[nodiscard]] const ConnectionConfig& getConnectionConfig() const;
   void setConnectionConfig(const ConnectionConfig& cConfig);
 
-  [[nodiscard]] const QMap<QString, int>& getIntegerParameter() const;
-  void setIntegerParameter(const QMap<QString, int>& intParams);
+  [[nodiscard]] const std::map<QString, int>& getIntegerParameter() const;
+  void setIntegerParameter(const std::map<QString, int>& intParams);
 
-  [[nodiscard]] const QMap<QString, double>& getDoubleParameter() const;
-  void setDoubleParameter(const QMap<QString, double>& doubleParams);
+  [[nodiscard]] const std::map<QString, double>& getDoubleParameter() const;
+  void setDoubleParameter(const std::map<QString, double>& doubleParams);
 
-  [[nodiscard]] const QMap<QString, QString>& getStringParameter() const;
-  void setStringParameter(const QMap<QString, QString>& stringParams);
+  [[nodiscard]] const std::map<QString, QString>& getStringParameter() const;
+  void setStringParameter(const std::map<QString, QString>& stringParams);
 
-  [[nodiscard]] const QMultiMap<QString, QString>& getAvailableStringParameter()
-      const;
+  [[nodiscard]] const std::multimap<QString, QString>&
+  getAvailableStringParameter() const;
   void setAvailableStringParameter(
-      const QMultiMap<QString, QString>& stringParams);
+      const std::multimap<QString, QString>& stringParams);
 
  private:
   // ###############################
@@ -155,12 +154,12 @@ class OI_CORE_EXPORT SensorConfiguration {
   ConnectionConfig cConfig;
 
   // parameter selection
-  QMap<QString, int> integerParameter;
-  QMap<QString, double> doubleParameter;
-  QMap<QString, QString> stringParameter;
+  std::map<QString, int> integerParameter;
+  std::map<QString, double> doubleParameter;
+  std::map<QString, QString> stringParameter;
 
   // all available string parameter (specified by the sensor)
-  QMultiMap<QString, QString> availableStringParameter;
+  std::multimap<QString, QString> availableStringParameter;
 };
 
 }  // namespace oi

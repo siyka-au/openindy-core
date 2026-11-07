@@ -1,5 +1,7 @@
 #include "calibratedconstellation.h"
 
+#include <vector>
+
 namespace oi {
 
 LocalPoint::LocalPoint(const QString& label, const OiVec& position,
@@ -13,7 +15,7 @@ const OiVec& LocalPoint::position() const { return this->m_position; }
 bool LocalPoint::isMeasured() const { return this->m_isMeasured; }
 
 CalibratedConstellation::CalibratedConstellation(
-    const QString& name, const QList<LocalPoint>& points,
+    const QString& name, const std::vector<LocalPoint>& points,
     const QString& certificateId,
     const std::optional<std::chrono::year_month_day>& calibratedAt)
     : m_name(name),
@@ -23,25 +25,25 @@ CalibratedConstellation::CalibratedConstellation(
 
 const QString& CalibratedConstellation::name() const { return this->m_name; }
 
-const QList<LocalPoint>& CalibratedConstellation::points() const {
+const std::vector<LocalPoint>& CalibratedConstellation::points() const {
   return this->m_points;
 }
 
-QList<LocalPoint> CalibratedConstellation::measuredPoints() const {
-  QList<LocalPoint> result;
+std::vector<LocalPoint> CalibratedConstellation::measuredPoints() const {
+  std::vector<LocalPoint> result;
   for (const LocalPoint& p : this->m_points) {
     if (p.isMeasured()) {
-      result.append(p);
+      result.push_back(p);
     }
   }
   return result;
 }
 
-QList<LocalPoint> CalibratedConstellation::derivedPoints() const {
-  QList<LocalPoint> result;
+std::vector<LocalPoint> CalibratedConstellation::derivedPoints() const {
+  std::vector<LocalPoint> result;
   for (const LocalPoint& p : this->m_points) {
     if (!p.isMeasured()) {
-      result.append(p);
+      result.push_back(p);
     }
   }
   return result;

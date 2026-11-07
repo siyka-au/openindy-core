@@ -1,5 +1,7 @@
 #ifndef SYSTEMTRANSFORMATION_H
 #define SYSTEMTRANSFORMATION_H
+#include <map>
+#include <vector>
 
 #include "core_export.h"
 #include "function.h"
@@ -20,34 +22,35 @@ class OI_CORE_EXPORT SystemTransformation : public Function {
   explicit SystemTransformation() : Function() {
     // only applicable for trafo params
     this->applicableFor.clear();
-    this->applicableFor.append(FeatureTypes::eTrafoParamFeature);
+    this->applicableFor.push_back(FeatureTypes::eTrafoParamFeature);
   }
 
   ~SystemTransformation() override {}
 
-  void setInputPoint(const QList<Point>& startSystem,
-                     const QList<Point>& destinationSystem) {
+  void setInputPoint(const std::vector<Point>& startSystem,
+                     const std::vector<Point>& destinationSystem) {
     this->inputPointsStartSystem = startSystem;
     this->inputPointsDestinationSystem = destinationSystem;
   }
 
   void setInputElements(
-      const QMap<int, QList<InputElement> >& startSystem,
-      const QMap<int, QList<InputElement> >& destinationSystem) {
+      const std::map<int, std::vector<InputElement> >& startSystem,
+      const std::map<int, std::vector<InputElement> >& destinationSystem) {
     this->inputElementsStartSystem = startSystem;
     this->inputElementsDestinationSystem = destinationSystem;
   }
 
  protected:
   // special attributes for system transformations (normal transformations)
-  QList<Point> inputPointsStartSystem;  // input elements solved in start system
-  QList<Point> inputPointsDestinationSystem;  // input elements solved in
-                                              // destination system
+  std::vector<Point>
+      inputPointsStartSystem;  // input elements solved in start system
+  std::vector<Point> inputPointsDestinationSystem;  // input elements solved in
+                                                    // destination system
 
   // special attributes for system transformations (alignments)
-  QMap<int, QList<InputElement> >
+  std::map<int, std::vector<InputElement> >
       inputElementsStartSystem;  // input elements solved in start system
-  QMap<int, QList<InputElement> >
+  std::map<int, std::vector<InputElement> >
       inputElementsDestinationSystem;  // input elements solved in destination
                                        // system
 };

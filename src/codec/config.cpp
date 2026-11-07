@@ -1,11 +1,12 @@
 // Config files: SensorConfiguration <-> protobuf, and the JSON text encoding of
 // both config kinds (see config_codec.h).
-
 #include <google/protobuf/json/json.h>
 
+#include <map>
 #include <string>
 
 #include "config_codec.h"
+#include "containers.h"
 #include "wire.h"
 
 namespace oi::codec {
@@ -242,33 +243,35 @@ oipb::SensorConfiguration toProto(const SensorConfiguration& config) {
   for (auto it = a.sigmaUndefined.cbegin(); it != a.sigmaUndefined.cend();
        ++it) {
     oipb::NamedDouble* entry = acc->add_sigma_undefined();
-    entry->set_name(str(it.key()));
-    entry->set_value(it.value());
+    entry->set_name(str(it->first));
+    entry->set_value(it->second);
   }
 
   for (auto it = config.getIntegerParameter().cbegin();
        it != config.getIntegerParameter().cend(); ++it) {
     oipb::NamedInt* entry = m.add_integer_parameters();
-    entry->set_name(str(it.key()));
-    entry->set_value(it.value());
+    entry->set_name(str(it->first));
+    entry->set_value(it->second);
   }
   for (auto it = config.getDoubleParameter().cbegin();
        it != config.getDoubleParameter().cend(); ++it) {
     oipb::NamedDouble* entry = m.add_double_parameters();
-    entry->set_name(str(it.key()));
-    entry->set_value(it.value());
+    entry->set_name(str(it->first));
+    entry->set_value(it->second);
   }
   for (auto it = config.getStringParameter().cbegin();
        it != config.getStringParameter().cend(); ++it) {
     oipb::NamedString* entry = m.add_string_parameters();
-    entry->set_name(str(it.key()));
-    entry->set_value(str(it.value()));
+    entry->set_name(str(it->first));
+    entry->set_value(str(it->second));
   }
   const auto& available = config.getAvailableStringParameter();
-  for (const QString& key : available.uniqueKeys()) {
+  for (auto group = available.cbegin(); group != available.cend();
+       group = available.upper_bound(group->first)) {
+    const QString& key = group->first;
     oipb::StringParameterOptions* entry = m.add_available_string_parameters();
     entry->set_name(str(key));
-    for (const QString& value : available.values(key)) {
+    for (const QString& value : oi::values(available, key)) {
       entry->add_options(str(value));
     }
   }
@@ -312,32 +315,33 @@ std::optional<SensorConfiguration> fromProto(
   a.sigmaJ = acc.sigma_j();
   a.sigmaK = acc.sigma_k();
   for (const auto& entry : acc.sigma_undefined()) {
-    a.sigmaUndefined.insert(qstr(entry.name()), entry.value());
+    a.sigmaUndefined.insert_or_assign(qstr(entry.name()), entry.value());
   }
   config.setAccuracy(a);
 
-  QMap<QString, int> ints;
+  std::map<QString, int> ints;
   for (const auto& entry : m.integer_parameters()) {
-    ints.insert(qstr(entry.name()), entry.value());
+    ints.insert_or_assign(qstr(entry.name()), entry.value());
   }
   config.setIntegerParameter(ints);
-  QMap<QString, double> doubles;
+  std::map<QString, double> doubles;
   for (const auto& entry : m.double_parameters()) {
-    doubles.insert(qstr(entry.name()), entry.value());
+    doubles.insert_or_assign(qstr(entry.name()), entry.value());
   }
   config.setDoubleParameter(doubles);
-  QMap<QString, QString> strings;
+  std::map<QString, QString> strings;
   for (const auto& entry : m.string_parameters()) {
-    strings.insert(qstr(entry.name()), qstr(entry.value()));
+    strings.insert_or_assign(qstr(entry.name()), qstr(entry.value()));
   }
   config.setStringParameter(strings);
 
-  // QMultiMap::values() lists the most recently inserted value first, so
-  // insert in reverse to get the options back in the order they were written.
-  QMultiMap<QString, QString> available;
+  // oi::values(multimap, key) lists the most recently inserted value first,
+  // so insert in reverse to get the options back in the order they were
+  // written.
+  std::multimap<QString, QString> available;
   for (const auto& entry : m.available_string_parameters()) {
     for (int i = entry.options_size() - 1; i >= 0; --i) {
-      available.insert(qstr(entry.name()), qstr(entry.options(i)));
+      available.emplace(qstr(entry.name()), qstr(entry.options(i)));
     }
   }
   config.setAvailableStringParameter(available);

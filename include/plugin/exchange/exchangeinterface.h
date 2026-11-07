@@ -1,9 +1,9 @@
 #ifndef EXCHANGEINTERFACE_H
 #define EXCHANGEINTERFACE_H
-
 #include <QIODevice>
 #include <QPointer>
-#include <QStringList>
+#include <map>
+#include <vector>
 
 #include "coordinatesystem.h"
 #include "core_export.h"
@@ -36,13 +36,14 @@ class OI_CORE_EXPORT ExchangeInterface : public oi::Trackable {
   // #########################################
 
   [[nodiscard]] const PluginMetaData& getMetaData() const;
-  const QList<GeometryTypes>& getSupportedGeometries();
+  const std::vector<GeometryTypes>& getSupportedGeometries();
 
   [[nodiscard]] const QPointer<QIODevice>& getDevice() const;
   void setDevice(const QPointer<QIODevice>& device);
 
-  [[nodiscard]] const QList<oi::Guarded<FeatureWrapper>>& getFeatures() const;
-  void setFeatures(const QList<oi::Guarded<FeatureWrapper>>& features);
+  [[nodiscard]] const std::vector<oi::Guarded<FeatureWrapper>>& getFeatures()
+      const;
+  void setFeatures(const std::vector<oi::Guarded<FeatureWrapper>>& features);
 
   [[nodiscard]] const bool& getExportObservations() const;
   void setExportObservations(const bool& exportObservations);
@@ -53,7 +54,7 @@ class OI_CORE_EXPORT ExchangeInterface : public oi::Trackable {
   [[nodiscard]] const oi::Guarded<CoordinateSystem>& getNominalSystem() const;
   void setNominalSystem(const oi::Guarded<CoordinateSystem>& nominalSystem);
 
-  [[nodiscard]] const QMap<DimensionType, UnitType>& getUnits() const;
+  [[nodiscard]] const std::map<DimensionType, UnitType>& getUnits() const;
   void setUnit(const DimensionType& dimension, const UnitType& unit);
 
  public:
@@ -112,7 +113,7 @@ class OI_CORE_EXPORT ExchangeInterface : public oi::Trackable {
   // input and output parameters
   // ###########################
 
-  QMap<DimensionType, UnitType> units;
+  std::map<DimensionType, UnitType> units;
 
   bool exportObservations{};  // true if only the observations of the selected
                               // geometries shall be exported
@@ -123,11 +124,11 @@ class OI_CORE_EXPORT ExchangeInterface : public oi::Trackable {
 
   QPointer<QIODevice>
       device;  // the device used for the im- or export (e.g. a file)
-  QList<oi::Guarded<FeatureWrapper>>
+  std::vector<oi::Guarded<FeatureWrapper>>
       features;  // the features that shall be exported or were imported
 
   PluginMetaData metaData;
-  QList<GeometryTypes> supportedGeometries;
+  std::vector<GeometryTypes> supportedGeometries;
 
  private:
   MessageSink* messageSink = nullptr;            // non-owning

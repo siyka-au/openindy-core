@@ -1,5 +1,7 @@
 #include "pointgroup.h"
 
+#include <vector>
+
 #include "featurewrapper.h"
 #include "geometry/point.h"
 #include "snapshot.h"
@@ -20,8 +22,8 @@ PointGroup& PointGroup::operator=(const PointGroup& copy) {
 
 PointGroup::~PointGroup() {}
 
-QList<oi::Guarded<Point> > PointGroup::getPoints() const {
-  QList<oi::Guarded<Point> > points;
+std::vector<oi::Guarded<Point> > PointGroup::getPoints() const {
+  std::vector<oi::Guarded<Point> > points;
 
   for (const oi::Guarded<FeatureWrapper>& member :
        oi::snapshot(this->members)) {
@@ -32,14 +34,14 @@ QList<oi::Guarded<Point> > PointGroup::getPoints() const {
       continue;
     }
 
-    points.append(member->getPoint());
+    points.push_back(member->getPoint());
   }
 
   return points;
 }
 
-QList<Position> PointGroup::collectionPoints() const {
-  QList<Position> positions;
+std::vector<Position> PointGroup::collectionPoints() const {
+  std::vector<Position> positions;
 
   for (const oi::Guarded<Point>& point : oi::snapshot(this->getPoints())) {
     // an unsolved point has no meaningful position yet - handing it to a
@@ -49,7 +51,7 @@ QList<Position> PointGroup::collectionPoints() const {
       continue;
     }
 
-    positions.append(point->getPosition());
+    positions.push_back(point->getPosition());
   }
 
   return positions;

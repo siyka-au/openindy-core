@@ -1,6 +1,8 @@
 #include "sensorworker.h"
 
+#include <map>
 #include <utility>
+#include <vector>
 
 using namespace oi;
 
@@ -235,14 +237,14 @@ bool SensorWorker::getIsBusy() {
   return current->getIsBusy();
 }
 
-QMap<QString, QString> SensorWorker::getSensorStatus() {
+std::map<QString, QString> SensorWorker::getSensorStatus() {
   std::unique_lock driver(this->driverMutex, std::try_to_lock);
   if (!driver.owns_lock()) {
-    return QMap<QString, QString>();
+    return std::map<QString, QString>();
   }
   const oi::Guarded<Sensor> current = this->currentSensor();
   if (current.isNull() || !current->getConnectionState()) {
-    return QMap<QString, QString>();
+    return std::map<QString, QString>();
   }
   return current->getSensorStatus();
 }
@@ -255,29 +257,29 @@ SensorType SensorWorker::getActiveSensorType() const {
   return this->snapshot->getSensorConfiguration().getTypeOfSensor();
 }
 
-QList<ReadingTypes> SensorWorker::getSupportedReadingTypes() const {
+std::vector<ReadingTypes> SensorWorker::getSupportedReadingTypes() const {
   const std::scoped_lock lock(this->snapshotMutex);
-  return this->snapshot == nullptr ? QList<ReadingTypes>()
+  return this->snapshot == nullptr ? std::vector<ReadingTypes>()
                                    : this->snapshot->getSupportedReadingTypes();
 }
 
-QList<ConnectionKind> SensorWorker::getSupportedConnectionTypes() const {
+std::vector<ConnectionKind> SensorWorker::getSupportedConnectionTypes() const {
   const std::scoped_lock lock(this->snapshotMutex);
   return this->snapshot == nullptr
-             ? QList<ConnectionKind>()
+             ? std::vector<ConnectionKind>()
              : this->snapshot->getSupportedConnectionTypes();
 }
 
-QList<SensorFunctions> SensorWorker::getSupportedSensorActions() const {
+std::vector<SensorFunctions> SensorWorker::getSupportedSensorActions() const {
   const std::scoped_lock lock(this->snapshotMutex);
   return this->snapshot == nullptr
-             ? QList<SensorFunctions>()
+             ? std::vector<SensorFunctions>()
              : this->snapshot->getSupportedSensorActions();
 }
 
-QStringList SensorWorker::getSelfDefinedActions() const {
+std::vector<QString> SensorWorker::getSelfDefinedActions() const {
   const std::scoped_lock lock(this->snapshotMutex);
-  return this->snapshot == nullptr ? QStringList()
+  return this->snapshot == nullptr ? std::vector<QString>()
                                    : this->snapshot->getSelfDefinedActions();
 }
 
@@ -319,7 +321,7 @@ void SensorWorker::finished(bool success, const QString& msg,
 // measurementDone is reported after commandFinished and measurementFinished
 void SensorWorker::finishedMeasurement(
     bool success, const QString& msg, SensorAction action, int geomId,
-    const QList<oi::Guarded<Reading>>& readings) {
+    const std::vector<oi::Guarded<Reading>>& readings) {
   this->finished(success, msg, action);
   if (success) {
     this->out.onMeasurementFinished(geomId, readings);
@@ -479,7 +481,7 @@ void SensorWorker::runMeasure(int geomId, const MeasurementConfig& mConfig) {
   // check wether the sensor is already connected
   QString msg = SensorWorkerMessage::FAILED_TO_MEASURE;
   bool success = false;
-  QList<oi::Guarded<Reading>> readings;
+  std::vector<oi::Guarded<Reading>> readings;
 
   if (!sensor->isSensorAsync()) {
     if (!sensor->getConnectionState()) {
@@ -524,7 +526,7 @@ void SensorWorker::runMovePolar(double azimuth, double zenith, double distance,
   // check wether the sensor is already connected
   QString msg = SensorWorkerMessage::FAILED_TO_MOVE_SENSOR;
   bool success = false;
-  QList<oi::Guarded<Reading>> readings;
+  std::vector<oi::Guarded<Reading>> readings;
   if (!sensor->getConnectionState()) {
     msg = SensorWorkerMessage::SENSOR_IS_NOT_CONNECTED;
   } else {
@@ -575,7 +577,7 @@ void SensorWorker::runMoveCartesian(double x, double y, double z, bool measure,
     // check wether the sensor is already connected
     QString msg = SensorWorkerMessage::FAILED_TO_MOVE_SENSOR;
     bool success = false;
-    QList<oi::Guarded<Reading>> readings;
+    std::vector<oi::Guarded<Reading>> readings;
     if (!sensor->getConnectionState()) {
       msg = SensorWorkerMessage::SENSOR_IS_NOT_CONNECTED;
     } else {
@@ -900,7 +902,8 @@ void SensorWorker::streamReading(std::uint64_t generation) {
 
   if (!sensor->isSensorAsync()) {
     // get real time reading
-    const QVariantMap reading = sensor->readingStream(this->streamFormat);
+    const std::map<QString, QVariant> reading =
+        sensor->readingStream(this->streamFormat);
     this->out.onRealTimeReading(reading);
 
     // next iteration
@@ -990,7 +993,7 @@ void SensorWorker::onAsyncSensorResponse(const QJsonObject& response,
 }
 
 void SensorWorker::onAsyncMeasurementResult(
-    const int& geomId, const QList<oi::Guarded<Reading>>& measurements,
+    const int& geomId, const std::vector<oi::Guarded<Reading>>& measurements,
     SensorAction sensorAction) {
   this->dispatch([this, geomId, measurements, sensorAction] {
     // same logic like SensorWorker::runMeasure
@@ -1003,7 +1006,8 @@ void SensorWorker::onAsyncMeasurementResult(
   });
 }
 
-void SensorWorker::onAsyncStreamResult(const QVariantMap& reading) {
+void SensorWorker::onAsyncStreamResult(
+    const std::map<QString, QVariant>& reading) {
   this->dispatch([this, reading] {
     this->out.onRealTimeReading(reading);
 

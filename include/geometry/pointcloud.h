@@ -1,8 +1,8 @@
 #ifndef POINTCLOUD_H
 #define POINTCLOUD_H
-
 #include <QtCore>
 #include <array>
+#include <vector>
 
 #include "core_export.h"
 #include "geometry.h"
@@ -74,14 +74,14 @@ class OI_CORE_EXPORT PointCloud : public Geometry, public PointCollection {
   // get or set point cloud parameters
   // #################################
 
-  [[nodiscard]] const QList<Point_PC*>& getPointCloudPoints() const;
+  [[nodiscard]] const std::vector<Point_PC*>& getPointCloudPoints() const;
   void addPointCloudPoint(Point_PC* point);
 
   // #########################
   // PointCollection interface
   // #########################
 
-  [[nodiscard]] QList<Position> collectionPoints() const override;
+  [[nodiscard]] std::vector<Position> collectionPoints() const override;
   [[nodiscard]] int collectionPointCount() const override;
 
   [[nodiscard]] const BoundingBox_PC& getBoundingBox() const;
@@ -102,10 +102,10 @@ class OI_CORE_EXPORT PointCloud : public Geometry, public PointCollection {
   // point cloud attributes
   // ######################
 
-  QList<Point_PC*> points;  // all points of the pointcloud (owned)
-  BoundingBox_PC bbox;      // bounding box of the pointcloud
+  std::vector<Point_PC*> points;  // all points of the pointcloud (owned)
+  BoundingBox_PC bbox;            // bounding box of the pointcloud
 
-  QList<oi::Guarded<FeatureWrapper> >
+  std::vector<oi::Guarded<FeatureWrapper> >
       detectedSegments;  // geometry-segments that were detected in the
                          // pointcloud
 };

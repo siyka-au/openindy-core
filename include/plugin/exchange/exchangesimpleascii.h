@@ -1,7 +1,7 @@
 #ifndef EXCHANGESIMPLEASCII_H
 #define EXCHANGESIMPLEASCII_H
-
-#include <QVariantList>
+#include <map>
+#include <vector>
 
 #include "core_export.h"
 #include "exchangeinterface.h"
@@ -57,20 +57,20 @@ class OI_CORE_EXPORT ExchangeSimpleAscii : public ExchangeInterface {
   // methods to get or set further information
   // #########################################
 
-  [[nodiscard]] virtual QList<ExchangeSimpleAscii::ColumnType>
+  [[nodiscard]] virtual std::vector<ExchangeSimpleAscii::ColumnType>
   getDefaultColumnOrder(const GeometryTypes& typeOfGeometry) const;
   [[nodiscard]]
-  virtual QMap<ExchangeSimpleAscii::ColumnType, QVariantList> getFilePreview(
-      const GeometryTypes& typeOfGeometry) const;
-  [[nodiscard]] virtual QList<ExchangeSimpleAscii::ColumnType>
+  virtual std::map<ExchangeSimpleAscii::ColumnType, std::vector<QVariant>>
+  getFilePreview(const GeometryTypes& typeOfGeometry) const;
+  [[nodiscard]] virtual std::vector<ExchangeSimpleAscii::ColumnType>
   getPossibleColumns(const GeometryTypes& typeOfGeometry) const;
 
-  [[nodiscard]] const QStringList& getSupportedDelimiters() const;
+  [[nodiscard]] const std::vector<QString>& getSupportedDelimiters() const;
 
-  [[nodiscard]] const QList<ExchangeSimpleAscii::ColumnType>&
+  [[nodiscard]] const std::vector<ExchangeSimpleAscii::ColumnType>&
   getUserDefinedColumns() const;
   void setUserDefinedColumns(
-      const QList<ExchangeSimpleAscii::ColumnType>& userDefinedColumns);
+      const std::vector<ExchangeSimpleAscii::ColumnType>& userDefinedColumns);
 
   [[nodiscard]] const GeometryTypes& getTypeOfGeometry() const;
   void setGeometryType(const GeometryTypes& typeOfGeometry);
@@ -98,7 +98,7 @@ class OI_CORE_EXPORT ExchangeSimpleAscii : public ExchangeInterface {
   // input and output parameters
   // ###########################
 
-  QList<ExchangeSimpleAscii::ColumnType>
+  std::vector<ExchangeSimpleAscii::ColumnType>
       userDefinedColumns;  // an ordered list of enum values that specify what
                            // to do with each column
   GeometryTypes typeOfGeometry{
@@ -109,7 +109,7 @@ class OI_CORE_EXPORT ExchangeSimpleAscii : public ExchangeInterface {
   QString
       usedDelimiter;  // the delimiter that shall be used when parsing the file
 
-  QStringList supportedDelimiters;
+  std::vector<QString> supportedDelimiters;
 
   oi::Guarded<OiJob> currentJob;
 

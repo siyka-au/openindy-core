@@ -1,6 +1,7 @@
-#include <QMap>
 #include <QtTest>
+#include <map>
 
+#include "containers.h"
 #include "util/types.h"
 #include "util/util.h"
 
@@ -43,7 +44,7 @@ class TypeNamesTest : public QObject {
 };
 
 void TypeNamesTest::persistedElementTokensAreUnchanged() {
-  const QMap<ElementTypes, QString> golden = {
+  const std::map<ElementTypes, QString> golden = {
       {ElementTypes::eCircleElement, QStringLiteral("circle")},
       {ElementTypes::eConeElement, QStringLiteral("cone")},
       {ElementTypes::eCylinderElement, QStringLiteral("cylinder")},
@@ -88,15 +89,15 @@ void TypeNamesTest::persistedElementTokensAreUnchanged() {
       {ElementTypes::ePointCollectionElement,
        QStringLiteral("point collection")},
   };
-  for (auto it = golden.constBegin(); it != golden.constEnd(); ++it) {
-    QCOMPARE(getElementTypeName(it.key()), it.value());
+  for (auto it = golden.cbegin(); it != golden.cend(); ++it) {
+    QCOMPARE(getElementTypeName(it->first), it->second);
   }
 }
 
 void TypeNamesTest::persistedElementPluralTokensAreUnchanged() {
   // the plural map participates in getElementTypeEnum's reverse lookup, so
   // these are persisted identifiers too, not just prettier labels
-  const QMap<ElementTypes, QString> golden = {
+  const std::map<ElementTypes, QString> golden = {
       {ElementTypes::eCircleElement, QStringLiteral("circles")},
       {ElementTypes::eConeElement, QStringLiteral("cones")},
       {ElementTypes::eCylinderElement, QStringLiteral("cylinders")},
@@ -140,13 +141,13 @@ void TypeNamesTest::persistedElementPluralTokensAreUnchanged() {
       {ElementTypes::ePointCollectionElement,
        QStringLiteral("point collections")},
   };
-  for (auto it = golden.constBegin(); it != golden.constEnd(); ++it) {
-    QCOMPARE(getElementTypePluralName(it.key()), it.value());
+  for (auto it = golden.cbegin(); it != golden.cend(); ++it) {
+    QCOMPARE(getElementTypePluralName(it->first), it->second);
   }
 }
 
 void TypeNamesTest::persistedFeatureTokensAreUnchanged() {
-  const QMap<FeatureTypes, QString> golden = {
+  const std::map<FeatureTypes, QString> golden = {
       {FeatureTypes::eCircleFeature, QStringLiteral("circle")},
       {FeatureTypes::eConeFeature, QStringLiteral("cone")},
       {FeatureTypes::eCylinderFeature, QStringLiteral("cylinder")},
@@ -177,13 +178,13 @@ void TypeNamesTest::persistedFeatureTokensAreUnchanged() {
       {FeatureTypes::eGroupFeature, QStringLiteral("group")},
       {FeatureTypes::ePointGroupFeature, QStringLiteral("point group")},
   };
-  for (auto it = golden.constBegin(); it != golden.constEnd(); ++it) {
-    QCOMPARE(getFeatureTypeName(it.key()), it.value());
+  for (auto it = golden.cbegin(); it != golden.cend(); ++it) {
+    QCOMPARE(getFeatureTypeName(it->first), it->second);
   }
 }
 
 void TypeNamesTest::persistedGeometryTokensAreUnchanged() {
-  const QMap<GeometryTypes, QString> golden = {
+  const std::map<GeometryTypes, QString> golden = {
       {GeometryTypes::eCircleGeometry, QStringLiteral("circle")},
       {GeometryTypes::eConeGeometry, QStringLiteral("cone")},
       {GeometryTypes::eCylinderGeometry, QStringLiteral("cylinder")},
@@ -208,8 +209,8 @@ void TypeNamesTest::persistedGeometryTokensAreUnchanged() {
       {GeometryTypes::eTorusGeometry, QStringLiteral("torus")},
       {GeometryTypes::ePlaneLevelGeometry, QStringLiteral("level")},
   };
-  for (auto it = golden.constBegin(); it != golden.constEnd(); ++it) {
-    QCOMPARE(getGeometryTypeName(it.key()), it.value());
+  for (auto it = golden.cbegin(); it != golden.cend(); ++it) {
+    QCOMPARE(getGeometryTypeName(it->first), it->second);
   }
 }
 
@@ -218,7 +219,7 @@ void TypeNamesTest::persistedGeometryTokensAreUnchanged() {
  * to the same enum.
  */
 void TypeNamesTest::everyTokenRoundTripsBackToItsEnum() {
-  foreach (const ElementTypes& type, getAvailableElementTypes()) {
+  for (const ElementTypes& type : getAvailableElementTypes()) {
     const QString token = getElementTypeName(type);
     if (token.isEmpty()) {
       continue;
@@ -226,7 +227,7 @@ void TypeNamesTest::everyTokenRoundTripsBackToItsEnum() {
     QCOMPARE(getElementTypeEnum(token), type);
   }
 
-  foreach (const FeatureTypes& type, getAvailableFeatureTypes()) {
+  for (const FeatureTypes& type : getAvailableFeatureTypes()) {
     const QString token = getFeatureTypeName(type);
     if (token.isEmpty()) {
       continue;
@@ -234,7 +235,7 @@ void TypeNamesTest::everyTokenRoundTripsBackToItsEnum() {
     QCOMPARE(getFeatureTypeEnum(token), type);
   }
 
-  foreach (const GeometryTypes& type, getAvailableGeometryTypes()) {
+  for (const GeometryTypes& type : getAvailableGeometryTypes()) {
     const QString token = getGeometryTypeName(type);
     if (token.isEmpty()) {
       continue;
@@ -248,7 +249,7 @@ void TypeNamesTest::everyTokenRoundTripsBackToItsEnum() {
  * UI - the failure mode of adding an enum value and updating only one table.
  */
 void TypeNamesTest::displayNamesExistForEveryTypeThatHasAToken() {
-  foreach (const ElementTypes& type, getAvailableElementTypes()) {
+  for (const ElementTypes& type : getAvailableElementTypes()) {
     if (getElementTypeName(type).isEmpty()) {
       continue;
     }
@@ -257,7 +258,7 @@ void TypeNamesTest::displayNamesExistForEveryTypeThatHasAToken() {
                             .arg(getElementTypeName(type))));
   }
 
-  foreach (const FeatureTypes& type, getAvailableFeatureTypes()) {
+  for (const FeatureTypes& type : getAvailableFeatureTypes()) {
     if (getFeatureTypeName(type).isEmpty()) {
       continue;
     }
@@ -266,7 +267,7 @@ void TypeNamesTest::displayNamesExistForEveryTypeThatHasAToken() {
                             .arg(getFeatureTypeName(type))));
   }
 
-  foreach (const GeometryTypes& type, getAvailableGeometryTypes()) {
+  for (const GeometryTypes& type : getAvailableGeometryTypes()) {
     if (getGeometryTypeName(type).isEmpty()) {
       continue;
     }
@@ -285,7 +286,7 @@ void TypeNamesTest::displayNamesExistForEveryTypeThatHasAToken() {
  * string, and single lowercase words often survive title-casing unchanged.
  */
 void TypeNamesTest::displayNamesAreNotAcceptedByTheReverseLookup() {
-  foreach (const FeatureTypes& type, getAvailableFeatureTypes()) {
+  for (const FeatureTypes& type : getAvailableFeatureTypes()) {
     const QString display = getFeatureTypeDisplayName(type);
     if (display.isEmpty() || display == getFeatureTypeName(type)) {
       continue;
@@ -293,7 +294,7 @@ void TypeNamesTest::displayNamesAreNotAcceptedByTheReverseLookup() {
     QCOMPARE(getFeatureTypeEnum(display), FeatureTypes::eUndefinedFeature);
   }
 
-  foreach (const GeometryTypes& type, getAvailableGeometryTypes()) {
+  for (const GeometryTypes& type : getAvailableGeometryTypes()) {
     const QString display = getGeometryTypeDisplayName(type);
     if (display.isEmpty() || display == getGeometryTypeName(type)) {
       continue;

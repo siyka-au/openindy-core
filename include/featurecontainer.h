@@ -1,11 +1,8 @@
 #ifndef FEATURECONTAINER_H
 #define FEATURECONTAINER_H
-
-#include <QList>
-#include <QMap>
-#include <QMultiMap>
 #include <QString>
-#include <QStringList>
+#include <map>
+#include <vector>
 
 #include "coordinatesystem.h"
 #include "core_export.h"
@@ -35,38 +32,39 @@ class OI_CORE_EXPORT FeatureContainer {
   // ###############
 
   // getter to access feature lists
-  [[nodiscard]] const QList<oi::Guarded<FeatureWrapper>>& getFeaturesList()
-      const;
-  [[nodiscard]] const QList<oi::Guarded<CoordinateSystem>>&
+  [[nodiscard]] const std::vector<oi::Guarded<FeatureWrapper>>&
+  getFeaturesList() const;
+  [[nodiscard]] const std::vector<oi::Guarded<CoordinateSystem>>&
   getCoordinateSystemsList() const;
-  [[nodiscard]] QList<oi::Guarded<CoordinateSystem>> getStationSystemsList()
+  [[nodiscard]] std::vector<oi::Guarded<CoordinateSystem>>
+  getStationSystemsList() const;
+  // std::vector<oi::Guarded<CoordinateSystem> > getBundleSystemList() const; //
+  // TODO OI-982 remove
+  [[nodiscard]] const std::vector<oi::Guarded<Station>>& getStationsList()
       const;
-  // QList<oi::Guarded<CoordinateSystem> > getBundleSystemList() const; // TODO
-  // OI-982 remove
-  [[nodiscard]] const QList<oi::Guarded<Station>>& getStationsList() const;
-  [[nodiscard]] const QList<oi::Guarded<TrafoParam>>&
+  [[nodiscard]] const std::vector<oi::Guarded<TrafoParam>>&
   getTransformationParametersList() const;
-  [[nodiscard]] const QList<oi::Guarded<FeatureWrapper>>& getGeometriesList()
-      const;
+  [[nodiscard]] const std::vector<oi::Guarded<FeatureWrapper>>&
+  getGeometriesList() const;
 
   // getter to get a list of all feature ids, names, groups and measurement
   // configs
-  [[nodiscard]] const QList<int>& getFeatureIdList() const;
-  [[nodiscard]] const QStringList& getFeatureNameList() const;
-  [[nodiscard]] const QStringList& getFeatureGroupList() const;
-  [[nodiscard]] const QList<MeasurementConfigKey>& getUsedMeasurementConfigs()
-      const;
+  [[nodiscard]] const std::vector<int>& getFeatureIdList() const;
+  [[nodiscard]] const std::vector<QString>& getFeatureNameList() const;
+  [[nodiscard]] const std::vector<QString>& getFeatureGroupList() const;
+  [[nodiscard]] const std::vector<MeasurementConfigKey>&
+  getUsedMeasurementConfigs() const;
 
   // getter to access features by id, name, group, type or mConfig
   [[nodiscard]] oi::Guarded<FeatureWrapper> getFeatureById(
       const int& featureId) const;
-  [[nodiscard]] QList<oi::Guarded<FeatureWrapper>> getFeaturesByName(
+  [[nodiscard]] std::vector<oi::Guarded<FeatureWrapper>> getFeaturesByName(
       const QString& name, const bool startWith = false) const;
-  [[nodiscard]] QList<oi::Guarded<FeatureWrapper>> getFeaturesByGroup(
+  [[nodiscard]] std::vector<oi::Guarded<FeatureWrapper>> getFeaturesByGroup(
       const QString& group) const;
-  [[nodiscard]] QList<oi::Guarded<FeatureWrapper>> getFeaturesByType(
+  [[nodiscard]] std::vector<oi::Guarded<FeatureWrapper>> getFeaturesByType(
       const FeatureTypes& type) const;
-  [[nodiscard]] QList<oi::Guarded<Geometry>> getGeometriesByMConfig(
+  [[nodiscard]] std::vector<oi::Guarded<Geometry>> getGeometriesByMConfig(
       const MeasurementConfigKey& key) const;
 
   // ######################
@@ -107,39 +105,40 @@ class OI_CORE_EXPORT FeatureContainer {
 
   // feature lists (useful to provide lists of features by category (geometries,
   // stations etc.))
-  QList<oi::Guarded<FeatureWrapper>>
+  std::vector<oi::Guarded<FeatureWrapper>>
       featuresList;  // list of all features in OpenIndy
-  QList<oi::Guarded<CoordinateSystem>>
+  std::vector<oi::Guarded<CoordinateSystem>>
       coordSystems;  // list of all non-station coordinate systems
-  QList<oi::Guarded<Station>>
+  std::vector<oi::Guarded<Station>>
       stationsList;  // list of all stations (each station has pointer to its
                      // coordinate system)
-  QList<oi::Guarded<TrafoParam>> trafoParamsList;  // list of all trafo params
-  QList<oi::Guarded<FeatureWrapper>>
+  std::vector<oi::Guarded<TrafoParam>>
+      trafoParamsList;  // list of all trafo params
+  std::vector<oi::Guarded<FeatureWrapper>>
       geometriesList;  // list of all geometry features
 
   // feature maps (useful to quickly find a feature with a given id, name, group
   // etc.)
-  QMap<int, oi::Guarded<FeatureWrapper>>
+  std::map<int, oi::Guarded<FeatureWrapper>>
       featuresIdMap;  // map of all features in OpenIndy with their id as key
-  QMultiMap<QString, oi::Guarded<FeatureWrapper>>
+  std::multimap<QString, oi::Guarded<FeatureWrapper>>
       featuresNameMap;  // map of all features in OpenIndy with their name as
                         // key
-  QMultiMap<QString, oi::Guarded<FeatureWrapper>>
+  std::multimap<QString, oi::Guarded<FeatureWrapper>>
       featuresGroupMap;  // map of all features in OpenIndy with their group as
                          // key
-  QMultiMap<FeatureTypes, oi::Guarded<FeatureWrapper>>
+  std::multimap<FeatureTypes, oi::Guarded<FeatureWrapper>>
       featuresTypeMap;  // map of all features in OpenIndy with their type as
                         // key
-  QMultiMap<MeasurementConfigKey, oi::Guarded<Geometry>>
+  std::multimap<MeasurementConfigKey, oi::Guarded<Geometry>>
       geometriesMConfigMap;  // map of all geometries in OpenIndy with their
                              // measurement config name and saved state as key
 
   // lists with ids, names, groups and measurement configs
-  QList<int> featureIds;
-  QStringList featureNames;
-  QStringList featureGroups;
-  QList<MeasurementConfigKey> usedMConfigs;
+  std::vector<int> featureIds;
+  std::vector<QString> featureNames;
+  std::vector<QString> featureGroups;
+  std::vector<MeasurementConfigKey> usedMConfigs;
 };
 
 }  // namespace oi

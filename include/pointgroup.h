@@ -1,5 +1,6 @@
 #ifndef POINTGROUP_H
 #define POINTGROUP_H
+#include <vector>
 
 #include "core_export.h"
 #include "group.h"
@@ -47,7 +48,7 @@ class OI_CORE_EXPORT PointGroup : public Group, public PointCollection {
   // PointCollection interface
   // #########################
 
-  [[nodiscard]] QList<Position> collectionPoints() const override;
+  [[nodiscard]] std::vector<Position> collectionPoints() const override;
   [[nodiscard]] int collectionPointCount() const override;
 
   // ####################
@@ -58,7 +59,7 @@ class OI_CORE_EXPORT PointGroup : public Group, public PointCollection {
   //! Use this rather than collectionPoints() when per-point pedigree
   //! (observations, sigma, solved state) matters - that information is
   //! exactly what a PointGroup has and a PointCloud does not.
-  [[nodiscard]] QList<oi::Guarded<Point>> getPoints() const;
+  [[nodiscard]] std::vector<oi::Guarded<Point>> getPoints() const;
 
   // ###############
   // display methods

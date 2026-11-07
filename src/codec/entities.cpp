@@ -11,6 +11,7 @@
 #include <cmath>
 
 #include "access.h"
+#include "containers.h"
 #include "convert.h"
 #include "featurewrapper.h"
 #include "plugin/sensor/sensor.h"
@@ -156,11 +157,11 @@ void Access::encodeReading(const Reading& r, oipb::Reading* m) {
       auto* u = m->mutable_undefined();
       for (auto it = r.rUndefined.values.cbegin();
            it != r.rUndefined.values.cend(); ++it) {
-        (*u->mutable_values())[it.key().toStdString()] = it.value();
+        (*u->mutable_values())[it->first.toStdString()] = it->second;
       }
       for (auto it = r.rUndefined.sigmaValues.cbegin();
            it != r.rUndefined.sigmaValues.cend(); ++it) {
-        (*u->mutable_sigma_values())[it.key().toStdString()] = it.value();
+        (*u->mutable_sigma_values())[it->first.toStdString()] = it->second;
       }
       break;
     }
@@ -240,10 +241,10 @@ oi::Guarded<Reading> Access::decodeReading(const oipb::Reading& m) {
     case oipb::Reading::kUndefined: {
       ReadingUndefined v;
       for (const auto& [key, value] : m.undefined().values()) {
-        v.values.insert(QString::fromStdString(key), value);
+        v.values.insert_or_assign(QString::fromStdString(key), value);
       }
       for (const auto& [key, value] : m.undefined().sigma_values()) {
-        v.sigmaValues.insert(QString::fromStdString(key), value);
+        v.sigmaValues.insert_or_assign(QString::fromStdString(key), value);
       }
       v.isValid = true;
       reading = new Reading(v);

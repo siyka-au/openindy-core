@@ -1,11 +1,9 @@
 #ifndef MEASUREMENTCONFIG_H
 #define MEASUREMENTCONFIG_H
-
-#include <QHash>
-#include <QList>
-#include <QMap>
 #include <QString>
 #include <QVariant>
+#include <map>
+#include <vector>
 
 #include "core_export.h"
 #include "sensortype.h"
@@ -58,21 +56,13 @@ class OI_CORE_EXPORT MeasurementConfigKey {
   // name+configType alone collided across driver-published configs the
   // moment two different sensor types published the same standard-config
   // name (every driver's "FastPoint") - one silently overwrote the other
-  // in a QMap keyed on this. sensorType is part of the identity for the
+  // in a std::map keyed on this. sensorType is part of the identity for the
   // same reason SensorConfiguration's type isn't optional.
   friend bool operator==(const MeasurementConfigKey& left,
                          const MeasurementConfigKey& right) {
     return left.getName() == right.getName() &&
            left.configType == right.configType &&
            left.sensorType == right.sensorType;
-  }
-
-  friend uint qHash(const MeasurementConfigKey key, uint seed) {
-    QtPrivate::QHashCombine hash(seed);
-    seed = hash(seed, key.name);
-    seed = hash(seed, key.configType);
-    seed = hash(seed, key.sensorType.id());
-    return seed;
   }
 
   friend bool operator<(const MeasurementConfigKey& left,
@@ -191,7 +181,7 @@ class OI_CORE_EXPORT MeasurementConfig {
   void makeProjectConfig();
 
   bool applicableFor(const ElementTypes elementType,
-                     QList<FeatureTypes> functionIsApplicableFor);
+                     std::vector<FeatureTypes> functionIsApplicableFor);
 
  private:
   // #############################
@@ -206,7 +196,7 @@ class OI_CORE_EXPORT MeasurementConfig {
   double distanceInterval;  // distance interval in which the sensor shall
                             // measure [mm]
 
-  QMap<QString, QVariant> transientData;
+  std::map<QString, QVariant> transientData;
 
   MeasurementTypes measurementType;
   MeasurementModes measurementMode;

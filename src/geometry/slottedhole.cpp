@@ -1,5 +1,9 @@
 #include "slottedhole.h"
 
+#include <map>
+#include <vector>
+
+#include "containers.h"
 #include "featurewrapper.h"
 #include "snapshot.h"
 
@@ -239,54 +243,60 @@ void SlottedHole::setSlottedHole(const Position& circleCenterA,
  * \param displayDigits
  * \return
  */
-QMap<GeometryParameters, QString> SlottedHole::getUnknownParameters(
-    const QMap<DimensionType, UnitType>& displayUnits,
-    const QMap<DimensionType, int>& displayDigits) const {
-  QMap<GeometryParameters, QString> parameters;
+std::map<GeometryParameters, QString> SlottedHole::getUnknownParameters(
+    const std::map<DimensionType, UnitType>& displayUnits,
+    const std::map<DimensionType, int>& displayDigits) const {
+  std::map<GeometryParameters, QString> parameters;
 
-  parameters.insert(
+  parameters.insert_or_assign(
       GeometryParameters::eUnknownX,
       this->getDisplayX(
-          displayUnits.value(DimensionType::eMetric, UnitType::eUnitMeter),
-          displayDigits.value(DimensionType::eMetric, 0)));
-  parameters.insert(
+          oi::value(displayUnits, DimensionType::eMetric, UnitType::eUnitMeter),
+          oi::value(displayDigits, DimensionType::eMetric, 0)));
+  parameters.insert_or_assign(
       GeometryParameters::eUnknownY,
       this->getDisplayY(
-          displayUnits.value(DimensionType::eMetric, UnitType::eUnitMeter),
-          displayDigits.value(DimensionType::eMetric, 0)));
-  parameters.insert(
+          oi::value(displayUnits, DimensionType::eMetric, UnitType::eUnitMeter),
+          oi::value(displayDigits, DimensionType::eMetric, 0)));
+  parameters.insert_or_assign(
       GeometryParameters::eUnknownZ,
       this->getDisplayZ(
-          displayUnits.value(DimensionType::eMetric, UnitType::eUnitMeter),
-          displayDigits.value(DimensionType::eMetric, 0)));
-  parameters.insert(GeometryParameters::eUnknownPrimaryI,
-                    this->getDisplayPrimaryI(
-                        displayDigits.value(DimensionType::eDimensionless)));
-  parameters.insert(GeometryParameters::eUnknownPrimaryJ,
-                    this->getDisplayPrimaryJ(
-                        displayDigits.value(DimensionType::eDimensionless)));
-  parameters.insert(GeometryParameters::eUnknownPrimaryK,
-                    this->getDisplayPrimaryK(
-                        displayDigits.value(DimensionType::eDimensionless)));
-  parameters.insert(
+          oi::value(displayUnits, DimensionType::eMetric, UnitType::eUnitMeter),
+          oi::value(displayDigits, DimensionType::eMetric, 0)));
+  parameters.insert_or_assign(
+      GeometryParameters::eUnknownPrimaryI,
+      this->getDisplayPrimaryI(
+          oi::value(displayDigits, DimensionType::eDimensionless)));
+  parameters.insert_or_assign(
+      GeometryParameters::eUnknownPrimaryJ,
+      this->getDisplayPrimaryJ(
+          oi::value(displayDigits, DimensionType::eDimensionless)));
+  parameters.insert_or_assign(
+      GeometryParameters::eUnknownPrimaryK,
+      this->getDisplayPrimaryK(
+          oi::value(displayDigits, DimensionType::eDimensionless)));
+  parameters.insert_or_assign(
       GeometryParameters::eUnknownRadiusA,
       this->getDisplayRadiusA(
-          displayUnits.value(DimensionType::eMetric, UnitType::eUnitMeter),
-          displayDigits.value(DimensionType::eMetric, 0)));
-  parameters.insert(
+          oi::value(displayUnits, DimensionType::eMetric, UnitType::eUnitMeter),
+          oi::value(displayDigits, DimensionType::eMetric, 0)));
+  parameters.insert_or_assign(
       GeometryParameters::eUnknownLength,
       this->getDisplayLength(
-          displayUnits.value(DimensionType::eMetric, UnitType::eUnitMeter),
-          displayDigits.value(DimensionType::eMetric, 0)));
-  parameters.insert(GeometryParameters::eUnknownSecondaryI,
-                    this->getDisplaySecondaryI(
-                        displayDigits.value(DimensionType::eDimensionless)));
-  parameters.insert(GeometryParameters::eUnknownSecondaryJ,
-                    this->getDisplaySecondaryJ(
-                        displayDigits.value(DimensionType::eDimensionless)));
-  parameters.insert(GeometryParameters::eUnknownSecondaryK,
-                    this->getDisplaySecondaryK(
-                        displayDigits.value(DimensionType::eDimensionless)));
+          oi::value(displayUnits, DimensionType::eMetric, UnitType::eUnitMeter),
+          oi::value(displayDigits, DimensionType::eMetric, 0)));
+  parameters.insert_or_assign(
+      GeometryParameters::eUnknownSecondaryI,
+      this->getDisplaySecondaryI(
+          oi::value(displayDigits, DimensionType::eDimensionless)));
+  parameters.insert_or_assign(
+      GeometryParameters::eUnknownSecondaryJ,
+      this->getDisplaySecondaryJ(
+          oi::value(displayDigits, DimensionType::eDimensionless)));
+  parameters.insert_or_assign(
+      GeometryParameters::eUnknownSecondaryK,
+      this->getDisplaySecondaryK(
+          oi::value(displayDigits, DimensionType::eDimensionless)));
 
   return parameters;
 }
@@ -296,7 +306,7 @@ QMap<GeometryParameters, QString> SlottedHole::getUnknownParameters(
  * \param parameters
  */
 void SlottedHole::applyUnknownParameters(
-    const QMap<GeometryParameters, double>& parameters) {
+    const std::map<GeometryParameters, double>& parameters) {
   // get current parameters
   OiVec position = this->center.getVector();
   OiVec directionA = this->normal.getVector();
@@ -305,47 +315,47 @@ void SlottedHole::applyUnknownParameters(
   double length = this->length;
 
   // update parameters
-  QList<GeometryParameters> keys = parameters.keys();
+  std::vector<GeometryParameters> keys = oi::keys(parameters);
   for (const GeometryParameters& key : oi::snapshot(keys)) {
     switch (key) {
       case GeometryParameters::eUnknownX:
-        position.setAt(0, parameters.value(GeometryParameters::eUnknownX));
+        position.setAt(0, oi::value(parameters, GeometryParameters::eUnknownX));
         break;
       case GeometryParameters::eUnknownY:
-        position.setAt(1, parameters.value(GeometryParameters::eUnknownY));
+        position.setAt(1, oi::value(parameters, GeometryParameters::eUnknownY));
         break;
       case GeometryParameters::eUnknownZ:
-        position.setAt(2, parameters.value(GeometryParameters::eUnknownZ));
+        position.setAt(2, oi::value(parameters, GeometryParameters::eUnknownZ));
         break;
       case GeometryParameters::eUnknownPrimaryI:
         directionA.setAt(
-            0, parameters.value(GeometryParameters::eUnknownPrimaryI));
+            0, oi::value(parameters, GeometryParameters::eUnknownPrimaryI));
         break;
       case GeometryParameters::eUnknownPrimaryJ:
         directionA.setAt(
-            1, parameters.value(GeometryParameters::eUnknownPrimaryJ));
+            1, oi::value(parameters, GeometryParameters::eUnknownPrimaryJ));
         break;
       case GeometryParameters::eUnknownPrimaryK:
         directionA.setAt(
-            2, parameters.value(GeometryParameters::eUnknownPrimaryK));
+            2, oi::value(parameters, GeometryParameters::eUnknownPrimaryK));
         break;
       case GeometryParameters::eUnknownRadiusA:
-        radius = parameters.value(GeometryParameters::eUnknownRadiusA);
+        radius = oi::value(parameters, GeometryParameters::eUnknownRadiusA);
         break;
       case GeometryParameters::eUnknownLength:
-        length = parameters.value(GeometryParameters::eUnknownLength);
+        length = oi::value(parameters, GeometryParameters::eUnknownLength);
         break;
       case GeometryParameters::eUnknownSecondaryI:
         directionB.setAt(
-            0, parameters.value(GeometryParameters::eUnknownSecondaryI));
+            0, oi::value(parameters, GeometryParameters::eUnknownSecondaryI));
         break;
       case GeometryParameters::eUnknownSecondaryJ:
         directionB.setAt(
-            1, parameters.value(GeometryParameters::eUnknownSecondaryJ));
+            1, oi::value(parameters, GeometryParameters::eUnknownSecondaryJ));
         break;
       case GeometryParameters::eUnknownSecondaryK:
         directionB.setAt(
-            2, parameters.value(GeometryParameters::eUnknownSecondaryK));
+            2, oi::value(parameters, GeometryParameters::eUnknownSecondaryK));
         break;
       default:
         break;

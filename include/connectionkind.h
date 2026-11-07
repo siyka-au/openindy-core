@@ -1,9 +1,8 @@
 #ifndef CONNECTIONKIND_H
 #define CONNECTIONKIND_H
-
-#include <QList>
 #include <QMetaType>
 #include <QString>
+#include <vector>
 
 #include "core_export.h"
 
@@ -32,7 +31,7 @@ class OI_CORE_EXPORT ConnectionKind {
   static const ConnectionKind& network();
   static const ConnectionKind& serial();
 
-  static QList<ConnectionKind> knownKinds();
+  static std::vector<ConnectionKind> knownKinds();
   static ConnectionKind byId(
       const QString& id);  // returns an invalid kind if unknown
 

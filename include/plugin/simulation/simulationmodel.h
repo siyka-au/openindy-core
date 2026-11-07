@@ -1,9 +1,8 @@
 #ifndef SIMULATIONMODEL_H
 #define SIMULATIONMODEL_H
-
-#include <QMap>
-#include <QMultiMap>
 #include <QString>
+#include <map>
+#include <vector>
 
 #include "core_export.h"
 #include "direction.h"
@@ -36,8 +35,8 @@ class OI_CORE_EXPORT UncertaintyComponent {
 
   QString description;
 
-  QStringList distributions;  // distributions in which the error could be
-                              // determined at random
+  std::vector<QString> distributions;  // distributions in which the error could
+                                       // be determined at random
 };
 
 /*!
@@ -45,10 +44,10 @@ class OI_CORE_EXPORT UncertaintyComponent {
  */
 class OI_CORE_EXPORT Uncertainties {
  public:
-  QMap<QString, UncertaintyComponent> sensorUncertainties;
-  QMap<QString, UncertaintyComponent> objectUncertainties;
-  QMap<QString, UncertaintyComponent> enviromentUncertainties;
-  QMap<QString, UncertaintyComponent> humanUncertainties;
+  std::map<QString, UncertaintyComponent> sensorUncertainties;
+  std::map<QString, UncertaintyComponent> objectUncertainties;
+  std::map<QString, UncertaintyComponent> enviromentUncertainties;
+  std::map<QString, UncertaintyComponent> humanUncertainties;
 };
 
 /*!
@@ -57,8 +56,8 @@ class OI_CORE_EXPORT Uncertainties {
  */
 class OI_CORE_EXPORT UncertaintyData {
  public:
-  QList<double> values;  // randomly shuffled values produced distortion of
-                         // readings and recalculation
+  std::vector<double> values;  // randomly shuffled values produced distortion
+                               // of readings and recalculation
 
   // maximum and minimum of the data series
   double maxValue{};
@@ -78,7 +77,7 @@ class OI_CORE_EXPORT UncertaintyData {
                                  const double& lowerLimit,
                                  const double& upperLimit){};
 
-  QMap<QString, QString> info;  // custom information
+  std::map<QString, QString> info;  // custom information
 };
 
 /*!
@@ -119,7 +118,7 @@ class OI_CORE_EXPORT SimulationData {
   // correlations between parameters
   // ###############################
 
-  QMap<QString, double> correlations;
+  std::map<QString, double> correlations;
 };
 
 // TODO set simulation config as separate class like sensor config an add xml
@@ -132,9 +131,9 @@ class OI_CORE_EXPORT SimulationConfiguration {
  public:
   Uncertainties uncertainties;
 
-  QMap<QString, int> integerParameters;
-  QMap<QString, double> doubleParameters;
-  QMap<QString, QString> stringParameters;
+  std::map<QString, int> integerParameters;
+  std::map<QString, double> doubleParameters;
+  std::map<QString, QString> stringParameters;
 };
 
 // #######################
@@ -169,29 +168,30 @@ class OI_CORE_EXPORT SimulationModel : public oi::Trackable {
       const;
   void setSimulationConfiguration(const SimulationConfiguration& sConfig);
 
-  [[nodiscard]] const QMap<QString, int>& getIntegerParameter() const;
-  [[nodiscard]] const QMap<QString, double>& getDoubleParameter() const;
-  [[nodiscard]] const QMultiMap<QString, QString>& getStringParameter() const;
+  [[nodiscard]] const std::map<QString, int>& getIntegerParameter() const;
+  [[nodiscard]] const std::map<QString, double>& getDoubleParameter() const;
+  [[nodiscard]] const std::multimap<QString, QString>& getStringParameter()
+      const;
 
   // ##################
   // simulation methods
   // ##################
 
-  [[nodiscard]] const QMap<QString, UncertaintyComponent>&
+  [[nodiscard]] const std::map<QString, UncertaintyComponent>&
   getSensorUncertainties() const;
-  [[nodiscard]] const QMap<QString, UncertaintyComponent>&
+  [[nodiscard]] const std::map<QString, UncertaintyComponent>&
   getObjectUncertainties() const;
-  [[nodiscard]] const QMap<QString, UncertaintyComponent>&
+  [[nodiscard]] const std::map<QString, UncertaintyComponent>&
   getEnviromentUncertainties() const;
-  [[nodiscard]] const QMap<QString, UncertaintyComponent>& getHumanInfluence()
-      const;
+  [[nodiscard]] const std::map<QString, UncertaintyComponent>&
+  getHumanInfluence() const;
 
   virtual bool distort(const oi::Guarded<Reading>& r,
                        const OiMat& objectRelation,
                        const bool& newIterationStart);
   virtual bool analyseSimulationData(UncertaintyData& d);
-  virtual double getCorrelationCoefficient(const QList<double>& x,
-                                           const QList<double>& y);
+  virtual double getCorrelationCoefficient(const std::vector<double>& x,
+                                           const std::vector<double>& y);
 
   // ##################################################
   // report simulation issues to the host (formerly a signal)
@@ -222,15 +222,15 @@ class OI_CORE_EXPORT SimulationModel : public oi::Trackable {
   PluginMetaData metaData;
 
   // the needed scalar input parameters including default values
-  QMap<QString, int> integerParameters;
-  QMap<QString, double> doubleParameters;
-  QMultiMap<QString, QString> stringParameters;
+  std::map<QString, int> integerParameters;
+  std::map<QString, double> doubleParameters;
+  std::multimap<QString, QString> stringParameters;
 
   // uncertainties provided by plugin writer
-  QMap<QString, UncertaintyComponent> sensorUncertainties;
-  QMap<QString, UncertaintyComponent> objectUncertainties;
-  QMap<QString, UncertaintyComponent> environmentUncertainties;
-  QMap<QString, UncertaintyComponent> humanInfluence;
+  std::map<QString, UncertaintyComponent> sensorUncertainties;
+  std::map<QString, UncertaintyComponent> objectUncertainties;
+  std::map<QString, UncertaintyComponent> environmentUncertainties;
+  std::map<QString, UncertaintyComponent> humanInfluence;
 
  private:
   MessageSink* messageSink = nullptr;  // non-owning

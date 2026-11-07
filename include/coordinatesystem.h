@@ -1,8 +1,8 @@
 #ifndef COORDINATESYSTEM_H
 #define COORDINATESYSTEM_H
-
 #include <QJsonObject>
-#include <QList>
+#include <map>
+#include <vector>
 
 #include "core_export.h"
 #include "direction.h"
@@ -77,23 +77,25 @@ class OI_CORE_EXPORT CoordinateSystem : public Feature {
   // ##################################################
 
   // observations
-  [[nodiscard]] const QList<oi::Guarded<Observation>>& getObservations() const;
+  [[nodiscard]] const std::vector<oi::Guarded<Observation>>& getObservations()
+      const;
   [[nodiscard]] oi::Guarded<Observation> getObservation(
       const int& observationId) const;
   bool addObservation(const oi::Guarded<Observation>& observation);
 
   // transformation parameters
-  [[nodiscard]] const QList<oi::Guarded<TrafoParam>>&
+  [[nodiscard]] const std::vector<oi::Guarded<TrafoParam>>&
   getTransformationParameters() const;
-  [[nodiscard]] const QList<oi::Guarded<TrafoParam>>
+  [[nodiscard]] const std::vector<oi::Guarded<TrafoParam>>
   getTransformationParameters(const oi::Guarded<CoordinateSystem>& to) const;
   bool addTransformationParameter(const oi::Guarded<TrafoParam>& trafoParam);
   bool removeTransformationParameter(const oi::Guarded<TrafoParam>& trafoParam);
 
   // nominals
-  [[nodiscard]] const QList<oi::Guarded<FeatureWrapper>>& getNominals() const;
+  [[nodiscard]] const std::vector<oi::Guarded<FeatureWrapper>>& getNominals()
+      const;
   bool addNominal(const oi::Guarded<FeatureWrapper>& nominal);
-  bool addNominals(const QList<oi::Guarded<FeatureWrapper>>& nominals);
+  bool addNominals(const std::vector<oi::Guarded<FeatureWrapper>>& nominals);
   bool removeNominal(const oi::Guarded<FeatureWrapper>& nominal);
   bool removeNominal(const int& featureId);
 
@@ -195,16 +197,16 @@ class OI_CORE_EXPORT CoordinateSystem : public Feature {
   // #######################################
 
   // observations
-  QList<oi::Guarded<Observation>> observationsList;
-  QMap<int, oi::Guarded<Observation>>
+  std::vector<oi::Guarded<Observation>> observationsList;
+  std::map<int, oi::Guarded<Observation>>
       observationsMap;  // same observations but id as key
 
   // trafo params
-  QList<oi::Guarded<TrafoParam>> trafoParams;
+  std::vector<oi::Guarded<TrafoParam>> trafoParams;
 
   // nominals
-  QList<oi::Guarded<FeatureWrapper>> nominalsList;
-  QMap<int, oi::Guarded<FeatureWrapper>>
+  std::vector<oi::Guarded<FeatureWrapper>> nominalsList;
+  std::map<int, oi::Guarded<FeatureWrapper>>
       nominalsMap;  // same geometries but id as key
 };
 

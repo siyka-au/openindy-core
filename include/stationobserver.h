@@ -1,10 +1,8 @@
 #ifndef STATIONOBSERVER_H
 #define STATIONOBSERVER_H
-
-#include <QList>
-#include <QMap>
 #include <QString>
-#include <QVariantMap>
+#include <map>
+#include <vector>
 
 #include "core_export.h"
 #include "guarded.h"
@@ -45,8 +43,9 @@ class OI_CORE_EXPORT StationObserver {
   virtual void onStationDestroyed(Station* /*station*/) {}
 
   // streaming results
-  virtual void onRealTimeReading(const QVariantMap& /*reading*/) {}
-  virtual void onRealTimeStatus(const QMap<QString, QString>& /*status*/) {}
+  virtual void onRealTimeReading(
+      const std::map<QString, QVariant>& /*reading*/) {}
+  virtual void onRealTimeStatus(const std::map<QString, QString>& /*status*/) {}
   virtual void onConnectionLost() {}
   virtual void onConnectionReceived() {}
   virtual void onIsReadyForMeasurement(bool /*isReady*/) {}
@@ -55,7 +54,7 @@ class OI_CORE_EXPORT StationObserver {
   virtual void onCommandFinished(bool /*success*/, const QString& /*msg*/,
                                  SensorAction /*sensorAction*/) {}
   virtual void onMeasurementFinished(
-      int /*geomId*/, const QList<oi::Guarded<Reading>>& /*readings*/) {}
+      int /*geomId*/, const std::vector<oi::Guarded<Reading>>& /*readings*/) {}
   virtual void onMeasurementDone(bool /*success*/) {}
 
   // what the driver reports on its own

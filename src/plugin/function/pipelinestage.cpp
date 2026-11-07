@@ -1,5 +1,7 @@
 #include "pipelinestage.h"
 
+#include <vector>
+
 #include "snapshot.h"
 
 using namespace oi;
@@ -9,7 +11,7 @@ using namespace oi;
  * \param ids
  * \return
  */
-PipelineStage PipelineStage::explicitList(const QList<int>& ids) {
+PipelineStage PipelineStage::explicitList(const std::vector<int>& ids) {
   PipelineStage stage(PipelineStageType::eExplicitListStage);
   stage.explicitIds = ids;
   return stage;
@@ -24,7 +26,7 @@ PipelineStage PipelineStage::explicitList(const QList<int>& ids) {
  */
 PipelineStage PipelineStage::exclude(int elementId, const QString& reason) {
   PipelineStage stage(PipelineStageType::eExcludeStage);
-  stage.explicitExclusions.append(PipelineExclusion(elementId, reason));
+  stage.explicitExclusions.push_back(PipelineExclusion(elementId, reason));
   return stage;
 }
 
@@ -34,7 +36,7 @@ PipelineStage PipelineStage::exclude(int elementId, const QString& reason) {
  * \return
  */
 PipelineStage PipelineStage::exclude(
-    const QList<PipelineExclusion>& exclusions) {
+    const std::vector<PipelineExclusion>& exclusions) {
   PipelineStage stage(PipelineStageType::eExcludeStage);
   stage.explicitExclusions = exclusions;
   return stage;

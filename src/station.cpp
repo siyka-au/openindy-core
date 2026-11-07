@@ -1,7 +1,10 @@
 #include "station.h"
 
+#include <map>
 #include <utility>
+#include <vector>
 
+#include "containers.h"
 #include "coordinatesystem.h"
 #include "featurewrapper.h"
 #include "oijob.h"
@@ -293,10 +296,10 @@ void Station::resetSensor() {
  * \brief Station::getUsedSensors
  * \return
  */
-const QList<Sensor> Station::getUsedSensors() const {
+const std::vector<Sensor> Station::getUsedSensors() const {
   // check sensor control
   if (!this->sensorControl) {
-    return QList<Sensor>();
+    return std::vector<Sensor>();
   }
 
   return this->sensorControl->getUsedSensors();
@@ -306,38 +309,38 @@ const QList<Sensor> Station::getUsedSensors() const {
  * \brief Station::getTargetGeometries
  * \return
  */
-QList<oi::Guarded<Geometry>> Station::getTargetGeometries() const {
-  QList<oi::Guarded<Geometry>> geometries;
+std::vector<oi::Guarded<Geometry>> Station::getTargetGeometries() const {
+  std::vector<oi::Guarded<Geometry>> geometries;
 
   // get a list of all readings
-  QList<oi::Guarded<Reading>> readings;
+  std::vector<oi::Guarded<Reading>> readings;
   for (const oi::Guarded<Reading>& reading :
        oi::snapshot(this->cartesianReadings)) {
-    readings.append(reading);
+    readings.push_back(reading);
   }
   for (const oi::Guarded<Reading>& reading :
        oi::snapshot(this->directionReadings)) {
-    readings.append(reading);
+    readings.push_back(reading);
   }
   for (const oi::Guarded<Reading>& reading :
        oi::snapshot(this->distanceReadings)) {
-    readings.append(reading);
+    readings.push_back(reading);
   }
   for (const oi::Guarded<Reading>& reading :
        oi::snapshot(this->polarReadings)) {
-    readings.append(reading);
+    readings.push_back(reading);
   }
   for (const oi::Guarded<Reading>& reading :
        oi::snapshot(this->levelReadings)) {
-    readings.append(reading);
+    readings.push_back(reading);
   }
   for (const oi::Guarded<Reading>& reading :
        oi::snapshot(this->temperatureRadings)) {
-    readings.append(reading);
+    readings.push_back(reading);
   }
   for (const oi::Guarded<Reading>& reading :
        oi::snapshot(this->undefinedReadings)) {
-    readings.append(reading);
+    readings.push_back(reading);
   }
 
   // get target geometries
@@ -348,11 +351,11 @@ QList<oi::Guarded<Geometry>> Station::getTargetGeometries() const {
     }
 
     // add target geometries of the observation
-    const QList<oi::Guarded<Geometry>>& targetGeometries =
+    const std::vector<oi::Guarded<Geometry>>& targetGeometries =
         reading->getObservation()->getTargetGeometries();
     for (const oi::Guarded<Geometry>& geom : std::as_const(targetGeometries)) {
-      if (!geom.isNull() && !geometries.contains(geom)) {
-        geometries.append(geom);
+      if (!geom.isNull() && !oi::contains(geometries, geom)) {
+        geometries.push_back(geom);
       }
     }
   }
@@ -364,7 +367,7 @@ QList<oi::Guarded<Geometry>> Station::getTargetGeometries() const {
  * \brief Station::setUsedSensors
  * \param sensors
  */
-void Station::setUsedSensors(const QList<Sensor>& sensors) {
+void Station::setUsedSensors(const std::vector<Sensor>& sensors) {
   // check sensor control
   if (!this->sensorControl) {
     return;
@@ -429,10 +432,10 @@ bool Station::getIsBusy() {
  * \brief Station::getSensorStatus
  * \return
  */
-QMap<QString, QString> Station::getSensorStatus() {
+std::map<QString, QString> Station::getSensorStatus() {
   // check sensor control
   if (!this->sensorControl) {
-    return QMap<QString, QString>();
+    return std::map<QString, QString>();
   }
 
   return this->sensorControl->getSensorStatus();
@@ -455,10 +458,10 @@ SensorType Station::getActiveSensorType() const {
  * \brief Station::getSupportedReadingTypes
  * \return
  */
-QList<ReadingTypes> Station::getSupportedReadingTypes() const {
+std::vector<ReadingTypes> Station::getSupportedReadingTypes() const {
   // check sensor control
   if (!this->sensorControl) {
-    return QList<ReadingTypes>();
+    return std::vector<ReadingTypes>();
   }
 
   return this->sensorControl->getSupportedReadingTypes();
@@ -468,10 +471,10 @@ QList<ReadingTypes> Station::getSupportedReadingTypes() const {
  * \brief Station::getSupportedConnectionTypes
  * \return
  */
-QList<ConnectionKind> Station::getSupportedConnectionTypes() const {
+std::vector<ConnectionKind> Station::getSupportedConnectionTypes() const {
   // check sensor control
   if (!this->sensorControl) {
-    return QList<ConnectionKind>();
+    return std::vector<ConnectionKind>();
   }
 
   return this->sensorControl->getSupportedConnectionTypes();
@@ -481,10 +484,10 @@ QList<ConnectionKind> Station::getSupportedConnectionTypes() const {
  * \brief Station::getSupportedSensorActions
  * \return
  */
-QList<SensorFunctions> Station::getSupportedSensorActions() const {
+std::vector<SensorFunctions> Station::getSupportedSensorActions() const {
   // check sensor control
   if (!this->sensorControl) {
-    return QList<SensorFunctions>();
+    return std::vector<SensorFunctions>();
   }
 
   return this->sensorControl->getSupportedSensorActions();
@@ -494,10 +497,10 @@ QList<SensorFunctions> Station::getSupportedSensorActions() const {
  * \brief Station::getSelfDefinedActions
  * \return
  */
-QStringList Station::getSelfDefinedActions() const {
+std::vector<QString> Station::getSelfDefinedActions() const {
   // check sensor control
   if (!this->sensorControl) {
-    return QStringList();
+    return std::vector<QString>();
   }
 
   return this->sensorControl->getSelfDefinedActions();
@@ -708,7 +711,7 @@ void Station::nameWasChanged(const QString& oldName) {
  * \param readings
  */
 void Station::addReadings(const int& geomId,
-                          const QList<oi::Guarded<Reading>>& readings) {
+                          const std::vector<oi::Guarded<Reading>>& readings) {
   MeasurementConfigKey measurementConfig;
   if (!this->job.isNull()) {
     const oi::Guarded<FeatureWrapper> feature =
@@ -730,22 +733,22 @@ void Station::addReadings(const int& geomId,
 
     switch (reading->getTypeOfReading()) {
       case ReadingTypes::eCartesianReading:
-        this->cartesianReadings.append(reading);
+        this->cartesianReadings.push_back(reading);
         break;
       case ReadingTypes::eDirectionReading:
-        this->directionReadings.append(reading);
+        this->directionReadings.push_back(reading);
         break;
       case ReadingTypes::eDistanceReading:
-        this->distanceReadings.append(reading);
+        this->distanceReadings.push_back(reading);
         break;
       case ReadingTypes::ePolarReading:
-        this->polarReadings.append(reading);
+        this->polarReadings.push_back(reading);
         break;
       case ReadingTypes::eLevelReading:
-        this->levelReadings.append(reading);
+        this->levelReadings.push_back(reading);
         break;
       case ReadingTypes::eTemperatureReading:
-        this->temperatureRadings.append(reading);
+        this->temperatureRadings.push_back(reading);
         break;
       default:
         break;
@@ -758,13 +761,13 @@ void Station::addReadings(const int& geomId,
  * \param reading
  */
 void Station::removeReading(const oi::Guarded<Reading>& reading) {
-  this->cartesianReadings.removeOne(reading);
-  this->directionReadings.removeOne(reading);
-  this->distanceReadings.removeOne(reading);
-  this->polarReadings.removeOne(reading);
-  this->levelReadings.removeOne(reading);
-  this->temperatureRadings.removeOne(reading);
-  this->undefinedReadings.removeOne(reading);
+  oi::removeOne(this->cartesianReadings, reading);
+  oi::removeOne(this->directionReadings, reading);
+  oi::removeOne(this->distanceReadings, reading);
+  oi::removeOne(this->polarReadings, reading);
+  oi::removeOne(this->levelReadings, reading);
+  oi::removeOne(this->temperatureRadings, reading);
+  oi::removeOne(this->undefinedReadings, reading);
 }
 
 /*!
@@ -811,12 +814,12 @@ class Station::SensorResults final : public StationObserver {
  public:
   explicit SensorResults(Station& station) : station(station) {}
 
-  void onRealTimeReading(const QVariantMap& reading) override {
+  void onRealTimeReading(const std::map<QString, QVariant>& reading) override {
     if (auto* o = this->observer()) {
       o->onRealTimeReading(reading);
     }
   }
-  void onRealTimeStatus(const QMap<QString, QString>& status) override {
+  void onRealTimeStatus(const std::map<QString, QString>& status) override {
     if (auto* o = this->observer()) {
       o->onRealTimeStatus(status);
     }
@@ -843,7 +846,7 @@ class Station::SensorResults final : public StationObserver {
     }
   }
   void onMeasurementFinished(
-      int geomId, const QList<oi::Guarded<Reading>>& readings) override {
+      int geomId, const std::vector<oi::Guarded<Reading>>& readings) override {
     // the readings belong to the station before anybody hears about them
     this->station.addReadings(geomId, readings);
     if (auto* o = this->observer()) {

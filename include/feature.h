@@ -1,11 +1,11 @@
 #ifndef FEATURE_H
 #define FEATURE_H
-
-#include <QList>
 #include <QString>
 #include <QtCore>
+#include <map>
 #include <optional>
 #include <type_traits>
+#include <vector>
 
 #include "core_export.h"
 #include "element.h"
@@ -70,23 +70,24 @@ class OI_CORE_EXPORT Feature : public Element {
   // cares about the distinction.
   // ###############################################################
 
-  [[nodiscard]] QList<oi::Guarded<Function>> getFunctions() const;
+  [[nodiscard]] std::vector<oi::Guarded<Function>> getFunctions() const;
   [[nodiscard]] const std::optional<oi::Guarded<Function>>&
   getProducerFunction() const;
-  [[nodiscard]] const QList<oi::Guarded<Function>>& getTransformFunctions()
-      const;
+  [[nodiscard]] const std::vector<oi::Guarded<Function>>&
+  getTransformFunctions() const;
   void addFunction(const oi::Guarded<Function>& function);
   void removeFunction(const int& index);
 
   [[nodiscard]] const bool& getIsActiveFeature() const;
   void setActiveFeatureState(const bool& isActiveFeature);
 
-  [[nodiscard]] const QList<oi::Guarded<FeatureWrapper>>& getUsedFor() const;
+  [[nodiscard]] const std::vector<oi::Guarded<FeatureWrapper>>& getUsedFor()
+      const;
   bool addUsedFor(const oi::Guarded<FeatureWrapper>& feature);
   bool removeUsedFor(const oi::Guarded<FeatureWrapper>& feature);
 
-  [[nodiscard]] const QList<oi::Guarded<FeatureWrapper>>& getPreviouslyNeeded()
-      const;
+  [[nodiscard]] const std::vector<oi::Guarded<FeatureWrapper>>&
+  getPreviouslyNeeded() const;
   bool addPreviouslyNeeded(const oi::Guarded<FeatureWrapper>& feature);
   bool removePreviouslyNeeded(const oi::Guarded<FeatureWrapper>& feature);
 
@@ -306,14 +307,14 @@ class OI_CORE_EXPORT Feature : public Element {
   // construct (see Function::canActAsProducer/canActAsTransform, the
   // runtime dynamic_cast check at the attach call site).
   std::optional<oi::Guarded<Function>> producerFunction;
-  QList<oi::Guarded<Function>> transformFunctions;
+  std::vector<oi::Guarded<Function>> transformFunctions;
 
-  QList<oi::Guarded<FeatureWrapper>>
+  std::vector<oi::Guarded<FeatureWrapper>>
       usedForList;  // features which need this feature to recalc
-  QMap<int, oi::Guarded<FeatureWrapper>> usedForMap;
-  QList<oi::Guarded<FeatureWrapper>>
+  std::map<int, oi::Guarded<FeatureWrapper>> usedForMap;
+  std::vector<oi::Guarded<FeatureWrapper>>
       previouslyNeededList;  // features which are needed to recalc this feature
-  QMap<int, oi::Guarded<FeatureWrapper>> previouslyNeededMap;
+  std::map<int, oi::Guarded<FeatureWrapper>> previouslyNeededMap;
 
   // ######################################
   // this pointer wrapped by FeatureWrapper

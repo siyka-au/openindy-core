@@ -1,9 +1,8 @@
 #ifndef GROUP_H
 #define GROUP_H
-
-#include <QList>
 #include <QtCore>
 #include <optional>
+#include <vector>
 
 #include "core_export.h"
 #include "feature.h"
@@ -66,7 +65,8 @@ class OI_CORE_EXPORT Group : public Feature {
   // membership
   // ##########
 
-  [[nodiscard]] const QList<oi::Guarded<FeatureWrapper>>& getMembers() const;
+  [[nodiscard]] const std::vector<oi::Guarded<FeatureWrapper>>& getMembers()
+      const;
 
   //! adds a reference. Rejects a null feature, a duplicate, a feature
   //! whose type the constraint forbids, and the group itself.
@@ -108,7 +108,7 @@ class OI_CORE_EXPORT Group : public Feature {
   [[nodiscard]] QString getDisplayType() const override;
 
  protected:
-  QList<oi::Guarded<FeatureWrapper>> members;
+  std::vector<oi::Guarded<FeatureWrapper>> members;
   std::optional<FeatureTypes> constraint;
 };
 

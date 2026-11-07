@@ -3,6 +3,7 @@
 
 #include "chooselalib.h"
 #include "constructfunction.h"
+#include "containers.h"
 #include "featurewrapper.h"
 #include "geometry/point.h"
 #include "oijob.h"
@@ -21,7 +22,7 @@ class FixedPositionFunction : public ConstructFunction, public Producer<Point> {
  public:
   explicit FixedPositionFunction() : ConstructFunction() {
     this->metaData.name = "FixedPositionFunction";
-    this->applicableFor.append(FeatureTypes::ePointFeature);
+    this->applicableFor.push_back(FeatureTypes::ePointFeature);
   }
   double x = 0.0, y = 0.0, z = 0.0;
   std::expected<Point, QString> exec() override {
@@ -48,15 +49,15 @@ class CopyPointFunction : public ConstructFunction, public Producer<Point> {
     param.typeOfElement = ElementTypes::ePointElement;
     param.infinite = false;
     param.description = "the owner feature this accessor is bound to";
-    this->neededElements.append(param);
-    this->applicableFor.append(FeatureTypes::ePointFeature);
+    this->neededElements.push_back(param);
+    this->applicableFor.push_back(FeatureTypes::ePointFeature);
   }
   std::expected<Point, QString> exec() override {
     if (!this->inputElements.contains(0) ||
         this->inputElements[0].size() != 1) {
       return std::unexpected(QString("CopyPointFunction: no input element"));
     }
-    const InputElement& element = this->inputElements[0].first();
+    const InputElement& element = this->inputElements[0].front();
     if (element.point.isNull() || !element.point->getIsSolved()) {
       return std::unexpected(
           QString("CopyPointFunction: input point not solved"));
@@ -123,13 +124,14 @@ void OwnedSubGeometryTest::
   // reusing Feature::addFunction/OiJob::addInputFeature, not a parallel
   // mechanism
   QCOMPARE(child->getFunctions().size(), 1);
-  QCOMPARE(function->getInputElements().value(0).size(), 1);
-  QCOMPARE(function->getInputElements().value(0).first().id, owner->getId());
+  QCOMPARE(oi::value(function->getInputElements(), 0).size(), 1);
+  QCOMPARE(oi::value(function->getInputElements(), 0).front().id,
+           owner->getId());
 
   // ownership recorded on both sides
   QVERIFY(child->getOwnerFeature().has_value());
   QCOMPARE(child->getOwnerFeature().value().data(), owner.data());
-  QVERIFY(owner->getOwnedSubGeometries().contains(child));
+  QVERIFY(oi::contains(owner->getOwnedSubGeometries(), child));
 
   const std::optional<QString> description = child->getOwnerDescription();
   QVERIFY(description.has_value());
@@ -147,9 +149,9 @@ void OwnedSubGeometryTest::
   // use selfFeature, so list membership must be compared by the
   // underlying feature's id, not object identity, same as usedForMap/
   // previouslyNeededMap already do internally.
-  QVERIFY(child->getPreviouslyNeeded().contains(ownerWrapper));
+  QVERIFY(oi::contains(child->getPreviouslyNeeded(), ownerWrapper));
   bool ownerUsedForContainsChild = false;
-  foreach (const oi::Guarded<FeatureWrapper>& usedFor, owner->getUsedFor()) {
+  for (const oi::Guarded<FeatureWrapper>& usedFor : owner->getUsedFor()) {
     if (!usedFor.isNull() && !usedFor->getFeature().isNull() &&
         usedFor->getFeature()->getId() == child->getId()) {
       ownerUsedForContainsChild = true;
@@ -247,9 +249,10 @@ void OwnedSubGeometryTest::aSecondFeatureCanReferenceTheOwnedChildAsInput() {
   consumer->addFunction(consumerFn);
   job->addInputFeature(consumerWrapper, 0, 0, childWrapper);
 
-  QCOMPARE(consumerFn->getInputElements().value(0).size(), 1);
-  QCOMPARE(consumerFn->getInputElements().value(0).first().id, child->getId());
-  QVERIFY(consumer->getPreviouslyNeeded().contains(childWrapper));
+  QCOMPARE(oi::value(consumerFn->getInputElements(), 0).size(), 1);
+  QCOMPARE(oi::value(consumerFn->getInputElements(), 0).front().id,
+           child->getId());
+  QVERIFY(oi::contains(consumer->getPreviouslyNeeded(), childWrapper));
 }
 
 void OwnedSubGeometryTest::removingTheOwnerCascadesToItsOwnedChild() {

@@ -1,10 +1,12 @@
 // Conversions for function records: which function, its inputs, declared
 // pipelines and parameters.
-
+#include <iterator>
 #include <map>
 #include <optional>
+#include <vector>
 
 #include "access.h"
+#include "containers.h"
 #include "convert.h"
 #include "wire.h"
 
@@ -337,20 +339,20 @@ std::optional<TrafoParamParameters> trafoParameterOf(
   return std::nullopt;
 }
 
-void addParameters(const QList<GeometryParameters>& source,
+void addParameters(const std::vector<GeometryParameters>& source,
                    google::protobuf::RepeatedField<int>* out) {
   for (GeometryParameters parameter : source) {
     out->Add(toProto(parameter));
   }
 }
 
-QList<GeometryParameters> parametersOf(
+std::vector<GeometryParameters> parametersOf(
     const google::protobuf::RepeatedField<int>& source) {
-  QList<GeometryParameters> out;
+  std::vector<GeometryParameters> out;
   for (int value : source) {
     if (const auto parameter =
             parameterOf(static_cast<oipb::GeometryParameter>(value))) {
-      out.append(*parameter);
+      out.push_back(*parameter);
     }
   }
   return out;
@@ -360,8 +362,8 @@ void encodeBundleGeometry(const BundleGeometry& g, oipb::BundleGeometry* m) {
   m->set_id(g.id);
   for (auto it = g.parameters.cbegin(); it != g.parameters.cend(); ++it) {
     auto* p = m->add_parameters();
-    p->set_parameter(toProto(it.key()));
-    p->set_value(it.value());
+    p->set_parameter(toProto(it->first));
+    p->set_value(it->second);
   }
 }
 
@@ -370,7 +372,7 @@ BundleGeometry bundleGeometryOf(const oipb::BundleGeometry& m) {
   g.id = m.id();
   for (const auto& p : m.parameters()) {
     if (const auto parameter = parameterOf(p.parameter())) {
-      g.parameters.insert(*parameter, p.value());
+      g.parameters.insert_or_assign(*parameter, p.value());
     }
   }
   return g;
@@ -401,7 +403,7 @@ BundleStation bundleStationOf(const oipb::BundleStation& m) {
   s.rz = m.rz();
   s.m = m.m();
   for (const auto& g : m.geometries()) {
-    s.geometries.append(bundleGeometryOf(g));
+    s.geometries.push_back(bundleGeometryOf(g));
   }
   return s;
 }
@@ -412,9 +414,9 @@ void Access::encodeFunction(const Function& f, oipb::FunctionRecord* m) {
   *m->mutable_plugin() = pluginRef(f.metaData);
 
   for (auto it = f.inputElements.cbegin(); it != f.inputElements.cend(); ++it) {
-    for (const InputElement& input : it.value()) {
+    for (const InputElement& input : it->second) {
       auto* entry = m->add_inputs();
-      entry->set_position(it.key());
+      entry->set_position(it->first);
       entry->set_element_id(input.id);
       entry->set_kind(toProto(input.typeOfElement));
       entry->set_label(input.label.toStdString());
@@ -426,9 +428,10 @@ void Access::encodeFunction(const Function& f, oipb::FunctionRecord* m) {
     }
   }
 
-  for (int position = 0; position < f.neededElements.size(); ++position) {
-    const QList<PipelineStage>& stages = f.neededElements.at(position).pipeline;
-    if (stages.isEmpty()) {
+  for (int position = 0; position < std::ssize(f.neededElements); ++position) {
+    const std::vector<PipelineStage>& stages =
+        f.neededElements.at(position).pipeline;
+    if (stages.empty()) {
       continue;
     }
     auto* pipeline = m->add_pipelines();
@@ -453,39 +456,39 @@ void Access::encodeFunction(const Function& f, oipb::FunctionRecord* m) {
     for (auto it = f.scalarInputParams.intParameter.cbegin();
          it != f.scalarInputParams.intParameter.cend(); ++it) {
       auto* p = m->add_int_parameters();
-      p->set_name(it.key().toStdString());
-      p->set_value(it.value());
+      p->set_name(it->first.toStdString());
+      p->set_value(it->second);
     }
     for (auto it = f.scalarInputParams.doubleParameter.cbegin();
          it != f.scalarInputParams.doubleParameter.cend(); ++it) {
       auto* p = m->add_double_parameters();
-      p->set_name(it.key().toStdString());
-      p->set_value(it.value());
+      p->set_name(it->first.toStdString());
+      p->set_value(it->second);
     }
     for (auto it = f.scalarInputParams.stringParameter.cbegin();
          it != f.scalarInputParams.stringParameter.cend(); ++it) {
       auto* p = m->add_string_parameters();
-      p->set_name(it.key().toStdString());
-      p->set_value(it.value().toStdString());
+      p->set_name(it->first.toStdString());
+      p->set_value(it->second.toStdString());
     }
   } else {
     for (auto it = f.integerParameters.cbegin();
          it != f.integerParameters.cend(); ++it) {
       auto* p = m->add_int_parameters();
-      p->set_name(it.key().toStdString());
-      p->set_value(it.value());
+      p->set_name(it->first.toStdString());
+      p->set_value(it->second);
     }
     for (auto it = f.doubleParameters.cbegin(); it != f.doubleParameters.cend();
          ++it) {
       auto* p = m->add_double_parameters();
-      p->set_name(it.key().toStdString());
-      p->set_value(it.value());
+      p->set_name(it->first.toStdString());
+      p->set_value(it->second);
     }
     for (auto it = f.stringParameters.cbegin(); it != f.stringParameters.cend();
          ++it) {
       auto* p = m->add_string_parameters();
-      p->set_name(it.key().toStdString());
-      p->set_value(it.value().toStdString());
+      p->set_name(it->first.toStdString());
+      p->set_value(it->second.toStdString());
     }
   }
 
@@ -501,15 +504,15 @@ void Access::applyFunction(const oipb::FunctionRecord& m, Function& f) {
   f.scalarInputParams.doubleParameter.clear();
   f.scalarInputParams.stringParameter.clear();
   for (const auto& p : m.int_parameters()) {
-    f.scalarInputParams.intParameter.insert(QString::fromStdString(p.name()),
-                                            p.value());
+    f.scalarInputParams.intParameter.insert_or_assign(
+        QString::fromStdString(p.name()), p.value());
   }
   for (const auto& p : m.double_parameters()) {
-    f.scalarInputParams.doubleParameter.insert(QString::fromStdString(p.name()),
-                                               p.value());
+    f.scalarInputParams.doubleParameter.insert_or_assign(
+        QString::fromStdString(p.name()), p.value());
   }
   for (const auto& p : m.string_parameters()) {
-    f.scalarInputParams.stringParameter.insert(
+    f.scalarInputParams.stringParameter.insert_or_assign(
         QString::fromStdString(p.name()), QString::fromStdString(p.value()));
   }
   f.scalarInputParams.isValid = true;
@@ -519,7 +522,7 @@ void Access::applyFunction(const oipb::FunctionRecord& m, Function& f) {
     if (const auto parameter = parameterOf(p.parameter())) {
       FixedParameter fixed(*parameter);
       fixed.value = p.value();
-      f.fixedParameters.append(fixed);
+      f.fixedParameters.push_back(fixed);
     }
   }
 
@@ -527,10 +530,10 @@ void Access::applyFunction(const oipb::FunctionRecord& m, Function& f) {
   // position it no longer declares is dropped
   for (const auto& pipeline : m.pipelines()) {
     const int position = pipeline.position();
-    if (position < 0 || position >= f.neededElements.size()) {
+    if (position < 0 || position >= std::ssize(f.neededElements)) {
       continue;
     }
-    QList<PipelineStage> stages;
+    std::vector<PipelineStage> stages;
     for (const auto& entry : pipeline.stages()) {
       const auto type = stageTypeOf(entry.kind());
       if (!type) {
@@ -538,14 +541,14 @@ void Access::applyFunction(const oipb::FunctionRecord& m, Function& f) {
       }
       PipelineStage stage(*type);
       for (int id : entry.explicit_ids()) {
-        stage.explicitIds.append(id);
+        stage.explicitIds.push_back(id);
       }
       for (const auto& e : entry.exclusions()) {
-        stage.explicitExclusions.append(PipelineExclusion(
+        stage.explicitExclusions.push_back(PipelineExclusion(
             e.element_id(), QString::fromStdString(e.reason())));
       }
       stage.sigmaMultiplier = entry.sigma_multiplier();
-      stages.append(stage);
+      stages.push_back(stage);
     }
     f.neededElements[position].pipeline = stages;
   }
@@ -560,7 +563,7 @@ void Access::applyFunction(const oipb::FunctionRecord& m, Function& f) {
     input.ignoredTargetParams = parametersOf(entry.ignored_target());
     input.shouldBeUsed = entry.should_be_used();
     input.isUsed = entry.is_used();
-    f.inputElements[entry.position()].append(input);
+    f.inputElements[entry.position()].push_back(input);
   }
 }
 
@@ -579,8 +582,8 @@ void Access::encodeBundle(const BundleAdjustment& b,
     entry->set_id(t.id);
     for (auto it = t.parameters.cbegin(); it != t.parameters.cend(); ++it) {
       auto* p = entry->add_parameters();
-      p->set_parameter(toProto(it.key()));
-      p->set_value(it.value());
+      p->set_parameter(toProto(it->first));
+      p->set_value(it->second);
     }
   }
 }
@@ -593,29 +596,29 @@ void Access::applyBundle(const oipb::BundleAdjustmentRecord& m,
   b.baseSystem = BundleStation();
 
   for (const auto& station : m.stations()) {
-    b.stations.append(bundleStationOf(station));
+    b.stations.push_back(bundleStationOf(station));
   }
   // the base station is one of the stations, found by id
   if (m.base_station() != 0) {
     BundleStation key;
     key.id = m.base_station();
-    const int index = b.stations.indexOf(key);
+    const int index = oi::indexOf(b.stations, key);
     if (index >= 0) {
       b.baseSystem = b.stations.at(index);
     }
   }
   for (const auto& g : m.geometries()) {
-    b.geometries.append(bundleGeometryOf(g));
+    b.geometries.push_back(bundleGeometryOf(g));
   }
   for (const auto& entry : m.transformations()) {
     BundleTransformation t;
     t.id = entry.id();
     for (const auto& p : entry.parameters()) {
       if (const auto parameter = trafoParameterOf(p.parameter())) {
-        t.parameters.insert(*parameter, p.value());
+        t.parameters.insert_or_assign(*parameter, p.value());
       }
     }
-    b.transformations.append(t);
+    b.transformations.push_back(t);
   }
 }
 

@@ -1,5 +1,7 @@
 #include "exchangedefinedformat.h"
 
+#include <vector>
+
 using namespace oi;
 
 /*!
@@ -16,7 +18,8 @@ ExchangeDefinedFormat::~ExchangeDefinedFormat() {}
  * \brief ExchangeDefinedFormat::getSupportedFileExtensions
  * \return
  */
-const QStringList& ExchangeDefinedFormat::getSupportedFileExtensions() const {
+const std::vector<QString>& ExchangeDefinedFormat::getSupportedFileExtensions()
+    const {
   return this->supportedFileExtensions;
 }
 
@@ -24,7 +27,8 @@ const QStringList& ExchangeDefinedFormat::getSupportedFileExtensions() const {
  * \brief ExchangeDefinedFormat::getUsedElements
  * \return
  */
-const QList<ElementTypes>& ExchangeDefinedFormat::getUsedElements() const {
+const std::vector<ElementTypes>& ExchangeDefinedFormat::getUsedElements()
+    const {
   return this->usedElementTypes;
 }
 
@@ -34,6 +38,6 @@ const QList<ElementTypes>& ExchangeDefinedFormat::getUsedElements() const {
  * \param usedElementTypes
  */
 void ExchangeDefinedFormat::setUsedElements(
-    const QList<ElementTypes>& usedElementTypes) {
+    const std::vector<ElementTypes>& usedElementTypes) {
   this->usedElementTypes = usedElementTypes;
 }

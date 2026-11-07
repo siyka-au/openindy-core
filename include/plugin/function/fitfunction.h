@@ -1,13 +1,15 @@
 #ifndef FITFUNCTION_H
 #define FITFUNCTION_H
-
 #include <math.h>
 
 #include <array>
 #include <cmath>
+#include <iterator>
 #include <random>
 #include <utility>
+#include <vector>
 
+#include "containers.h"
 #include "core_export.h"
 #include "function.h"
 #include "snapshot.h"
@@ -63,7 +65,7 @@ class OI_CORE_EXPORT FitFunction : public Function {
         "geometry.");
     element.infinite = true;
     this->neededElements.clear();
-    this->neededElements.append(element);
+    this->neededElements.push_back(element);
   }
 
   ~FitFunction() override {}
@@ -76,8 +78,8 @@ class OI_CORE_EXPORT FitFunction : public Function {
 // instead of a magic constant - this is the same query shape tag
 // resolution uses elsewhere, just scoped to one function's own declaration.
 inline int dummyPointPosition(Function* function) {
-  const QList<NeededElement>& needed = function->getNeededElements();
-  for (int i = 0; i < needed.size(); ++i) {
+  const std::vector<NeededElement>& needed = function->getNeededElements();
+  for (int i = 0; i < std::ssize(needed); ++i) {
     if (needed.at(i).roleName == QLatin1String("dummyPoint")) {
       return i;
     }
@@ -90,7 +92,7 @@ class OI_CORE_EXPORT BestFitUtil : public FunctionUtil {
   bool hasDummyPoint(FitFunction* function) {
     const int pos = dummyPointPosition(function);
     return pos >= 0 && function->getInputElements().contains(pos) &&
-           function->getInputElements()[pos].size() > 0;
+           function->getInputElements().at(pos).size() > 0;
   }
 
   bool getDummyPoint(OiVec& dummyPoint, FitFunction* function) {
@@ -101,7 +103,7 @@ class OI_CORE_EXPORT BestFitUtil : public FunctionUtil {
     const int pos = dummyPointPosition(function);
     ElementTypes elementType =
         function->getNeededElements().at(pos).typeOfElement;
-    InputElement inputElement = function->getInputElements()[pos][0];
+    InputElement inputElement = function->getInputElements().at(pos).at(0);
     OiVec dp;
     switch (elementType) {
       case ElementTypes::eObservationElement:
@@ -137,14 +139,14 @@ class OI_CORE_EXPORT BestFitUtil : public FunctionUtil {
 class OI_CORE_EXPORT BestFitPlaneUtil : public BestFitUtil {
  protected:
   bool bestFitPlane(OiVec& centroid, OiVec& normal, double& eVal,
-                    QList<IdPoint> points) {
+                    std::vector<IdPoint> points) {
     if (points.size() == 0) {
       return false;
     }
 
     // centroid
     OiVec mean(3);
-    for (const IdPoint point : oi::snapshot(points)) {
+    for (const IdPoint& point : oi::snapshot(points)) {
       OiVec xyz = point.xyz;
       if (xyz.getSize() == 4) {
         xyz.removeLast();
@@ -157,7 +159,7 @@ class OI_CORE_EXPORT BestFitPlaneUtil : public BestFitUtil {
 
     // principle component analysis
     OiMat a(points.size(), 3);
-    for (int i = 0; i < points.size(); i++) {
+    for (int i = 0; i < std::ssize(points); i++) {
       a.setAt(i, 0, points.at(i).xyz.getAt(0) - centroid.getAt(0));
       a.setAt(i, 1, points.at(i).xyz.getAt(1) - centroid.getAt(1));
       a.setAt(i, 2, points.at(i).xyz.getAt(2) - centroid.getAt(2));
@@ -209,8 +211,9 @@ class OI_CORE_EXPORT BestFitPlaneUtil : public BestFitUtil {
     return true;
   }
 
-  void addDisplayResidual(FitFunction* function, QList<InputElement>& elements,
-                          OiVec normal, double dist) {
+  void addDisplayResidual(FitFunction* function,
+                          std::vector<InputElement>& elements, OiVec normal,
+                          double dist) {
     double distance = 0.0;
     OiVec v_plane(3);
     for (const InputElement& element : oi::snapshot(elements)) {
@@ -237,8 +240,8 @@ class OI_CORE_EXPORT BestFitPlaneUtil : public BestFitUtil {
 class OI_CORE_EXPORT BestFitCircleUtil : public BestFitUtil {
  protected:
   bool bestFitCircleInPlane(FitFunction* function, Circle& circle,
-                            QList<IdPoint> points,
-                            QList<IdPoint> usablePoints) {
+                            std::vector<IdPoint> points,
+                            std::vector<IdPoint> usablePoints) {
     // calculate centroid
     OiVec centroid(4);
     for (const IdPoint& point : std::as_const(points)) {
@@ -249,7 +252,7 @@ class OI_CORE_EXPORT BestFitCircleUtil : public BestFitUtil {
 
     // principle component analysis
     OiMat a(points.size(), 3);
-    for (int i = 0; i < points.size(); i++) {
+    for (int i = 0; i < std::ssize(points); i++) {
       a.setAt(i, 0, points.at(i).xyz.getAt(0) - centroid.getAt(0));
       a.setAt(i, 1, points.at(i).xyz.getAt(1) - centroid.getAt(1));
       a.setAt(i, 2, points.at(i).xyz.getAt(2) - centroid.getAt(2));
@@ -322,26 +325,26 @@ class OI_CORE_EXPORT BestFitCircleUtil : public BestFitUtil {
     centroid2D.removeLast();
 
     // calculate centroid reduced coordinates in 2D space
-    QList<OiVec> centroidReducedCoordinates;
-    QList<OiVec> allCentroidReducedCoordinates;
+    std::vector<OiVec> centroidReducedCoordinates;
+    std::vector<OiVec> allCentroidReducedCoordinates;
 
-    for (const IdPoint point : oi::snapshot(usablePoints)) {
+    for (const IdPoint& point : oi::snapshot(usablePoints)) {
       OiVec xyz(4);
       xyz = point.xyz;
       xyz.removeLast();  // remove the homogeneous item
       xyz = t * xyz;
       xyz.removeLast();
       OiVec reduced = xyz - centroid2D;
-      allCentroidReducedCoordinates.append(reduced);
-      if (points.contains(point)) {
-        centroidReducedCoordinates.append(reduced);
+      allCentroidReducedCoordinates.push_back(reduced);
+      if (oi::contains(points, point)) {
+        centroidReducedCoordinates.push_back(reduced);
       }
     }
 
     // calculate best fit circle in 2D space
     OiVec A1(points.size());
     OiMat A2(points.size(), 3);
-    for (int i = 0; i < points.size(); i++) {
+    for (int i = 0; i < std::ssize(points); i++) {
       A1.setAt(i, centroidReducedCoordinates.at(i).getAt(0) *
                           centroidReducedCoordinates.at(i).getAt(0) +
                       centroidReducedCoordinates.at(i).getAt(1) *
@@ -383,7 +386,7 @@ class OI_CORE_EXPORT BestFitCircleUtil : public BestFitUtil {
       double dr = diff.length() - radius;
 
       allCircleDistances.add(dr);
-      if (points.contains(point)) {
+      if (oi::contains(points, point)) {
         circleDistances.add(dr);
       }
     }
@@ -393,7 +396,7 @@ class OI_CORE_EXPORT BestFitCircleUtil : public BestFitUtil {
     xm = t_inv * xm;
 
     // calculate 3D residuals for each observation
-    for (int i = 0; i < usablePoints.size(); i++) {
+    for (int i = 0; i < std::ssize(usablePoints); i++) {
       const IdPoint point = usablePoints[i];
       OiVec reduced = allCentroidReducedCoordinates[i];
 
@@ -439,7 +442,7 @@ class OI_CORE_EXPORT BestFitCircleUtil : public BestFitUtil {
 
     // set statistic
     double stdev = 0.0;
-    for (int i = 0; i < centroidReducedCoordinates.size(); i++) {
+    for (int i = 0; i < std::ssize(centroidReducedCoordinates); i++) {
       double v_i = circleDistances.getAt(i);
       stdev += v_i * v_i;
     }
@@ -455,16 +458,17 @@ class OI_CORE_EXPORT BestFitCircleUtil : public BestFitUtil {
 
 class OI_CORE_EXPORT BestFitCylinderUtil {
  private:
-  QList<CylinderApproximation> approximations;
+  std::vector<CylinderApproximation> approximations;
 
  protected:
   bool bestFitCylinder(FitFunction* function, Cylinder& cylinder,
-                       QList<IdPoint> points, QList<IdPoint> usablePoints) {
+                       std::vector<IdPoint> points,
+                       std::vector<IdPoint> usablePoints) {
     ApproximationTypes approximationType =
         ApproximationTypes::eFirstTwoPoints;  // default
     if (function->getScalarInputParams().stringParameter.size() > 0) {
-      QString value = function->getScalarInputParams().stringParameter.value(
-          "approximation");
+      QString value = oi::value(
+          function->getScalarInputParams().stringParameter, "approximation");
       if (value.compare("direction") == 0) {
         approximationType = ApproximationTypes::eDirection;
       } else if (value.compare("guess axis") == 0) {
@@ -484,15 +488,15 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
     centroid = centroid / (double)points.size();
 
     // calculate centroid reduced observations
-    QList<IdPoint> allReducedInputObservations;
-    QList<IdPoint> reducedInputObservations;
+    std::vector<IdPoint> allReducedInputObservations;
+    std::vector<IdPoint> reducedInputObservations;
     for (const IdPoint& obs : std::as_const(usablePoints)) {
       IdPoint rObs;
       rObs.id = obs.id;
       rObs.xyz = obs.xyz - centroid;
-      allReducedInputObservations.append(rObs);
-      if (points.contains(obs)) {
-        reducedInputObservations.append(rObs);
+      allReducedInputObservations.push_back(rObs);
+      if (oi::contains(points, obs)) {
+        reducedInputObservations.push_back(rObs);
       }
     }
 
@@ -583,7 +587,7 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
       }
       case ApproximationTypes::eDirection: {
         for (const InputElement& element :
-             oi::snapshot(function->getInputElements()[1])) {
+             oi::value(function->getInputElements(), 1)) {
           if (!element.geometry.isNull() && element.geometry->getIsSolved() &&
               element.geometry->hasDirection()) {
             direction = element.geometry->getDirection().getVector();
@@ -598,14 +602,14 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
         // not just eObservationElement - read whichever the
         // InputElement actually carries, same as
         // BestFitUtil::getDummyPoint already does for plane/circle.
-        QList<OiVec> dummyPoints;
-        for (const InputElement& element : oi::snapshot(
-                 function->getInputElements()[dummyPointPosition(function)])) {
+        std::vector<OiVec> dummyPoints;
+        for (const InputElement& element : oi::value(
+                 function->getInputElements(), dummyPointPosition(function))) {
           if (!element.observation.isNull() &&
               element.observation->getIsSolved()) {
-            dummyPoints.append(element.observation->getXYZ());
+            dummyPoints.push_back(element.observation->getXYZ());
           } else if (!element.point.isNull() && element.point->getIsSolved()) {
-            dummyPoints.append(element.point->getPosition().getVectorH());
+            dummyPoints.push_back(element.point->getPosition().getVectorH());
           }
         }
         if (dummyPoints.size() >= 2) {
@@ -654,7 +658,7 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
    * \return
    */
   bool approximateCylinder(FitFunction* function, Cylinder& /*cylinder*/,
-                           const QList<IdPoint>& inputObservations,
+                           const std::vector<IdPoint>& inputObservations,
                            ApproximationTypes approximationType) {
     // clear current approximations
     this->approximations.clear();
@@ -723,7 +727,7 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
         Direction approxAxis;
         // find first direction
         for (const InputElement& element :
-             oi::snapshot(function->getInputElements()[1])) {
+             oi::value(function->getInputElements(), 1)) {
           if (!element.geometry.isNull() && element.geometry->getIsSolved() &&
               element.geometry->hasDirection()) {
             approxAxis = element.geometry->getDirection();
@@ -744,14 +748,14 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
       case ApproximationTypes::eFirstTwoDummyPoint: {
         // D12/Stage 7c-ii: see the identical fix in bestFitCylinder()
         // above - the dummyPoint role resolves to ePointElement now.
-        QList<OiVec> dummyPoints;
-        for (const InputElement& element : oi::snapshot(
-                 function->getInputElements()[dummyPointPosition(function)])) {
+        std::vector<OiVec> dummyPoints;
+        for (const InputElement& element : oi::value(
+                 function->getInputElements(), dummyPointPosition(function))) {
           if (!element.observation.isNull() &&
               element.observation->getIsSolved()) {
-            dummyPoints.append(element.observation->getXYZ());
+            dummyPoints.push_back(element.observation->getXYZ());
           } else if (!element.point.isNull() && element.point->getIsSolved()) {
-            dummyPoints.append(element.point->getPosition().getVectorH());
+            dummyPoints.push_back(element.point->getPosition().getVectorH());
           }
         }
         if (dummyPoints.size() < 2) {
@@ -786,7 +790,7 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
   }
 
   bool approximateCylinder(FitFunction* function, OiVec pn,
-                           const QList<IdPoint>& inputObservations,
+                           const std::vector<IdPoint>& inputObservations,
                            QString label) {
     // get the number of observations
     int numPoints = inputObservations.size();
@@ -817,12 +821,12 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
     OiVec s(3);
 
     // rotated 2D points
-    QList<double> points2D_x;
-    QList<double> points2D_y;
+    std::vector<double> points2D_x;
+    std::vector<double> points2D_y;
 
     // rotated centroid reduced 2D points
-    QList<double> centroidreduced2D_x;
-    QList<double> centroidreduced2D_y;
+    std::vector<double> centroidreduced2D_x;
+    std::vector<double> centroidreduced2D_y;
 
     // calculate rotation angles
     if (pn.getAt(1) == 0 && pn.getAt(2) == 0) {
@@ -925,8 +929,8 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
            Rall.getAt(1, 1) * obs.xyz.getAt(1) +
            Rall.getAt(1, 2) * obs.xyz.getAt(2);
 
-      points2D_x.append(static_cast<double>(tx));
-      points2D_y.append(static_cast<double>(ty));
+      points2D_x.push_back(static_cast<double>(tx));
+      points2D_y.push_back(static_cast<double>(ty));
 
       centroid2D.setAt(0, centroid2D.getAt(0) + tx);
       centroid2D.setAt(1, centroid2D.getAt(1) + ty);
@@ -936,9 +940,9 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
 
     // calculate centroid reduced 2D coordinates
     for (int j = 0; j < numPoints; j++) {
-      centroidreduced2D_x.append(
+      centroidreduced2D_x.push_back(
           static_cast<double>(points2D_x.at(j) - centroid2D.getAt(0)));
-      centroidreduced2D_y.append(
+      centroidreduced2D_y.push_back(
           static_cast<double>(points2D_y.at(j) - centroid2D.getAt(1)));
     }
 
@@ -989,7 +993,7 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
     approximation.approxRadius = radius;
     approximation.stdev = sum_vv;
     approximation.comment = label;
-    this->approximations.append(approximation);
+    this->approximations.push_back(approximation);
 
     return true;
   }
@@ -1002,8 +1006,8 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
    * \return
    */
   bool fitCylinder(FitFunction* function, Cylinder& cylinder,
-                   const QList<IdPoint>& inputObservations,
-                   const QList<IdPoint>& allUsableObservations,
+                   const std::vector<IdPoint>& inputObservations,
+                   const std::vector<IdPoint>& allUsableObservations,
                    const CylinderApproximation& approximation) {
     // get the number of observations
     const int numPoints = inputObservations.size();
@@ -1360,7 +1364,8 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
       double distance = 0.0;
 
       distance = static_cast<double>(radiusActual - _r);  // distance error
-      if (inputObservations.contains(
+      if (oi::contains(
+              inputObservations,
               observation)) {  // calculate form error from "used" observations
         vrMin = min(vrMin, distance);
         vrMax = max(vrMax, distance);
@@ -1383,7 +1388,7 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
         function->addDisplayResidual(observation.id, distance);
       }
 
-      if (inputObservations.contains(observation)) {
+      if (oi::contains(inputObservations, observation)) {
         sumVV += distance * distance;
       }
     }

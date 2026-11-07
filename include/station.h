@@ -1,9 +1,9 @@
 #ifndef STATION_H
 #define STATION_H
-
-#include <QList>
 #include <atomic>
+#include <map>
 #include <memory>
+#include <vector>
 
 #include "core_export.h"
 #include "executor.h"
@@ -74,10 +74,10 @@ class OI_CORE_EXPORT Station : public Feature {
   void resetSensor();
 
   // previously used sensors
-  [[nodiscard]] const QList<Sensor> getUsedSensors() const;
+  [[nodiscard]] const std::vector<Sensor> getUsedSensors() const;
 
   // get geometries measured from this station
-  [[nodiscard]] QList<oi::Guarded<Geometry>> getTargetGeometries() const;
+  [[nodiscard]] std::vector<oi::Guarded<Geometry>> getTargetGeometries() const;
 
   // ####################################################
   // get information about the currently connected sensor
@@ -88,18 +88,18 @@ class OI_CORE_EXPORT Station : public Feature {
   bool getIsSensorConnected();
   bool getIsReadyForMeasurement();
   bool getIsBusy();
-  QMap<QString, QString> getSensorStatus();
+  std::map<QString, QString> getSensorStatus();
 
   // sensor type
   [[nodiscard]] SensorType getActiveSensorType() const;
 
   // reading and connection types
-  [[nodiscard]] QList<ReadingTypes> getSupportedReadingTypes() const;
-  [[nodiscard]] QList<ConnectionKind> getSupportedConnectionTypes() const;
+  [[nodiscard]] std::vector<ReadingTypes> getSupportedReadingTypes() const;
+  [[nodiscard]] std::vector<ConnectionKind> getSupportedConnectionTypes() const;
 
   // sensor actions
-  [[nodiscard]] QList<SensorFunctions> getSupportedSensorActions() const;
-  [[nodiscard]] QStringList getSelfDefinedActions() const;
+  [[nodiscard]] std::vector<SensorFunctions> getSupportedSensorActions() const;
+  [[nodiscard]] std::vector<QString> getSelfDefinedActions() const;
 
   // stream format
   ReadingTypes getStreamFormat();
@@ -232,13 +232,13 @@ class OI_CORE_EXPORT Station : public Feature {
   // readings made by this station
   // #############################
 
-  QList<oi::Guarded<Reading>> cartesianReadings;
-  QList<oi::Guarded<Reading>> directionReadings;
-  QList<oi::Guarded<Reading>> distanceReadings;
-  QList<oi::Guarded<Reading>> polarReadings;
-  QList<oi::Guarded<Reading>> levelReadings;
-  QList<oi::Guarded<Reading>> temperatureRadings;
-  QList<oi::Guarded<Reading>> undefinedReadings;
+  std::vector<oi::Guarded<Reading>> cartesianReadings;
+  std::vector<oi::Guarded<Reading>> directionReadings;
+  std::vector<oi::Guarded<Reading>> distanceReadings;
+  std::vector<oi::Guarded<Reading>> polarReadings;
+  std::vector<oi::Guarded<Reading>> levelReadings;
+  std::vector<oi::Guarded<Reading>> temperatureRadings;
+  std::vector<oi::Guarded<Reading>> undefinedReadings;
 
  protected:
   // keep the station system's name in step with the station's
@@ -258,11 +258,11 @@ class OI_CORE_EXPORT Station : public Feature {
 
   // add or remove readings
   void addReadings(const int& geomId,
-                   const QList<oi::Guarded<Reading>>& readings);
+                   const std::vector<oi::Guarded<Reading>>& readings);
   void removeReading(const oi::Guarded<Reading>& reading);
 
   // set previously used sensors
-  void setUsedSensors(const QList<Sensor>& sensors);
+  void setUsedSensors(const std::vector<Sensor>& sensors);
 
  protected:
   // #############################################

@@ -1,10 +1,10 @@
 #ifndef PIPELINESTAGE_H
 #define PIPELINESTAGE_H
-
-#include <QList>
 #include <QMetaType>
 #include <QString>
 #include <QtCore>
+#include <map>
+#include <vector>
 
 #include "core_export.h"
 #include "types.h"
@@ -79,7 +79,7 @@ class OI_CORE_EXPORT PipelineExclusion {
  * Parameterized the same shape Function uses for its own scalar inputs
  * today (plain typed fields here, since each stage type has a small,
  * fixed parameter set) rather than std::variant - Stage 10 is what
- * replaces Function's QMap<QString,...> parameter maps project-wide, and
+ * replaces Function's std::map<QString,...> parameter maps project-wide, and
  * this predates it; follow the existing convention, do not scope-creep
  * into building Stage 10 early.
  */
@@ -90,15 +90,16 @@ class OI_CORE_EXPORT PipelineStage {
   explicit PipelineStage(PipelineStageType type)
       : type(type), sigmaMultiplier(3.0) {}
 
-  static PipelineStage explicitList(const QList<int>& ids);
+  static PipelineStage explicitList(const std::vector<int>& ids);
   static PipelineStage exclude(int elementId, const QString& reason);
-  static PipelineStage exclude(const QList<PipelineExclusion>& exclusions);
+  static PipelineStage exclude(
+      const std::vector<PipelineExclusion>& exclusions);
   static PipelineStage residualOutlierRejection(double sigmaMultiplier = 3.0);
 
   PipelineStageType type;
 
-  QList<int> explicitIds;  // eExplicitListStage: only these ids survive
-  QList<PipelineExclusion>
+  std::vector<int> explicitIds;  // eExplicitListStage: only these ids survive
+  std::vector<PipelineExclusion>
       explicitExclusions;  // eExcludeStage: these ids are dropped, each with
                            // its own reason
   double sigmaMultiplier;  // eResidualOutlierRejectionStage: reject beyond this

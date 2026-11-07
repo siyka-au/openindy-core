@@ -1,5 +1,9 @@
 #include "line.h"
 
+#include <map>
+#include <vector>
+
+#include "containers.h"
 #include "featurewrapper.h"
 #include "snapshot.h"
 
@@ -97,35 +101,38 @@ void Line::setLine(const Position& xyz, const Direction& axis) {
  * \param displayDigits
  * \return
  */
-QMap<GeometryParameters, QString> Line::getUnknownParameters(
-    const QMap<DimensionType, UnitType>& displayUnits,
-    const QMap<DimensionType, int>& displayDigits) const {
-  QMap<GeometryParameters, QString> parameters;
+std::map<GeometryParameters, QString> Line::getUnknownParameters(
+    const std::map<DimensionType, UnitType>& displayUnits,
+    const std::map<DimensionType, int>& displayDigits) const {
+  std::map<GeometryParameters, QString> parameters;
 
-  parameters.insert(
+  parameters.insert_or_assign(
       GeometryParameters::eUnknownX,
       this->getDisplayX(
-          displayUnits.value(DimensionType::eMetric, UnitType::eUnitMeter),
-          displayDigits.value(DimensionType::eMetric, 0)));
-  parameters.insert(
+          oi::value(displayUnits, DimensionType::eMetric, UnitType::eUnitMeter),
+          oi::value(displayDigits, DimensionType::eMetric, 0)));
+  parameters.insert_or_assign(
       GeometryParameters::eUnknownY,
       this->getDisplayY(
-          displayUnits.value(DimensionType::eMetric, UnitType::eUnitMeter),
-          displayDigits.value(DimensionType::eMetric, 0)));
-  parameters.insert(
+          oi::value(displayUnits, DimensionType::eMetric, UnitType::eUnitMeter),
+          oi::value(displayDigits, DimensionType::eMetric, 0)));
+  parameters.insert_or_assign(
       GeometryParameters::eUnknownZ,
       this->getDisplayZ(
-          displayUnits.value(DimensionType::eMetric, UnitType::eUnitMeter),
-          displayDigits.value(DimensionType::eMetric, 0)));
-  parameters.insert(GeometryParameters::eUnknownPrimaryI,
-                    this->getDisplayPrimaryI(
-                        displayDigits.value(DimensionType::eDimensionless, 0)));
-  parameters.insert(GeometryParameters::eUnknownPrimaryJ,
-                    this->getDisplayPrimaryJ(
-                        displayDigits.value(DimensionType::eDimensionless, 0)));
-  parameters.insert(GeometryParameters::eUnknownPrimaryK,
-                    this->getDisplayPrimaryK(
-                        displayDigits.value(DimensionType::eDimensionless, 0)));
+          oi::value(displayUnits, DimensionType::eMetric, UnitType::eUnitMeter),
+          oi::value(displayDigits, DimensionType::eMetric, 0)));
+  parameters.insert_or_assign(
+      GeometryParameters::eUnknownPrimaryI,
+      this->getDisplayPrimaryI(
+          oi::value(displayDigits, DimensionType::eDimensionless, 0)));
+  parameters.insert_or_assign(
+      GeometryParameters::eUnknownPrimaryJ,
+      this->getDisplayPrimaryJ(
+          oi::value(displayDigits, DimensionType::eDimensionless, 0)));
+  parameters.insert_or_assign(
+      GeometryParameters::eUnknownPrimaryK,
+      this->getDisplayPrimaryK(
+          oi::value(displayDigits, DimensionType::eDimensionless, 0)));
 
   return parameters;
 }
@@ -135,35 +142,35 @@ QMap<GeometryParameters, QString> Line::getUnknownParameters(
  * \param parameters
  */
 void Line::applyUnknownParameters(
-    const QMap<GeometryParameters, double>& parameters) {
+    const std::map<GeometryParameters, double>& parameters) {
   // get current parameters
   OiVec position = this->xyz.getVector();
   OiVec direction = this->ijk.getVector();
 
   // update parameters
-  QList<GeometryParameters> keys = parameters.keys();
+  std::vector<GeometryParameters> keys = oi::keys(parameters);
   for (const GeometryParameters& key : oi::snapshot(keys)) {
     switch (key) {
       case GeometryParameters::eUnknownX:
-        position.setAt(0, parameters.value(GeometryParameters::eUnknownX));
+        position.setAt(0, oi::value(parameters, GeometryParameters::eUnknownX));
         break;
       case GeometryParameters::eUnknownY:
-        position.setAt(1, parameters.value(GeometryParameters::eUnknownY));
+        position.setAt(1, oi::value(parameters, GeometryParameters::eUnknownY));
         break;
       case GeometryParameters::eUnknownZ:
-        position.setAt(2, parameters.value(GeometryParameters::eUnknownZ));
+        position.setAt(2, oi::value(parameters, GeometryParameters::eUnknownZ));
         break;
       case GeometryParameters::eUnknownPrimaryI:
-        direction.setAt(0,
-                        parameters.value(GeometryParameters::eUnknownPrimaryI));
+        direction.setAt(
+            0, oi::value(parameters, GeometryParameters::eUnknownPrimaryI));
         break;
       case GeometryParameters::eUnknownPrimaryJ:
-        direction.setAt(1,
-                        parameters.value(GeometryParameters::eUnknownPrimaryJ));
+        direction.setAt(
+            1, oi::value(parameters, GeometryParameters::eUnknownPrimaryJ));
         break;
       case GeometryParameters::eUnknownPrimaryK:
-        direction.setAt(2,
-                        parameters.value(GeometryParameters::eUnknownPrimaryK));
+        direction.setAt(
+            2, oi::value(parameters, GeometryParameters::eUnknownPrimaryK));
         break;
       default:
         break;

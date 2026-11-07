@@ -8,18 +8,18 @@
 // linking pass resolves the ids each message carries into pointers, creates
 // the plugin objects (functions, bundle adjustments, sensors) through the
 // host, and hands the finished features to the job.
-
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 
 #include <QCryptographicHash>
-#include <QMap>
 #include <algorithm>
 #include <chrono>
 #include <map>
 #include <set>
+#include <vector>
 
 #include "access.h"
+#include "containers.h"
 #include "convert.h"
 #include "featurewrapper.h"
 #include "guarded.h"
@@ -193,9 +193,9 @@ Collected collect(OiJob& job) {
 
 // The configs the project defines itself: every config its geometries use
 // that the application does not ship as a standard config.
-QMap<MeasurementConfigKey, MeasurementConfig> projectConfigsOf(
+std::map<MeasurementConfigKey, MeasurementConfig> projectConfigsOf(
     const Collected& collected, const ProjectHost& host) {
-  QMap<MeasurementConfigKey, MeasurementConfig> configs;
+  std::map<MeasurementConfigKey, MeasurementConfig> configs;
   for (const auto& [id, geometry] : collected.geometries) {
     const MeasurementConfigKey key = geometry->getMeasurementConfig();
     if (!key.isValid() || key.isStandardConfig() || configs.contains(key)) {
@@ -203,7 +203,7 @@ QMap<MeasurementConfigKey, MeasurementConfig> projectConfigsOf(
     }
     const MeasurementConfig config = host.measurementConfig(key);
     if (config.isValid()) {
-      configs.insert(key, config);
+      configs.insert_or_assign(key, config);
     }
   }
   return configs;
@@ -216,14 +216,15 @@ QMap<MeasurementConfigKey, MeasurementConfig> projectConfigsOf(
 // Everything created while loading. Until the job has taken it over, the
 // staging area owns it, so a load that fails half way leaves nothing behind.
 struct Staging {
-  QMap<int, oi::Guarded<Observation>> observations;
-  QMap<int, oi::Guarded<Reading>> readings;
-  QMap<int, oi::Guarded<FeatureWrapper>> stations;
-  QMap<int, oi::Guarded<FeatureWrapper>> systems;
-  QMap<int, oi::Guarded<FeatureWrapper>> trafos;
-  QMap<int, oi::Guarded<FeatureWrapper>> geometries;
-  QMap<int, oi::Guarded<FeatureWrapper>> groups;
-  QList<oi::Guarded<Function>> functions;  // not yet attached to a feature
+  std::map<int, oi::Guarded<Observation>> observations;
+  std::map<int, oi::Guarded<Reading>> readings;
+  std::map<int, oi::Guarded<FeatureWrapper>> stations;
+  std::map<int, oi::Guarded<FeatureWrapper>> systems;
+  std::map<int, oi::Guarded<FeatureWrapper>> trafos;
+  std::map<int, oi::Guarded<FeatureWrapper>> geometries;
+  std::map<int, oi::Guarded<FeatureWrapper>> groups;
+  std::vector<oi::Guarded<Function>>
+      functions;  // not yet attached to a feature
   bool released = false;
 
   Staging() = default;
@@ -239,12 +240,12 @@ struct Staging {
     for (const auto& function : functions) {
       delete function.data();
     }
-    for (const auto& observation : observations) {
+    for (const auto& [id, observation] : observations) {
       delete observation.data();
     }
     for (const auto* map :
          {&stations, &systems, &trafos, &geometries, &groups}) {
-      for (const auto& wrapper : *map) {
+      for (const auto& [id, wrapper] : *map) {
         if (wrapper.isNull()) {
           continue;
         }
@@ -267,19 +268,19 @@ struct Staging {
   [[nodiscard]] oi::Guarded<FeatureWrapper> feature(int id,
                                                     unsigned kinds) const {
     if ((kinds & kGeometry) != 0 && geometries.contains(id)) {
-      return geometries.value(id);
+      return oi::value(geometries, id);
     }
     if ((kinds & kSystem) != 0 && systems.contains(id)) {
-      return systems.value(id);
+      return oi::value(systems, id);
     }
     if ((kinds & kTrafo) != 0 && trafos.contains(id)) {
-      return trafos.value(id);
+      return oi::value(trafos, id);
     }
     if ((kinds & kStation) != 0 && stations.contains(id)) {
-      return stations.value(id);
+      return oi::value(stations, id);
     }
     if ((kinds & kGroup) != 0 && groups.contains(id)) {
-      return groups.value(id);
+      return oi::value(groups, id);
     }
     return {};
   }
@@ -334,7 +335,7 @@ class Linker {
   Staging& staging_;
   DecodeResult& result_;
 
-  QMap<MeasurementConfigKey, MeasurementConfig> projectConfigs_;
+  std::map<MeasurementConfigKey, MeasurementConfig> projectConfigs_;
 };
 
 bool Linker::create() {
@@ -344,14 +345,14 @@ bool Linker::create() {
       delete observation.data();
       continue;
     }
-    staging_.observations.insert(message.id(), observation);
-    staging_.readings.insert(observation->getReading()->getId(),
-                             observation->getReading());
+    staging_.observations.insert_or_assign(message.id(), observation);
+    staging_.readings.insert_or_assign(observation->getReading()->getId(),
+                                       observation->getReading());
   }
 
   // Every duplicate id is dropped (the first one wins) rather than silently
   // replacing an entity other entities already refer to.
-  const auto add = [](QMap<int, oi::Guarded<FeatureWrapper>>& into, int id,
+  const auto add = [](std::map<int, oi::Guarded<FeatureWrapper>>& into, int id,
                       const oi::Guarded<Feature>& feature) {
     if (feature.isNull()) {
       return;
@@ -365,7 +366,7 @@ bool Linker::create() {
       delete feature.data();
       return;
     }
-    into.insert(id, wrapper);
+    into.insert_or_assign(id, wrapper);
   };
 
   for (const auto& message : project_.stations()) {
@@ -385,11 +386,11 @@ bool Linker::create() {
     add(staging_.groups, message.common().id(), createGroup(message));
   }
 
-  if (staging_.stations.isEmpty()) {
+  if (staging_.stations.empty()) {
     result_.error = "the project has no station";
     return false;
   }
-  if (staging_.systems.isEmpty()) {
+  if (staging_.systems.empty()) {
     result_.error = "the project has no coordinate system";
     return false;
   }
@@ -405,7 +406,7 @@ bool Linker::create() {
   for (const auto& message : project_.measurement_configs()) {
     if (auto config = fromProto(message)) {
       config->makeProjectConfig();
-      projectConfigs_.insert(config->getKey(), *config);
+      projectConfigs_.insert_or_assign(config->getKey(), *config);
     }
   }
   return true;
@@ -442,7 +443,7 @@ void Linker::attachFunctions(const oipb::FeatureCommon& common,
     if (function.isNull()) {
       continue;  // already reported as missing
     }
-    staging_.functions.removeOne(function);
+    oi::removeOne(staging_.functions, function);
     feature.addFunction(function);
   }
 }
@@ -456,17 +457,17 @@ oi::Guarded<Function> Linker::buildFunction(
     return {};
   }
   oi::Guarded<Function> function = created.release();
-  staging_.functions.append(function);
+  staging_.functions.push_back(function);
   applyRecord(record, *function);
 
   // point the inputs at the objects they name; one that no longer exists is
   // dropped, since a function must never be left holding a null input
   auto& inputs = Access::inputs(*function);
   for (auto it = inputs.begin(); it != inputs.end(); ++it) {
-    QList<InputElement>& list = it.value();
+    std::vector<InputElement>& list = it->second;
     for (qsizetype i = list.size() - 1; i >= 0; --i) {
       if (!resolveInput(list[i])) {
-        list.removeAt(i);
+        oi::removeAt(list, i);
       }
     }
   }
@@ -477,22 +478,24 @@ bool Linker::resolveInput(InputElement& element) const {
   const int id = element.id;
 
   if (staging_.stations.contains(id)) {
-    element.station = staging_.stations.value(id)->getStation();
+    element.station = oi::value(staging_.stations, id)->getStation();
     element.typeOfElement = ElementTypes::eStationElement;
     return true;
   }
   if (staging_.systems.contains(id)) {
-    element.coordSystem = staging_.systems.value(id)->getCoordinateSystem();
+    element.coordSystem =
+        oi::value(staging_.systems, id)->getCoordinateSystem();
     element.typeOfElement = ElementTypes::eCoordinateSystemElement;
     return true;
   }
   if (staging_.trafos.contains(id)) {
-    element.trafoParam = staging_.trafos.value(id)->getTrafoParam();
+    element.trafoParam = oi::value(staging_.trafos, id)->getTrafoParam();
     element.typeOfElement = ElementTypes::eTrafoParamElement;
     return true;
   }
   if (staging_.geometries.contains(id)) {
-    const oi::Guarded<FeatureWrapper> wrapper = staging_.geometries.value(id);
+    const oi::Guarded<FeatureWrapper> wrapper =
+        oi::value(staging_.geometries, id);
     element.geometry = wrapper->getGeometry();
     switch (wrapper->getFeatureTypeEnum()) {
       case FeatureTypes::eCircleFeature:
@@ -579,12 +582,12 @@ bool Linker::resolveInput(InputElement& element) const {
     return true;
   }
   if (staging_.observations.contains(id)) {
-    element.observation = staging_.observations.value(id);
+    element.observation = oi::value(staging_.observations, id);
     element.typeOfElement = ElementTypes::eObservationElement;
     return true;
   }
   if (staging_.readings.contains(id)) {
-    const oi::Guarded<Reading> reading = staging_.readings.value(id);
+    const oi::Guarded<Reading> reading = oi::value(staging_.readings, id);
     switch (reading->getTypeOfReading()) {
       case ReadingTypes::eDistanceReading:
         element.distanceReading = reading;
@@ -640,11 +643,11 @@ void Linker::linkObservations() {
       continue;
     }
     const oi::Guarded<Observation> observation =
-        staging_.observations.value(message.id());
+        oi::value(staging_.observations, message.id());
 
     if (staging_.stations.contains(message.station())) {
       const oi::Guarded<Station> station =
-          staging_.stations.value(message.station())->getStation();
+          oi::value(staging_.stations, message.station())->getStation();
       observation->setStation(station);
       if (station->getIsSensorSet()) {
         observation->getReading()->setSensorConfiguration(
@@ -654,7 +657,7 @@ void Linker::linkObservations() {
     }
     if (staging_.geometries.contains(message.measured_target_geometry())) {
       observation->setMeasuredTargetGeometry(
-          staging_.geometries.value(message.measured_target_geometry())
+          oi::value(staging_.geometries, message.measured_target_geometry())
               ->getGeometry());
     }
   }
@@ -663,13 +666,13 @@ void Linker::linkObservations() {
 void Linker::linkStations() {
   for (const auto& message : project_.stations()) {
     const oi::Guarded<FeatureWrapper> wrapper =
-        staging_.stations.value(message.feature().id());
+        oi::value(staging_.stations, message.feature().id());
     if (wrapper.isNull()) {
       continue;
     }
     const oi::Guarded<Station> station = wrapper->getStation();
 
-    QList<Sensor> usedSensors;
+    std::vector<Sensor> usedSensors;
     for (const auto& ref : message.used_sensors()) {
       std::unique_ptr<Sensor> sensor =
           host_.createSensor(ref.plugin(), ref.name());
@@ -677,7 +680,7 @@ void Linker::linkStations() {
         missing(ref);
         continue;
       }
-      usedSensors.append(Sensor(*sensor));
+      usedSensors.push_back(Sensor(*sensor));
     }
     Access::setUsedSensors(*station, usedSensors);
 
@@ -693,14 +696,14 @@ void Linker::linkStations() {
 
     if (staging_.geometries.contains(message.position())) {
       const oi::Guarded<Point> point =
-          staging_.geometries.value(message.position())->getPoint();
+          oi::value(staging_.geometries, message.position())->getPoint();
       if (!point.isNull()) {
         Access::setStationPosition(*station, point);
       }
     }
     if (staging_.systems.contains(message.coordinate_system())) {
       const oi::Guarded<CoordinateSystem> system =
-          staging_.systems.value(message.coordinate_system())
+          oi::value(staging_.systems, message.coordinate_system())
               ->getCoordinateSystem();
       if (!system.isNull()) {
         Access::setStationSystem(*station, system);
@@ -714,7 +717,7 @@ void Linker::linkStations() {
 void Linker::linkSystems() {
   for (const auto& message : project_.coordinate_systems()) {
     const oi::Guarded<FeatureWrapper> wrapper =
-        staging_.systems.value(message.feature().id());
+        oi::value(staging_.systems, message.feature().id());
     if (wrapper.isNull()) {
       continue;
     }
@@ -730,13 +733,14 @@ void Linker::linkSystems() {
 
     for (const int id : message.observations()) {
       if (staging_.observations.contains(id)) {
-        Access::addSystemObservation(*system, staging_.observations.value(id));
+        Access::addSystemObservation(*system,
+                                     oi::value(staging_.observations, id));
       }
     }
     for (const int id : message.nominal_geometries()) {
       if (staging_.geometries.contains(id)) {
         const oi::Guarded<FeatureWrapper> nominal =
-            staging_.geometries.value(id);
+            oi::value(staging_.geometries, id);
         // a geometry owned by another feature is regenerated, not listed
         if (!nominal->getGeometry()->getOwnerDescription().has_value()) {
           Access::addSystemNominal(*system, nominal);
@@ -746,7 +750,7 @@ void Linker::linkSystems() {
     for (const int id : message.trafo_params()) {
       if (staging_.trafos.contains(id)) {
         system->addTransformationParameter(
-            staging_.trafos.value(id)->getTrafoParam());
+            oi::value(staging_.trafos, id)->getTrafoParam());
       }
     }
 
@@ -757,15 +761,15 @@ void Linker::linkSystems() {
 void Linker::linkTrafos() {
   for (const auto& message : project_.trafo_params()) {
     const oi::Guarded<FeatureWrapper> wrapper =
-        staging_.trafos.value(message.feature().id());
+        oi::value(staging_.trafos, message.feature().id());
     if (wrapper.isNull()) {
       continue;
     }
     if (staging_.systems.contains(message.from()) &&
         staging_.systems.contains(message.to())) {
       wrapper->getTrafoParam()->setCoordinateSystems(
-          staging_.systems.value(message.from())->getCoordinateSystem(),
-          staging_.systems.value(message.to())->getCoordinateSystem());
+          oi::value(staging_.systems, message.from())->getCoordinateSystem(),
+          oi::value(staging_.systems, message.to())->getCoordinateSystem());
     }
     linkCommon(message.feature(), wrapper);
   }
@@ -789,16 +793,16 @@ void Linker::linkMeasurementConfig(const oipb::Geometry& message,
     geometry.setMeasurementConfig(standard.getKey());
     return;
   }
-  const auto project = projectConfigs_.constFind(projectKey);
-  if (project != projectConfigs_.constEnd() && project->isValid()) {
-    geometry.setMeasurementConfig(project->getKey());
+  const auto project = projectConfigs_.find(projectKey);
+  if (project != projectConfigs_.cend() && project->second.isValid()) {
+    geometry.setMeasurementConfig(project->second.getKey());
   }
 }
 
 void Linker::linkGeometries() {
   for (const auto& message : project_.geometries()) {
     const oi::Guarded<FeatureWrapper> wrapper =
-        staging_.geometries.value(message.common().id());
+        oi::value(staging_.geometries, message.common().id());
     if (wrapper.isNull()) {
       continue;
     }
@@ -806,14 +810,14 @@ void Linker::linkGeometries() {
 
     for (const int id : message.observations()) {
       if (staging_.observations.contains(id)) {
-        geometry->addObservation(staging_.observations.value(id));
+        geometry->addObservation(oi::value(staging_.observations, id));
       }
     }
 
     if (message.realises() != 0 &&
         staging_.geometries.contains(message.realises())) {
       geometry->setRealises(
-          staging_.geometries.value(message.realises())->getGeometry());
+          oi::value(staging_.geometries, message.realises())->getGeometry());
     }
 
     // A geometry owned by another feature was computed from it: once the
@@ -823,7 +827,7 @@ void Linker::linkGeometries() {
     if (message.owner_feature() != 0 &&
         staging_.geometries.contains(message.owner_feature())) {
       if (geometry->setOwnerFeature(
-              staging_.geometries.value(message.owner_feature())
+              oi::value(staging_.geometries, message.owner_feature())
                   ->getGeometry()) &&
           geometry->getIsSolved()) {
         geometry->setIsUpdated(true);
@@ -832,7 +836,7 @@ void Linker::linkGeometries() {
 
     if (staging_.systems.contains(message.nominal_system())) {
       geometry->setNominalSystem(
-          staging_.systems.value(message.nominal_system())
+          oi::value(staging_.systems, message.nominal_system())
               ->getCoordinateSystem());
     }
 
@@ -844,7 +848,7 @@ void Linker::linkGeometries() {
       const oi::Guarded<PointCloud> cloud = wrapper->getPointCloud();
       for (const int id : message.point_cloud().segments()) {
         if (!cloud.isNull() && staging_.geometries.contains(id)) {
-          Access::addSegment(*cloud, staging_.geometries.value(id));
+          Access::addSegment(*cloud, oi::value(staging_.geometries, id));
         }
       }
     }
@@ -856,7 +860,7 @@ void Linker::linkGeometries() {
 void Linker::linkGroups() {
   for (const auto& message : project_.groups()) {
     const oi::Guarded<FeatureWrapper> wrapper =
-        staging_.groups.value(message.common().id());
+        oi::value(staging_.groups, message.common().id());
     if (wrapper.isNull()) {
       continue;
     }
@@ -910,7 +914,7 @@ std::string encodeProject(OiJob& job, const ProjectHost& host,
   if (!job.getActiveCoordinateSystem().isNull()) {
     body.set_active_coordinate_system(job.getActiveCoordinateSystem()->getId());
   }
-  for (const auto& config : projectConfigsOf(collected, host)) {
+  for (const auto& [key, config] : projectConfigsOf(collected, host)) {
     *body.add_measurement_configs() = toProto(config);
   }
   for (const auto& [id, station] : collected.stations) {
@@ -967,9 +971,9 @@ DecodeResult decodeProject(std::string_view bytes, ProjectHost& host) {
 
   // The station's own point is part of the station; only the station and its
   // point reach the job through the station, not through the geometry list.
-  QList<oi::Guarded<FeatureWrapper>> geometries;
+  std::vector<oi::Guarded<FeatureWrapper>> geometries;
   std::set<int> stationPoints;
-  for (const auto& wrapper : staging.stations) {
+  for (const auto& [id, wrapper] : staging.stations) {
     const oi::Guarded<Point> point = wrapper->getStation()->getPosition();
     if (!point.isNull()) {
       stationPoints.insert(point->getId());
@@ -977,17 +981,17 @@ DecodeResult decodeProject(std::string_view bytes, ProjectHost& host) {
   }
   for (auto it = staging.geometries.cbegin(); it != staging.geometries.cend();
        ++it) {
-    if (stationPoints.count(it.key()) == 0) {
-      geometries.append(it.value());
+    if (stationPoints.count(it->first) == 0) {
+      geometries.push_back(it->second);
     }
   }
 
   oi::Guarded<OiJob> job = new OiJob();
-  Access::adopt(*job, staging.stations.values());
-  Access::adopt(*job, staging.systems.values());
-  Access::adopt(*job, staging.trafos.values());
+  Access::adopt(*job, oi::values(staging.stations));
+  Access::adopt(*job, oi::values(staging.systems));
+  Access::adopt(*job, oi::values(staging.trafos));
   Access::adopt(*job, geometries);
-  Access::adopt(*job, staging.groups.values());
+  Access::adopt(*job, oi::values(staging.groups));
   staging.released = true;
 
   if (project.next_id() > 0) {
@@ -996,10 +1000,10 @@ DecodeResult decodeProject(std::string_view bytes, ProjectHost& host) {
   job->setDigest(QString::fromStdString(project.digest()));
   job->setLoadedProjectVersion(QString::fromStdString(project.app_version()));
 
-  staging.stations.value(project.active_station())
+  oi::value(staging.stations, project.active_station())
       ->getStation()
       ->setActiveStationState(true);
-  staging.systems.value(project.active_coordinate_system())
+  oi::value(staging.systems, project.active_coordinate_system())
       ->getCoordinateSystem()
       ->setActiveCoordinateSystemState(true);
 

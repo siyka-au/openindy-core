@@ -1,8 +1,10 @@
 #include <QCoreApplication>
 #include <QString>
 #include <QtTest>
+#include <vector>
 
 #include "chooselalib.h"
+#include "containers.h"
 #include "jobobserver.h"
 #include "oijob.h"
 #include "point.h"
@@ -101,14 +103,14 @@ void JobObserverTest::renameAndGroupAreReported() {
   point.setFeatureName("renamed");
   QCOMPARE(rec.count("featureNameChanged"), 1);
   QCOMPARE(rec.count("featureAttributesChanged"), 1);
-  QVERIFY(rec.calls.contains(
-      QString("featureNameChanged:%1:P1").arg(point.getId())));
+  QVERIFY(oi::contains(rec.calls,
+                       QString("featureNameChanged:%1:P1").arg(point.getId())));
 
   rec.calls.clear();
   point.setGroupName("G1");
   QCOMPARE(rec.count("featureGroupChanged"), 1);
   QCOMPARE(rec.count("availableGroupsChanged"), 1);
-  QVERIFY(job.getFeatureGroupList().contains("G1"));
+  QVERIFY(oi::contains(job.getFeatureGroupList(), "G1"));
 
   rec.calls.clear();
   QVERIFY(job.setActiveGroup("G1"));
@@ -158,8 +160,8 @@ void JobObserverTest::trafoParamChangesAreReported() {
 
   tp->setIsUsed(true);
   QCOMPARE(rec.count("trafoParamIsUsedChanged"), 1);
-  QVERIFY(rec.calls.contains(
-      QString("trafoParamIsUsedChanged:%1").arg(tp->getId())));
+  QVERIFY(oi::contains(rec.calls,
+                       QString("trafoParamIsUsedChanged:%1").arg(tp->getId())));
   tp->setIsDatumTrafo(true);
   QCOMPARE(rec.count("trafoParamIsDatumChanged"), 1);
 }
@@ -171,7 +173,7 @@ void JobObserverTest::messageIsDelivered() {
 
   job.sendMessage("hello", MessageTypes::eWarningMessage);
   QCOMPARE(rec.count("sendMessage"), 1);
-  QCOMPARE(rec.calls.last(),
+  QCOMPARE(rec.calls.back(),
            QString("sendMessage:hello:%1:%2")
                .arg(static_cast<int>(MessageTypes::eWarningMessage))
                .arg(static_cast<int>(MessageDestinations::eConsoleMessage)));
@@ -190,9 +192,9 @@ void JobObserverTest::recalculationNotifications() {
   job.featureRecalculated(7);
   job.featuresRecalculated();
   job.trafoParamRecalculated(9);
-  QCOMPARE(rec.calls,
-           (QStringList{"featureRecalculated:7", "featuresRecalculated",
-                        "trafoParamRecalculated:9"}));
+  QCOMPARE(rec.calls, (std::vector<QString>{"featureRecalculated:7",
+                                            "featuresRecalculated",
+                                            "trafoParamRecalculated:9"}));
 }
 
 void JobObserverTest::recalcRequestsAreReported() {
@@ -292,7 +294,7 @@ void JobObserverTest::jobDestroyedIsReported() {
   other.attach(job);
   delete job;
   QCOMPARE(rec.destroyed.size(), 1);
-  QCOMPARE(rec.destroyed.first(), job);
+  QCOMPARE(rec.destroyed.front(), job);
   QCOMPARE(other.destroyed.size(), 1);
 }
 

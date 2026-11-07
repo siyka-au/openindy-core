@@ -1,13 +1,12 @@
 #ifndef SENSOR_H
 #define SENSOR_H
-
 #include <QJsonObject>
-#include <QMap>
 #include <QString>
-#include <QStringList>
 #include <QVariant>
+#include <map>
 #include <mutex>
 #include <utility>
+#include <vector>
 
 #include "core_export.h"
 #include "guarded.h"
@@ -65,19 +64,19 @@ class OI_CORE_EXPORT SensorInterface : public oi::Trackable {
   // #########################################################
 
   // reading types, sensor actions and connection types
-  [[nodiscard]] virtual const QList<ReadingTypes>& getSupportedReadingTypes()
-      const = 0;
-  [[nodiscard]] virtual const QList<SensorFunctions>&
+  [[nodiscard]] virtual const std::vector<ReadingTypes>&
+  getSupportedReadingTypes() const = 0;
+  [[nodiscard]] virtual const std::vector<SensorFunctions>&
   getSupportedSensorActions() const = 0;
-  [[nodiscard]] virtual const QList<ConnectionKind>&
+  [[nodiscard]] virtual const std::vector<ConnectionKind>&
   getSupportedConnectionTypes() const = 0;
 
   // the measurement configurations this sensor publishes, and how it can
   // acquire - both are declared by the driver rather than inferred from its
   // type
-  [[nodiscard]] virtual const QList<MeasurementConfig>&
+  [[nodiscard]] virtual const std::vector<MeasurementConfig>&
   getSupportedMeasurementConfigs() const = 0;
-  [[nodiscard]] virtual const QList<AcquisitionMode>&
+  [[nodiscard]] virtual const std::vector<AcquisitionMode>&
   getSupportedAcquisitionModes() const = 0;
 
   // how many Points one acquisition action yields (D2/D15a) - a capability,
@@ -91,15 +90,16 @@ class OI_CORE_EXPORT SensorInterface : public oi::Trackable {
   [[nodiscard]] virtual const PluginMetaData& getMetaData() const = 0;
 
   // integer, double and string parameter
-  [[nodiscard]] virtual const QMap<QString, int>& getIntegerParameter()
+  [[nodiscard]] virtual const std::map<QString, int>& getIntegerParameter()
       const = 0;
-  [[nodiscard]] virtual const QMap<QString, double>& getDoubleParameter()
+  [[nodiscard]] virtual const std::map<QString, double>& getDoubleParameter()
       const = 0;
-  [[nodiscard]] virtual const QMultiMap<QString, QString>& getStringParameter()
-      const = 0;
+  [[nodiscard]] virtual const std::multimap<QString, QString>&
+  getStringParameter() const = 0;
 
   // self deined actions
-  [[nodiscard]] virtual const QStringList& getSelfDefinedActions() const = 0;
+  [[nodiscard]] virtual const std::vector<QString>& getSelfDefinedActions()
+      const = 0;
 
   // accuracy
   [[nodiscard]] virtual const Accuracy& getDefaultAccuracy() const = 0;
@@ -122,15 +122,16 @@ class OI_CORE_EXPORT SensorInterface : public oi::Trackable {
   virtual bool disconnectSensor() = 0;
 
   // measurements
-  virtual QList<oi::Guarded<Reading>> measure(
+  virtual std::vector<oi::Guarded<Reading>> measure(
       const MeasurementConfig& mConfig) = 0;
-  virtual QVariantMap readingStream(const ReadingTypes& streamFormat) = 0;
+  virtual std::map<QString, QVariant> readingStream(
+      const ReadingTypes& streamFormat) = 0;
 
   // status information
   virtual bool getConnectionState() = 0;
   virtual bool getIsReadyForMeasurement() = 0;
   virtual bool getIsBusy() = 0;
-  virtual QMap<QString, QString> getSensorStatus() = 0;
+  virtual std::map<QString, QString> getSensorStatus() = 0;
 
   // self defined actions
   virtual bool doSelfDefinedAction(const QString& action) = 0;
@@ -162,9 +163,9 @@ class OI_CORE_EXPORT SensorInterface : public oi::Trackable {
       const QJsonObject& response,
       const SensorAction sensorAction = SensorAction::eSensorActionUndefind);
   void asyncMeasurementResult(
-      const int& geomId, const QList<oi::Guarded<Reading>>& measurements,
+      const int& geomId, const std::vector<oi::Guarded<Reading>>& measurements,
       const SensorAction sensorAction = SensorAction::eSensorActionUndefind);
-  void asyncStreamResult(const QVariantMap& reading);
+  void asyncStreamResult(const std::map<QString, QVariant>& reading);
   void asyncSensorNotification(const QJsonObject& response);
 
  private:
@@ -215,17 +216,17 @@ class OI_CORE_EXPORT Sensor : public SensorInterface {
   // #########################################################
 
   // reading types, sensor actions and connection types
-  [[nodiscard]] const QList<ReadingTypes>& getSupportedReadingTypes()
+  [[nodiscard]] const std::vector<ReadingTypes>& getSupportedReadingTypes()
       const override;
-  [[nodiscard]] const QList<SensorFunctions>& getSupportedSensorActions()
+  [[nodiscard]] const std::vector<SensorFunctions>& getSupportedSensorActions()
       const override;
-  [[nodiscard]] const QList<ConnectionKind>& getSupportedConnectionTypes()
+  [[nodiscard]] const std::vector<ConnectionKind>& getSupportedConnectionTypes()
       const override;
 
-  [[nodiscard]] const QList<MeasurementConfig>& getSupportedMeasurementConfigs()
-      const override;
-  [[nodiscard]] const QList<AcquisitionMode>& getSupportedAcquisitionModes()
-      const override;
+  [[nodiscard]] const std::vector<MeasurementConfig>&
+  getSupportedMeasurementConfigs() const override;
+  [[nodiscard]] const std::vector<AcquisitionMode>&
+  getSupportedAcquisitionModes() const override;
   [[nodiscard]] AcquisitionResultShape getAcquisitionResultShape()
       const override;
 
@@ -233,14 +234,16 @@ class OI_CORE_EXPORT Sensor : public SensorInterface {
   [[nodiscard]] const PluginMetaData& getMetaData() const override;
 
   // integer, double and string parameter
-  [[nodiscard]] const QMap<QString, int>& getIntegerParameter() const override;
-  [[nodiscard]] const QMap<QString, double>& getDoubleParameter()
+  [[nodiscard]] const std::map<QString, int>& getIntegerParameter()
       const override;
-  [[nodiscard]] const QMultiMap<QString, QString>& getStringParameter()
+  [[nodiscard]] const std::map<QString, double>& getDoubleParameter()
+      const override;
+  [[nodiscard]] const std::multimap<QString, QString>& getStringParameter()
       const override;
 
   // self deined actions
-  [[nodiscard]] const QStringList& getSelfDefinedActions() const override;
+  [[nodiscard]] const std::vector<QString>& getSelfDefinedActions()
+      const override;
 
   // accuracy
   [[nodiscard]] const Accuracy& getDefaultAccuracy() const override;
@@ -263,15 +266,16 @@ class OI_CORE_EXPORT Sensor : public SensorInterface {
   bool disconnectSensor() override;
 
   // measurements
-  QList<oi::Guarded<Reading>> measure(
+  std::vector<oi::Guarded<Reading>> measure(
       const MeasurementConfig& mConfig) override;
-  QVariantMap readingStream(const ReadingTypes& streamFormat) override;
+  std::map<QString, QVariant> readingStream(
+      const ReadingTypes& streamFormat) override;
 
   // status information
   bool getConnectionState() override;
   bool getIsReadyForMeasurement() override;
   bool getIsBusy() override;
-  QMap<QString, QString> getSensorStatus() override;
+  std::map<QString, QString> getSensorStatus() override;
 
   // self defined actions
   bool doSelfDefinedAction(const QString& action) override;
@@ -297,11 +301,11 @@ class OI_CORE_EXPORT Sensor : public SensorInterface {
   // ###########################
 
   // meta information about the sensor
-  QList<ReadingTypes> supportedReadingTypes;
-  QList<SensorFunctions> supportedSensorActions;
-  QList<ConnectionKind> supportedConnectionTypes;
-  QList<MeasurementConfig> supportedMeasurementConfigs;
-  QList<AcquisitionMode> supportedAcquisitionModes;
+  std::vector<ReadingTypes> supportedReadingTypes;
+  std::vector<SensorFunctions> supportedSensorActions;
+  std::vector<ConnectionKind> supportedConnectionTypes;
+  std::vector<MeasurementConfig> supportedMeasurementConfigs;
+  std::vector<AcquisitionMode> supportedAcquisitionModes;
 
   // D2/D15a: every driver in this repo produces one Point per acquisition
   // today, so this is the default; a future V-STARS/scanner driver
@@ -309,14 +313,14 @@ class OI_CORE_EXPORT Sensor : public SensorInterface {
   // per-subclass virtual override.
   AcquisitionResultShape acquisitionResultShape =
       AcquisitionResultShape::eOnePoint;
-  QStringList selfDefinedActions;
+  std::vector<QString> selfDefinedActions;
   Accuracy defaultAccuracy;
   PluginMetaData metaData;
 
   // the needed scalar input parameters including default values
-  QMap<QString, int> integerParameters;
-  QMap<QString, double> doubleParameters;
-  QMultiMap<QString, QString> stringParameters;
+  std::map<QString, int> integerParameters;
+  std::map<QString, double> doubleParameters;
+  std::multimap<QString, QString> stringParameters;
 };
 
 }  // namespace oi

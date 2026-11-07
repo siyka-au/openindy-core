@@ -1,6 +1,10 @@
 #include "coordinatesystem.h"
 
+#include <iterator>
+#include <vector>
+
 #include "bundleadjustment.h"
+#include "containers.h"
 #include "featurewrapper.h"
 #include "geometry.h"
 #include "observation.h"
@@ -257,8 +261,8 @@ void CoordinateSystem::setExpansionOrigin(const Position& expansionOrigin) {
  * \brief CoordinateSystem::getObservations
  * \return
  */
-const QList<oi::Guarded<Observation> >& CoordinateSystem::getObservations()
-    const {
+const std::vector<oi::Guarded<Observation> >&
+CoordinateSystem::getObservations() const {
   return this->observationsList;
 }
 
@@ -269,7 +273,8 @@ const QList<oi::Guarded<Observation> >& CoordinateSystem::getObservations()
  */
 oi::Guarded<Observation> CoordinateSystem::getObservation(
     const int& observationId) const {
-  return this->observationsMap.value(observationId, oi::Guarded<Observation>());
+  return oi::value(this->observationsMap, observationId,
+                   oi::Guarded<Observation>());
 }
 
 /*!
@@ -304,8 +309,8 @@ bool CoordinateSystem::addObservation(
     }
 
     // add observation to the coordinate system
-    this->observationsList.append(observation);
-    this->observationsMap.insert(observation->getId(), observation);
+    this->observationsList.push_back(observation);
+    this->observationsMap.insert_or_assign(observation->getId(), observation);
 
     this->notify(&FeatureObserver::onObservationsChanged, this->id,
                  observation->getId());
@@ -320,7 +325,7 @@ bool CoordinateSystem::addObservation(
  * \brief CoordinateSystem::getTransformationParameters
  * \return
  */
-const QList<oi::Guarded<TrafoParam> >&
+const std::vector<oi::Guarded<TrafoParam> >&
 CoordinateSystem::getTransformationParameters() const {
   return this->trafoParams;
 }
@@ -330,10 +335,10 @@ CoordinateSystem::getTransformationParameters() const {
  * \param to
  * \return
  */
-const QList<oi::Guarded<TrafoParam> >
+const std::vector<oi::Guarded<TrafoParam> >
 CoordinateSystem::getTransformationParameters(
     const oi::Guarded<CoordinateSystem>& to) const {
-  QList<oi::Guarded<TrafoParam> > result;
+  std::vector<oi::Guarded<TrafoParam> > result;
 
   // check the destination system
   if (to.isNull()) {
@@ -347,7 +352,7 @@ CoordinateSystem::getTransformationParameters(
         !trafo->getStartSystem().isNull()) {
       if (trafo->getDestinationSystem() == to ||
           trafo->getStartSystem() == to) {
-        result.append(trafo);
+        result.push_back(trafo);
       }
     }
   }
@@ -365,13 +370,14 @@ bool CoordinateSystem::addTransformationParameter(
   if (!trafoParam.isNull() && !trafoParam->getStartSystem().isNull() &&
       !trafoParam->getDestinationSystem().isNull()) {
     // check if the trafo param is already contained
-    if (this->trafoParams.contains(trafoParam)) {
+    if (oi::contains(this->trafoParams, trafoParam)) {
       return false;
     }
 
     // check if the trafoParam is in the same job
     if (!this->job.isNull() &&
-        !this->job->getTransformationParametersList().contains(trafoParam)) {
+        !oi::contains(this->job->getTransformationParametersList(),
+                      trafoParam)) {
       return false;
     }
 
@@ -381,7 +387,7 @@ bool CoordinateSystem::addTransformationParameter(
       return false;
     }
 
-    this->trafoParams.append(trafoParam);
+    this->trafoParams.push_back(trafoParam);
 
     this->notify(&FeatureObserver::onTransformationParametersChanged, this->id);
 
@@ -399,7 +405,7 @@ bool CoordinateSystem::addTransformationParameter(
 bool CoordinateSystem::removeTransformationParameter(
     const oi::Guarded<TrafoParam>& trafoParam) {
   if (!trafoParam.isNull()) {
-    bool result = this->trafoParams.removeOne(trafoParam);
+    bool result = oi::removeOne(this->trafoParams, trafoParam);
     this->notify(&FeatureObserver::onTransformationParametersChanged, this->id);
     return result;
   }
@@ -410,7 +416,7 @@ bool CoordinateSystem::removeTransformationParameter(
  * \brief CoordinateSystem::getNominals
  * \return
  */
-const QList<oi::Guarded<FeatureWrapper> >& CoordinateSystem::getNominals()
+const std::vector<oi::Guarded<FeatureWrapper> >& CoordinateSystem::getNominals()
     const {
   return this->nominalsList;
 }
@@ -446,8 +452,9 @@ bool CoordinateSystem::addNominal(const oi::Guarded<FeatureWrapper>& nominal) {
     }
 
     nominal->getGeometry()->setNominalSystem(this);
-    this->nominalsList.append(nominal);
-    this->nominalsMap.insert(nominal->getGeometry()->getId(), nominal);
+    this->nominalsList.push_back(nominal);
+    this->nominalsMap.insert_or_assign(nominal->getGeometry()->getId(),
+                                       nominal);
 
     this->notify(&FeatureObserver::onNominalsChanged, this->id);
 
@@ -463,7 +470,7 @@ bool CoordinateSystem::addNominal(const oi::Guarded<FeatureWrapper>& nominal) {
  * \return
  */
 bool CoordinateSystem::addNominals(
-    const QList<oi::Guarded<FeatureWrapper> >& nominals) {
+    const std::vector<oi::Guarded<FeatureWrapper> >& nominals) {
   if (nominals.size() > 0) {
     int oldSize = this->nominalsList.size();
 
@@ -474,7 +481,7 @@ bool CoordinateSystem::addNominals(
     }
     this->blockSignals(false);
 
-    if (this->nominalsList.size() > oldSize) {
+    if (std::ssize(this->nominalsList) > oldSize) {
       this->notify(&FeatureObserver::onNominalsChanged, this->id);
       return true;
     }
@@ -497,8 +504,8 @@ bool CoordinateSystem::removeNominal(
       removeNominal = this->nominalsMap[nominal->getGeometry()->getId()];
     }
 
-    if (this->nominalsMap.remove(nominal->getGeometry()->getId()) == 1) {
-      this->nominalsList.removeOne(removeNominal);
+    if (this->nominalsMap.erase(nominal->getGeometry()->getId()) == 1) {
+      oi::removeOne(this->nominalsList, removeNominal);
       this->notify(&FeatureObserver::onNominalsChanged, this->id);
       return true;
     }
@@ -514,11 +521,11 @@ bool CoordinateSystem::removeNominal(
  */
 bool CoordinateSystem::removeNominal(const int& featureId) {
   oi::Guarded<FeatureWrapper> nominal =
-      this->nominalsMap.value(featureId, oi::Guarded<FeatureWrapper>());
+      oi::value(this->nominalsMap, featureId, oi::Guarded<FeatureWrapper>());
 
   if (!nominal.isNull()) {
-    this->nominalsMap.remove(featureId);
-    this->nominalsList.removeOne(nominal);
+    this->nominalsMap.erase(featureId);
+    oi::removeOne(this->nominalsList, nominal);
     this->notify(&FeatureObserver::onNominalsChanged, this->id);
     return true;
   }
@@ -836,8 +843,8 @@ void CoordinateSystem::removeObservation(const oi::Guarded<Observation>& obs) {
     return;
   }
 
-  this->observationsList.removeOne(obs);
-  this->observationsMap.remove(obs->getId());
+  oi::removeOne(this->observationsList, obs);
+  this->observationsMap.erase(obs->getId());
 }
 
 void CoordinateSystem::resetOriginAndAxis() {

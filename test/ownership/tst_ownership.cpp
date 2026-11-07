@@ -1,9 +1,11 @@
 #include <QString>
 #include <QtCore>
 #include <QtTest>
+#include <map>
 
 #include "chooselalib.h"
 #include "constructfunction.h"
+#include "containers.h"
 #include "fitfunction.h"
 #include "point.h"
 
@@ -90,8 +92,8 @@ void OwnershipTest::readOnlyGeometryRejectsDirectParameterEdits() {
   point.addFunction(fit);
   QVERIFY(point.getOwnerDescription().has_value());
 
-  QMap<GeometryParameters, double> edit;
-  edit.insert(GeometryParameters::eUnknownX, 99.0);
+  std::map<GeometryParameters, double> edit;
+  edit.insert_or_assign(GeometryParameters::eUnknownX, 99.0);
   point.setUnknownParameters(edit);
 
   // rejected at the API - the fit owns this point, so the edit must not
@@ -188,8 +190,8 @@ void OwnershipTest::ownedSubGeometryRejectsDirectParameterEdits() {
   child.addFunction(new FakeConstruct());
   QVERIFY(child.setOwnerFeature(owner.getFeatureWrapper()->getGeometry()));
 
-  QMap<GeometryParameters, double> edit;
-  edit.insert(GeometryParameters::eUnknownX, 99.0);
+  std::map<GeometryParameters, double> edit;
+  edit.insert_or_assign(GeometryParameters::eUnknownX, 99.0);
   child.setUnknownParameters(edit);
 
   // rejected at the API, exactly like the fit-owned case above
@@ -205,10 +207,10 @@ void OwnershipTest::settingOwnerFeatureRegistersOnBothSides() {
   QVERIFY(childB.setOwnerFeature(owner.getFeatureWrapper()->getGeometry()));
 
   QCOMPARE(owner.getOwnedSubGeometries().size(), 2);
-  QVERIFY(owner.getOwnedSubGeometries().contains(
-      childA.getFeatureWrapper()->getGeometry()));
-  QVERIFY(owner.getOwnedSubGeometries().contains(
-      childB.getFeatureWrapper()->getGeometry()));
+  QVERIFY(oi::contains(owner.getOwnedSubGeometries(),
+                       childA.getFeatureWrapper()->getGeometry()));
+  QVERIFY(oi::contains(owner.getOwnedSubGeometries(),
+                       childB.getFeatureWrapper()->getGeometry()));
 
   QVERIFY(childA.getOwnerFeature().has_value());
   QCOMPARE(childA.getOwnerFeature().value().data(),

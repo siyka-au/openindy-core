@@ -1,5 +1,7 @@
 #include "pointcloud.h"
 
+#include <vector>
+
 #include "featurewrapper.h"
 #include "snapshot.h"
 
@@ -81,7 +83,7 @@ bool PointCloud::addSegment(const oi::Guarded<FeatureWrapper>& segment) {
 
   segment->getGeometry()->setNominalSystem(this->nominalSystem);
 
-  this->detectedSegments.append(segment);
+  this->detectedSegments.push_back(segment);
 
   return true;
 }
@@ -102,7 +104,7 @@ bool PointCloud::hasPosition() const { return true; }
  * Returns a list of all point cloud points
  * \return
  */
-const QList<Point_PC*>& PointCloud::getPointCloudPoints() const {
+const std::vector<Point_PC*>& PointCloud::getPointCloudPoints() const {
   return this->points;
 }
 
@@ -114,7 +116,7 @@ void PointCloud::addPointCloudPoint(Point_PC* point) {
   if (point == nullptr) {
     return;
   }
-  this->points.append(point);
+  this->points.push_back(point);
 }
 
 /*!
@@ -124,8 +126,8 @@ void PointCloud::addPointCloudPoint(Point_PC* point) {
  * thousand individually aimed shots.
  * \return
  */
-QList<Position> PointCloud::collectionPoints() const {
-  QList<Position> positions;
+std::vector<Position> PointCloud::collectionPoints() const {
+  std::vector<Position> positions;
   positions.reserve(this->points.size());
 
   for (Point_PC* point : oi::snapshot(this->points)) {
@@ -136,7 +138,7 @@ QList<Position> PointCloud::collectionPoints() const {
       continue;
     }
 
-    positions.append(Position(point->xyz[0], point->xyz[1], point->xyz[2]));
+    positions.push_back(Position(point->xyz[0], point->xyz[1], point->xyz[2]));
   }
 
   return positions;

@@ -4,8 +4,9 @@
 // Internal. Access is the friend declared in the model classes (Element,
 // Feature, Station, ...). It exists so the codec can restore private state
 // directly, the way the classes' own fromOpenIndyXML used to.
-
 #include <QJsonObject>
+#include <map>
+#include <vector>
 
 #include "convert.h"
 #include "featurewrapper.h"
@@ -130,7 +131,7 @@ struct Access {
                           BundleAdjustment& b);
 
   // ---- Linking (project.cpp): state the linker restores after decoding ----
-  static QMap<int, QList<InputElement>>& inputs(Function& f) {
+  static std::map<int, std::vector<InputElement>>& inputs(Function& f) {
     return f.inputElements;
   }
 
@@ -151,29 +152,29 @@ struct Access {
     system->isStationSystem = true;
     system->station = &s;
   }
-  static void setUsedSensors(Station& s, const QList<Sensor>& sensors) {
+  static void setUsedSensors(Station& s, const std::vector<Sensor>& sensors) {
     s.setUsedSensors(sensors);
   }
   static void addStationReading(Station& s,
                                 const oi::Guarded<Reading>& reading) {
     switch (reading->getTypeOfReading()) {
       case ReadingTypes::eCartesianReading:
-        s.cartesianReadings.append(reading);
+        s.cartesianReadings.push_back(reading);
         break;
       case ReadingTypes::ePolarReading:
-        s.polarReadings.append(reading);
+        s.polarReadings.push_back(reading);
         break;
       case ReadingTypes::eDirectionReading:
-        s.directionReadings.append(reading);
+        s.directionReadings.push_back(reading);
         break;
       case ReadingTypes::eDistanceReading:
-        s.distanceReadings.append(reading);
+        s.distanceReadings.push_back(reading);
         break;
       case ReadingTypes::eLevelReading:
-        s.levelReadings.append(reading);
+        s.levelReadings.push_back(reading);
         break;
       case ReadingTypes::eTemperatureReading:
-        s.temperatureRadings.append(reading);
+        s.temperatureRadings.push_back(reading);
         break;
       default:
         break;
@@ -181,23 +182,25 @@ struct Access {
   }
   static void addSystemObservation(
       CoordinateSystem& system, const oi::Guarded<Observation>& observation) {
-    system.observationsList.append(observation);
-    system.observationsMap.insert(observation->getId(), observation);
+    system.observationsList.push_back(observation);
+    system.observationsMap.insert_or_assign(observation->getId(), observation);
   }
   static void addSystemNominal(CoordinateSystem& system,
                                const oi::Guarded<FeatureWrapper>& nominal) {
-    system.nominalsList.append(nominal);
-    system.nominalsMap.insert(nominal->getFeature()->getId(), nominal);
+    system.nominalsList.push_back(nominal);
+    system.nominalsMap.insert_or_assign(nominal->getFeature()->getId(),
+                                        nominal);
   }
 
   static void addSegment(PointCloud& cloud,
                          const oi::Guarded<FeatureWrapper>& segment) {
-    cloud.detectedSegments.append(segment);
+    cloud.detectedSegments.push_back(segment);
   }
 
   static int nextId(const OiJob& job) { return job.nextId; }
   static void setNextId(OiJob& job, int next) { job.nextId = next; }
-  static void adopt(OiJob& job, const QList<oi::Guarded<FeatureWrapper>>& f) {
+  static void adopt(OiJob& job,
+                    const std::vector<oi::Guarded<FeatureWrapper>>& f) {
     job.addFeaturesFromXml(f);
   }
 

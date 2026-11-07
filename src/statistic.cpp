@@ -1,5 +1,9 @@
 #include "statistic.h"
 
+#include <vector>
+
+#include "containers.h"
+
 using namespace oi;
 using namespace oi::math;
 
@@ -180,8 +184,8 @@ void Statistic::setV(const OiVec& v) {
  * \brief Statistic::getDisplayResiduals
  * \return
  */
-const QList<Residual> Statistic::getDisplayResiduals() const {
-  return this->displayResidualsMap.values();
+const std::vector<Residual> Statistic::getDisplayResiduals() const {
+  return oi::values(this->displayResidualsMap);
 }
 
 /*!
@@ -190,7 +194,7 @@ const QList<Residual> Statistic::getDisplayResiduals() const {
  * \return
  */
 Residual Statistic::getDisplayResidual(const int& elementId) const {
-  return this->displayResidualsMap.value(elementId, Residual());
+  return oi::value(this->displayResidualsMap, elementId, Residual());
 }
 
 /*!
@@ -198,7 +202,7 @@ Residual Statistic::getDisplayResidual(const int& elementId) const {
  * \param residual
  */
 void Statistic::addDisplayResidual(const Residual& residual) {
-  this->displayResidualsMap.insert(residual.elementId, residual);
+  this->displayResidualsMap.insert_or_assign(residual.elementId, residual);
 }
 
 void Statistic::setFormError(const double& formError) {

@@ -1,4 +1,5 @@
 #include <QtTest>
+#include <vector>
 
 #include "chooselalib.h"
 #include "featurewrapper.h"
@@ -67,9 +68,9 @@ void PointCollectionTest::groupHoldsReferencesNotCopies() {
   Position moved(9.0, 9.0, 9.0);
   point->getPoint()->setPoint(moved);
 
-  const QList<Position> positions = group.collectionPoints();
+  const std::vector<Position> positions = group.collectionPoints();
   QCOMPARE(positions.size(), 1);
-  QCOMPARE(positions.first().getVector().getAt(0), 9.0);
+  QCOMPARE(positions.front().getVector().getAt(0), 9.0);
 }
 
 void PointCollectionTest::pointInManyGroupsIsStoredOnce() {
@@ -83,9 +84,9 @@ void PointCollectionTest::pointInManyGroupsIsStoredOnce() {
 
   // same underlying feature, reached from both groups - no copy, no second
   // measurement, no re-identification
-  QCOMPARE(wall.getPoints().first().data(), control.getPoints().first().data());
-  QCOMPARE(wall.getPoints().first()->getId(),
-           control.getPoints().first()->getId());
+  QCOMPARE(wall.getPoints().front().data(), control.getPoints().front().data());
+  QCOMPARE(wall.getPoints().front()->getId(),
+           control.getPoints().front()->getId());
 }
 
 void PointCollectionTest::constraintRejectsWrongType() {
@@ -196,9 +197,9 @@ void PointCollectionTest::pointCloudSatisfiesPointCollection() {
   PointCollection* collection = cloud.data();
   QCOMPARE(collection->collectionPointCount(), 2);
 
-  const QList<Position> positions = collection->collectionPoints();
+  const std::vector<Position> positions = collection->collectionPoints();
   QCOMPARE(positions.size(), 2);
-  QCOMPARE(positions.first().getVector().getAt(0), 1.0);
+  QCOMPARE(positions.front().getVector().getAt(0), 1.0);
 }
 
 void PointCollectionTest::
@@ -214,10 +215,11 @@ void PointCollectionTest::
   cloud->addPointCloudPoint(new Point_PC(0.0f, 0.0f, 0.0f));
   cloud->addPointCloudPoint(new Point_PC(1.0f, 0.0f, 0.0f));
 
-  QList<PointCollection*> collections;
-  collections << &group << cloud.data();
+  std::vector<PointCollection*> collections;
+  collections.push_back(&group);
+  collections.push_back(cloud.data());
 
-  foreach (PointCollection* collection, collections) {
+  for (PointCollection* collection : collections) {
     QCOMPARE(collection->collectionPointCount(), 2);
     QCOMPARE(collection->collectionPoints().size(), 2);
   }

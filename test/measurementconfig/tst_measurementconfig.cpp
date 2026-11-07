@@ -1,7 +1,8 @@
-#include <QMap>
 #include <QString>
 #include <QtTest>
+#include <map>
 
+#include "containers.h"
 #include "measurementconfig.h"
 #include "sensortype.h"
 
@@ -42,15 +43,17 @@ void MeasurementConfigTest::sameNameDifferentSensorTypeDoNotCollide() {
       !(trackerFastPoint.getKey() == totalStationFastPoint.getKey()),
       "same-named configs from different sensor types must not share a key");
 
-  QMap<MeasurementConfigKey, MeasurementConfig> configs;
-  configs.insert(trackerFastPoint.getKey(), trackerFastPoint);
-  configs.insert(totalStationFastPoint.getKey(), totalStationFastPoint);
+  std::map<MeasurementConfigKey, MeasurementConfig> configs;
+  configs.insert_or_assign(trackerFastPoint.getKey(), trackerFastPoint);
+  configs.insert_or_assign(totalStationFastPoint.getKey(),
+                           totalStationFastPoint);
 
   QCOMPARE(configs.size(), 2);
-  QCOMPARE(configs.value(trackerFastPoint.getKey()).getSensorType().id(),
+  QCOMPARE(oi::value(configs, trackerFastPoint.getKey()).getSensorType().id(),
            QString("laserTracker"));
-  QCOMPARE(configs.value(totalStationFastPoint.getKey()).getSensorType().id(),
-           QString("totalStation"));
+  QCOMPARE(
+      oi::value(configs, totalStationFastPoint.getKey()).getSensorType().id(),
+      QString("totalStation"));
 }
 
 void MeasurementConfigTest::sameNameSameSensorTypeAreEqual() {
@@ -66,9 +69,9 @@ void MeasurementConfigTest::sameNameSameSensorTypeAreEqual() {
 
   QVERIFY(first.getKey() == second.getKey());
 
-  QMap<MeasurementConfigKey, MeasurementConfig> configs;
-  configs.insert(first.getKey(), first);
-  configs.insert(second.getKey(), second);
+  std::map<MeasurementConfigKey, MeasurementConfig> configs;
+  configs.insert_or_assign(first.getKey(), first);
+  configs.insert_or_assign(second.getKey(), second);
 
   QCOMPARE(configs.size(), 1);
 }

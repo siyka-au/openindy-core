@@ -1,5 +1,8 @@
 #include "exchangesimpleascii.h"
 
+#include <map>
+#include <vector>
+
 using namespace oi;
 
 /*!
@@ -23,10 +26,10 @@ ExchangeSimpleAscii::~ExchangeSimpleAscii() {}
  * \param typeOfGeometry
  * \return
  */
-QList<ExchangeSimpleAscii::ColumnType>
+std::vector<ExchangeSimpleAscii::ColumnType>
 ExchangeSimpleAscii::getDefaultColumnOrder(
     const GeometryTypes& /*typeOfGeometry*/) const {
-  return QList<ExchangeSimpleAscii::ColumnType>();
+  return std::vector<ExchangeSimpleAscii::ColumnType>();
 }
 
 /*!
@@ -36,10 +39,10 @@ ExchangeSimpleAscii::getDefaultColumnOrder(
  * \param typeOfGeometry
  * \return
  */
-QMap<ExchangeSimpleAscii::ColumnType, QVariantList>
+std::map<ExchangeSimpleAscii::ColumnType, std::vector<QVariant>>
 ExchangeSimpleAscii::getFilePreview(
     const GeometryTypes& /*typeOfGeometry*/) const {
-  return QMap<ExchangeSimpleAscii::ColumnType, QVariantList>();
+  return std::map<ExchangeSimpleAscii::ColumnType, std::vector<QVariant>>();
 }
 
 /*!
@@ -48,16 +51,18 @@ ExchangeSimpleAscii::getFilePreview(
  * \param typeOfGeometry
  * \return
  */
-QList<ExchangeSimpleAscii::ColumnType> ExchangeSimpleAscii::getPossibleColumns(
+std::vector<ExchangeSimpleAscii::ColumnType>
+ExchangeSimpleAscii::getPossibleColumns(
     const GeometryTypes& /*typeOfGeometry*/) const {
-  return QList<ExchangeSimpleAscii::ColumnType>();
+  return std::vector<ExchangeSimpleAscii::ColumnType>();
 }
 
 /*!
  * \brief ExchangeSimpleAscii::getSupportedDelimiters
  * \return
  */
-const QStringList& ExchangeSimpleAscii::getSupportedDelimiters() const {
+const std::vector<QString>& ExchangeSimpleAscii::getSupportedDelimiters()
+    const {
   return this->supportedDelimiters;
 }
 
@@ -66,7 +71,7 @@ const QStringList& ExchangeSimpleAscii::getSupportedDelimiters() const {
  * Get the meaning of each column
  * \return
  */
-const QList<ExchangeSimpleAscii::ColumnType>&
+const std::vector<ExchangeSimpleAscii::ColumnType>&
 ExchangeSimpleAscii::getUserDefinedColumns() const {
   return this->userDefinedColumns;
 }
@@ -77,7 +82,7 @@ ExchangeSimpleAscii::getUserDefinedColumns() const {
  * \param userDefinedColumns
  */
 void ExchangeSimpleAscii::setUserDefinedColumns(
-    const QList<ExchangeSimpleAscii::ColumnType>& userDefinedColumns) {
+    const std::vector<ExchangeSimpleAscii::ColumnType>& userDefinedColumns) {
   this->userDefinedColumns = userDefinedColumns;
 }
 

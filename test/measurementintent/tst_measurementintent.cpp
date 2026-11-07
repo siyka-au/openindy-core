@@ -1,9 +1,11 @@
 #include <QString>
 #include <QtTest>
 #include <cmath>
+#include <vector>
 
 #include "chooselalib.h"
 #include "constructfunction.h"
+#include "containers.h"
 #include "featurewrapper.h"
 #include "geometry/point.h"
 #include "oijob.h"
@@ -32,8 +34,8 @@ class FakeConsumer : public ConstructFunction, public Producer<Point> {
     param.typeOfElement = ElementTypes::ePointElement;
     param.infinite = true;
     param.roleName = roleName;
-    this->neededElements.append(param);
-    this->applicableFor.append(FeatureTypes::ePointFeature);
+    this->neededElements.push_back(param);
+    this->applicableFor.push_back(FeatureTypes::ePointFeature);
   }
   std::expected<Point, QString> exec() override { return Point(); }
 };
@@ -133,7 +135,7 @@ void MeasurementIntentTest::pointWithObservationsAndNoFunctionAveragesThem() {
   point->addObservation(obsA);
   point->addObservation(obsB);
 
-  QVERIFY(point->getFunctions().isEmpty());
+  QVERIFY(point->getFunctions().empty());
   point->recalc();
 
   QVERIFY2(point->getIsSolved(),
@@ -182,10 +184,10 @@ void MeasurementIntentTest::measuringAlwaysCreatesExactlyOneNewPoint() {
 
   // D15a: a MeasurementConfig count of 10 yields one Point with ten
   // readings, not ten Points
-  QList<oi::Guarded<Reading> > readings;
-  readings << makeCartesianReading(1.0, 2.0, 3.0)
-           << makeCartesianReading(1.01, 2.0, 3.0)
-           << makeCartesianReading(0.99, 2.0, 3.0);
+  std::vector<oi::Guarded<Reading> > readings;
+  readings = {makeCartesianReading(1.0, 2.0, 3.0),
+              makeCartesianReading(1.01, 2.0, 3.0),
+              makeCartesianReading(0.99, 2.0, 3.0)};
 
   job->addMeasurementResults(targetFeature->getFeature()->getId(), readings);
 
@@ -202,15 +204,15 @@ void MeasurementIntentTest::measuredPointHasObservationsDerivedPointDoesNot() {
   targetFeature->getFeature()->setFeatureName("target");
   job->addFeature(targetFeature);
 
-  QList<oi::Guarded<Reading> > readings;
-  readings << makeCartesianReading(1.0, 2.0, 3.0)
-           << makeCartesianReading(1.0, 2.0, 3.0);
+  std::vector<oi::Guarded<Reading> > readings;
+  readings = {makeCartesianReading(1.0, 2.0, 3.0),
+              makeCartesianReading(1.0, 2.0, 3.0)};
   job->addMeasurementResults(targetFeature->getFeature()->getId(), readings);
 
   // find the newly created point - the only ePointFeature besides the
   // target itself
   oi::Guarded<Point> measured;
-  foreach (const oi::Guarded<FeatureWrapper>& fw, job->getFeaturesList()) {
+  for (const oi::Guarded<FeatureWrapper>& fw : job->getFeaturesList()) {
     if (!fw.isNull() && !fw->getPoint().isNull() &&
         fw->getPoint() != targetPoint) {
       measured = fw->getPoint();
@@ -227,7 +229,7 @@ void MeasurementIntentTest::measuredPointHasObservationsDerivedPointDoesNot() {
   // output, which is built from ePointElement inputs, never from
   // Geometry::addObservation) has none
   Point derived;
-  QVERIFY(derived.getObservations().isEmpty());
+  QVERIFY(derived.getObservations().empty());
 }
 
 void MeasurementIntentTest::
@@ -244,16 +246,16 @@ void MeasurementIntentTest::
   oi::Guarded<FakeConsumer> consumer = new FakeConsumer("default");
   targetPoint->addFunction(consumer);
 
-  QVERIFY2(consumer->getInputElements().value(0).isEmpty(),
+  QVERIFY2(oi::value(consumer->getInputElements(), 0).empty(),
            "nothing tagged yet");
 
-  QList<oi::Guarded<Reading> > readings;
-  readings << makeCartesianReading(5.0, 5.0, 5.0);
+  std::vector<oi::Guarded<Reading> > readings;
+  readings.push_back(makeCartesianReading(5.0, 5.0, 5.0));
   job->addMeasurementResults(targetFeature->getFeature()->getId(), readings);
 
   // no binding step: the function already declared role "default" for
   // ePointFeature, and measuring for that same feature fed it directly
-  QCOMPARE(consumer->getInputElements().value(0).size(), 1);
+  QCOMPARE(oi::value(consumer->getInputElements(), 0).size(), 1);
 }
 
 void MeasurementIntentTest::aPointCarryingTwoTagsIsFoundByBothConsumers() {
@@ -277,15 +279,15 @@ void MeasurementIntentTest::aPointCarryingTwoTagsIsFoundByBothConsumers() {
   oi::Guarded<FakeConsumer> consumerB = new FakeConsumer("default");
   featureB->addFunction(consumerB);
 
-  QList<oi::Guarded<Reading> > readings;
-  readings << makeCartesianReading(1.0, 1.0, 1.0);
+  std::vector<oi::Guarded<Reading> > readings;
+  readings.push_back(makeCartesianReading(1.0, 1.0, 1.0));
   job->addMeasurementResults(wrapperA->getFeature()->getId(), readings);
 
   // find the point that was just created and tag it for B as well - the
   // retroactive hand-allocation path (domain-model.md S3: "hand-allocation
   // and field acquisition are the same operation")
   oi::Guarded<Point> measured;
-  foreach (const oi::Guarded<FeatureWrapper>& fw, job->getFeaturesList()) {
+  for (const oi::Guarded<FeatureWrapper>& fw : job->getFeaturesList()) {
     if (!fw.isNull() && !fw->getPoint().isNull() &&
         fw->getPoint() != featureA && fw->getPoint() != featureB) {
       measured = fw->getPoint();
@@ -295,8 +297,8 @@ void MeasurementIntentTest::aPointCarryingTwoTagsIsFoundByBothConsumers() {
 
   job->tagPoint(measured, wrapperB->getFeature()->getId(), "default");
 
-  QCOMPARE(consumerA->getInputElements().value(0).size(), 1);
-  QCOMPARE(consumerB->getInputElements().value(0).size(), 1);
+  QCOMPARE(oi::value(consumerA->getInputElements(), 0).size(), 1);
+  QCOMPARE(oi::value(consumerB->getInputElements(), 0).size(), 1);
   QCOMPARE(measured->getIntents().size(), 2);
 }
 
@@ -317,11 +319,11 @@ void MeasurementIntentTest::renamingTheFeatureDoesNotOrphanTags() {
   // measurementintent.h), never to the name in effect at tag time
   targetFeature->getFeature()->setFeatureName("renamed-wall-01");
 
-  QList<oi::Guarded<Reading> > readings;
-  readings << makeCartesianReading(3.0, 3.0, 3.0);
+  std::vector<oi::Guarded<Reading> > readings;
+  readings.push_back(makeCartesianReading(3.0, 3.0, 3.0));
   job->addMeasurementResults(targetFeature->getFeature()->getId(), readings);
 
-  QCOMPARE(consumer->getInputElements().value(0).size(), 1);
+  QCOMPARE(oi::value(consumer->getInputElements(), 0).size(), 1);
 }
 
 void MeasurementIntentTest::unresolvableTargetIsRejectedWithAMessage() {
@@ -333,8 +335,8 @@ void MeasurementIntentTest::unresolvableTargetIsRejectedWithAMessage() {
 
   const int featureCountBefore = job->getFeaturesList().size();
 
-  QList<oi::Guarded<Reading> > readings;
-  readings << makeCartesianReading(1.0, 1.0, 1.0);
+  std::vector<oi::Guarded<Reading> > readings;
+  readings.push_back(makeCartesianReading(1.0, 1.0, 1.0));
   job->addMeasurementResults(999999, readings);
 
   QVERIFY2(spy.count("sendMessage") > 0,

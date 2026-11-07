@@ -1,9 +1,8 @@
 #ifndef BUNDLEADJUSTMENT_H
 #define BUNDLEADJUSTMENT_H
-
-#include <QMap>
-#include <QMultiMap>
 #include <QString>
+#include <map>
+#include <vector>
 
 #include "core_export.h"
 #include "oijob.h"
@@ -45,7 +44,7 @@ class BundleTransformation {
   int id{-1};
 
   // transformation parameters
-  QMap<TrafoParamParameters, double> parameters;
+  std::map<TrafoParamParameters, double> parameters;
 };
 
 /*!
@@ -67,7 +66,7 @@ class BundleGeometry {
   int id{-1};
 
   // geometry parameters
-  QMap<GeometryParameters, double> parameters;
+  std::map<GeometryParameters, double> parameters;
 };
 
 /*!
@@ -96,7 +95,7 @@ class BundleStation {
   bool m{true};
 
   // geometries solved in station system
-  QList<BundleGeometry> geometries;
+  std::vector<BundleGeometry> geometries;
 };
 
 /*!
@@ -130,17 +129,18 @@ class OI_CORE_EXPORT BundleAdjustment : public oi::Trackable {
   [[nodiscard]] const PluginMetaData& getMetaData() const;
 
   // available scalar parameters
-  [[nodiscard]] const QMap<QString, int>& getIntegerParameter() const;
-  [[nodiscard]] const QMap<QString, double>& getDoubleParameter() const;
-  [[nodiscard]] const QMultiMap<QString, QString>& getStringParameter() const;
+  [[nodiscard]] const std::map<QString, int>& getIntegerParameter() const;
+  [[nodiscard]] const std::map<QString, double>& getDoubleParameter() const;
+  [[nodiscard]] const std::multimap<QString, QString>& getStringParameter()
+      const;
 
   // scalar input parameters
   const ScalarInputParams& getScalarInputParams();
   void setScalarInputParams(const ScalarInputParams& params);
 
   // input stations
-  [[nodiscard]] const QList<BundleStation>& getInputStations() const;
-  void setInputStations(const QList<BundleStation>& stations);
+  [[nodiscard]] const std::vector<BundleStation>& getInputStations() const;
+  void setInputStations(const std::vector<BundleStation>& stations);
   [[nodiscard]] const BundleStation& getBaseStation() const;
   void setBaseStation(const BundleStation& station);
 
@@ -160,9 +160,9 @@ class OI_CORE_EXPORT BundleAdjustment : public oi::Trackable {
   [[nodiscard]] const int& getId() const;
 
   // bundle results
-  [[nodiscard]] const QList<BundleGeometry>& getOutputGeometries() const;
-  [[nodiscard]] const QList<BundleTransformation>& getOutputTransformations()
-      const;
+  [[nodiscard]] const std::vector<BundleGeometry>& getOutputGeometries() const;
+  [[nodiscard]] const std::vector<BundleTransformation>&
+  getOutputTransformations() const;
 
   // #############
   // clear results
@@ -210,20 +210,20 @@ class OI_CORE_EXPORT BundleAdjustment : public oi::Trackable {
   PluginMetaData metaData;
 
   // the needed scalar input parameters including default values
-  QMap<QString, int> integerParameters;
-  QMap<QString, double> doubleParameters;
-  QMultiMap<QString, QString> stringParameters;
+  std::map<QString, int> integerParameters;
+  std::map<QString, double> doubleParameters;
+  std::multimap<QString, QString> stringParameters;
 
   // user defined scalar input parameters
   ScalarInputParams scalarInputParams;
 
   // input stations
-  QList<BundleStation> stations;
+  std::vector<BundleStation> stations;
   BundleStation baseSystem;
 
   // output geometries and transformation parameters
-  QList<BundleGeometry> geometries;
-  QList<BundleTransformation> transformations;
+  std::vector<BundleGeometry> geometries;
+  std::vector<BundleTransformation> transformations;
 
   // bundle coordinate system
   oi::Guarded<CoordinateSystem> bundleSystem;

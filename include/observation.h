@@ -1,10 +1,9 @@
 #ifndef OBSERVATION_H
 #define OBSERVATION_H
-
 #include <math.h>
 
-#include <QList>
 #include <optional>
+#include <vector>
 
 #include "core_export.h"
 #include "geometry/point.h"
@@ -106,7 +105,7 @@ class OI_CORE_EXPORT Observation : public Point {
   // accessors (resolved via job) so existing call sites did not all need
   // to move to raw ids; roleName is not exposed here, only feature
   // identity, since none of the pre-existing callers distinguished roles.
-  QList<oi::Guarded<Geometry> > getTargetGeometries() const;
+  std::vector<oi::Guarded<Geometry> > getTargetGeometries() const;
   void addTargetGeometry(const oi::Guarded<Geometry>& targetGeometry);
   void removeTargetGeometry(const oi::Guarded<Geometry>& targetGeometry);
   void removeTargetGeometry(const int& geomId);

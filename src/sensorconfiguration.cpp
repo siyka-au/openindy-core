@@ -1,5 +1,7 @@
 #include "sensorconfiguration.h"
 
+#include <map>
+
 #include "sensor.h"
 
 using namespace oi;
@@ -176,7 +178,7 @@ void SensorConfiguration::setConnectionConfig(const ConnectionConfig& cConfig) {
  * \brief SensorConfiguration::getIntegerParameter
  * \return
  */
-const QMap<QString, int>& SensorConfiguration::getIntegerParameter() const {
+const std::map<QString, int>& SensorConfiguration::getIntegerParameter() const {
   return this->integerParameter;
 }
 
@@ -185,7 +187,7 @@ const QMap<QString, int>& SensorConfiguration::getIntegerParameter() const {
  * \param intParams
  */
 void SensorConfiguration::setIntegerParameter(
-    const QMap<QString, int>& intParams) {
+    const std::map<QString, int>& intParams) {
   this->integerParameter = intParams;
 }
 
@@ -193,7 +195,8 @@ void SensorConfiguration::setIntegerParameter(
  * \brief SensorConfiguration::getDoubleParameter
  * \return
  */
-const QMap<QString, double>& SensorConfiguration::getDoubleParameter() const {
+const std::map<QString, double>& SensorConfiguration::getDoubleParameter()
+    const {
   return this->doubleParameter;
 }
 
@@ -202,7 +205,7 @@ const QMap<QString, double>& SensorConfiguration::getDoubleParameter() const {
  * \param doubleParams
  */
 void SensorConfiguration::setDoubleParameter(
-    const QMap<QString, double>& doubleParams) {
+    const std::map<QString, double>& doubleParams) {
   this->doubleParameter = doubleParams;
 }
 
@@ -210,7 +213,8 @@ void SensorConfiguration::setDoubleParameter(
  * \brief SensorConfiguration::getStringParameter
  * \return
  */
-const QMap<QString, QString>& SensorConfiguration::getStringParameter() const {
+const std::map<QString, QString>& SensorConfiguration::getStringParameter()
+    const {
   return this->stringParameter;
 }
 
@@ -219,7 +223,7 @@ const QMap<QString, QString>& SensorConfiguration::getStringParameter() const {
  * \param stringParams
  */
 void SensorConfiguration::setStringParameter(
-    const QMap<QString, QString>& stringParams) {
+    const std::map<QString, QString>& stringParams) {
   this->stringParameter = stringParams;
 }
 
@@ -227,7 +231,7 @@ void SensorConfiguration::setStringParameter(
  * \brief SensorConfiguration::getAvailableStringParameter
  * \return
  */
-const QMultiMap<QString, QString>&
+const std::multimap<QString, QString>&
 SensorConfiguration::getAvailableStringParameter() const {
   return this->availableStringParameter;
 }
@@ -237,6 +241,6 @@ SensorConfiguration::getAvailableStringParameter() const {
  * \param stringParams
  */
 void SensorConfiguration::setAvailableStringParameter(
-    const QMultiMap<QString, QString>& stringParams) {
+    const std::multimap<QString, QString>& stringParams) {
   this->availableStringParameter = stringParams;
 }

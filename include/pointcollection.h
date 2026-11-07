@@ -1,7 +1,6 @@
 #ifndef POINTCOLLECTION_H
 #define POINTCOLLECTION_H
-
-#include <QList>
+#include <vector>
 
 #include "position.h"
 
@@ -38,7 +37,7 @@ class PointCollection {
 
   //! positions of every point in the collection, in the collection's own
   //! current coordinate system
-  [[nodiscard]] virtual QList<Position> collectionPoints() const = 0;
+  [[nodiscard]] virtual std::vector<Position> collectionPoints() const = 0;
 
   //! how many points the collection currently holds. Separate from
   //! collectionPoints().size() so a large point cloud can answer without

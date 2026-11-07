@@ -1,7 +1,8 @@
 #ifndef POINT_H
 #define POINT_H
-
 #include <QtCore>
+#include <map>
+#include <vector>
 
 #include "core_export.h"
 #include "geometry.h"
@@ -55,11 +56,11 @@ class OI_CORE_EXPORT Point : public Geometry {
   // get or set unknown parameters
   // #############################
 
-  [[nodiscard]] QMap<GeometryParameters, QString> getUnknownParameters(
-      const QMap<DimensionType, UnitType>& displayUnits,
-      const QMap<DimensionType, int>& displayDigits) const override;
+  [[nodiscard]] std::map<GeometryParameters, QString> getUnknownParameters(
+      const std::map<DimensionType, UnitType>& displayUnits,
+      const std::map<DimensionType, int>& displayDigits) const override;
   void applyUnknownParameters(
-      const QMap<GeometryParameters, double>& parameters) override;
+      const std::map<GeometryParameters, double>& parameters) override;
 
   // ###########################
   // reexecute the function list
@@ -85,7 +86,7 @@ class OI_CORE_EXPORT Point : public Geometry {
   // membership list on the consuming feature.
   // ###############################################################
 
-  [[nodiscard]] const QList<MeasurementIntent>& getIntents() const;
+  [[nodiscard]] const std::vector<MeasurementIntent>& getIntents() const;
   void addIntent(const MeasurementIntent& intent);
   bool removeIntent(const MeasurementIntent& intent);
   [[nodiscard]] bool hasIntent(int featureId, const QString& roleName) const;
@@ -96,7 +97,7 @@ class OI_CORE_EXPORT Point : public Geometry {
   double distance;  // depends on function
 
  protected:
-  QList<MeasurementIntent> intents;
+  std::vector<MeasurementIntent> intents;
 };
 
 }  // namespace oi

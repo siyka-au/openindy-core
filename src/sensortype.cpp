@@ -1,6 +1,9 @@
 #include "sensortype.h"
 
-#include <QMap>
+#include <map>
+#include <vector>
+
+#include "containers.h"
 
 namespace oi {
 
@@ -24,8 +27,8 @@ QString humanize(const QString& id) {
   return result;
 }
 
-QMap<QString, SensorType>& registry() {
-  static QMap<QString, SensorType> instance;
+std::map<QString, SensorType>& registry() {
+  static std::map<QString, SensorType> instance;
   return instance;
 }
 
@@ -93,14 +96,14 @@ void SensorTypeRegistry::ensureSeeded() {
     return;
   }
   seeded = true;
-  registry().insert(QStringLiteral("laserTracker"),
-                    SensorType(QStringLiteral("laserTracker"),
-                               QStringLiteral("Laser Tracker"),
-                               QStringLiteral("laserTracker")));
-  registry().insert(QStringLiteral("totalStation"),
-                    SensorType(QStringLiteral("totalStation"),
-                               QStringLiteral("Total Station"),
-                               QStringLiteral("totalStation")));
+  registry().insert_or_assign(QStringLiteral("laserTracker"),
+                              SensorType(QStringLiteral("laserTracker"),
+                                         QStringLiteral("Laser Tracker"),
+                                         QStringLiteral("laserTracker")));
+  registry().insert_or_assign(QStringLiteral("totalStation"),
+                              SensorType(QStringLiteral("totalStation"),
+                                         QStringLiteral("Total Station"),
+                                         QStringLiteral("totalStation")));
 }
 
 void SensorTypeRegistry::registerType(const SensorType& type) {
@@ -108,21 +111,21 @@ void SensorTypeRegistry::registerType(const SensorType& type) {
   if (!type.isValid()) {
     return;
   }
-  registry().insert(type.id(), type);
+  registry().insert_or_assign(type.id(), type);
 }
 
 std::optional<SensorType> SensorTypeRegistry::byId(const QString& id) {
   SensorTypeRegistry::ensureSeeded();
-  const auto it = registry().constFind(id);
-  if (it == registry().constEnd()) {
+  const auto it = registry().find(id);
+  if (it == registry().cend()) {
     return std::nullopt;
   }
-  return it.value();
+  return it->second;
 }
 
-QList<SensorType> SensorTypeRegistry::all() {
+std::vector<SensorType> SensorTypeRegistry::all() {
   SensorTypeRegistry::ensureSeeded();
-  return registry().values();
+  return oi::values(registry());
 }
 
 }  // namespace oi

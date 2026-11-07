@@ -1,5 +1,8 @@
 #include "featurecontainer.h"
 
+#include <vector>
+
+#include "containers.h"
 #include "snapshot.h"
 
 using namespace oi;
@@ -18,8 +21,8 @@ FeatureContainer::~FeatureContainer() {}
  * \brief FeatureContainer::getFeaturesList
  * \return
  */
-const QList<oi::Guarded<FeatureWrapper> >& FeatureContainer::getFeaturesList()
-    const {
+const std::vector<oi::Guarded<FeatureWrapper> >&
+FeatureContainer::getFeaturesList() const {
   return this->featuresList;
 }
 
@@ -27,7 +30,7 @@ const QList<oi::Guarded<FeatureWrapper> >& FeatureContainer::getFeaturesList()
  * \brief FeatureContainer::getCoordinateSystemsList
  * \return
  */
-const QList<oi::Guarded<CoordinateSystem> >&
+const std::vector<oi::Guarded<CoordinateSystem> >&
 FeatureContainer::getCoordinateSystemsList() const {
   return this->coordSystems;
 }
@@ -36,12 +39,12 @@ FeatureContainer::getCoordinateSystemsList() const {
  * \brief FeatureContainer::getStationSystemsList
  * \return
  */
-QList<oi::Guarded<CoordinateSystem> > FeatureContainer::getStationSystemsList()
-    const {
-  QList<oi::Guarded<CoordinateSystem> > stationSystems;
+std::vector<oi::Guarded<CoordinateSystem> >
+FeatureContainer::getStationSystemsList() const {
+  std::vector<oi::Guarded<CoordinateSystem> > stationSystems;
   for (const oi::Guarded<Station>& station : oi::snapshot(this->stationsList)) {
     if (!station.isNull() && !station->getCoordinateSystem().isNull()) {
-      stationSystems.append(station->getCoordinateSystem());
+      stationSystems.push_back(station->getCoordinateSystem());
     }
   }
   return stationSystems;
@@ -52,8 +55,9 @@ QList<oi::Guarded<CoordinateSystem> > FeatureContainer::getStationSystemsList()
  * \return
  */
 /* // TODO OI-982 remove
-QList<oi::Guarded<CoordinateSystem> > FeatureContainer::getBundleSystemList()
-const{ QList<oi::Guarded<CoordinateSystem> > bundleSystems; for (const
+std::vector<oi::Guarded<CoordinateSystem> >
+FeatureContainer::getBundleSystemList() const{
+std::vector<oi::Guarded<CoordinateSystem> > bundleSystems; for (const
 oi::Guarded<CoordinateSystem> &system : oi::snapshot(this->coordSystems)){
 if(!system.isNull() && system->getIsBundleSystem()){
 bundleSystems.append(system);
@@ -66,7 +70,8 @@ bundleSystems.append(system);
  * \brief FeatureContainer::getStationsList
  * \return
  */
-const QList<oi::Guarded<Station> >& FeatureContainer::getStationsList() const {
+const std::vector<oi::Guarded<Station> >& FeatureContainer::getStationsList()
+    const {
   return this->stationsList;
 }
 
@@ -74,7 +79,7 @@ const QList<oi::Guarded<Station> >& FeatureContainer::getStationsList() const {
  * \brief FeatureContainer::getTransformationParametersList
  * \return
  */
-const QList<oi::Guarded<TrafoParam> >&
+const std::vector<oi::Guarded<TrafoParam> >&
 FeatureContainer::getTransformationParametersList() const {
   return this->trafoParamsList;
 }
@@ -83,8 +88,8 @@ FeatureContainer::getTransformationParametersList() const {
  * \brief FeatureContainer::getGeometriesList
  * \return
  */
-const QList<oi::Guarded<FeatureWrapper> >& FeatureContainer::getGeometriesList()
-    const {
+const std::vector<oi::Guarded<FeatureWrapper> >&
+FeatureContainer::getGeometriesList() const {
   return this->geometriesList;
 }
 
@@ -92,7 +97,7 @@ const QList<oi::Guarded<FeatureWrapper> >& FeatureContainer::getGeometriesList()
  * \brief FeatureContainer::getFeatureIdList
  * \return
  */
-const QList<int>& FeatureContainer::getFeatureIdList() const {
+const std::vector<int>& FeatureContainer::getFeatureIdList() const {
   return this->featureIds;
 }
 
@@ -100,7 +105,7 @@ const QList<int>& FeatureContainer::getFeatureIdList() const {
  * \brief FeatureContainer::getFeatureNameList
  * \return
  */
-const QStringList& FeatureContainer::getFeatureNameList() const {
+const std::vector<QString>& FeatureContainer::getFeatureNameList() const {
   return this->featureNames;
 }
 
@@ -108,7 +113,7 @@ const QStringList& FeatureContainer::getFeatureNameList() const {
  * \brief FeatureContainer::getFeatureGroupList
  * \return
  */
-const QStringList& FeatureContainer::getFeatureGroupList() const {
+const std::vector<QString>& FeatureContainer::getFeatureGroupList() const {
   return this->featureGroups;
 }
 
@@ -116,8 +121,8 @@ const QStringList& FeatureContainer::getFeatureGroupList() const {
  * \brief FeatureContainer::getUsedMeasurementConfigs
  * \return
  */
-const QList<MeasurementConfigKey>& FeatureContainer::getUsedMeasurementConfigs()
-    const {
+const std::vector<MeasurementConfigKey>&
+FeatureContainer::getUsedMeasurementConfigs() const {
   return this->usedMConfigs;
 }
 
@@ -128,8 +133,8 @@ const QList<MeasurementConfigKey>& FeatureContainer::getUsedMeasurementConfigs()
  */
 oi::Guarded<FeatureWrapper> FeatureContainer::getFeatureById(
     const int& featureId) const {
-  return this->featuresIdMap.value(featureId,
-                                   oi::Guarded<FeatureWrapper>(nullptr));
+  return oi::value(this->featuresIdMap, featureId,
+                   oi::Guarded<FeatureWrapper>(nullptr));
 }
 
 /*!
@@ -138,21 +143,21 @@ oi::Guarded<FeatureWrapper> FeatureContainer::getFeatureById(
  * \param startWith use name as "start with" pattern
  * \return
  */
-QList<oi::Guarded<FeatureWrapper> > FeatureContainer::getFeaturesByName(
+std::vector<oi::Guarded<FeatureWrapper> > FeatureContainer::getFeaturesByName(
     const QString& name, const bool startWith) const {
   if (startWith) {
-    QList<oi::Guarded<FeatureWrapper> > result;
+    std::vector<oi::Guarded<FeatureWrapper> > result;
     for (const oi::Guarded<FeatureWrapper>& feature :
          oi::snapshot(this->featuresList)) {
       if (!feature.isNull() && !feature->getFeature().isNull() &&
           feature->getFeature()->getFeatureName().startsWith(
               name, Qt::CaseInsensitive)) {
-        result.append(feature);
+        result.push_back(feature);
       }
     }
     return result;
   } else {
-    return this->featuresNameMap.values(name);
+    return oi::values(this->featuresNameMap, name);
   }
 }
 
@@ -161,9 +166,9 @@ QList<oi::Guarded<FeatureWrapper> > FeatureContainer::getFeaturesByName(
  * \param group
  * \return
  */
-QList<oi::Guarded<FeatureWrapper> > FeatureContainer::getFeaturesByGroup(
+std::vector<oi::Guarded<FeatureWrapper> > FeatureContainer::getFeaturesByGroup(
     const QString& group) const {
-  return this->featuresGroupMap.values(group);
+  return oi::values(this->featuresGroupMap, group);
 }
 
 /*!
@@ -171,9 +176,9 @@ QList<oi::Guarded<FeatureWrapper> > FeatureContainer::getFeaturesByGroup(
  * \param type
  * \return
  */
-QList<oi::Guarded<FeatureWrapper> > FeatureContainer::getFeaturesByType(
+std::vector<oi::Guarded<FeatureWrapper> > FeatureContainer::getFeaturesByType(
     const FeatureTypes& type) const {
-  return this->featuresTypeMap.values(type);
+  return oi::values(this->featuresTypeMap, type);
 }
 
 /*!
@@ -181,9 +186,9 @@ QList<oi::Guarded<FeatureWrapper> > FeatureContainer::getFeaturesByType(
  * \param mConfig
  * \return
  */
-QList<oi::Guarded<Geometry> > FeatureContainer::getGeometriesByMConfig(
+std::vector<oi::Guarded<Geometry> > FeatureContainer::getGeometriesByMConfig(
     const MeasurementConfigKey& key) const {
-  return this->geometriesMConfigMap.values(key);
+  return oi::values(this->geometriesMConfigMap, key);
 }
 
 /*!
@@ -237,39 +242,39 @@ bool FeatureContainer::addFeature(const oi::Guarded<FeatureWrapper>& feature) {
   }
 
   // add the feature to the feature lists and maps
-  this->featuresList.append(feature);
-  this->featuresIdMap.insert(feature->getFeature()->getId(), feature);
-  this->featuresNameMap.insert(feature->getFeature()->getFeatureName(),
-                               feature);
-  this->featuresTypeMap.insert(feature->getFeatureTypeEnum(), feature);
+  this->featuresList.push_back(feature);
+  this->featuresIdMap.insert_or_assign(feature->getFeature()->getId(), feature);
+  this->featuresNameMap.emplace(feature->getFeature()->getFeatureName(),
+                                feature);
+  this->featuresTypeMap.emplace(feature->getFeatureTypeEnum(), feature);
   if (feature->getFeature()->getGroupName().compare("") != 0) {
-    this->featuresGroupMap.insert(feature->getFeature()->getGroupName(),
-                                  feature);
+    this->featuresGroupMap.emplace(feature->getFeature()->getGroupName(),
+                                   feature);
   }
   switch (feature->getFeatureTypeEnum()) {
     case FeatureTypes::eCoordinateSystemFeature:
-      this->coordSystems.append(feature->getCoordinateSystem());
+      this->coordSystems.push_back(feature->getCoordinateSystem());
       break;
     case FeatureTypes::eStationFeature:
-      this->stationsList.append(feature->getStation());
+      this->stationsList.push_back(feature->getStation());
       if (!feature->getStation()->getCoordinateSystem().isNull()) {
         oi::Guarded<FeatureWrapper> stationSystem = new FeatureWrapper();
         stationSystem->setCoordinateSystem(
             feature->getStation()->getCoordinateSystem());
-        this->featuresIdMap.insert(
+        this->featuresIdMap.insert_or_assign(
             feature->getStation()->getCoordinateSystem()->getId(),
             stationSystem);
       }
       break;
     case FeatureTypes::eTrafoParamFeature:
-      this->trafoParamsList.append(feature->getTrafoParam());
+      this->trafoParamsList.push_back(feature->getTrafoParam());
       break;
     default:  // geometry
       if (!feature->getGeometry().isNull()) {
-        this->geometriesList.append(feature);
+        this->geometriesList.push_back(feature);
         if (feature->getGeometry()->getMeasurementConfig().isValid()) {
           ;
-          this->geometriesMConfigMap.insert(
+          this->geometriesMConfigMap.emplace(
               feature->getGeometry()->getMeasurementConfig(),
               feature->getGeometry());
         }
@@ -278,18 +283,20 @@ bool FeatureContainer::addFeature(const oi::Guarded<FeatureWrapper>& feature) {
   }
 
   // update lists with ids, names, groups and mConfigs
-  this->featureIds.append(feature->getFeature()->getId());
-  if (this->featuresNameMap.values(feature->getFeature()->getFeatureName())
+  this->featureIds.push_back(feature->getFeature()->getId());
+  if (oi::values(this->featuresNameMap, feature->getFeature()->getFeatureName())
           .size() == 1) {
-    this->featureNames.append(feature->getFeature()->getFeatureName());
+    this->featureNames.push_back(feature->getFeature()->getFeatureName());
   }
   if (feature->getFeature()->getGroupName().compare("") != 0 &&
-      !this->featureGroups.contains(feature->getFeature()->getGroupName())) {
-    this->featureGroups.append(feature->getFeature()->getGroupName());
+      !oi::contains(this->featureGroups,
+                    feature->getFeature()->getGroupName())) {
+    this->featureGroups.push_back(feature->getFeature()->getGroupName());
   }
   if (!feature->getGeometry().isNull() &&
       feature->getGeometry()->getMeasurementConfig().isValid()) {
-    this->usedMConfigs.append(feature->getGeometry()->getMeasurementConfig());
+    this->usedMConfigs.push_back(
+        feature->getGeometry()->getMeasurementConfig());
   }
 
   return true;
@@ -308,7 +315,7 @@ bool FeatureContainer::removeFeature(const int& featureId) {
 
   // get the feature pointer
   oi::Guarded<FeatureWrapper> feature =
-      this->featuresIdMap.value(featureId, oi::Guarded<FeatureWrapper>());
+      oi::value(this->featuresIdMap, featureId, oi::Guarded<FeatureWrapper>());
 
   // check if the feature is valid
   if (feature.isNull() || feature->getFeature().isNull()) {
@@ -316,51 +323,51 @@ bool FeatureContainer::removeFeature(const int& featureId) {
   }
 
   // remove the feature from lists and map
-  this->featuresList.removeOne(feature);
-  this->featuresIdMap.remove(featureId);
-  this->featuresNameMap.remove(feature->getFeature()->getFeatureName(),
-                               feature);
-  this->featuresTypeMap.remove(feature->getFeatureTypeEnum(), feature);
+  oi::removeOne(this->featuresList, feature);
+  this->featuresIdMap.erase(featureId);
+  oi::eraseValue(this->featuresNameMap, feature->getFeature()->getFeatureName(),
+                 feature);
+  oi::eraseValue(this->featuresTypeMap, feature->getFeatureTypeEnum(), feature);
   if (feature->getFeature()->getGroupName().compare("") != 0) {
-    this->featuresGroupMap.remove(feature->getFeature()->getGroupName(),
-                                  feature);
+    oi::eraseValue(this->featuresGroupMap,
+                   feature->getFeature()->getGroupName(), feature);
   }
   switch (feature->getFeatureTypeEnum()) {
     case FeatureTypes::eCoordinateSystemFeature:
-      this->coordSystems.removeOne(feature->getCoordinateSystem());
+      oi::removeOne(this->coordSystems, feature->getCoordinateSystem());
       break;
     case FeatureTypes::eStationFeature:
-      this->stationsList.removeOne(feature->getStation());
+      oi::removeOne(this->stationsList, feature->getStation());
       break;
     case FeatureTypes::eTrafoParamFeature:
-      this->trafoParamsList.removeOne(feature->getTrafoParam());
+      oi::removeOne(this->trafoParamsList, feature->getTrafoParam());
       break;
     default:  // geometry
       if (!feature->getGeometry().isNull()) {
-        this->geometriesList.removeOne(feature);
+        oi::removeOne(this->geometriesList, feature);
         if (feature->getGeometry()->getMeasurementConfig().isValid()) {
-          this->geometriesMConfigMap.remove(
-              feature->getGeometry()->getMeasurementConfig(),
-              feature->getGeometry());
+          oi::eraseValue(this->geometriesMConfigMap,
+                         feature->getGeometry()->getMeasurementConfig(),
+                         feature->getGeometry());
         }
       }
       break;
   }
 
   // update lists with ids, names and groups
-  this->featureIds.removeOne(feature->getFeature()->getId());
+  oi::removeOne(this->featureIds, feature->getFeature()->getId());
   if (!this->featuresNameMap.contains(
           feature->getFeature()->getFeatureName())) {
-    this->featureNames.removeOne(feature->getFeature()->getFeatureName());
+    oi::removeOne(this->featureNames, feature->getFeature()->getFeatureName());
   }
   if (feature->getFeature()->getGroupName().compare("") != 0 &&
       !this->featuresGroupMap.contains(feature->getFeature()->getGroupName())) {
-    this->featureGroups.removeOne(feature->getFeature()->getGroupName());
+    oi::removeOne(this->featureGroups, feature->getFeature()->getGroupName());
   }
   if (!feature->getGeometry().isNull() &&
       feature->getGeometry()->getMeasurementConfig().isValid()) {
-    this->usedMConfigs.removeOne(
-        feature->getGeometry()->getMeasurementConfig());
+    oi::removeOne(this->usedMConfigs,
+                  feature->getGeometry()->getMeasurementConfig());
   }
 
   // delete the feature
@@ -386,57 +393,59 @@ void FeatureContainer::checkAndClean(const int& featureId, const QString& name,
   }
 
   // get and check feature by id
-  oi::Guarded<FeatureWrapper> feature = this->featuresIdMap.value(featureId);
+  oi::Guarded<FeatureWrapper> feature =
+      oi::value(this->featuresIdMap, featureId);
   if (feature.isNull() || feature->getFeature().isNull()) {
     return;
   }
 
   // clean feature list
-  this->featuresList.removeOne(feature);
+  oi::removeOne(this->featuresList, feature);
 
   // clean coordinate system list
   if (!feature->getCoordinateSystem().isNull()) {
-    this->coordSystems.removeOne(feature->getCoordinateSystem());
+    oi::removeOne(this->coordSystems, feature->getCoordinateSystem());
   }
 
   // clean station list
   if (!feature->getStation().isNull()) {
-    this->stationsList.removeOne(feature->getStation());
+    oi::removeOne(this->stationsList, feature->getStation());
   }
 
   // clean trafo param list
   if (!feature->getTrafoParam().isNull()) {
-    this->trafoParamsList.removeOne(feature->getTrafoParam());
+    oi::removeOne(this->trafoParamsList, feature->getTrafoParam());
   }
 
   // clean geometry list
   if (!feature->getGeometry().isNull()) {
-    this->geometriesList.removeOne(feature);
+    oi::removeOne(this->geometriesList, feature);
   }
 
   // clean feature maps
-  this->featuresIdMap.remove(featureId);
-  this->featuresNameMap.remove(name, feature);
-  this->featuresGroupMap.remove(group, feature);
-  this->featuresTypeMap.remove(type, feature);
+  this->featuresIdMap.erase(featureId);
+  oi::eraseValue(this->featuresNameMap, name, feature);
+  oi::eraseValue(this->featuresGroupMap, group, feature);
+  oi::eraseValue(this->featuresTypeMap, type, feature);
   if (!feature->getGeometry().isNull()) {
-    this->geometriesMConfigMap.remove(
-        feature->getGeometry()->getMeasurementConfig(), feature->getGeometry());
+    oi::eraseValue(this->geometriesMConfigMap,
+                   feature->getGeometry()->getMeasurementConfig(),
+                   feature->getGeometry());
   }
 
   // clean list with ids, names, groups and mConfigs
-  this->featureIds.removeOne(featureId);
+  oi::removeOne(this->featureIds, featureId);
   if (!this->featuresNameMap.contains(name)) {
-    this->featureNames.removeOne(name);
+    oi::removeOne(this->featureNames, name);
   }
   if (!this->featuresGroupMap.contains(group)) {
-    this->featureGroups.removeOne(group);
+    oi::removeOne(this->featureGroups, group);
   }
   if (!feature->getGeometry().isNull()) {
     if (!this->geometriesMConfigMap.contains(
             feature->getGeometry()->getMeasurementConfig())) {
-      this->usedMConfigs.removeOne(
-          feature->getGeometry()->getMeasurementConfig());
+      oi::removeOne(this->usedMConfigs,
+                    feature->getGeometry()->getMeasurementConfig());
     }
   }
 }
@@ -490,7 +499,7 @@ bool FeatureContainer::featureNameChanged(const int& featureId,
 
   // get the feature pointer
   oi::Guarded<FeatureWrapper> feature =
-      this->featuresIdMap.value(featureId, oi::Guarded<FeatureWrapper>());
+      oi::value(this->featuresIdMap, featureId, oi::Guarded<FeatureWrapper>());
 
   // check if the feature is valid
   if (feature.isNull() || feature->getFeature().isNull()) {
@@ -499,14 +508,20 @@ bool FeatureContainer::featureNameChanged(const int& featureId,
 
   // update lists and maps
   if (this->featuresNameMap.contains(oldName)) {
-    this->featuresNameMap.insert(feature->getFeature()->getFeatureName(),
-                                 this->featuresNameMap.take(oldName));
+    // QMultiMap::take removed the most recently inserted value of the key
+    const auto range = this->featuresNameMap.equal_range(oldName);
+    auto last = std::prev(range.second);
+    auto moved = last->second;
+    this->featuresNameMap.erase(last);
+    this->featuresNameMap.emplace(feature->getFeature()->getFeatureName(),
+                                  std::move(moved));
   }
   if (!this->featuresNameMap.contains(oldName)) {
-    this->featureNames.removeOne(oldName);
+    oi::removeOne(this->featureNames, oldName);
   }
-  if (!this->featureNames.contains(feature->getFeature()->getFeatureName())) {
-    this->featureNames.append(feature->getFeature()->getFeatureName());
+  if (!oi::contains(this->featureNames,
+                    feature->getFeature()->getFeatureName())) {
+    this->featureNames.push_back(feature->getFeature()->getFeatureName());
   }
 
   return true;
@@ -528,7 +543,7 @@ bool FeatureContainer::featureGroupChanged(const int& featureId,
 
   // get the feature pointer
   oi::Guarded<FeatureWrapper> feature =
-      this->featuresIdMap.value(featureId, oi::Guarded<FeatureWrapper>());
+      oi::value(this->featuresIdMap, featureId, oi::Guarded<FeatureWrapper>());
 
   // check if the feature is valid
   if (feature.isNull() || feature->getFeature().isNull()) {
@@ -539,33 +554,33 @@ bool FeatureContainer::featureGroupChanged(const int& featureId,
   if (oldGroup.compare("") == 0) {
     // check if the new group is empty
     if (feature->getFeature()->getGroupName().compare("") != 0) {
-      this->featuresGroupMap.insert(feature->getFeature()->getGroupName(),
-                                    feature);
-      if (!this->featureGroups.contains(
-              feature->getFeature()->getGroupName())) {
-        this->featureGroups.append(feature->getFeature()->getGroupName());
+      this->featuresGroupMap.emplace(feature->getFeature()->getGroupName(),
+                                     feature);
+      if (!oi::contains(this->featureGroups,
+                        feature->getFeature()->getGroupName())) {
+        this->featureGroups.push_back(feature->getFeature()->getGroupName());
       }
     }
 
   } else {
     // check if the new group is empty
     if (feature->getFeature()->getGroupName().compare("") != 0) {
-      this->featuresGroupMap.remove(oldGroup, feature);
-      this->featuresGroupMap.insert(feature->getFeature()->getGroupName(),
-                                    feature);
+      oi::eraseValue(this->featuresGroupMap, oldGroup, feature);
+      this->featuresGroupMap.emplace(feature->getFeature()->getGroupName(),
+                                     feature);
 
       if (!this->featuresGroupMap.contains(oldGroup)) {
-        this->featureGroups.removeOne(oldGroup);
+        oi::removeOne(this->featureGroups, oldGroup);
       }
-      if (!this->featureGroups.contains(
-              feature->getFeature()->getGroupName())) {
-        this->featureGroups.append(feature->getFeature()->getGroupName());
+      if (!oi::contains(this->featureGroups,
+                        feature->getFeature()->getGroupName())) {
+        this->featureGroups.push_back(feature->getFeature()->getGroupName());
       }
 
     } else {
-      this->featuresGroupMap.remove(oldGroup, feature);
+      oi::eraseValue(this->featuresGroupMap, oldGroup, feature);
       if (!this->featuresGroupMap.contains(oldGroup)) {
-        this->featureGroups.removeOne(oldGroup);
+        oi::removeOne(this->featureGroups, oldGroup);
       }
     }
   }
@@ -590,7 +605,7 @@ bool FeatureContainer::geometryMeasurementConfigChanged(
 
   // get the feature pointer
   oi::Guarded<FeatureWrapper> feature =
-      this->featuresIdMap.value(featureId, oi::Guarded<FeatureWrapper>());
+      oi::value(this->featuresIdMap, featureId, oi::Guarded<FeatureWrapper>());
 
   // check if the feature is valid and is a geometry
   if (feature.isNull() || feature->getGeometry().isNull()) {
@@ -609,30 +624,30 @@ bool FeatureContainer::geometryMeasurementConfigChanged(
 
   // if the old mConfig was empty
   if (oldMConfig.compare("") == 0) {
-    this->geometriesMConfigMap.insert(newKey, geometry);
-    if (!this->usedMConfigs.contains(newKey)) {
-      this->usedMConfigs.append(newKey);
+    this->geometriesMConfigMap.emplace(newKey, geometry);
+    if (!oi::contains(this->usedMConfigs, newKey)) {
+      this->usedMConfigs.push_back(newKey);
     }
     return true;
   }
 
   // if the new mConfig is empty
   if (!geometry->getMeasurementConfig().isValid()) {
-    this->geometriesMConfigMap.remove(oldKey, geometry);
+    oi::eraseValue(this->geometriesMConfigMap, oldKey, geometry);
     if (!this->geometriesMConfigMap.contains(oldKey)) {
-      this->usedMConfigs.removeOne(oldKey);
+      oi::removeOne(this->usedMConfigs, oldKey);
     }
     return true;
   }
 
   // if both mConfigs are non-empty
-  this->geometriesMConfigMap.remove(oldKey, geometry);
-  this->geometriesMConfigMap.insert(newKey, geometry);
+  oi::eraseValue(this->geometriesMConfigMap, oldKey, geometry);
+  this->geometriesMConfigMap.emplace(newKey, geometry);
   if (!this->geometriesMConfigMap.contains(oldKey)) {
-    this->usedMConfigs.removeOne(oldKey);
+    oi::removeOne(this->usedMConfigs, oldKey);
   }
-  if (!this->usedMConfigs.contains(newKey)) {
-    this->usedMConfigs.append(newKey);
+  if (!oi::contains(this->usedMConfigs, newKey)) {
+    this->usedMConfigs.push_back(newKey);
   }
 
   return true;

@@ -1,7 +1,10 @@
 #include "scalarentitydistance.h"
 
+#include <map>
 #include <utility>
+#include <vector>
 
+#include "containers.h"
 #include "featurewrapper.h"
 
 using namespace oi;
@@ -90,16 +93,17 @@ void ScalarEntityDistance::setDistance(const double& distance) {
  * \param displayDigits
  * \return
  */
-QMap<GeometryParameters, QString> ScalarEntityDistance::getUnknownParameters(
-    const QMap<DimensionType, UnitType>& displayUnits,
-    const QMap<DimensionType, int>& displayDigits) const {
-  QMap<GeometryParameters, QString> parameters;
+std::map<GeometryParameters, QString>
+ScalarEntityDistance::getUnknownParameters(
+    const std::map<DimensionType, UnitType>& displayUnits,
+    const std::map<DimensionType, int>& displayDigits) const {
+  std::map<GeometryParameters, QString> parameters;
 
-  parameters.insert(
+  parameters.insert_or_assign(
       GeometryParameters::eUnknownDistance,
       this->getDisplayDistance(
-          displayUnits.value(DimensionType::eMetric, UnitType::eUnitMeter),
-          displayDigits.value(DimensionType::eMetric, 0)));
+          oi::value(displayUnits, DimensionType::eMetric, UnitType::eUnitMeter),
+          oi::value(displayDigits, DimensionType::eMetric, 0)));
 
   return parameters;
 }
@@ -109,16 +113,16 @@ QMap<GeometryParameters, QString> ScalarEntityDistance::getUnknownParameters(
  * \param parameters
  */
 void ScalarEntityDistance::applyUnknownParameters(
-    const QMap<GeometryParameters, double>& parameters) {
+    const std::map<GeometryParameters, double>& parameters) {
   // get current parameters
   double distance = this->distance;
 
   // update parameters
-  QList<GeometryParameters> keys = parameters.keys();
+  std::vector<GeometryParameters> keys = oi::keys(parameters);
   for (const GeometryParameters& key : std::as_const(keys)) {
     switch (key) {
       case GeometryParameters::eUnknownDistance:
-        distance = parameters.value(GeometryParameters::eUnknownDistance);
+        distance = oi::value(parameters, GeometryParameters::eUnknownDistance);
         break;
       default:
         break;

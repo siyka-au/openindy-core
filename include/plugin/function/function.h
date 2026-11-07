@@ -1,15 +1,13 @@
 #ifndef FUNCTION_H
 #define FUNCTION_H
-
 #include <math.h>
 
-#include <QMap>
-#include <QMultiMap>
-#include <QStringList>
 #include <QtCore>
 #include <cmath>
 #include <expected>
+#include <map>
 #include <optional>
+#include <vector>
 
 #include "circle.h"
 #include "cone.h"
@@ -85,7 +83,7 @@ class NeededElement {
   // for every function that doesn't declare one: a pipeline is opt-in
   // per role, and an undeclared pipeline must never override whatever
   // InputElement::shouldBeUsed a user or prior mechanism already set.
-  QList<PipelineStage> pipeline;
+  std::vector<PipelineStage> pipeline;
 };
 
 /*!
@@ -109,12 +107,12 @@ class InputElement {
 
   // single parameters of this element that shall not be used in function
   // calculation e.g. ignore the radius of an input sphere
-  QList<GeometryParameters> ignoredDestinationParams;
+  std::vector<GeometryParameters> ignoredDestinationParams;
 
   // single parameters of the feature to be calculated that this element shall
   // not have effect on e.g. use a point only for a circle's plane, not the
   // radius
-  QList<GeometryParameters> ignoredTargetParams;
+  std::vector<GeometryParameters> ignoredTargetParams;
 
   bool shouldBeUsed;  // true if this element should be used in function
                       // calculation (user specified)
@@ -267,18 +265,19 @@ class OI_CORE_EXPORT Function : public oi::Trackable {
   // methods to get or set further information to solve a function
   // #############################################################
 
-  [[nodiscard]] const QList<NeededElement>& getNeededElements() const;
-  [[nodiscard]] const QList<FeatureTypes>& getApplicableFor() const;
+  [[nodiscard]] const std::vector<NeededElement>& getNeededElements() const;
+  [[nodiscard]] const std::vector<FeatureTypes>& getApplicableFor() const;
   [[nodiscard]] const PluginMetaData& getMetaData() const;
 
-  [[nodiscard]] const QMap<QString, int>& getIntegerParameter() const;
-  [[nodiscard]] const QMap<QString, double>& getDoubleParameter() const;
-  [[nodiscard]] const QMultiMap<QString, QString>& getStringParameter() const;
+  [[nodiscard]] const std::map<QString, int>& getIntegerParameter() const;
+  [[nodiscard]] const std::map<QString, double>& getDoubleParameter() const;
+  [[nodiscard]] const std::multimap<QString, QString>& getStringParameter()
+      const;
 
   void setScalarInputParams(const ScalarInputParams& params);
   const ScalarInputParams& getScalarInputParams();
 
-  [[nodiscard]] const QList<FixedParameter>& getFixedParameters() const;
+  [[nodiscard]] const std::vector<FixedParameter>& getFixedParameters() const;
   void fixParameter(const FixedParameter& parameter);
   void unfixParameter(const GeometryParameters& parameter);
   void unfixAllParameters();
@@ -287,7 +286,7 @@ class OI_CORE_EXPORT Function : public oi::Trackable {
   // get function results
   // ####################
 
-  [[nodiscard]] const QStringList& getResultProtocol() const;
+  [[nodiscard]] const std::vector<QString>& getResultProtocol() const;
 
   [[nodiscard]] const Statistic& getStatistic() const;
 
@@ -304,7 +303,8 @@ class OI_CORE_EXPORT Function : public oi::Trackable {
   // get or set elements
   // ###################
 
-  [[nodiscard]] const QMap<int, QList<InputElement>>& getInputElements() const;
+  [[nodiscard]] const std::map<int, std::vector<InputElement>>&
+  getInputElements() const;
   [[nodiscard]] InputElement getInputElement(const int& id) const;
   [[nodiscard]] InputElement getInputElement(const int& id,
                                              const int& position) const;
@@ -333,9 +333,10 @@ class OI_CORE_EXPORT Function : public oi::Trackable {
   // that mutate this still need to trigger an ordinary recalc for it to
   // take effect, exactly like every other input-set change (OiJob does
   // not auto-recalc on tagPoint either; see oijob.h).
-  [[nodiscard]] const QList<PipelineStage>& getPipeline(
+  [[nodiscard]] const std::vector<PipelineStage>& getPipeline(
       const int& position) const;
-  void setPipeline(const int& position, const QList<PipelineStage>& stages);
+  void setPipeline(const int& position,
+                   const std::vector<PipelineStage>& stages);
   void addPipelineStage(const int& position, const PipelineStage& stage);
   void clearPipeline(const int& position);
 
@@ -343,7 +344,7 @@ class OI_CORE_EXPORT Function : public oi::Trackable {
   // most recently excluded at `position`, and why. Repopulated every
   // exec(); empty until the function has run at least once, the same
   // way isUsed is only meaningful post-exec.
-  [[nodiscard]] const QList<PipelineExclusion>& getPipelineExclusions(
+  [[nodiscard]] const std::vector<PipelineExclusion>& getPipelineExclusions(
       const int& position) const;
 
   // #############
@@ -393,22 +394,22 @@ class OI_CORE_EXPORT Function : public oi::Trackable {
 
   // meta information about the function (to tell OpenIndy what this function
   // does)
-  QList<NeededElement> neededElements;
-  QList<FeatureTypes> applicableFor;
+  std::vector<NeededElement> neededElements;
+  std::vector<FeatureTypes> applicableFor;
   PluginMetaData metaData;
 
   // the needed scalar input parameters including default values
-  QMap<QString, int> integerParameters;
-  QMap<QString, double> doubleParameters;
-  QMultiMap<QString, QString> stringParameters;
+  std::map<QString, int> integerParameters;
+  std::map<QString, double> doubleParameters;
+  std::multimap<QString, QString> stringParameters;
 
   // user defined scalar input parameters
   ScalarInputParams scalarInputParams;
 
   // parameters of a geometry that should have a fixed value
-  QList<FixedParameter> fixedParameters;
+  std::vector<FixedParameter> fixedParameters;
 
-  QStringList resultProtocol;
+  std::vector<QString> resultProtocol;
 
   // ##################
   // general attributes
@@ -420,18 +421,18 @@ class OI_CORE_EXPORT Function : public oi::Trackable {
 
   Statistic statistic;
 
-  QMap<int, QList<InputElement>> inputElements;
+  std::map<int, std::vector<InputElement>> inputElements;
 
   // D16/domain-model.md S5: what each NeededElement position's pipeline
   // most recently excluded, and why - keyed the same way inputElements
   // is. Rebuilt every exec(), not persisted separately (it is fully
   // re-derivable from the declared pipeline plus current data, exactly
   // like isUsed).
-  QMap<int, QList<PipelineExclusion>> pipelineExclusions;
+  std::map<int, std::vector<PipelineExclusion>> pipelineExclusions;
 
   void filterObservations(
-      QList<oi::Guarded<Observation>>& allUsableObservations,
-      QList<oi::Guarded<Observation>>& inputObservations);
+      std::vector<oi::Guarded<Observation>>& allUsableObservations,
+      std::vector<oi::Guarded<Observation>>& inputObservations);
   void addDisplayResidual(int elementId, double vr);
   void addDisplayResidual(int elementId, double vx, double vy, double vz,
                           double v);

@@ -1,5 +1,7 @@
 #include "connectionkind.h"
 
+#include <vector>
+
 namespace oi {
 
 ConnectionKind::ConnectionKind(const QString& id, const QString& displayName)
@@ -15,7 +17,7 @@ const ConnectionKind& ConnectionKind::serial() {
   return kind;
 }
 
-QList<ConnectionKind> ConnectionKind::knownKinds() {
+std::vector<ConnectionKind> ConnectionKind::knownKinds() {
   return {ConnectionKind::network(), ConnectionKind::serial()};
 }
 

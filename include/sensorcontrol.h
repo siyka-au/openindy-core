@@ -1,9 +1,8 @@
 #ifndef SENSORCONTROL_H
 #define SENSORCONTROL_H
-
-#include <QList>
-#include <QMap>
+#include <map>
 #include <memory>
+#include <vector>
 
 #include "core_export.h"
 #include "executor.h"
@@ -61,8 +60,8 @@ class OI_CORE_EXPORT SensorControl final {
   void resetSensor();
 
   // previously used sensors
-  const QList<Sensor>& getUsedSensors();
-  void setUsedSensors(const QList<Sensor>& sensors);
+  const std::vector<Sensor>& getUsedSensors();
+  void setUsedSensors(const std::vector<Sensor>& sensors);
 
   // stream format
   ReadingTypes getStreamFormat();
@@ -77,18 +76,18 @@ class OI_CORE_EXPORT SensorControl final {
   bool getIsSensorConnected();
   bool getIsReadyForMeasurement();
   bool getIsBusy();
-  QMap<QString, QString> getSensorStatus();
+  std::map<QString, QString> getSensorStatus();
 
   // sensor type
   SensorType getActiveSensorType();
 
   // reading and connection types
-  QList<ReadingTypes> getSupportedReadingTypes();
-  QList<ConnectionKind> getSupportedConnectionTypes();
+  std::vector<ReadingTypes> getSupportedReadingTypes();
+  std::vector<ConnectionKind> getSupportedConnectionTypes();
 
   // sensor actions
-  QList<SensorFunctions> getSupportedSensorActions();
-  QStringList getSelfDefinedActions();
+  std::vector<SensorFunctions> getSupportedSensorActions();
+  std::vector<QString> getSelfDefinedActions();
 
   // sensor configuration
   SensorConfiguration getSensorConfiguration();
@@ -143,7 +142,7 @@ class OI_CORE_EXPORT SensorControl final {
   class Relay;
 
   // previously used sensors
-  QList<Sensor> usedSensors;
+  std::vector<Sensor> usedSensors;
 
   // current sensor state
   bool sensorValid{false};

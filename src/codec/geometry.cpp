@@ -361,7 +361,7 @@ oi::Guarded<Geometry> Access::decodeGeometry(const oipb::Geometry& m) {
       auto geometry = restoreBase<Point>(m);
       auto* point = static_cast<Point*>(geometry.data());
       for (const auto& intent : m.point().intents()) {
-        point->intents.append(MeasurementIntent(
+        point->intents.push_back(MeasurementIntent(
             intent.feature_id(), QString::fromStdString(intent.role())));
       }
       return geometry;
@@ -376,7 +376,7 @@ oi::Guarded<Geometry> Access::decodeGeometry(const oipb::Geometry& m) {
             new Point_PC(shape.coordinates(3 * i), shape.coordinates(3 * i + 1),
                          shape.coordinates(3 * i + 2));
         p->isUsed = i < shape.used_size() ? shape.used(i) : true;
-        cloud->points.append(p);
+        cloud->points.push_back(p);
       }
       if (shape.bbox_min_size() == 3 && shape.bbox_max_size() == 3) {
         for (int i = 0; i < 3; ++i) {
