@@ -52,10 +52,12 @@ class OI_CORE_EXPORT OiJob : public oi::Trackable,
   // get or set meta information of a job
   // ####################################
 
+  // Runtime only, never serialised (the project file stores no file name or
+  // path): the host names the job after its file, without the directory.
   [[nodiscard]] const std::string& getJobName() const;
   void setJobName(const std::string& jobName);
 
-  // the file the job is saved to (empty: not saved yet)
+  // the file the job is saved to (empty: not saved yet); runtime only
   [[nodiscard]] const std::filesystem::path& getJobFile() const;
   void setJobFile(std::filesystem::path jobFile);
 

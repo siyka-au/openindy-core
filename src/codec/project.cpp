@@ -909,7 +909,6 @@ std::string encodeProject(OiJob& job, const ProjectHost& host,
 
   oipb::Project project = std::move(body);
   project.set_format_version(kFormatVersion);
-  project.set_name(job.getJobName());
   *project.mutable_saved_at() = toTimestamp(std::chrono::system_clock::now());
   project.set_app_version(appVersion);
   project.set_next_id(Access::nextId(job));

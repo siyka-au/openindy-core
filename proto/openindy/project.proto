@@ -756,7 +756,11 @@ message BundleAdjustmentRecord {
 message Project {
   // Bumped when the schema changes in a way readers must know about.
   uint32 format_version = 1;
-  string name = 2;
+  // Field 2 was the project name, which the application set to the full path
+  // of the file; the file stores no file name or path (the file may be renamed
+  // or moved), the host names the job after the file it loaded it from. Old
+  // files that still carry the field load fine: readers ignore it.
+  reserved 2;
   google.protobuf.Timestamp saved_at = 3;
   // Version of the application that wrote the file (informational).
   string app_version = 4;

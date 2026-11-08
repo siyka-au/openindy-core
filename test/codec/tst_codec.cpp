@@ -114,7 +114,6 @@ TEST_CASE("a measurement config without a name is rejected") {
 TEST_CASE("the Project header round trips, including the timestamp") {
   oipb::Project in;
   in.set_format_version(1);
-  in.set_name("Hall 3");
   in.set_app_version("1.2.3-4-gabcdef");
   in.set_next_id(4711);
   *in.mutable_saved_at() =
@@ -125,7 +124,7 @@ TEST_CASE("the Project header round trips, including the timestamp") {
   REQUIRE(in.SerializeToString(&bytes));
   oipb::Project out;
   REQUIRE(out.ParseFromString(bytes));
-  CHECK(out.name() == "Hall 3");
+  CHECK(out.app_version() == "1.2.3-4-gabcdef");
   CHECK(out.next_id() == 4711);
   CHECK(out.saved_at().seconds() == 1730000000);
   REQUIRE(out.measurement_configs_size() == 1);
@@ -1660,4 +1659,66 @@ TEST_CASE("reading and message kinds map both ways") {
     CHECK(codec::fromProto(codec::toProto(type)) == type);
   }
   CHECK_FALSE(codec::fromProto(oipb::MESSAGE_KIND_UNSPECIFIED).has_value());
+}
+
+TEST_CASE("a saved project holds neither the job's name nor its file") {
+  const std::string secret = "/home/someone/secret/project.oip";
+  World w = buildWorld();
+  TestHost host;
+
+  w.job->setJobName(secret);
+  w.job->setJobFile(secret);
+  const std::string bytes = codec::encodeProject(*w.job, host, "1.2.3");
+  CHECK(bytes.find(secret) == std::string::npos);
+  CHECK(bytes.find("someone") == std::string::npos);
+  CHECK(bytes.find("secret") == std::string::npos);
+  CHECK(bytes.find("project.oip") == std::string::npos);
+
+  delete w.job.data();
+}
+
+TEST_CASE("the job's name and file do not matter to the saved bytes") {
+  World a = buildWorld();
+  World b = buildWorld();
+  TestHost host;
+
+  a.job->setJobName("one.oip");
+  a.job->setJobFile("/tmp/one.oip");
+  b.job->setJobName("/other/two.oip");
+  b.job->setJobFile("/other/two.oip");
+  CHECK(withoutTime(codec::encodeProject(*a.job, host, "1.2.3"))
+            .SerializeAsString() ==
+        withoutTime(codec::encodeProject(*b.job, host, "1.2.3"))
+            .SerializeAsString());
+
+  delete a.job.data();
+  delete b.job.data();
+}
+
+TEST_CASE("a project file that still carries the old name field 2 loads") {
+  World w = buildWorld();
+  TestHost host;
+
+  // field 2 (length-delimited string) was the project name
+  std::string old = codec::encodeProject(*w.job, host, "1.2.3");
+  const std::string path = "/home/someone/old/project.oip";
+  std::string field = {static_cast<char>((2 << 3) | 2),
+                       static_cast<char>(path.size())};
+  field += path;
+  old += field;  // appended fields are merged by the parser
+
+  oipb::Project parsed = parse(old);
+  CHECK(parsed.unknown_fields().field_count() == 1);
+
+  codec::DecodeResult loaded = codec::decodeProject(old, host);
+  INFO(loaded.error);
+  REQUIRE(loaded.ok());
+  CHECK(loaded.job->getJobName().empty());
+  CHECK(loaded.job->getJobFile().empty());
+
+  const std::string again = codec::encodeProject(*loaded.job, host, "1.2.3");
+  CHECK(again.find("someone") == std::string::npos);
+  CHECK(again.find(path) == std::string::npos);
+
+  delete w.job.data();
 }
