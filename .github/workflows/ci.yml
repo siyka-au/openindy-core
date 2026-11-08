@@ -1,0 +1,309 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+# One run per ref; a newer push cancels the superseded run.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CC: gcc-14
+  CXX: g++-14
+  CLANG_TOOLS_VERSION: 23.1.3   # PyPI clang-format / clang-tidy; keep in sync with the developers' version
+  BUILD_DEPS: ninja-build g++-14 libarmadillo-dev libblas-dev liblapack-dev
+
+# Layout: the CMake files look for ../openindy-math next to this checkout, so
+# both repositories are checked out side by side in $GITHUB_WORKSPACE.
+# If openindy-math is private, add a repository secret SIBLING_REPO_TOKEN (a
+# token with read access to it); the default token only reaches this repo.
+
+jobs:
+  build-test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with: { path: openindy-core }
+      - uses: actions/checkout@v4
+        with:
+          repository: siyka-au/openindy-math
+          path: openindy-math
+          token: ${{ secrets.SIBLING_REPO_TOKEN || github.token }}
+      - uses: astral-sh/setup-uv@v6
+      - name: System packages
+        run: sudo apt-get update && sudo apt-get install -y $BUILD_DEPS
+      - uses: actions/cache@v4
+        with:
+          path: ~/.conan2/p
+          key: conan-gcc14-${{ hashFiles('openindy-core/conanfile.txt', 'openindy-core/conan/profiles/*') }}
+      - name: Conan packages (Release only, the packages are Release)
+        working-directory: openindy-core
+        run: uvx conan install . -pr:a conan/profiles/linux-gcc -s:a compiler.version=14 --build=missing -of build/conan
+      - name: Configure
+        working-directory: openindy-core
+        run: >
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_TOOLCHAIN_FILE=build/conan/conan_toolchain.cmake
+      - name: Build
+        working-directory: openindy-core
+        run: cmake --build build -j$(nproc)
+      - name: Test
+        working-directory: openindy-core/build
+        run: ctest --output-on-failure
+
+  # Core must build and test with Qt hidden from CMake, proving it is Qt-free
+  # (ctest includes the no_qt source scan).
+  no-qt:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with: { path: openindy-core }
+      - uses: actions/checkout@v4
+        with:
+          repository: siyka-au/openindy-math
+          path: openindy-math
+          token: ${{ secrets.SIBLING_REPO_TOKEN || github.token }}
+      - uses: astral-sh/setup-uv@v6
+      - name: System packages (Qt deliberately not installed)
+        run: sudo apt-get update && sudo apt-get install -y $BUILD_DEPS
+      - uses: actions/cache@v4
+        with:
+          path: ~/.conan2/p
+          key: conan-gcc14-${{ hashFiles('openindy-core/conanfile.txt', 'openindy-core/conan/profiles/*') }}
+      - name: Conan packages
+        working-directory: openindy-core
+        run: uvx conan install . -pr:a conan/profiles/linux-gcc -s:a compiler.version=14 --build=missing -of build/conan
+      - name: Configure with Qt6 hidden
+        working-directory: openindy-core
+        run: >
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_DISABLE_FIND_PACKAGE_Qt6=ON
+          -DCMAKE_TOOLCHAIN_FILE=build/conan/conan_toolchain.cmake
+      - name: Build
+        working-directory: openindy-core
+        run: cmake --build build -j$(nproc)
+      - name: Test (including no_qt)
+        working-directory: openindy-core/build
+        run: ctest --output-on-failure
+
+  format-check:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - name: clang-format --dry-run -Werror
+        run: |
+          git ls-files | grep -E '\.(cpp|h|hpp|cc)$' | grep -vE '^(lib|third_party|3rdparty|build)/' \
+            | xargs uvx clang-format==$CLANG_TOOLS_VERSION --dry-run -Werror --style=file
+
+  # owning-memory has zero findings in core and is a failing check; the full
+  # .clang-tidy set is informational (log uploaded, never fails the job).
+  clang-tidy:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with: { path: openindy-core }
+      - uses: actions/checkout@v4
+        with:
+          repository: siyka-au/openindy-math
+          path: openindy-math
+          token: ${{ secrets.SIBLING_REPO_TOKEN || github.token }}
+      - uses: astral-sh/setup-uv@v6
+      - name: System packages
+        run: sudo apt-get update && sudo apt-get install -y $BUILD_DEPS
+      - uses: actions/cache@v4
+        with:
+          path: ~/.conan2/p
+          key: conan-gcc14-${{ hashFiles('openindy-core/conanfile.txt', 'openindy-core/conan/profiles/*') }}
+      - name: Conan packages
+        working-directory: openindy-core
+        run: uvx conan install . -pr:a conan/profiles/linux-gcc -s:a compiler.version=14 --build=missing -of build/conan
+      - name: Configure (compile_commands.json) and generate protobuf headers
+        working-directory: openindy-core
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+                -DCMAKE_TOOLCHAIN_FILE=build/conan/conan_toolchain.cmake
+          cmake --build build -j$(nproc)
+      - name: cppcoreguidelines-owning-memory (must be clean)
+        working-directory: openindy-core
+        run: |
+          git ls-files 'src/*.cpp' 'tools/*.cpp' | xargs -P$(nproc) -n4 \
+            uvx --from clang-tidy==$CLANG_TOOLS_VERSION clang-tidy -p build --quiet \
+              --checks='-*,cppcoreguidelines-owning-memory' \
+              --warnings-as-errors='cppcoreguidelines-owning-memory' \
+              --header-filter='.*/openindy-core/(include|src)/.*'
+      - name: Full .clang-tidy (informational)
+        continue-on-error: true
+        working-directory: openindy-core
+        run: |
+          git ls-files 'src/*.cpp' 'tools/*.cpp' | xargs -P$(nproc) -n4 \
+            uvx --from clang-tidy==$CLANG_TOOLS_VERSION clang-tidy -p build --quiet \
+            > clang-tidy-full.log 2>&1 || true
+          echo "warnings: $(grep -c 'warning:' clang-tidy-full.log || true)"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: clang-tidy-full
+          path: openindy-core/clang-tidy-full.log
+          if-no-files-found: ignore
+
+  sanitizers:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with: { path: openindy-core }
+      - uses: actions/checkout@v4
+        with:
+          repository: siyka-au/openindy-math
+          path: openindy-math
+          token: ${{ secrets.SIBLING_REPO_TOKEN || github.token }}
+      - uses: astral-sh/setup-uv@v6
+      - name: System packages
+        run: sudo apt-get update && sudo apt-get install -y $BUILD_DEPS
+      - uses: actions/cache@v4
+        with:
+          path: ~/.conan2/p
+          key: conan-gcc14-${{ hashFiles('openindy-core/conanfile.txt', 'openindy-core/conan/profiles/*') }}
+      - name: Conan packages
+        working-directory: openindy-core
+        run: uvx conan install . -pr:a conan/profiles/linux-gcc -s:a compiler.version=14 --build=missing -of build/conan
+      # AddressSanitizer + LeakSanitizer (address only). Containers of the
+      # uninstrumented Conan packages trigger false container-overflow
+      # reports, hence detect_container_overflow=0.
+      - name: ASAN build
+        working-directory: openindy-core
+        run: |
+          cmake -S . -B build-asan -G Ninja -DCMAKE_BUILD_TYPE=Release \
+                -DCMAKE_TOOLCHAIN_FILE=build/conan/conan_toolchain.cmake \
+                -DCMAKE_CXX_FLAGS="-fsanitize=address -fno-omit-frame-pointer -g" \
+                -DCMAKE_EXE_LINKER_FLAGS=-fsanitize=address -DCMAKE_SHARED_LINKER_FLAGS=-fsanitize=address
+          cmake --build build-asan -j$(nproc)
+      - name: ASAN test
+        working-directory: openindy-core/build-asan
+        env:
+          ASAN_OPTIONS: detect_leaks=1:detect_container_overflow=0
+        run: ctest --output-on-failure
+      # ThreadSanitizer for the two thread-using test binaries.
+      # report_thread_leaks=0: detached/joined worker threads of the tests are not findings.
+      - name: TSAN build
+        working-directory: openindy-core
+        run: |
+          # the runner's ASLR range is incompatible with older TSAN runtimes
+          sudo sysctl vm.mmap_rnd_bits=28
+          cmake -S . -B build-tsan -G Ninja -DCMAKE_BUILD_TYPE=Release \
+                -DCMAKE_TOOLCHAIN_FILE=build/conan/conan_toolchain.cmake \
+                -DCMAKE_CXX_FLAGS="-fsanitize=thread -g -fno-omit-frame-pointer" \
+                -DCMAKE_EXE_LINKER_FLAGS=-fsanitize=thread -DCMAKE_SHARED_LINKER_FLAGS=-fsanitize=thread
+          cmake --build build-tsan -j$(nproc) --target tst_sensorworker tst_guarded
+      - name: TSAN test
+        working-directory: openindy-core/build-tsan
+        env:
+          TSAN_OPTIONS: report_thread_leaks=0:halt_on_error=1
+        run: |
+          ./bin/tst_sensorworker
+          ./bin/tst_guarded
+
+  clang:
+    runs-on: ubuntu-24.04
+    env:
+      CC: clang-18
+      CXX: clang++-18
+    steps:
+      - uses: actions/checkout@v4
+        with: { path: openindy-core }
+      - uses: actions/checkout@v4
+        with:
+          repository: siyka-au/openindy-math
+          path: openindy-math
+          token: ${{ secrets.SIBLING_REPO_TOKEN || github.token }}
+      - uses: astral-sh/setup-uv@v6
+      - name: System packages (clang uses the g++-14 libstdc++ for C++23)
+        run: sudo apt-get update && sudo apt-get install -y $BUILD_DEPS clang-18
+      - uses: actions/cache@v4
+        with:
+          path: ~/.conan2/p
+          key: conan-gcc14-${{ hashFiles('openindy-core/conanfile.txt', 'openindy-core/conan/profiles/*') }}
+      # The Conan packages are built with GCC (libstdc++11 ABI); clang links them fine.
+      - name: Conan packages (built with gcc, like the other jobs)
+        working-directory: openindy-core
+        env: { CC: gcc-14, CXX: g++-14 }
+        run: uvx conan install . -pr:a conan/profiles/linux-gcc -s:a compiler.version=14 --build=missing -of build/conan
+      - name: Configure and build with clang++
+        working-directory: openindy-core
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
+                -DCMAKE_TOOLCHAIN_FILE=build/conan/conan_toolchain.cmake
+          cmake --build build -j$(nproc)
+      - name: Test
+        working-directory: openindy-core/build
+        run: ctest --output-on-failure
+
+  # Plugin ABI: libabigail's abidiff against abi/baseline.abi (see abi/README.md).
+  # libabigail is built from a pinned, checksummed source tarball (cached): the
+  # abixml format changes between libabigail releases, and the baseline must be
+  # read by the same version that wrote it.
+  abi:
+    runs-on: ubuntu-24.04
+    env:
+      LIBABIGAIL_VERSION: "2.10"
+      LIBABIGAIL_SHA256: 0cc10e6471398330e001b9fe37f1e8c5108a9ab632b08ca9634d6c64bc380b78
+    steps:
+      - uses: actions/checkout@v4
+        with: { path: openindy-core }
+      - uses: actions/checkout@v4
+        with:
+          repository: siyka-au/openindy-math
+          path: openindy-math
+          token: ${{ secrets.SIBLING_REPO_TOKEN || github.token }}
+      - uses: astral-sh/setup-uv@v6
+      - name: System packages
+        run: >
+          sudo apt-get update && sudo apt-get install -y $BUILD_DEPS
+          libelf-dev libdw-dev libxml2-dev
+      - uses: actions/cache@v4
+        id: libabigail-cache
+        with:
+          path: ~/libabigail
+          key: libabigail-${{ env.LIBABIGAIL_VERSION }}-ubuntu24
+      - name: Build libabigail
+        if: steps.libabigail-cache.outputs.cache-hit != 'true'
+        run: |
+          curl -fsSLO https://sourceware.org/pub/libabigail/libabigail-$LIBABIGAIL_VERSION.tar.xz
+          echo "$LIBABIGAIL_SHA256  libabigail-$LIBABIGAIL_VERSION.tar.xz" | sha256sum -c -
+          tar xf libabigail-$LIBABIGAIL_VERSION.tar.xz
+          cd libabigail-$LIBABIGAIL_VERSION
+          ./configure --prefix=$HOME/libabigail --disable-apidoc --disable-manual --disable-python3 \
+            --disable-fedabipkgdiff --disable-deb --disable-rpm --disable-ctf --disable-bash-completion
+          make -j$(nproc) && make install
+      - name: Add libabigail to PATH
+        run: |
+          echo "$HOME/libabigail/bin" >> "$GITHUB_PATH"
+          echo "LD_LIBRARY_PATH=$HOME/libabigail/lib" >> "$GITHUB_ENV"
+      - uses: actions/cache@v4
+        with:
+          path: ~/.conan2/p
+          key: conan-gcc14-${{ hashFiles('openindy-core/conanfile.txt', 'openindy-core/conan/profiles/*') }}
+      - name: Conan packages
+        working-directory: openindy-core
+        run: uvx conan install . -pr:a conan/profiles/linux-gcc -s:a compiler.version=14 --build=missing -of build/conan
+      # Release plus -g: abidw needs DWARF, the Conan packages need Release.
+      - name: Build libOpenIndyCore with debug info
+        working-directory: openindy-core
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS=-g \
+                -DCMAKE_TOOLCHAIN_FILE=build/conan/conan_toolchain.cmake
+          cmake --build build -j$(nproc) --target OpenIndyCore
+      - name: ABI check
+        working-directory: openindy-core
+        run: scripts/abi-check.sh --build-dir build --save-current "$RUNNER_TEMP/current.abi"
+      # The generated abixml, e.g. to refresh the baseline from CI output.
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: abi-current
+          path: ${{ runner.temp }}/current.abi
+          if-no-files-found: ignore
