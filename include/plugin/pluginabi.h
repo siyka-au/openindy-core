@@ -48,8 +48,11 @@
  * If you are unsure, bump it. A spurious bump costs a rebuild. A missed bump
  * lets a mismatched plugin load and corrupt memory at runtime.
  *
- * tst_pluginabi guards this: it fails when the interface headers change
- * without this number moving. Read that test's output before overriding it.
+ * scripts/abi-check.sh (libabigail's abidiff against abi/baseline.abi, run by
+ * CI) guards this: it fails when the public ABI changes incompatibly without
+ * this number moving, and when this number moves without the baseline being
+ * refreshed (scripts/abi-check.sh --update) in the same commit. See
+ * abi/README.md.
  */
 #define OI_PLUGIN_ABI_VERSION 16
 

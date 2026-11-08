@@ -506,14 +506,13 @@ plugin IID on every core commit whether or not the contract changed.
   the library is instantiated, and a mismatch names the file, both versions and the fix.
   Previously a mismatch was indistinguishable from "not an OpenIndy plugin":
   `qobject_cast` returned null and an entire driver vanished with no message.
-- **`tst_pluginabi` guards it** against the failure that matters — a *missed* bump, which
-  lets a stale plugin load against a moved vtable. It fingerprints
-  `include/plugin/**`, excluding comments, and fails when the surface moves without the
-  version.
-
-**Known limit:** the fingerprint does not cover layout changes to domain types outside
-`include/plugin/` (`Geometry`, `Position`, `Reading`, `Observation`). Those are equally
-ABI-breaking and still need judgement.
+- **libabigail guards it** (`scripts/abi-check.sh`, CI job `abi`) against the failure that
+  matters — a *missed* bump, which lets a stale plugin load against a moved vtable.
+  `abidiff` compares the public ABI of `libOpenIndyCore` (declarations from `include/`,
+  including the domain types plugins pass across the boundary: `Geometry`, `Position`,
+  `Reading`, `Observation`, ...) with the committed `abi/baseline.abi`. An incompatible
+  change without an `OI_PLUGIN_ABI_VERSION` bump fails; a bump without a refreshed
+  baseline fails too. See [`abi/README.md`](../abi/README.md).
 
 ### Rejected: a separate `openindy-plugin-api` repo
 

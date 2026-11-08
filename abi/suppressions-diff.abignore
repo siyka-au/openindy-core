@@ -1,0 +1,19 @@
+# Applied by abidiff only (not when the baseline is written, so the abixml still
+# records complete layouts). Differences inside the C++ standard library are a
+# property of the compiler / libstdc++ version that built the library, not of
+# OpenIndy's plugin interface: the baseline is generated with whatever compiler
+# the maintainer uses, CI uses another one. A change of an OpenIndy type's
+# *members* (e.g. a std::vector member turning into a std::map) is still
+# reported, because that is a change of the OpenIndy type.
+
+[suppress_type]
+  name_regexp = ^(std|__gnu_cxx|__gnu_debug|__cxxabiv1)::
+
+[suppress_function]
+  name_regexp = ^(std|__gnu_cxx|__gnu_debug)::
+
+[suppress_function]
+  symbol_name_regexp = ^_Z(N|NK|St|NSt)(St|9__gnu_cxx|St[0-9])
+
+[suppress_variable]
+  name_regexp = ^(std|__gnu_cxx|__gnu_debug)::

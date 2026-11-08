@@ -1,0 +1,29 @@
+# libabigail suppressions for the plugin ABI check (scripts/abi-check.sh).
+#
+# abidw is already restricted to declarations from include/ (--headers-dir)
+# and drops types that are not reachable from them (--drop-private-types), so
+# src/ (and with it the codec internals), spdlog/protobuf and the test helpers
+# never appear as public declarations. What is hidden here are types declared in
+# public headers that only a host application uses and no plugin ever includes
+# (sensor control/worker threading, the plugin loader, the web request type):
+# changing them cannot break a plugin binary. Everything under include/plugin
+# (except the loader), the feature/geometry/reading/observation/station/
+# coordinate system/trafo param/wrapper types, Guarded, MeasurementConfig,
+# Value, progress, log, messagesink and the string utilities stay in the
+# baseline.
+#
+# (libabigail has no "suppress by header" property that works with relative
+# header paths, so the host-only types are listed by name.)
+
+[suppress_type]
+  name_regexp = ^oi::(SensorControl|SensorWorker|SensorWorkerMessage|InlineExecutor|OiRequestResponse|LoadedPlugin|PluginLoadStatus|PluginLoadResult|PluginLoader|ProjectHost|DecodeResult)$
+
+[suppress_function]
+  name_regexp = ^oi::(SensorControl|SensorWorker|SensorWorkerMessage|InlineExecutor|OiRequestResponse|LoadedPlugin|PluginLoader|ProjectHost)::
+
+# Exported symbols of the same classes (ctors, dtors, const members, and
+# std template instantiations that mention them).
+[suppress_function]
+  symbol_name_regexp = .*(13SensorControl|12SensorWorker|19SensorWorkerMessage|14InlineExecutor|17OiRequestResponse|12LoadedPlugin|12PluginLoader|11ProjectHost)
+[suppress_variable]
+  symbol_name_regexp = .*(13SensorControl|12SensorWorker|19SensorWorkerMessage|14InlineExecutor|17OiRequestResponse|12LoadedPlugin|12PluginLoader|11ProjectHost)

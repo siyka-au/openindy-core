@@ -455,17 +455,6 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
 endif()
 add_test(NAME sensorworker COMMAND tst_sensorworker)
 
-add_executable(tst_pluginabi test/pluginabi/tst_pluginabi.cpp)
-target_link_libraries(tst_pluginabi PRIVATE OpenIndyCore OpenIndyMath Catch2::Catch2WithMain)
-target_include_directories(tst_pluginabi PRIVATE src/codec)
-target_compile_definitions(tst_pluginabi PRIVATE SOURCEDIR="${CMAKE_CURRENT_SOURCE_DIR}")
-
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    target_compile_options(tst_pluginabi PRIVATE -Wall -Wextra -Wpedantic)
-endif()
-
-add_test(NAME pluginabi COMMAND tst_pluginabi)
-
 add_executable(tst_pipeline test/pipeline/tst_pipeline.cpp)
 target_link_libraries(tst_pipeline PRIVATE Catch2::Catch2WithMain OpenIndyCore OpenIndyMath)
 
@@ -533,3 +522,35 @@ endif()
 add_test(NAME no_qt
     COMMAND sh ${CMAKE_CURRENT_SOURCE_DIR}/scripts/check-no-qt.sh
             ${CMAKE_CURRENT_SOURCE_DIR} ${OI_MATH_LOCAL_DIR})
+
+# --- Plugin ABI check (libabigail), optional ---
+#
+# scripts/abi-check.sh compares libOpenIndyCore's public ABI with the committed
+# abi/baseline.abi. It needs libabigail (abidw, abidiff) and a build with debug
+# info (-DCMAKE_CXX_FLAGS=-g on top of Release), so it is never part of the
+# normal build or ctest run: opt in with -DOI_ABI_CHECK=ON. Targets abi-check
+# and abi-update are then available too. See abi/README.md.
+option(OI_ABI_CHECK "Register the libabigail plugin ABI check (needs abidw/abidiff and -g)" OFF)
+if(OI_ABI_CHECK)
+    find_program(OI_ABIDW abidw)
+    find_program(OI_ABIDIFF abidiff)
+    if(OI_ABIDW AND OI_ABIDIFF)
+        add_test(NAME abi_check
+            COMMAND ${CMAKE_COMMAND} -E env ABIDW=${OI_ABIDW} ABIDIFF=${OI_ABIDIFF}
+                    bash ${CMAKE_CURRENT_SOURCE_DIR}/scripts/abi-check.sh
+                    --lib $<TARGET_FILE:OpenIndyCore>)
+        set_tests_properties(abi_check PROPERTIES LABELS abi SKIP_RETURN_CODE 77)
+        add_custom_target(abi-check
+            COMMAND ${CMAKE_COMMAND} -E env ABIDW=${OI_ABIDW} ABIDIFF=${OI_ABIDIFF}
+                    bash ${CMAKE_CURRENT_SOURCE_DIR}/scripts/abi-check.sh
+                    --lib $<TARGET_FILE:OpenIndyCore>
+            DEPENDS OpenIndyCore USES_TERMINAL)
+        add_custom_target(abi-update
+            COMMAND ${CMAKE_COMMAND} -E env ABIDW=${OI_ABIDW} ABIDIFF=${OI_ABIDIFF}
+                    bash ${CMAKE_CURRENT_SOURCE_DIR}/scripts/abi-check.sh --update
+                    --lib $<TARGET_FILE:OpenIndyCore>
+            DEPENDS OpenIndyCore USES_TERMINAL)
+    else()
+        message(STATUS "OI_ABI_CHECK=ON but abidw/abidiff (libabigail) not found: ABI check skipped")
+    endif()
+endif()
