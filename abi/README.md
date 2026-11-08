@@ -3,8 +3,12 @@
 `libOpenIndyCore` is the binary contract between the host and every plugin. The
 runtime check is the integer `OI_PLUGIN_ABI_VERSION`
 ([`include/plugin/plugin_abi.h`](../include/plugin/plugin_abi.h)), compared by the
-plugin entry point handshake and `oi::PluginLoader` before a factory is created.
-This directory holds what makes sure that integer is bumped when it must be.
+plugin entry point handshake and `oi::PluginLoader` before a factory is created,
+followed by the toolchain string (`oi_plugin_toolchain()`, see
+[`docs/plugin-abi.md`](../docs/plugin-abi.md): OS, C++ ABI, standard library and
+architecture must match; the compiler version is not compared). The baseline
+documents the ABI for the supported toolchain family only (Linux, libstdc++,
+generated with the CI floor compiler, GCC 14). This directory holds what makes sure that integer is bumped when it must be.
 
 | File | Purpose |
 | --- | --- |
@@ -50,6 +54,12 @@ the `abi-check` / `abi-update` targets (only registered when `abidw` and
 ## Compiler caveat
 
 The abixml depends slightly on the compiler's DWARF. The baseline is produced
-with the compiler CI uses (GCC 14, see `.github/workflows/ci.yml`); the `abi` CI
-job uploads the freshly generated `current.abi` as an artifact, so the baseline
-can be refreshed from CI output if a local compiler differs.
+with the CI floor compiler, GCC 14 (`gcc:14` Docker image, `-g` Release build,
+libabigail 2.10), and the `abi` CI job also builds with GCC 14, so the two
+compare cleanly. Do not refresh the baseline with a newer GCC: the diff against
+a GCC 14 build then shows libstdc++ internals as noise. The `abi` CI job uploads
+the freshly generated `current.abi` as an artifact, so the baseline can be
+refreshed from CI output if no local GCC 14 is at hand. A baseline built with
+`gcc:14` locally was not yet compared against a real CI run; if the first run
+reports differences, replace `baseline.abi` with that run's `abi-current`
+artifact.

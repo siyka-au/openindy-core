@@ -24,8 +24,28 @@ env:
 # token with read access to it); the default token only reaches this repo.
 
 jobs:
+  # Compiler matrix. GCC 14 is the floor (Debian 13; g++-14 installs on Ubuntu
+  # 24.04 / Mint 22) and the compiler of every other job; 15 and 16 are what
+  # Ubuntu 26.04 / Fedora ship, run in the official gcc images (Debian based;
+  # cmake, ninja and Armadillo come from apt, uv from setup-uv). GCC 13 (Ubuntu
+  # 24.04 default) is informational: it shows whether the floor could be lowered
+  # and never fails the workflow. See docs/plugin-abi.md.
   build-test:
+    name: build-test (gcc ${{ matrix.gcc }})
     runs-on: ubuntu-24.04
+    container: ${{ matrix.container }}
+    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { gcc: 14, container: "", cc: gcc-14, cxx: g++-14, pkgs: "g++-14", experimental: false }
+          - { gcc: 15, container: "gcc:15", cc: gcc, cxx: g++, pkgs: "cmake git", experimental: false }
+          - { gcc: 16, container: "gcc:16", cc: gcc, cxx: g++, pkgs: "cmake git", experimental: false }
+          - { gcc: 13, container: "", cc: gcc-13, cxx: g++-13, pkgs: "g++-13", experimental: true }
+    env:
+      CC: ${{ matrix.cc }}
+      CXX: ${{ matrix.cxx }}
     steps:
       - uses: actions/checkout@v4
         with: { path: openindy-core }
@@ -36,14 +56,17 @@ jobs:
           token: ${{ secrets.SIBLING_REPO_TOKEN || github.token }}
       - uses: astral-sh/setup-uv@v6
       - name: System packages
-        run: sudo apt-get update && sudo apt-get install -y $BUILD_DEPS
+        run: |
+          SUDO=$([ "$(id -u)" -eq 0 ] || echo sudo)
+          $SUDO apt-get update
+          $SUDO apt-get install -y ninja-build libarmadillo-dev libblas-dev liblapack-dev ${{ matrix.pkgs }}
       - uses: actions/cache@v4
         with:
           path: ~/.conan2/p
-          key: conan-gcc14-${{ hashFiles('openindy-core/conanfile.txt', 'openindy-core/conan/profiles/*') }}
+          key: conan-gcc${{ matrix.gcc }}-${{ hashFiles('openindy-core/conanfile.txt', 'openindy-core/conan/profiles/*') }}
       - name: Conan packages (Release only, the packages are Release)
         working-directory: openindy-core
-        run: uvx conan install . -pr:a conan/profiles/linux-gcc -s:a compiler.version=14 --build=missing -of build/conan
+        run: uvx conan install . -pr:a conan/profiles/linux-gcc -s:a compiler.version=${{ matrix.gcc }} --build=missing -of build/conan
       - name: Configure
         working-directory: openindy-core
         run: >
