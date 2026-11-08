@@ -86,6 +86,8 @@ class OI_CORE_EXPORT FeatureObserver {
   virtual void onNominalsChanged(const int& /*coordId*/) {}
   virtual void onActiveCoordinateSystemChanged(const int& /*coordId*/) {}
   virtual void onBundlePluginChanged(const int& /*coordId*/) {}
+  // origin, axes or expansion origin of the system
+  virtual void onCoordinateSystemFrameChanged(const int& /*coordId*/) {}
 };
 
 }  // namespace oi

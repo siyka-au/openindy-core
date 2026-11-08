@@ -765,10 +765,6 @@ message Project {
   // The station and coordinate system that were active; both must exist.
   int32 active_station = 6;
   int32 active_coordinate_system = 7;
-  // SHA-256 (hex) over the project's content, excluding the fields that
-  // change on every save (saved_at, app_version, digest). Equal digests mean
-  // the project did not change.
-  string digest = 8;
 
   // Only the configs the project itself defines; standard configs belong to
   // the application and are found again by name.

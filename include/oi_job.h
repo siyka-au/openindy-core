@@ -59,9 +59,6 @@ class OI_CORE_EXPORT OiJob : public oi::Trackable,
   [[nodiscard]] const std::filesystem::path& getJobFile() const;
   void setJobFile(std::filesystem::path jobFile);
 
-  void setDigest(const std::string&);
-  [[nodiscard]] const std::string& getDigest() const;
-
   [[nodiscard]] CompatibilyCheckResult checkCompatibilty() const;
   void setLoadedProjectVersion(const std::string& loadedVersion);
 
@@ -434,6 +431,13 @@ class OI_CORE_EXPORT OiJob : public oi::Trackable,
   void onActiveCoordinateSystemChanged(const int& coordId) override;
   void onActiveStationChanged(const int& stationId) override;
   void onSensorChanged(const int& stationId) override;
+  void onGeomParametersChanged(const int& featureId) override;
+  void onGeomOwnerFeatureChanged(const int& featureId) override;
+  void onBundlePluginChanged(const int& coordId) override;
+  void onCoordinateSystemFrameChanged(const int& coordId) override;
+
+  // MessageSink: a function of this job changed saved content
+  void onOwnedObjectChanged() override;
 
   class StationSystemObserver;
   std::unique_ptr<StationSystemObserver> stationSystemObserver;
@@ -491,9 +495,6 @@ class OI_CORE_EXPORT OiJob : public oi::Trackable,
 
   std::string jobName;            // the name under that the job is saved
   std::filesystem::path jobFile;  // the file where the job is saved
-
-  // the last calculated digest of the job content
-  std::string digest;
 
   // ################################
   // active features and active group

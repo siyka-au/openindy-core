@@ -107,6 +107,11 @@ class OI_CORE_EXPORT CoordinateSystem : public Feature {
   [[nodiscard]] const std::string& getBundleTemplate() const;
   void setBundleTemplate(const std::string& bundleTemplate);
 
+  // The bundle adjustment of this system changed what is saved of it (its
+  // input stations, its base station): tells the observer
+  // (onBundlePluginChanged, like setBundleTemplate and setBundlePlugin do).
+  void notifyBundleChanged();
+
   // bundle adjustment
   [[nodiscard]] const oi::Guarded<BundleAdjustment>& getBundlePlugin() const;
   // Takes the bundle adjustment; false (and the bundle freed) when this is

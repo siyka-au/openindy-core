@@ -25,8 +25,6 @@ Checks: >
 #   in include/ and src/ (one NOLINT with the reason at the definition).
 # Anchored on the checkout directory name (CI checks the repo out as
 # openindy-core), so the sibling repos' and third-party headers are not linted.
-# sha256.h is being replaced by a library; its findings are not ours to fix.
-ExcludeHeaderFilterRegex: '.*/openindy-core/src/codec/sha256\.h'
 WarningsAsErrors: ''
 HeaderFilterRegex: '.*/openindy-core/(include|src|tools|test)/.*'
 # FormatStyle: clang-tidy formats the code its --fix fix-its produce with the

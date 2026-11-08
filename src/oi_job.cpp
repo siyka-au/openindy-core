@@ -167,16 +167,6 @@ void OiJob::setJobFile(std::filesystem::path jobFile) {
 }
 
 /*!
- * \return the last calculated digest of the job content
- */
-const std::string& OiJob::getDigest() const { return this->digest; }
-
-/*!
- * \brief set the digest of the job content
- */
-void OiJob::setDigest(const std::string& digest) { this->digest = digest; }
-
-/*!
  * \return true if the project file version compatible with this program version
  */
 CompatibilyCheckResult OiJob::checkCompatibilty() const {
@@ -2530,6 +2520,14 @@ void OiJob::setFeatureIsSolved(const int& featureId) {
  * \param featureId
  */
 void OiJob::setFeatureFunctions(const int& featureId) {
+  const oi::Guarded<FeatureWrapper> feature =
+      this->featureContainer.getFeatureById(featureId);
+  if (!feature.isNull() && !feature->getFeature().isNull()) {
+    for (const oi::Guarded<Function>& function :
+         oi::snapshot(feature->getFeature()->getFunctions())) {
+      this->adoptFunction(function.data());
+    }
+  }
   this->notifyObservers(&JobObserver::onFeatureAttributesChanged);
   this->notifyObservers(&JobObserver::onFeatureFunctionsChanged, featureId);
 }
@@ -2772,6 +2770,14 @@ void OiJob::attachFeature(const oi::Guarded<FeatureWrapper>& feature) {
 
   feature->getFeature()->setObserver(this);
 
+  // the functions the feature already carries report to this job too
+  // (Feature::addFunction on a feature that is in the job does the same
+  // through setFeatureFunctions)
+  for (const oi::Guarded<Function>& function :
+       oi::snapshot(feature->getFeature()->getFunctions())) {
+    this->adoptFunction(function.data());
+  }
+
   // station: results of its sensor go where the job wants them
   if (feature->getFeatureTypeEnum() == FeatureTypes::eStationFeature) {
     feature->getStation()->setExecutor(this->executor);
@@ -2910,6 +2916,26 @@ void OiJob::onGeomStatisticChanged(const int& featureId) {
 
 void OiJob::onGeomSimulationDataChanged(const int& featureId) {
   this->setGeometrySimulationData(featureId);
+}
+
+void OiJob::onGeomParametersChanged(const int& featureId) {
+  this->notifyObservers(&JobObserver::onGeometryParametersChanged, featureId);
+}
+
+void OiJob::onGeomOwnerFeatureChanged(const int& featureId) {
+  this->notifyObservers(&JobObserver::onGeometryOwnerFeatureChanged, featureId);
+}
+
+void OiJob::onBundlePluginChanged(const int& coordId) {
+  this->notifyObservers(&JobObserver::onSystemBundleChanged, coordId);
+}
+
+void OiJob::onCoordinateSystemFrameChanged(const int& coordId) {
+  this->notifyObservers(&JobObserver::onSystemFrameChanged, coordId);
+}
+
+void OiJob::onOwnedObjectChanged() {
+  this->notifyObservers(&JobObserver::onFunctionContentChanged);
 }
 
 void OiJob::onGeomMeasurementConfigChanged(const int& featureId,

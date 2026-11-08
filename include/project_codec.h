@@ -59,10 +59,10 @@ class ProjectHost {
 };
 
 /*!
- * Serialises the job. Saving also stores the content digest in the job
- * (OiJob::setDigest), so the host can tell whether the project changed since
- * it was last saved. The same job always gives the same bytes, apart from the
- * save time.
+ * Serialises the job. A pure function of the job: the same job always gives
+ * the same bytes, apart from the save time. (Whether the project changed since
+ * it was last saved is not derived from the bytes; the host tracks it from the
+ * JobObserver notifications.)
  */
 [[nodiscard]] std::string encodeProject(OiJob& job, const ProjectHost& host,
                                         const std::string& appVersion);

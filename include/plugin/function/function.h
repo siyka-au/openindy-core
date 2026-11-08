@@ -462,6 +462,14 @@ class OI_CORE_EXPORT Function : public oi::Trackable {
     if (this->functionObserver != nullptr) {
       this->functionObserver->onInputElementsChanged();
     }
+    this->notifyContentChanged();
+  }
+
+  // tell the sink (the job) that saved content of this function changed
+  void notifyContentChanged() {
+    if (this->messageSink != nullptr) {
+      this->messageSink->onOwnedObjectChanged();
+    }
   }
 
   // the pre-Stage-7b switch-on-feature-type dispatch, run once (or, for

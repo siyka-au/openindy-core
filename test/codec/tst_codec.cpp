@@ -14,7 +14,6 @@
 #include "construct_function.h"
 #include "containers.h"
 #include "convert.h"
-#include "digest.h"
 #include "fit_function.h"
 #include "geometry/plane.h"
 #include "geometry/point.h"
@@ -112,13 +111,6 @@ TEST_CASE("a measurement config without a name is rejected") {
   CHECK_FALSE(codec::fromProto(oipb::MeasurementConfig{}).has_value());
 }
 
-TEST_CASE("fnv1a64 matches the published test vectors") {
-  CHECK(codec::fnv1a64("") == 0xcbf29ce484222325ULL);
-  CHECK(codec::fnv1a64("a") == 0xaf63dc4c8601ec8cULL);
-  CHECK(codec::fnv1a64("foobar") == 0x85944171f73967e8ULL);
-  CHECK(codec::fnv1a64("foobar") != codec::fnv1a64("foobaz"));
-}
-
 TEST_CASE("the Project header round trips, including the timestamp") {
   oipb::Project in;
   in.set_format_version(1);
@@ -139,11 +131,10 @@ TEST_CASE("the Project header round trips, including the timestamp") {
   REQUIRE(out.measurement_configs_size() == 1);
   CHECK(out.measurement_configs(0).name() == "StdScan");
 
-  // serialising the same message twice gives identical bytes, which is what
-  // the digest relies on
+  // serialising the same message twice gives identical bytes
   std::string again;
   REQUIRE(out.SerializeToString(&again));
-  CHECK(codec::fnv1a64(again) == codec::fnv1a64(bytes));
+  CHECK(again == bytes);
 }
 
 // ---------------------------------------------------------------------------
@@ -970,7 +961,6 @@ TEST_CASE("a project saves, loads and saves again to the same content") {
       differencer.Compare(withoutTime(first), withoutTime(second));
   INFO(differences);
   CHECK(same);
-  CHECK(loaded.job->getDigest() == w.job->getDigest());
 
   delete w.job.data();
 }
@@ -1121,18 +1111,21 @@ TEST_CASE("a file that is not a usable project is refused with a reason") {
   }
 }
 
-TEST_CASE("the digest follows the content, not the save time or name") {
+TEST_CASE(
+    "encoding is deterministic: the bytes depend on the job, not on when") {
   World w = buildWorld();
   TestHost host;
 
-  codec::encodeProject(*w.job, host, "1.0");
-  const std::string before = w.job->getDigest();
-  (void)codec::encodeProject(*w.job, host, "2.0");
-  CHECK(w.job->getDigest() == before);
+  const std::string first = codec::encodeProject(*w.job, host, "1.0");
+  const std::string second = codec::encodeProject(*w.job, host, "1.0");
+  CHECK(withoutTime(first).SerializeAsString() ==
+        withoutTime(second).SerializeAsString());
 
+  // a change of content changes the bytes
   w.a->setFeatureName("A-renamed");
-  (void)codec::encodeProject(*w.job, host, "2.0");
-  CHECK(w.job->getDigest() != before);
+  const std::string third = codec::encodeProject(*w.job, host, "1.0");
+  CHECK(withoutTime(first).SerializeAsString() !=
+        withoutTime(third).SerializeAsString());
 
   delete w.job.data();
 }

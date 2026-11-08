@@ -139,6 +139,14 @@ class RecordingJobObserver : public oi::JobObserver {
     this->calls.push_back(
         std::format("geometryNominalSystemChanged:{}", featureId));
   }
+  void onGeometryParametersChanged(const int& featureId) override {
+    this->calls.push_back(
+        std::format("geometryParametersChanged:{}", featureId));
+  }
+  void onGeometryOwnerFeatureChanged(const int& featureId) override {
+    this->calls.push_back(
+        std::format("geometryOwnerFeatureChanged:{}", featureId));
+  }
   void onGeometryStatisticChanged(const int& featureId) override {
     this->calls.push_back(
         std::format("geometryStatisticChanged:{}", featureId));
@@ -165,6 +173,15 @@ class RecordingJobObserver : public oi::JobObserver {
   }
   void onSystemsNominalsChanged(const int& featureId) override {
     this->calls.push_back(std::format("systemsNominalsChanged:{}", featureId));
+  }
+  void onSystemBundleChanged(const int& featureId) override {
+    this->calls.push_back(std::format("systemBundleChanged:{}", featureId));
+  }
+  void onSystemFrameChanged(const int& featureId) override {
+    this->calls.push_back(std::format("systemFrameChanged:{}", featureId));
+  }
+  void onFunctionContentChanged() override {
+    this->calls.push_back("functionContentChanged");
   }
   void onStationSensorChanged(const int& featureId) override {
     this->calls.push_back(std::format("stationSensorChanged:{}", featureId));

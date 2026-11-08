@@ -419,6 +419,16 @@ endif()
 
 add_test(NAME jobobserver COMMAND tst_jobobserver)
 
+add_executable(tst_savedchanges test/job_observer/tst_saved_changes.cpp)
+target_link_libraries(tst_savedchanges PRIVATE Catch2::Catch2WithMain OpenIndyCore OpenIndyMath)
+target_include_directories(tst_savedchanges PRIVATE test/common)
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(tst_savedchanges PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+
+add_test(NAME savedchanges COMMAND tst_savedchanges)
+
 add_executable(tst_messagesink test/message_sink/tst_message_sink.cpp)
 target_link_libraries(tst_messagesink PRIVATE Catch2::Catch2WithMain OpenIndyCore OpenIndyMath)
 target_include_directories(tst_messagesink PRIVATE test/common)

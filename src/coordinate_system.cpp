@@ -222,6 +222,7 @@ void CoordinateSystem::setCoordinateSystem(const Position& origin,
   if (!this->station.isNull()) {
     this->station->setCoordinateSystem(origin, xAxis, yAxis, zAxis);
   }
+  this->notify(&FeatureObserver::onCoordinateSystemFrameChanged, this->id);
 }
 
 /*!
@@ -238,6 +239,7 @@ const Position& CoordinateSystem::getExpansionOrigin() const {
  */
 void CoordinateSystem::setExpansionOrigin(const Position& expansionOrigin) {
   this->expansionOrigin = expansionOrigin;
+  this->notify(&FeatureObserver::onCoordinateSystemFrameChanged, this->id);
 }
 
 /*!
@@ -555,6 +557,14 @@ const std::string& CoordinateSystem::getBundleTemplate() const {
  */
 void CoordinateSystem::setBundleTemplate(const std::string& bundleTemplate) {
   this->bundleTemplate = bundleTemplate;
+  this->notify(&FeatureObserver::onBundlePluginChanged, this->id);
+}
+
+/*!
+ * \brief CoordinateSystem::notifyBundleChanged
+ */
+void CoordinateSystem::notifyBundleChanged() {
+  this->notify(&FeatureObserver::onBundlePluginChanged, this->id);
 }
 
 /*!
@@ -587,8 +597,7 @@ bool CoordinateSystem::setBundlePlugin(
   // set bundle (the previous one, if any, is freed)
   this->bundlePlugin = bundle.get();
   this->ownedBundle = std::move(bundle);
-  this->notify(&FeatureObserver::onBundlePluginChanged,
-               this->id);  // TODO OI-932 not used
+  this->notify(&FeatureObserver::onBundlePluginChanged, this->id);
   return true;
 }
 

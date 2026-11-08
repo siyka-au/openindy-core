@@ -84,6 +84,7 @@ bool PointCloud::addSegment(const oi::Guarded<FeatureWrapper>& segment) {
   segment->getGeometry()->setNominalSystem(this->nominalSystem);
 
   this->detectedSegments.push_back(segment);
+  this->notify(&FeatureObserver::onGeomParametersChanged, this->id);
 
   return true;
 }
@@ -91,7 +92,10 @@ bool PointCloud::addSegment(const oi::Guarded<FeatureWrapper>& segment) {
 /*!
  * \brief PointCloud::clearSegmentation
  */
-void PointCloud::clearSegmentation() { this->detectedSegments.clear(); }
+void PointCloud::clearSegmentation() {
+  this->detectedSegments.clear();
+  this->notify(&FeatureObserver::onGeomParametersChanged, this->id);
+}
 
 /*!
  * \brief PointCloud::hasPosition
@@ -113,6 +117,9 @@ const std::vector<std::unique_ptr<Point_PC>>& PointCloud::getPointCloudPoints()
  * \brief PointCloud::addPointCloudPoint
  * \param point
  */
+// Deliberately silent: this builds a cloud point by point (millions), before
+// the cloud is added to a job; setBoundingBox, called when the cloud is
+// complete, reports the change.
 void PointCloud::addPointCloudPoint(std::unique_ptr<Point_PC> point) {
   if (!point) {
     return;
@@ -174,6 +181,7 @@ const BoundingBox_PC& PointCloud::getBoundingBox() const { return this->bbox; }
  */
 void PointCloud::setBoundingBox(const BoundingBox_PC& bbox) {
   this->bbox = bbox;
+  this->notify(&FeatureObserver::onGeomParametersChanged, this->id);
 }
 
 /*!

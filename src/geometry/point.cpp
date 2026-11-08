@@ -284,6 +284,7 @@ const std::vector<MeasurementIntent>& Point::getIntents() const {
 void Point::addIntent(const MeasurementIntent& intent) {
   if (!oi::contains(this->intents, intent)) {
     this->intents.push_back(intent);
+    this->notify(&FeatureObserver::onGeomParametersChanged, this->id);
   }
 }
 
@@ -293,7 +294,11 @@ void Point::addIntent(const MeasurementIntent& intent) {
  * \return
  */
 bool Point::removeIntent(const MeasurementIntent& intent) {
-  return oi::removeOne(this->intents, intent);
+  const bool removed = oi::removeOne(this->intents, intent);
+  if (removed) {
+    this->notify(&FeatureObserver::onGeomParametersChanged, this->id);
+  }
+  return removed;
 }
 
 /*!

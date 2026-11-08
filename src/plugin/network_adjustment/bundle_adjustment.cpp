@@ -113,6 +113,9 @@ const std::vector<BundleStation>& BundleAdjustment::getInputStations() const {
 void BundleAdjustment::setInputStations(
     const std::vector<BundleStation>& stations) {
   this->stations = stations;
+  if (!this->bundleSystem.isNull()) {
+    this->bundleSystem->notifyBundleChanged();
+  }
 }
 
 /*!
@@ -129,6 +132,9 @@ const BundleStation& BundleAdjustment::getBaseStation() const {
  */
 void BundleAdjustment::setBaseStation(const BundleStation& station) {
   this->baseSystem = station;
+  if (!this->bundleSystem.isNull()) {
+    this->bundleSystem->notifyBundleChanged();
+  }
 }
 
 /*!

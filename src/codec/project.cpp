@@ -26,7 +26,6 @@
 #include "plugin/sensor/sensor.h"
 #include "point_group.h"
 #include "project_codec.h"
-#include "sha256.h"
 #include "wire.h"
 
 namespace oi::codec {
@@ -44,11 +43,6 @@ std::string serialize(const oipb::Project& message) {
     message.SerializeToCodedStream(&coded);
   }
   return bytes;
-}
-
-std::string digestOf(const oipb::Project& body) {
-  const std::string bytes = serialize(body);
-  return sha256Hex(bytes);
 }
 
 bool isScalarEntity(const FeatureWrapper& wrapper) {
@@ -913,16 +907,12 @@ std::string encodeProject(OiJob& job, const ProjectHost& host,
     *body.add_observations() = toProto(*observation);
   }
 
-  const std::string digest = digestOf(body);
-  job.setDigest((digest));
-
   oipb::Project project = std::move(body);
   project.set_format_version(kFormatVersion);
   project.set_name(job.getJobName());
   *project.mutable_saved_at() = toTimestamp(std::chrono::system_clock::now());
   project.set_app_version(appVersion);
   project.set_next_id(Access::nextId(job));
-  project.set_digest(digest);
   return serialize(project);
 }
 
@@ -982,7 +972,6 @@ DecodeResult decodeProject(std::string_view bytes, ProjectHost& host) {
   if (project.next_id() > 0) {
     Access::setNextId(*job, project.next_id());
   }
-  job->setDigest((project.digest()));
   job->setLoadedProjectVersion((project.app_version()));
 
   oi::value(staging.stations, project.active_station())

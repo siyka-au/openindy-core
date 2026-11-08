@@ -405,6 +405,7 @@ const Statistic& Geometry::getStatistic() const { return this->statistic; }
  */
 void Geometry::setStatistic(const Statistic& myStatistic) {
   this->statistic = myStatistic;
+  this->notify(&FeatureObserver::onGeomStatisticChanged, this->id);
 }
 
 /*!

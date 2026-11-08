@@ -57,7 +57,7 @@
 #include <string>
 #include <string_view>
 
-inline constexpr int kPluginAbiVersion = 19;
+inline constexpr int kPluginAbiVersion = 20;
 
 namespace oi {
 

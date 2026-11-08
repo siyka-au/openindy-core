@@ -576,6 +576,7 @@ const std::vector<FixedParameter>& Function::getFixedParameters() const {
 void Function::fixParameter(const FixedParameter& parameter) {
   if (!oi::contains(this->fixedParameters, parameter)) {
     this->fixedParameters.push_back(parameter);
+    this->notifyContentChanged();
   }
 }
 
@@ -584,13 +585,18 @@ void Function::fixParameter(const FixedParameter& parameter) {
  * \param parameter
  */
 void Function::unfixParameter(const GeometryParameters& parameter) {
-  oi::removeOne(this->fixedParameters, FixedParameter(parameter));
+  if (oi::removeOne(this->fixedParameters, FixedParameter(parameter))) {
+    this->notifyContentChanged();
+  }
 }
 
 /*!
  * \brief Function::unfixAllParameters
  */
-void Function::unfixAllParameters() { this->fixedParameters.clear(); }
+void Function::unfixAllParameters() {
+  this->fixedParameters.clear();
+  this->notifyContentChanged();
+}
 
 /*!
  * \brief Function::getResultProtocol

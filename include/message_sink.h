@@ -35,6 +35,12 @@ class OI_CORE_EXPORT MessageSink {
 
   virtual void onMessage(const std::string& msg, const MessageTypes& type,
                          const MessageDestinations& dest) = 0;
+
+  // A Function that has this sink (its job) changed something that is saved
+  // with the project: an input element, its use state, a pipeline, a fixed
+  // parameter. Nothing by default. The function has no feature id to report;
+  // the host only learns that the project's content changed.
+  virtual void onOwnedObjectChanged() {}
 };
 
 }  // namespace oi

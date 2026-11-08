@@ -87,6 +87,11 @@ class JobObserver {
 
   virtual void onGeometryNominalSystemChanged(const int& /*featureId*/) {}
 
+  // position, direction, radius or shape values of the geometry
+  virtual void onGeometryParametersChanged(const int& /*featureId*/) {}
+
+  virtual void onGeometryOwnerFeatureChanged(const int& /*featureId*/) {}
+
   virtual void onGeometryStatisticChanged(const int& /*featureId*/) {}
 
   virtual void onGeometrySimulationDataChanged(const int& /*featureId*/) {}
@@ -101,6 +106,16 @@ class JobObserver {
   virtual void onSystemTrafoParamsChanged(const int& /*featureId*/) {}
 
   virtual void onSystemsNominalsChanged(const int& /*featureId*/) {}
+
+  // bundle plugin, bundle template or bundle input of a bundle system
+  virtual void onSystemBundleChanged(const int& /*featureId*/) {}
+
+  // origin, axes or expansion origin of a coordinate system
+  virtual void onSystemFrameChanged(const int& /*featureId*/) {}
+
+  // saved content of a function of the job changed (input elements, use
+  // states, pipelines, fixed parameters); a function reports no feature id
+  virtual void onFunctionContentChanged() {}
 
   virtual void onStationSensorChanged(const int& /*featureId*/) {}
 
