@@ -313,6 +313,11 @@ endif()
 target_compile_options(OpenIndyCodec PUBLIC $<$<CXX_COMPILER_ID:MSVC>:/utf-8>)
 
 # --- tests ---
+#
+# OI_BUILD_TESTS=OFF skips the unit tests and the Catch2 dependency, for
+# projects that embed core only as a library (openindy-py).
+option(OI_BUILD_TESTS "Build the core unit tests" ON)
+if(OI_BUILD_TESTS)
 
 enable_testing()
 
@@ -519,6 +524,8 @@ add_test(NAME pluginloader COMMAND tst_pluginloader)
 add_executable(tst_log test/log/tst_log.cpp)
 target_link_libraries(tst_log PRIVATE OpenIndyCore Catch2::Catch2WithMain)
 add_test(NAME log COMMAND tst_log)
+
+endif()  # OI_BUILD_TESTS
 
 # --- oi-cli: end-to-end example, Qt-free ---
 #
