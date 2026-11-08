@@ -482,7 +482,7 @@ class OI_CORE_EXPORT OiJob : public oi::Trackable,
   // ProjectExchanger)
   // ###################################################################################
 
-  void addFeaturesFromXml(std::vector<std::unique_ptr<Feature>> features);
+  void addImportedFeatures(std::vector<std::unique_ptr<Feature>> features);
 
  private:
   // #########################

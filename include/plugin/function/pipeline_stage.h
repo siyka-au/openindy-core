@@ -70,7 +70,7 @@ class OI_CORE_EXPORT PipelineExclusion {
  * isolation. Building a second plugin-discovery ABI for exactly one
  * built-in stage is exactly the speculative filter-library the plan
  * says not to build; PipelineStageType can grow a real plugin-discoverable
- * shape later without disturbing what is persisted here (the XML shape
+ * shape later without disturbing what is persisted here (the stored shape
  * and this enum's values are independent of how a stage's *behaviour* is
  * dispatched).
  *

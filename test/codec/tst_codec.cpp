@@ -274,7 +274,7 @@ TEST_CASE("an observation round trips, including the original coordinates") {
   in.set_dummy_point(false);
   in.set_has_direction(true);
   *in.mutable_xyz() = v3(1, 2, 3);
-  *in.mutable_original_xyz() = v3(10, 20, 30);  // lost by the old XML format
+  *in.mutable_original_xyz() = v3(10, 20, 30);  // lost by the old format
   *in.mutable_sigma_xyz() = v3(.1, .1, .1);
   *in.mutable_original_sigma_xyz() = v3(.2, .2, .2);
   *in.mutable_ijk() = v3(0, 0, 1);
@@ -343,7 +343,7 @@ TEST_CASE("a coordinate system round trips, bundle template included") {
   bt->set_level_station("STATION01");
   bt->set_max_iterations("25");
   bt->add_parameters("tx");
-  bt->add_parameters("ry");  // the old XML format lost these
+  bt->add_parameters("ry");  // the old format lost these
   bt->mutable_plugin()->set_name("BundleAdjustment");
   bt->mutable_plugin()->set_plugin("OpenIndy Default Plugin");
   // trafo_params / observations / nominal_geometries are references

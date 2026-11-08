@@ -633,7 +633,6 @@
     <elf-symbol name='_ZN2oi5OiJob17setFeatureCommentERKi' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
     <elf-symbol name='_ZN2oi5OiJob17setFeatureUsedForERKi' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
     <elf-symbol name='_ZN2oi5OiJob17setUpDependenciesERKNS_12InputElementERKNS_7GuardedINS_7FeatureEEE' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
-    <elf-symbol name='_ZN2oi5OiJob18addFeaturesFromXmlESt6vectorISt10unique_ptrINS_7FeatureESt14default_deleteIS3_EESaIS6_EE' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
     <elf-symbol name='_ZN2oi5OiJob18checkCircleWarningERKNS_7GuardedINS_7FeatureEEES5_' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
     <elf-symbol name='_ZN2oi5OiJob18destroyObservationERKNS_7GuardedINS_11ObservationEEE' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
     <elf-symbol name='_ZN2oi5OiJob18enableObservationsERKi' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
@@ -643,6 +642,7 @@
     <elf-symbol name='_ZN2oi5OiJob18resolvePointIntentERKNS_7GuardedINS_5PointEEERKNS_17MeasurementIntentE' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
     <elf-symbol name='_ZN2oi5OiJob18setFeatureIsSolvedERKi' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
     <elf-symbol name='_ZN2oi5OiJob18setSystemsNominalsERKi' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_ZN2oi5OiJob19addImportedFeaturesESt6vectorISt10unique_ptrINS_7FeatureESt14default_deleteIS3_EESaIS6_EE' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
     <elf-symbol name='_ZN2oi5OiJob19addInputObservationERKNS_7GuardedINS_14FeatureWrapperEEERKiS7_RKNS1_INS_11ObservationEEE' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
     <elf-symbol name='_ZN2oi5OiJob19addOwnedSubGeometryERKNS_7GuardedINS_14FeatureWrapperEEES5_St10unique_ptrINS_8FunctionESt14default_deleteIS7_EERKi' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
     <elf-symbol name='_ZN2oi5OiJob19disableObservationsERKi' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
@@ -3793,7 +3793,7 @@
     <elf-symbol name='stderr' type='object-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='stdout' type='object-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
   </undefined-elf-variable-symbols>
-  <abi-instr address-size='64' path='src/calibratedconstellation.cpp' language='LANG_C_plus_plus_14'>
+  <abi-instr address-size='64' path='src/calibrated_constellation.cpp' language='LANG_C_plus_plus_14'>
     <reference-type-def kind='lvalue' type-id='type-id-1' size-in-bits='64' hash='cd73ee8a2544276e#29' id='type-id-2'/>
     <reference-type-def kind='lvalue' type-id='type-id-3' size-in-bits='64' hash='61e141f107baf279' id='type-id-4'/>
     <pointer-type-def type-id='type-id-3' size-in-bits='64' hash='2809234cc9e2f594' id='type-id-5'/>
@@ -4554,7 +4554,7 @@
       <return type-id='type-id-195'/>
     </function-type>
   </abi-instr>
-  <abi-instr address-size='64' path='src/connectionkind.cpp' language='LANG_C_plus_plus_14'>
+  <abi-instr address-size='64' path='src/connection_kind.cpp' language='LANG_C_plus_plus_14'>
     <qualified-type-def type-id='type-id-309' const='yes' hash='7232dd4acea9836c' id='type-id-310'/>
     <function-decl name='__stack_chk_fail' mangled-name='__stack_chk_fail' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='__stack_chk_fail' hash='7f32ffea222edbe7'>
       <return type-id='type-id-195'/>
@@ -4663,7 +4663,7 @@
       </class-decl>
     </namespace-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='src/coordinatesystem.cpp' language='LANG_C_plus_plus_14'>
+  <abi-instr address-size='64' path='src/coordinate_system.cpp' language='LANG_C_plus_plus_14'>
     <array-type-def dimensions='1' type-id='type-id-343' size-in-bits='192' hash='87fcf14d778f9780' id='type-id-344'>
       <subrange length='24' lower-bound='0' upper-bound='23' type-id='type-id-285' size-in-bits='64' is-anonymous='yes' hash='e7b8d3aa178b54e4' id='type-id-345'/>
     </array-type-def>
@@ -8270,7 +8270,7 @@
           </function-decl>
         </member-function>
         <member-function access='private'>
-          <function-decl name='addFeaturesFromXml' mangled-name='_ZN2oi5OiJob18addFeaturesFromXmlESt6vectorISt10unique_ptrINS_7FeatureESt14default_deleteIS3_EESaIS6_EE' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ZN2oi5OiJob18addFeaturesFromXmlESt6vectorISt10unique_ptrINS_7FeatureESt14default_deleteIS3_EESaIS6_EE' hash='7f32ffea222edbe7'>
+          <function-decl name='addImportedFeatures' mangled-name='_ZN2oi5OiJob19addImportedFeaturesESt6vectorISt10unique_ptrINS_7FeatureESt14default_deleteIS3_EESaIS6_EE' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ZN2oi5OiJob19addImportedFeaturesESt6vectorISt10unique_ptrINS_7FeatureESt14default_deleteIS3_EESaIS6_EE' hash='7f32ffea222edbe7'>
             <parameter type-id='type-id-1257' name='this' is-artificial='yes'/>
             <parameter type-id='type-id-1258' name='features'/>
             <return type-id='type-id-195'/>
@@ -20116,7 +20116,7 @@
       <return type-id='type-id-195'/>
     </function-type>
   </abi-instr>
-  <abi-instr address-size='64' path='src/featurecontainer.cpp' language='LANG_C_plus_plus_14'>
+  <abi-instr address-size='64' path='src/feature_container.cpp' language='LANG_C_plus_plus_14'>
     <array-type-def dimensions='1' type-id='type-id-343' size-in-bits='1216' hash='fa8d0cc707436b89' id='type-id-3244'>
       <subrange length='152' lower-bound='0' upper-bound='151' type-id='type-id-285' size-in-bits='64' is-anonymous='yes' hash='bddb1429af4c496e' id='type-id-3245'/>
     </array-type-def>
@@ -23297,7 +23297,7 @@
       <return type-id='type-id-273'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='src/featurewrapper.cpp' language='LANG_C_plus_plus_14'>
+  <abi-instr address-size='64' path='src/feature_wrapper.cpp' language='LANG_C_plus_plus_14'>
     <qualified-type-def type-id='type-id-1211' const='yes' hash='6fe3a316ae448161' id='type-id-4692'/>
     <qualified-type-def type-id='type-id-2315' const='yes' hash='1bb6d0c6dbdf88e8' id='type-id-4693'/>
     <qualified-type-def type-id='type-id-2317' const='yes' hash='dff9895f9ce44b96' id='type-id-4694'/>
@@ -38080,7 +38080,7 @@
       <return type-id='type-id-195'/>
     </function-type>
   </abi-instr>
-  <abi-instr address-size='64' path='src/geometry/pointcloud.cpp' language='LANG_C_plus_plus_14'>
+  <abi-instr address-size='64' path='src/geometry/point_cloud.cpp' language='LANG_C_plus_plus_14'>
     <array-type-def dimensions='1' type-id='type-id-271' size-in-bits='96' hash='d8f42ca158d6c0e9' id='type-id-10260'>
       <subrange length='3' lower-bound='0' upper-bound='2' type-id='type-id-285' size-in-bits='64' is-anonymous='yes' hash='30d99d19f0f4b2ea' id='type-id-2269'/>
     </array-type-def>
@@ -39485,7 +39485,7 @@
       </class-decl>
     </namespace-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='src/geometry/scalarentityangle.cpp' language='LANG_C_plus_plus_14'>
+  <abi-instr address-size='64' path='src/geometry/scalar_entity_angle.cpp' language='LANG_C_plus_plus_14'>
     <qualified-type-def type-id='type-id-1184' const='yes' hash='02e47fdcf2b15965' id='type-id-10880'/>
     <reference-type-def kind='lvalue' type-id='type-id-10880' size-in-bits='64' hash='b9648ff096ba55de' id='type-id-1193'/>
     <pointer-type-def type-id='type-id-10880' size-in-bits='64' hash='2cf4866c3b6ebea8' id='type-id-10881'/>
@@ -39716,7 +39716,7 @@
     <namespace-decl name='__gnu_cxx'>
     </namespace-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='src/geometry/scalarentitydistance.cpp' language='LANG_C_plus_plus_14'>
+  <abi-instr address-size='64' path='src/geometry/scalar_entity_distance.cpp' language='LANG_C_plus_plus_14'>
     <qualified-type-def type-id='type-id-1185' const='yes' hash='77573ebe7f3d855e' id='type-id-10917'/>
     <reference-type-def kind='lvalue' type-id='type-id-10917' size-in-bits='64' hash='2753ae67dabc14e8' id='type-id-1192'/>
     <pointer-type-def type-id='type-id-10917' size-in-bits='64' hash='be6291d9ec106e69' id='type-id-10918'/>
@@ -39935,7 +39935,7 @@
     <namespace-decl name='__gnu_cxx'>
     </namespace-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='src/geometry/scalarentitymeasurementseries.cpp' language='LANG_C_plus_plus_14'>
+  <abi-instr address-size='64' path='src/geometry/scalar_entity_measurement_series.cpp' language='LANG_C_plus_plus_14'>
     <qualified-type-def type-id='type-id-1187' const='yes' hash='00fb4be81f4d01c2' id='type-id-10954'/>
     <reference-type-def kind='lvalue' type-id='type-id-10954' size-in-bits='64' hash='8bffef46d730a4f6' id='type-id-1190'/>
     <pointer-type-def type-id='type-id-10954' size-in-bits='64' hash='d2dbf442814f2eab' id='type-id-10955'/>
@@ -40154,7 +40154,7 @@
     <namespace-decl name='__gnu_cxx'>
     </namespace-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='src/geometry/scalarentitytemperature.cpp' language='LANG_C_plus_plus_14'>
+  <abi-instr address-size='64' path='src/geometry/scalar_entity_temperature.cpp' language='LANG_C_plus_plus_14'>
     <qualified-type-def type-id='type-id-1186' const='yes' hash='858c221dd6b4aa09' id='type-id-10991'/>
     <reference-type-def kind='lvalue' type-id='type-id-10991' size-in-bits='64' hash='7ebb5c02e305578a' id='type-id-1191'/>
     <pointer-type-def type-id='type-id-10991' size-in-bits='64' hash='876c6389ffc6c299' id='type-id-10992'/>
@@ -40373,7 +40373,7 @@
     <namespace-decl name='__gnu_cxx'>
     </namespace-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='src/geometry/slottedhole.cpp' language='LANG_C_plus_plus_14'>
+  <abi-instr address-size='64' path='src/geometry/slotted_hole.cpp' language='LANG_C_plus_plus_14'>
     <qualified-type-def type-id='type-id-1182' const='yes' hash='92476a111555e84c' id='type-id-11028'/>
     <reference-type-def kind='lvalue' type-id='type-id-11028' size-in-bits='64' hash='b05ecc7f8ce0a45e' id='type-id-1195'/>
     <pointer-type-def type-id='type-id-11028' size-in-bits='64' hash='07cf72489baa9229' id='type-id-11029'/>
@@ -43017,7 +43017,7 @@
       <return type-id='type-id-195'/>
     </function-type>
   </abi-instr>
-  <abi-instr address-size='64' path='src/measurementconfig.cpp' language='LANG_C_plus_plus_14'>
+  <abi-instr address-size='64' path='src/measurement_config.cpp' language='LANG_C_plus_plus_14'>
     <reference-type-def kind='lvalue' type-id='type-id-11950' size-in-bits='64' hash='ca131496307ea848' id='type-id-11951'/>
     <pointer-type-def type-id='type-id-11950' size-in-bits='64' hash='d7f361e31f5c3614' id='type-id-11952'/>
     <qualified-type-def type-id='type-id-11952' const='yes' hash='0f9f9af9ca637762' id='type-id-11953'/>
@@ -43585,7 +43585,7 @@
       </namespace-decl>
     </namespace-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='src/oijob.cpp' language='LANG_C_plus_plus_14'>
+  <abi-instr address-size='64' path='src/oi_job.cpp' language='LANG_C_plus_plus_14'>
     <type-decl name='char16_t' size-in-bits='16' hash='5fef4c2ad66dfe2e' id='type-id-12101'/>
     <array-type-def dimensions='1' type-id='type-id-12101' size-in-bits='128' hash='2afc25ef47d7d009' id='type-id-12102'>
       <subrange length='8' lower-bound='0' upper-bound='7' type-id='type-id-285' size-in-bits='64' is-anonymous='yes' hash='6e87a8ff484907ad' id='type-id-5649'/>
@@ -50851,7 +50851,7 @@
       <return type-id='type-id-195'/>
     </function-type>
   </abi-instr>
-  <abi-instr address-size='64' path='src/plugin/exchange/exchangedefinedformat.cpp' language='LANG_C_plus_plus_14'>
+  <abi-instr address-size='64' path='src/plugin/exchange/exchange_defined_format.cpp' language='LANG_C_plus_plus_14'>
     <reference-type-def kind='lvalue' type-id='type-id-15875' size-in-bits='64' hash='d54e3c2bc8e9418f#13' id='type-id-15876'/>
     <reference-type-def kind='lvalue' type-id='type-id-15877' size-in-bits='64' hash='cd73ee8a2544276e#49' id='type-id-15878'/>
     <reference-type-def kind='lvalue' type-id='type-id-15879' size-in-bits='64' hash='89cc2307918d1a07' id='type-id-15880'/>
@@ -51967,7 +51967,7 @@
       <return type-id='type-id-195'/>
     </function-type>
   </abi-instr>
-  <abi-instr address-size='64' path='src/plugin/exchange/exchangeinterface.cpp' language='LANG_C_plus_plus_14'>
+  <abi-instr address-size='64' path='src/plugin/exchange/exchange_interface.cpp' language='LANG_C_plus_plus_14'>
     <typedef-decl name='__gthread_t' type-id='type-id-16239' size-in-bits='64' hash='8fdc5eea2983a729' id='type-id-16240'/>
     <typedef-decl name='pthread_t' type-id='type-id-285' size-in-bits='64' hash='8fdc5eea2983a729' id='type-id-16239'/>
     <qualified-type-def type-id='type-id-5718' const='yes' hash='3d460733903916b4' id='type-id-16241'/>
@@ -53573,7 +53573,7 @@
       <return type-id='type-id-195'/>
     </function-type>
   </abi-instr>
-  <abi-instr address-size='64' path='src/plugin/exchange/exchangesimpleascii.cpp' language='LANG_C_plus_plus_14'>
+  <abi-instr address-size='64' path='src/plugin/exchange/exchange_simple_ascii.cpp' language='LANG_C_plus_plus_14'>
     <typedef-decl name='__int64_t' type-id='type-id-286' size-in-bits='64' hash='b119fe0931d2ee10' id='type-id-16953'/>
     <typedef-decl name='int64_t' type-id='type-id-16953' size-in-bits='64' hash='b119fe0931d2ee10' id='type-id-16954'/>
     <array-type-def dimensions='1' type-id='type-id-343' size-in-bits='256' hash='4f93c1c3a68a8b74' id='type-id-16955'>
@@ -63063,7 +63063,7 @@
       </namespace-decl>
     </namespace-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='src/plugin/function/pipelinestage.cpp' language='LANG_C_plus_plus_14'>
+  <abi-instr address-size='64' path='src/plugin/function/pipeline_stage.cpp' language='LANG_C_plus_plus_14'>
     <namespace-decl name='oi'>
     </namespace-decl>
     <namespace-decl name='std'>
@@ -63096,7 +63096,7 @@
     <namespace-decl name='__gnu_cxx'>
     </namespace-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='src/plugin/networkAdjustment/bundleadjustment.cpp' language='LANG_C_plus_plus_14'>
+  <abi-instr address-size='64' path='src/plugin/network_adjustment/bundle_adjustment.cpp' language='LANG_C_plus_plus_14'>
     <qualified-type-def type-id='type-id-5720' const='yes' hash='b4145af4567d816a' id='type-id-20933'/>
     <pointer-type-def type-id='type-id-20934' size-in-bits='64' hash='ad39233f99680b26' id='type-id-20935'/>
     <qualified-type-def type-id='type-id-20935' const='yes' hash='cddd3311c21fb566' id='type-id-20936'/>
@@ -64598,7 +64598,7 @@
       <class-decl name='__normal_iterator&lt;oi::BundleTransformation*,std::vector&lt;oi::BundleTransformation,std::allocator&lt;oi::BundleTransformation&gt;&gt;&gt;' visibility='default' is-declaration-only='yes' id='type-id-21473'/>
     </namespace-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='src/plugin/pluginloader.cpp' language='LANG_C_plus_plus_14'>
+  <abi-instr address-size='64' path='src/plugin/plugin_loader.cpp' language='LANG_C_plus_plus_14'>
     <array-type-def dimensions='1' type-id='type-id-21606' size-in-bits='256' hash='ed1bb7601c4ebf8b#4' id='type-id-21607'>
       <subrange length='2' lower-bound='0' upper-bound='1' type-id='type-id-285' size-in-bits='64' is-anonymous='yes' hash='95f31efc53154467' id='type-id-2266'/>
     </array-type-def>
@@ -69957,7 +69957,7 @@
       <return type-id='type-id-195'/>
     </function-type>
   </abi-instr>
-  <abi-instr address-size='64' path='src/plugin/simulation/simulationmodel.cpp' language='LANG_C_plus_plus_14'>
+  <abi-instr address-size='64' path='src/plugin/simulation/simulation_model.cpp' language='LANG_C_plus_plus_14'>
     <array-type-def dimensions='1' type-id='type-id-343' size-in-bits='1600' hash='a204df43ef0ff2e2' id='type-id-23602'>
       <subrange length='200' lower-bound='0' upper-bound='199' type-id='type-id-285' size-in-bits='64' is-anonymous='yes' hash='c1708a8d000243c1' id='type-id-23603'/>
     </array-type-def>
@@ -70731,7 +70731,7 @@
       <return type-id='type-id-274'/>
     </function-type>
   </abi-instr>
-  <abi-instr address-size='64' path='src/pointgroup.cpp' language='LANG_C_plus_plus_14'>
+  <abi-instr address-size='64' path='src/point_group.cpp' language='LANG_C_plus_plus_14'>
     <reference-type-def kind='lvalue' type-id='type-id-23826' size-in-bits='64' hash='cd73ee8a2544276e#24' id='type-id-23827'/>
     <reference-type-def kind='lvalue' type-id='type-id-23828' size-in-bits='64' hash='f9244223c0e482ed' id='type-id-23829'/>
     <pointer-type-def type-id='type-id-23828' size-in-bits='64' hash='3413b4b2001b1352' id='type-id-23830'/>
@@ -73298,7 +73298,7 @@
       </namespace-decl>
     </namespace-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='src/sensorconfiguration.cpp' language='LANG_C_plus_plus_14'>
+  <abi-instr address-size='64' path='src/sensor_configuration.cpp' language='LANG_C_plus_plus_14'>
     <qualified-type-def type-id='type-id-22165' const='yes' hash='c2ce7555f31beaee' id='type-id-24784'/>
     <qualified-type-def type-id='type-id-22682' const='yes' hash='7158ab15cbc1123c' id='type-id-24785'/>
     <qualified-type-def type-id='type-id-190' const='yes' id='type-id-24786'/>
@@ -73441,7 +73441,7 @@
     <namespace-decl name='__gnu_cxx'>
     </namespace-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='src/sensorcontrol.cpp' language='LANG_C_plus_plus_14'>
+  <abi-instr address-size='64' path='src/sensor_control.cpp' language='LANG_C_plus_plus_14'>
     <array-type-def dimensions='1' type-id='type-id-1723' size-in-bits='384' hash='46395ec6e3501f5e' id='type-id-24806'>
       <subrange length='48' lower-bound='0' upper-bound='47' type-id='type-id-285' size-in-bits='64' is-anonymous='yes' hash='c984f699f4a9c7be' id='type-id-3247'/>
     </array-type-def>
@@ -74537,7 +74537,7 @@
       <return type-id='type-id-195'/>
     </function-type>
   </abi-instr>
-  <abi-instr address-size='64' path='src/sensortype.cpp' language='LANG_C_plus_plus_14'>
+  <abi-instr address-size='64' path='src/sensor_type.cpp' language='LANG_C_plus_plus_14'>
     <array-type-def dimensions='1' type-id='type-id-343' size-in-bits='1024' hash='76b1c8d278f13440' id='type-id-25157'>
       <subrange length='128' lower-bound='0' upper-bound='127' type-id='type-id-285' size-in-bits='64' is-anonymous='yes' hash='6d1a6a21feae6dd2' id='type-id-25158'/>
     </array-type-def>
@@ -75437,7 +75437,7 @@
       <return type-id='type-id-273'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='src/sensorworker.cpp' language='LANG_C_plus_plus_14'>
+  <abi-instr address-size='64' path='src/sensor_worker.cpp' language='LANG_C_plus_plus_14'>
     <array-type-def dimensions='1' type-id='type-id-25600' size-in-bits='128' hash='baa8fb9c3e7e6cc4' id='type-id-25601'>
       <subrange length='1' lower-bound='0' upper-bound='0' type-id='type-id-285' size-in-bits='64' is-anonymous='yes' hash='eba0a2b392137dcb' id='type-id-4716'/>
     </array-type-def>
@@ -76838,7 +76838,7 @@
       <return type-id='type-id-273'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='src/sensorworkermessage.cpp' language='LANG_C_plus_plus_14'>
+  <abi-instr address-size='64' path='src/sensor_worker_message.cpp' language='LANG_C_plus_plus_14'>
     <class-decl name='SensorWorkerMessage' is-struct='yes' visibility='default' size-in-bits='8' hash='4e43fe218e5a4254' id='type-id-26172'/>
     <namespace-decl name='std'>
       <class-decl name='reverse_iterator&lt;__gnu_cxx::__normal_iterator&lt;char*,std::__cxx11::basic_string&lt;char,std::char_traits&lt;char&gt;,std::allocator&lt;char&gt;&gt;&gt;&gt;' visibility='default' is-declaration-only='yes' id='type-id-8529'/>
@@ -78032,7 +78032,7 @@
       <class-decl name='__normal_iterator&lt;oi::Residual*,std::vector&lt;oi::Residual,std::allocator&lt;oi::Residual&gt;&gt;&gt;' visibility='default' is-declaration-only='yes' id='type-id-5479'/>
     </namespace-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='src/trafoparam.cpp' language='LANG_C_plus_plus_14'>
+  <abi-instr address-size='64' path='src/trafo_param.cpp' language='LANG_C_plus_plus_14'>
     <reference-type-def kind='lvalue' type-id='type-id-26722' size-in-bits='64' hash='5c1ac442159797c8' id='type-id-26723'/>
     <pointer-type-def type-id='type-id-26722' size-in-bits='64' hash='6e53da5ff67a2665' id='type-id-26724'/>
     <qualified-type-def type-id='type-id-26724' const='yes' hash='a54bd02568b8e89e' id='type-id-26725'/>

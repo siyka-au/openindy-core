@@ -2,7 +2,7 @@
 //
 // A geometry message is the state every geometry shares (position, direction,
 // radius, statistic, references) plus a oneof naming the concrete type and
-// holding that type's extra state. The old XML loader for six of the types
+// holding that type's extra state. The old loader for six of the types
 // could never succeed (its attribute checks were inverted), so none of them
 // round-tripped; here each type is covered by a test.
 

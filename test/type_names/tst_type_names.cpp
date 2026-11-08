@@ -12,7 +12,7 @@ using namespace oi;
  * Pins the PERSISTED TYPE TOKENS against a golden list.
  *
  * These strings are not decoration. They are written into saved projects as
- * XML "type" attributes:
+ * "type" attributes:
  *
  *     plane.setAttribute("type", getGeometryTypeName(ePlaneGeometry));
  *

@@ -3751,12 +3751,13 @@ void OiJob::resetDependencies(const InputElement& element,
 }
 
 /*!
- * \brief OiJob::addFeaturesFromXml
+ * \brief OiJob::addImportedFeatures
  * Add features when a project has been loaded (only accessible from
  * ProjectExchanger)
  * \param features
  */
-void OiJob::addFeaturesFromXml(std::vector<std::unique_ptr<Feature>> features) {
+void OiJob::addImportedFeatures(
+    std::vector<std::unique_ptr<Feature>> features) {
   for (std::unique_ptr<Feature>& newFeature : features) {
     // check if feature is valid
     if (!newFeature || newFeature->getFeatureWrapper().isNull()) {

@@ -3,7 +3,7 @@
 //
 // Access is the friend declared in the model classes (Element, Feature,
 // Station, ...). It exists so the codec can restore private state directly,
-// the way the classes' own fromOpenIndyXML used to.
+// the way the classes' own deserialisers used to.
 
 #include <google/protobuf/json/json.h>
 #include <google/protobuf/struct.pb.h>

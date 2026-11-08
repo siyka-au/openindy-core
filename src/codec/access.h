@@ -3,7 +3,7 @@
 
 // Internal. Access is the friend declared in the model classes (Element,
 // Feature, Station, ...). It exists so the codec can restore private state
-// directly, the way the classes' own fromOpenIndyXML used to.
+// directly, the way the classes' own deserialisers used to.
 #include <map>
 #include <vector>
 
@@ -193,7 +193,7 @@ struct Access {
   static int nextId(const OiJob& job) { return job.nextId; }
   static void setNextId(OiJob& job, int next) { job.nextId = next; }
   static void adopt(OiJob& job, std::vector<std::unique_ptr<Feature>> f) {
-    job.addFeaturesFromXml(std::move(f));
+    job.addImportedFeatures(std::move(f));
   }
 
   // ---- Group (geometry.cpp) ----

@@ -122,7 +122,7 @@ class OI_CORE_EXPORT SimulationData {
   std::map<std::string, double> correlations;
 };
 
-// TODO set simulation config as separate class like sensor config an add xml
+// TODO set simulation config as separate class like sensor config and add
 // save/load
 
 /*!
