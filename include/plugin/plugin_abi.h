@@ -1,5 +1,5 @@
-#ifndef PLUGINABI_H
-#define PLUGINABI_H
+#ifndef OI_CORE_PLUGIN_PLUGIN_ABI_H_
+#define OI_CORE_PLUGIN_PLUGIN_ABI_H_
 
 /*!
  * \file plugin_abi.h
@@ -56,4 +56,4 @@
  */
 #define OI_PLUGIN_ABI_VERSION 16
 
-#endif  // PLUGINABI_H
+#endif  // OI_CORE_PLUGIN_PLUGIN_ABI_H_

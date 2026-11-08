@@ -1,5 +1,5 @@
-#ifndef OI_CODEC_DIGEST_H_
-#define OI_CODEC_DIGEST_H_
+#ifndef OI_CORE_SRC_CODEC_DIGEST_H_
+#define OI_CORE_SRC_CODEC_DIGEST_H_
 
 #include <cstdint>
 #include <string_view>
@@ -25,4 +25,4 @@ namespace oi::codec {
 
 }  // namespace oi::codec
 
-#endif  // OI_CODEC_DIGEST_H_
+#endif  // OI_CORE_SRC_CODEC_DIGEST_H_

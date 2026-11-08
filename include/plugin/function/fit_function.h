@@ -1,5 +1,5 @@
-#ifndef FITFUNCTION_H
-#define FITFUNCTION_H
+#ifndef OI_CORE_PLUGIN_FUNCTION_FIT_FUNCTION_H_
+#define OI_CORE_PLUGIN_FUNCTION_FIT_FUNCTION_H_
 #include <math.h>
 
 #include <array>
@@ -1494,4 +1494,4 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
 #define FitFunction_iidd \
   STR2(CONCAT2(FITFUNCTION_PREFIX, OI_PLUGIN_ABI_VERSION))
 
-#endif  // FITFUNCTION_H
+#endif  // OI_CORE_PLUGIN_FUNCTION_FIT_FUNCTION_H_

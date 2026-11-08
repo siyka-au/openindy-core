@@ -1,5 +1,5 @@
-#ifndef PLUGIN_H
-#define PLUGIN_H
+#ifndef OI_CORE_PLUGIN_PLUGIN_H_
+#define OI_CORE_PLUGIN_PLUGIN_H_
 #include <memory>
 #include <string>
 #include <vector>
@@ -131,4 +131,4 @@ using namespace oi;
 #define OI_DECLARE_PLUGIN(ClassName) \
   OI_DECLARE_PLUGIN_WITH_METADATA(ClassName, "")
 
-#endif  // PLUGIN_H
+#endif  // OI_CORE_PLUGIN_PLUGIN_H_

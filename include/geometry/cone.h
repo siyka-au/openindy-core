@@ -1,5 +1,5 @@
-#ifndef CONE_H
-#define CONE_H
+#ifndef OI_CORE_GEOMETRY_CONE_H_
+#define OI_CORE_GEOMETRY_CONE_H_
 #include <map>
 #include <string>
 
@@ -83,4 +83,4 @@ class OI_CORE_EXPORT Cone : public Geometry {
 
 }  // namespace oi
 
-#endif  // CONE_H
+#endif  // OI_CORE_GEOMETRY_CONE_H_

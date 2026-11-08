@@ -1,5 +1,5 @@
-#ifndef GROUP_H
-#define GROUP_H
+#ifndef OI_CORE_GROUP_H_
+#define OI_CORE_GROUP_H_
 #include <optional>
 #include <string>
 #include <vector>
@@ -114,4 +114,4 @@ class OI_CORE_EXPORT Group : public Feature {
 
 }  // namespace oi
 
-#endif  // GROUP_H
+#endif  // OI_CORE_GROUP_H_

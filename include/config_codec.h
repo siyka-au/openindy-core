@@ -1,5 +1,5 @@
-#ifndef OI_CONFIG_CODEC_H_
-#define OI_CONFIG_CODEC_H_
+#ifndef OI_CORE_CONFIG_CODEC_H_
+#define OI_CORE_CONFIG_CODEC_H_
 
 // Config files: the human-editable measurement and sensor configurations,
 // stored as the protobuf JSON mapping (messages MeasurementConfig and
@@ -34,4 +34,4 @@ namespace oi::codec {
 
 }  // namespace oi::codec
 
-#endif  // OI_CONFIG_CODEC_H_
+#endif  // OI_CORE_CONFIG_CODEC_H_

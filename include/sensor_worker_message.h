@@ -1,5 +1,5 @@
-#ifndef SENSORWORKERMESSAGE_H
-#define SENSORWORKERMESSAGE_H
+#ifndef OI_CORE_SENSOR_WORKER_MESSAGE_H_
+#define OI_CORE_SENSOR_WORKER_MESSAGE_H_
 
 #include <string>
 
@@ -47,4 +47,4 @@ struct OI_CORE_EXPORT SensorWorkerMessage {
   static const std::string SEARCH_FINISHED;
   static const std::string FAILED_TO_SEARCH;
 };
-#endif  // SENSORWORKERMESSAGE_H
+#endif  // OI_CORE_SENSOR_WORKER_MESSAGE_H_

@@ -1,5 +1,5 @@
-#ifndef SCALARENTITYDISTANCE_H
-#define SCALARENTITYDISTANCE_H
+#ifndef OI_CORE_GEOMETRY_SCALAR_ENTITY_DISTANCE_H_
+#define OI_CORE_GEOMETRY_SCALAR_ENTITY_DISTANCE_H_
 #include <map>
 #include <string>
 
@@ -72,4 +72,4 @@ class OI_CORE_EXPORT ScalarEntityDistance : public Geometry {
 
 }  // namespace oi
 
-#endif  // SCALARENTITYDISTANCE_H
+#endif  // OI_CORE_GEOMETRY_SCALAR_ENTITY_DISTANCE_H_

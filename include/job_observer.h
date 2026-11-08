@@ -1,5 +1,5 @@
-#ifndef JOBOBSERVER_H
-#define JOBOBSERVER_H
+#ifndef OI_CORE_JOB_OBSERVER_H_
+#define OI_CORE_JOB_OBSERVER_H_
 
 #include <string>
 
@@ -130,4 +130,4 @@ class JobObserver {
 
 }  // namespace oi
 
-#endif  // JOBOBSERVER_H
+#endif  // OI_CORE_JOB_OBSERVER_H_

@@ -1,5 +1,5 @@
-#ifndef EXCHANGEOBSERVER_H
-#define EXCHANGEOBSERVER_H
+#ifndef OI_CORE_PLUGIN_EXCHANGE_EXCHANGE_OBSERVER_H_
+#define OI_CORE_PLUGIN_EXCHANGE_EXCHANGE_OBSERVER_H_
 
 #include <string>
 
@@ -37,4 +37,4 @@ class OI_CORE_EXPORT ExchangeObserver {
 
 }  // namespace oi
 
-#endif  // EXCHANGEOBSERVER_H
+#endif  // OI_CORE_PLUGIN_EXCHANGE_EXCHANGE_OBSERVER_H_

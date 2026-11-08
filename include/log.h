@@ -1,5 +1,5 @@
-#ifndef OI_LOG_H_
-#define OI_LOG_H_
+#ifndef OI_CORE_LOG_H_
+#define OI_CORE_LOG_H_
 
 #include <format>
 #include <functional>
@@ -77,4 +77,4 @@ void critical(std::format_string<Args...> fmt, Args&&... args) {
 
 }  // namespace oi::log
 
-#endif  // OI_LOG_H_
+#endif  // OI_CORE_LOG_H_

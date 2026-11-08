@@ -1,5 +1,5 @@
-#ifndef OI_PLUGINLOADER_H_
-#define OI_PLUGINLOADER_H_
+#ifndef OI_CORE_PLUGIN_PLUGIN_LOADER_H_
+#define OI_CORE_PLUGIN_PLUGIN_LOADER_H_
 
 #include <string>
 
@@ -95,4 +95,4 @@ class OI_CORE_EXPORT PluginLoader {
 
 }  // namespace oi
 
-#endif  // OI_PLUGINLOADER_H_
+#endif  // OI_CORE_PLUGIN_PLUGIN_LOADER_H_

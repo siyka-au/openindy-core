@@ -1,5 +1,5 @@
-#ifndef MESSAGESINK_H
-#define MESSAGESINK_H
+#ifndef OI_CORE_MESSAGE_SINK_H_
+#define OI_CORE_MESSAGE_SINK_H_
 
 #include <string>
 
@@ -39,4 +39,4 @@ class OI_CORE_EXPORT MessageSink {
 
 }  // namespace oi
 
-#endif  // MESSAGESINK_H
+#endif  // OI_CORE_MESSAGE_SINK_H_

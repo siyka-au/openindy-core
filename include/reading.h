@@ -1,5 +1,5 @@
-#ifndef READING_H
-#define READING_H
+#ifndef OI_CORE_READING_H_
+#define OI_CORE_READING_H_
 #include <chrono>
 #include <map>
 #include <string>
@@ -343,4 +343,4 @@ class OI_CORE_EXPORT Reading : public Element {
 
 }  // namespace oi
 
-#endif  // READING_H
+#endif  // OI_CORE_READING_H_

@@ -1,5 +1,5 @@
-#ifndef SENSOR_H
-#define SENSOR_H
+#ifndef OI_CORE_PLUGIN_SENSOR_SENSOR_H_
+#define OI_CORE_PLUGIN_SENSOR_SENSOR_H_
 #include <map>
 #include <memory>
 #include <mutex>
@@ -352,4 +352,4 @@ class OI_CORE_EXPORT Sensor : public SensorInterface {
 #define SENSOR_PREFIX de.openIndy.plugin.sensor.v
 #define Sensor_iidd STR2(CONCAT2(SENSOR_PREFIX, OI_PLUGIN_ABI_VERSION))
 
-#endif  // SENSOR_H
+#endif  // OI_CORE_PLUGIN_SENSOR_SENSOR_H_

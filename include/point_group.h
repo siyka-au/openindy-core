@@ -1,5 +1,5 @@
-#ifndef POINTGROUP_H
-#define POINTGROUP_H
+#ifndef OI_CORE_POINT_GROUP_H_
+#define OI_CORE_POINT_GROUP_H_
 #include <vector>
 
 #include "core_export.h"
@@ -70,4 +70,4 @@ class OI_CORE_EXPORT PointGroup : public Group, public PointCollection {
 
 }  // namespace oi
 
-#endif  // POINTGROUP_H
+#endif  // OI_CORE_POINT_GROUP_H_

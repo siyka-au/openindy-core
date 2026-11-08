@@ -1,5 +1,5 @@
-#ifndef SPHERE_H
-#define SPHERE_H
+#ifndef OI_CORE_GEOMETRY_SPHERE_H_
+#define OI_CORE_GEOMETRY_SPHERE_H_
 #include <map>
 #include <string>
 
@@ -72,4 +72,4 @@ class OI_CORE_EXPORT Sphere : public Geometry {
 
 }  // namespace oi
 
-#endif  // SPHERE_H
+#endif  // OI_CORE_GEOMETRY_SPHERE_H_

@@ -1,5 +1,5 @@
-#ifndef SENSORSINK_H
-#define SENSORSINK_H
+#ifndef OI_CORE_PLUGIN_SENSOR_SENSOR_SINK_H_
+#define OI_CORE_PLUGIN_SENSOR_SENSOR_SINK_H_
 #include <map>
 #include <memory>
 #include <string>
@@ -57,4 +57,4 @@ class OI_CORE_EXPORT SensorSink {
 
 }  // namespace oi
 
-#endif  // SENSORSINK_H
+#endif  // OI_CORE_PLUGIN_SENSOR_SENSOR_SINK_H_

@@ -1,5 +1,5 @@
-#ifndef CONSTRUCTFUNCTION_H
-#define CONSTRUCTFUNCTION_H
+#ifndef OI_CORE_PLUGIN_FUNCTION_CONSTRUCT_FUNCTION_H_
+#define OI_CORE_PLUGIN_FUNCTION_CONSTRUCT_FUNCTION_H_
 
 #include "core_export.h"
 #include "function.h"
@@ -39,4 +39,4 @@ class OI_CORE_EXPORT ConstructFunction : public Function {
 #define ConstructFunction_iidd \
   STR2(CONCAT2(CONSTRUCTFUNCTION_PREFIX, OI_PLUGIN_ABI_VERSION))
 
-#endif  // CONSTRUCTFUNCTION_H
+#endif  // OI_CORE_PLUGIN_FUNCTION_CONSTRUCT_FUNCTION_H_

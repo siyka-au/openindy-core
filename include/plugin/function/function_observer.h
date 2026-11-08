@@ -1,5 +1,5 @@
-#ifndef FUNCTIONOBSERVER_H
-#define FUNCTIONOBSERVER_H
+#ifndef OI_CORE_PLUGIN_FUNCTION_FUNCTION_OBSERVER_H_
+#define OI_CORE_PLUGIN_FUNCTION_FUNCTION_OBSERVER_H_
 
 #include "core_export.h"
 
@@ -35,4 +35,4 @@ class OI_CORE_EXPORT FunctionObserver {
 
 }  // namespace oi
 
-#endif  // FUNCTIONOBSERVER_H
+#endif  // OI_CORE_PLUGIN_FUNCTION_FUNCTION_OBSERVER_H_

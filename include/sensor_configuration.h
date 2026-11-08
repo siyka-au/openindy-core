@@ -1,5 +1,5 @@
-#ifndef SENSORCONFIGURATION_H
-#define SENSORCONFIGURATION_H
+#ifndef OI_CORE_SENSOR_CONFIGURATION_H_
+#define OI_CORE_SENSOR_CONFIGURATION_H_
 #include <map>
 #include <string>
 
@@ -182,4 +182,4 @@ class OI_CORE_EXPORT SensorConfiguration {
 
 }  // namespace oi
 
-#endif  // SENSORCONFIGURATION_H
+#endif  // OI_CORE_SENSOR_CONFIGURATION_H_

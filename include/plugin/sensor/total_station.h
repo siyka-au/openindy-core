@@ -1,5 +1,5 @@
-#ifndef TOTALSTATION_H
-#define TOTALSTATION_H
+#ifndef OI_CORE_PLUGIN_SENSOR_TOTAL_STATION_H_
+#define OI_CORE_PLUGIN_SENSOR_TOTAL_STATION_H_
 
 #include "core_export.h"
 #include "sensor.h"
@@ -110,4 +110,4 @@ class OI_CORE_EXPORT TotalStation : public Sensor {
 #define TotalStation_iidd \
   STR2(CONCAT2(TOTALSTATION_PREFIX, OI_PLUGIN_ABI_VERSION))
 
-#endif  // TOTALSTATION_H
+#endif  // OI_CORE_PLUGIN_SENSOR_TOTAL_STATION_H_

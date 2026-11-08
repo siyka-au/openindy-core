@@ -1,5 +1,5 @@
-#ifndef STATION_H
-#define STATION_H
+#ifndef OI_CORE_STATION_H_
+#define OI_CORE_STATION_H_
 #include <atomic>
 #include <map>
 #include <memory>
@@ -276,4 +276,4 @@ class OI_CORE_EXPORT Station : public Feature {
 
 }  // namespace oi
 
-#endif  // STATION_H
+#endif  // OI_CORE_STATION_H_

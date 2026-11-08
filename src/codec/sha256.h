@@ -1,5 +1,5 @@
-#ifndef OI_CODEC_SHA256_H_
-#define OI_CODEC_SHA256_H_
+#ifndef OI_CORE_SRC_CODEC_SHA256_H_
+#define OI_CORE_SRC_CODEC_SHA256_H_
 
 // Internal. SHA-256 (FIPS 180-4) over a byte string, as lowercase hex.
 #include <array>
@@ -91,4 +91,4 @@ namespace oi::codec {
 
 }  // namespace oi::codec
 
-#endif  // OI_CODEC_SHA256_H_
+#endif  // OI_CORE_SRC_CODEC_SHA256_H_

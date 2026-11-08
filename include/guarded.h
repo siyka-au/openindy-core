@@ -1,5 +1,5 @@
-#ifndef OI_GUARDED_H
-#define OI_GUARDED_H
+#ifndef OI_CORE_GUARDED_H_
+#define OI_CORE_GUARDED_H_
 
 #include <atomic>
 #include <cstddef>
@@ -121,4 +121,4 @@ class Guarded {
 
 }  // namespace oi
 
-#endif  // OI_GUARDED_H
+#endif  // OI_CORE_GUARDED_H_

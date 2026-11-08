@@ -1,5 +1,5 @@
-#ifndef STATIONOBSERVER_H
-#define STATIONOBSERVER_H
+#ifndef OI_CORE_STATION_OBSERVER_H_
+#define OI_CORE_STATION_OBSERVER_H_
 #include <map>
 #include <memory>
 #include <string>
@@ -69,4 +69,4 @@ class OI_CORE_EXPORT StationObserver {
 
 }  // namespace oi
 
-#endif  // STATIONOBSERVER_H
+#endif  // OI_CORE_STATION_OBSERVER_H_

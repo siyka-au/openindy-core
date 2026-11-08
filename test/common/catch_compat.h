@@ -1,5 +1,5 @@
-#ifndef OI_TEST_CATCH_COMPAT_H_
-#define OI_TEST_CATCH_COMPAT_H_
+#ifndef OI_CORE_TEST_COMMON_CATCH_COMPAT_H_
+#define OI_CORE_TEST_COMMON_CATCH_COMPAT_H_
 
 // Helpers shared by the Catch2 tests of the core: a comparison with the
 // semantics the tests had under Qt Test (floating point values are compared
@@ -71,4 +71,4 @@ struct StringMaker<oi_test::CompareResult> {
     REQUIRE(condition);                 \
   } while (false)
 
-#endif  // OI_TEST_CATCH_COMPAT_H_
+#endif  // OI_CORE_TEST_COMMON_CATCH_COMPAT_H_

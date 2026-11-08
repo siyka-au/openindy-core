@@ -1,5 +1,5 @@
-#ifndef FEATUREWRAPPER_H
-#define FEATUREWRAPPER_H
+#ifndef OI_CORE_FEATURE_WRAPPER_H_
+#define OI_CORE_FEATURE_WRAPPER_H_
 
 #include "circle.h"
 #include "cone.h"
@@ -160,4 +160,4 @@ class OI_CORE_EXPORT FeatureWrapper : public oi::Trackable {
 
 }  // namespace oi
 
-#endif  // FEATUREWRAPPER_H
+#endif  // OI_CORE_FEATURE_WRAPPER_H_

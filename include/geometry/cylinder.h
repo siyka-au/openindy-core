@@ -1,5 +1,5 @@
-#ifndef CYLINDER_H
-#define CYLINDER_H
+#ifndef OI_CORE_GEOMETRY_CYLINDER_H_
+#define OI_CORE_GEOMETRY_CYLINDER_H_
 #include <map>
 #include <string>
 
@@ -75,4 +75,4 @@ class OI_CORE_EXPORT Cylinder : public Geometry {
 
 }  // namespace oi
 
-#endif  // CYLINDER_H
+#endif  // OI_CORE_GEOMETRY_CYLINDER_H_

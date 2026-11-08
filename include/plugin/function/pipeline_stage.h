@@ -1,5 +1,5 @@
-#ifndef PIPELINESTAGE_H
-#define PIPELINESTAGE_H
+#ifndef OI_CORE_PLUGIN_FUNCTION_PIPELINE_STAGE_H_
+#define OI_CORE_PLUGIN_FUNCTION_PIPELINE_STAGE_H_
 #include <map>
 #include <string>
 #include <vector>
@@ -106,4 +106,4 @@ class OI_CORE_EXPORT PipelineStage {
 
 }  // namespace oi
 
-#endif  // PIPELINESTAGE_H
+#endif  // OI_CORE_PLUGIN_FUNCTION_PIPELINE_STAGE_H_

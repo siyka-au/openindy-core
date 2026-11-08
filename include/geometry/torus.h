@@ -1,5 +1,5 @@
-#ifndef TORUS_H
-#define TORUS_H
+#ifndef OI_CORE_GEOMETRY_TORUS_H_
+#define OI_CORE_GEOMETRY_TORUS_H_
 #include <map>
 #include <string>
 
@@ -96,4 +96,4 @@ class OI_CORE_EXPORT Torus : public Geometry {
 
 }  // namespace oi
 
-#endif  // TORUS_H
+#endif  // OI_CORE_GEOMETRY_TORUS_H_

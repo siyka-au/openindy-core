@@ -1,5 +1,5 @@
-#ifndef OI_SNAPSHOT_H_
-#define OI_SNAPSHOT_H_
+#ifndef OI_CORE_SNAPSHOT_H_
+#define OI_CORE_SNAPSHOT_H_
 
 #include <type_traits>
 
@@ -22,4 +22,4 @@ template <typename Container>
 
 }  // namespace oi
 
-#endif  // OI_SNAPSHOT_H_
+#endif  // OI_CORE_SNAPSHOT_H_

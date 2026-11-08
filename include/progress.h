@@ -1,5 +1,5 @@
-#ifndef OI_PROGRESS_H_
-#define OI_PROGRESS_H_
+#ifndef OI_CORE_PROGRESS_H_
+#define OI_CORE_PROGRESS_H_
 
 #include <algorithm>
 #include <cstddef>
@@ -255,4 +255,4 @@ class ProgressScope {
 
 }  // namespace oi
 
-#endif  // OI_PROGRESS_H_
+#endif  // OI_CORE_PROGRESS_H_

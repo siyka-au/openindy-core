@@ -1,5 +1,5 @@
-#ifndef OBSERVATION_H
-#define OBSERVATION_H
+#ifndef OI_CORE_OBSERVATION_H_
+#define OI_CORE_OBSERVATION_H_
 #include <math.h>
 
 #include <memory>
@@ -227,4 +227,4 @@ class OI_CORE_EXPORT Observation : public Point {
 
 }  // namespace oi
 
-#endif  // OBSERVATION_H
+#endif  // OI_CORE_OBSERVATION_H_

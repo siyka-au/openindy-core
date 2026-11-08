@@ -1,5 +1,5 @@
-#ifndef ELLIPSE_H
-#define ELLIPSE_H
+#ifndef OI_CORE_GEOMETRY_ELLIPSE_H_
+#define OI_CORE_GEOMETRY_ELLIPSE_H_
 #include <map>
 #include <string>
 
@@ -110,4 +110,4 @@ class OI_CORE_EXPORT Ellipse : public Geometry {
 
 }  // namespace oi
 
-#endif  // ELLIPSE_H
+#endif  // OI_CORE_GEOMETRY_ELLIPSE_H_

@@ -1,5 +1,5 @@
-#ifndef OI_CODEC_CONVERT_H_
-#define OI_CODEC_CONVERT_H_
+#ifndef OI_CORE_SRC_CODEC_CONVERT_H_
+#define OI_CORE_SRC_CODEC_CONVERT_H_
 
 // Internal: conversions between the core model and the protobuf messages.
 // The public face of the codec is bytes in, bytes out (see project_codec.h
@@ -121,4 +121,4 @@ void applyRecord(const openindy::v1::BundleAdjustmentRecord& record,
 
 }  // namespace oi::codec
 
-#endif  // OI_CODEC_CONVERT_H_
+#endif  // OI_CORE_SRC_CODEC_CONVERT_H_

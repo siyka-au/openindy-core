@@ -1,5 +1,5 @@
-#ifndef ELEMENT_H
-#define ELEMENT_H
+#ifndef OI_CORE_ELEMENT_H_
+#define OI_CORE_ELEMENT_H_
 #include <map>
 #include <string>
 
@@ -61,4 +61,4 @@ class OI_CORE_EXPORT Element : public oi::Trackable {
 
 }  // namespace oi
 
-#endif  // ELEMENT_H
+#endif  // OI_CORE_ELEMENT_H_

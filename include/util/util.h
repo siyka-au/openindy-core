@@ -1,5 +1,5 @@
-#ifndef UTIL_H
-#define UTIL_H
+#ifndef OI_CORE_UTIL_UTIL_H_
+#define OI_CORE_UTIL_UTIL_H_
 #include <string>
 #include <vector>
 
@@ -222,4 +222,4 @@ std::vector<std::string> OI_CORE_EXPORT getMaterials();
 
 }  // namespace oi
 
-#endif  // UTIL_H
+#endif  // OI_CORE_UTIL_UTIL_H_

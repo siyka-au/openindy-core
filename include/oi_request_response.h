@@ -1,5 +1,5 @@
-#ifndef OIREQUESTRESPONSE_H
-#define OIREQUESTRESPONSE_H
+#ifndef OI_CORE_OI_REQUEST_RESPONSE_H_
+#define OI_CORE_OI_REQUEST_RESPONSE_H_
 
 #include <string>
 
@@ -91,4 +91,4 @@ class OiRequestResponse {
 
 }  // namespace oi
 
-#endif  // OIREQUESTRESPONSE_H
+#endif  // OI_CORE_OI_REQUEST_RESPONSE_H_

@@ -1,5 +1,5 @@
-#ifndef LASERTRACKER_H
-#define LASERTRACKER_H
+#ifndef OI_CORE_PLUGIN_SENSOR_LASER_TRACKER_H_
+#define OI_CORE_PLUGIN_SENSOR_LASER_TRACKER_H_
 
 #include "core_export.h"
 #include "sensor.h"
@@ -178,4 +178,4 @@ class OI_CORE_EXPORT LaserTracker : public Sensor {
 #define LaserTracker_iidd \
   STR2(CONCAT2(LASERTRACKER_PREFIX, OI_PLUGIN_ABI_VERSION))
 
-#endif  // LASERTRACKER_H
+#endif  // OI_CORE_PLUGIN_SENSOR_LASER_TRACKER_H_

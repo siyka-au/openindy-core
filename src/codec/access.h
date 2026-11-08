@@ -1,5 +1,5 @@
-#ifndef OI_CODEC_ACCESS_H_
-#define OI_CODEC_ACCESS_H_
+#ifndef OI_CORE_SRC_CODEC_ACCESS_H_
+#define OI_CORE_SRC_CODEC_ACCESS_H_
 
 // Internal. Access is the friend declared in the model classes (Element,
 // Feature, Station, ...). It exists so the codec can restore private state
@@ -203,4 +203,4 @@ struct Access {
 
 }  // namespace oi::codec
 
-#endif  // OI_CODEC_ACCESS_H_
+#endif  // OI_CORE_SRC_CODEC_ACCESS_H_

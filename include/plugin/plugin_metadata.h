@@ -1,5 +1,5 @@
-#ifndef PLUGINMETADATA_H
-#define PLUGINMETADATA_H
+#ifndef OI_CORE_PLUGIN_PLUGIN_METADATA_H_
+#define OI_CORE_PLUGIN_PLUGIN_METADATA_H_
 
 #include <string>
 #include <vector>
@@ -35,4 +35,4 @@ class OI_CORE_EXPORT PluginMetaData {
 
 }  // namespace oi
 
-#endif  // PLUGINMETADATA_H
+#endif  // OI_CORE_PLUGIN_PLUGIN_METADATA_H_

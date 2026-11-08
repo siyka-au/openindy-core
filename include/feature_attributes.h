@@ -1,5 +1,5 @@
-#ifndef FEATUREATTRIBUTES_H
-#define FEATUREATTRIBUTES_H
+#ifndef OI_CORE_FEATURE_ATTRIBUTES_H_
+#define OI_CORE_FEATURE_ATTRIBUTES_H_
 
 #include <string>
 #include <utility>
@@ -51,4 +51,4 @@ class OI_CORE_EXPORT FeatureAttributes {
 
 }  // namespace oi
 
-#endif  // FEATUREATTRIBUTES_H
+#endif  // OI_CORE_FEATURE_ATTRIBUTES_H_

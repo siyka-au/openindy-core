@@ -1,5 +1,5 @@
-#ifndef OIJOB_H
-#define OIJOB_H
+#ifndef OI_CORE_OI_JOB_H_
+#define OI_CORE_OI_JOB_H_
 #include <algorithm>
 #include <filesystem>
 #include <memory>
@@ -527,4 +527,4 @@ class OI_CORE_EXPORT OiJob : public oi::Trackable,
 
 }  // namespace oi
 
-#endif  // OIJOB_H
+#endif  // OI_CORE_OI_JOB_H_

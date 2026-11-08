@@ -1,5 +1,5 @@
-#ifndef SIMULATIONMODEL_H
-#define SIMULATIONMODEL_H
+#ifndef OI_CORE_PLUGIN_SIMULATION_SIMULATION_MODEL_H_
+#define OI_CORE_PLUGIN_SIMULATION_SIMULATION_MODEL_H_
 #include <map>
 #include <string>
 #include <vector>
@@ -260,4 +260,4 @@ class OI_CORE_EXPORT SimulationModel : public oi::Trackable {
 #define SIMULATION_PREFIX de.openIndy.plugin.simulation.v
 #define Simulation_iidd STR2(CONCAT2(SIMULATION_PREFIX, OI_PLUGIN_ABI_VERSION))
 
-#endif  // SIMULATIONMODEL_H
+#endif  // OI_CORE_PLUGIN_SIMULATION_SIMULATION_MODEL_H_

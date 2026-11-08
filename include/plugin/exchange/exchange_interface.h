@@ -1,5 +1,5 @@
-#ifndef EXCHANGEINTERFACE_H
-#define EXCHANGEINTERFACE_H
+#ifndef OI_CORE_PLUGIN_EXCHANGE_EXCHANGE_INTERFACE_H_
+#define OI_CORE_PLUGIN_EXCHANGE_EXCHANGE_INTERFACE_H_
 #include <iosfwd>
 #include <map>
 #include <memory>
@@ -165,4 +165,4 @@ class OI_CORE_EXPORT ExchangeInterface : public oi::Trackable {
 #define EXCHANGE_PREFIX de.openIndy.plugin.exchange.v
 #define Exchange_iidd STR2(CONCAT2(EXCHANGE_PREFIX, OI_PLUGIN_ABI_VERSION))
 
-#endif  // EXCHANGEINTERFACE_H
+#endif  // OI_CORE_PLUGIN_EXCHANGE_EXCHANGE_INTERFACE_H_

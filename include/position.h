@@ -1,5 +1,5 @@
-#ifndef POSITION_H
-#define POSITION_H
+#ifndef OI_CORE_POSITION_H_
+#define OI_CORE_POSITION_H_
 
 #include "core_export.h"
 #include "oi_vec.h"
@@ -44,4 +44,4 @@ class OI_CORE_EXPORT Position {
 
 }  // namespace oi
 
-#endif  // POSITION_H
+#endif  // OI_CORE_POSITION_H_

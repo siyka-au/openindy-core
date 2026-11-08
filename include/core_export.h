@@ -1,5 +1,5 @@
-#ifndef OI_CORE_EXPORT_H_
-#define OI_CORE_EXPORT_H_
+#ifndef OI_CORE_CORE_EXPORT_H_
+#define OI_CORE_CORE_EXPORT_H_
 
 // Symbol visibility for the openindy-core shared library, with no dependency
 // on Qt. OI_CORE_LIB is defined while building the library itself.
@@ -17,4 +17,4 @@
 #define OI_CORE_EXPORT OI_CORE_DECL_IMPORT
 #endif
 
-#endif  // OI_CORE_EXPORT_H_
+#endif  // OI_CORE_CORE_EXPORT_H_

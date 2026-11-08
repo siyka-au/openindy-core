@@ -1,5 +1,5 @@
-#ifndef SENSORCONTROL_H
-#define SENSORCONTROL_H
+#ifndef OI_CORE_SENSOR_CONTROL_H_
+#define OI_CORE_SENSOR_CONTROL_H_
 #include <map>
 #include <memory>
 #include <vector>
@@ -157,4 +157,4 @@ class OI_CORE_EXPORT SensorControl final {
 
 }  // namespace oi
 
-#endif  // SENSORCONTROL_H
+#endif  // OI_CORE_SENSOR_CONTROL_H_

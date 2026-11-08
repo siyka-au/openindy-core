@@ -1,5 +1,5 @@
-#ifndef OI_CODEC_NETWORK_CONVERT_H_
-#define OI_CODEC_NETWORK_CONVERT_H_
+#ifndef OI_CORE_SRC_CODEC_NETWORK_CONVERT_H_
+#define OI_CORE_SRC_CODEC_NETWORK_CONVERT_H_
 
 // Internal: mappings between the remote-control model's enums and the wire
 // enums of proto/openindy/network.proto. Every value is mapped explicitly;
@@ -37,4 +37,4 @@ namespace oi::codec {
 
 }  // namespace oi::codec
 
-#endif  // OI_CODEC_NETWORK_CONVERT_H_
+#endif  // OI_CORE_SRC_CODEC_NETWORK_CONVERT_H_

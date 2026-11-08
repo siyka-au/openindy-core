@@ -1,5 +1,5 @@
-#ifndef OI_PROJECT_CODEC_H_
-#define OI_PROJECT_CODEC_H_
+#ifndef OI_CORE_PROJECT_CODEC_H_
+#define OI_CORE_PROJECT_CODEC_H_
 
 // Saving and loading a project: bytes in, bytes out.
 //
@@ -88,4 +88,4 @@ struct DecodeResult {
 }  // namespace codec
 }  // namespace oi
 
-#endif  // OI_PROJECT_CODEC_H_
+#endif  // OI_CORE_PROJECT_CODEC_H_

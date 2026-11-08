@@ -1,5 +1,5 @@
-#ifndef DIRECTION_H
-#define DIRECTION_H
+#ifndef OI_CORE_DIRECTION_H_
+#define OI_CORE_DIRECTION_H_
 
 #include "core_export.h"
 #include "oi_vec.h"
@@ -36,4 +36,4 @@ class OI_CORE_EXPORT Direction {
 
 }  // namespace oi
 
-#endif  // DIRECTION_H
+#endif  // OI_CORE_DIRECTION_H_

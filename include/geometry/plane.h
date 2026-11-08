@@ -1,5 +1,5 @@
-#ifndef PLANE_H
-#define PLANE_H
+#ifndef OI_CORE_GEOMETRY_PLANE_H_
+#define OI_CORE_GEOMETRY_PLANE_H_
 #include <map>
 #include <string>
 
@@ -85,4 +85,4 @@ class OI_CORE_EXPORT Plane : public Geometry {
 
 }  // namespace oi
 
-#endif  // PLANE_H
+#endif  // OI_CORE_GEOMETRY_PLANE_H_

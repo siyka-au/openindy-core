@@ -1,5 +1,5 @@
-#ifndef ELLIPSOID_H
-#define ELLIPSOID_H
+#ifndef OI_CORE_GEOMETRY_ELLIPSOID_H_
+#define OI_CORE_GEOMETRY_ELLIPSOID_H_
 #include <map>
 #include <string>
 
@@ -98,4 +98,4 @@ class OI_CORE_EXPORT Ellipsoid : public Geometry {
 
 }  // namespace oi
 
-#endif  // ELLIPSOID_H
+#endif  // OI_CORE_GEOMETRY_ELLIPSOID_H_

@@ -1,5 +1,5 @@
-#ifndef RADIUS_H
-#define RADIUS_H
+#ifndef OI_CORE_RADIUS_H_
+#define OI_CORE_RADIUS_H_
 
 #include "core_export.h"
 
@@ -23,4 +23,4 @@ class OI_CORE_EXPORT Radius {
 
 }  // namespace oi
 
-#endif  // RADIUS_H
+#endif  // OI_CORE_RADIUS_H_

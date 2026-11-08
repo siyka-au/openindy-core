@@ -1,5 +1,5 @@
-#ifndef SENSORWORKER_H
-#define SENSORWORKER_H
+#ifndef OI_CORE_SENSOR_WORKER_H_
+#define OI_CORE_SENSOR_WORKER_H_
 #include <atomic>
 #include <condition_variable>
 #include <cstdint>
@@ -255,4 +255,4 @@ class OI_CORE_EXPORT SensorWorker final : public SensorSink {
 
 }  // namespace oi
 
-#endif  // SENSORWORKER_H
+#endif  // OI_CORE_SENSOR_WORKER_H_

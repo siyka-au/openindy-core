@@ -1,5 +1,5 @@
-#ifndef POINT_H
-#define POINT_H
+#ifndef OI_CORE_GEOMETRY_POINT_H_
+#define OI_CORE_GEOMETRY_POINT_H_
 #include <map>
 #include <string>
 #include <vector>
@@ -103,4 +103,4 @@ class OI_CORE_EXPORT Point : public Geometry {
 
 }  // namespace oi
 
-#endif  // POINT_H
+#endif  // OI_CORE_GEOMETRY_POINT_H_

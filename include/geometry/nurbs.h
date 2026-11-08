@@ -1,5 +1,5 @@
-#ifndef NURBS_H
-#define NURBS_H
+#ifndef OI_CORE_GEOMETRY_NURBS_H_
+#define OI_CORE_GEOMETRY_NURBS_H_
 
 #include <string>
 
@@ -46,4 +46,4 @@ class OI_CORE_EXPORT Nurbs : public Geometry {
 
 }  // namespace oi
 
-#endif  // NURBS_H
+#endif  // OI_CORE_GEOMETRY_NURBS_H_

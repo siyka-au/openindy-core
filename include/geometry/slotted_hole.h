@@ -1,5 +1,5 @@
-#ifndef SLOTTEDHOLE_H
-#define SLOTTEDHOLE_H
+#ifndef OI_CORE_GEOMETRY_SLOTTED_HOLE_H_
+#define OI_CORE_GEOMETRY_SLOTTED_HOLE_H_
 #include <map>
 #include <string>
 
@@ -144,4 +144,4 @@ class OI_CORE_EXPORT SlottedHole : public Geometry {
 
 }  // namespace oi
 
-#endif  // SLOTTEDHOLE_H
+#endif  // OI_CORE_GEOMETRY_SLOTTED_HOLE_H_

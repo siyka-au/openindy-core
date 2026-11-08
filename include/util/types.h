@@ -1,5 +1,5 @@
-#ifndef TYPES_H
-#define TYPES_H
+#ifndef OI_CORE_UTIL_TYPES_H_
+#define OI_CORE_UTIL_TYPES_H_
 #include <map>
 #include <string>
 #include <vector>
@@ -573,4 +573,4 @@ enum class SensorAction {
 
 }  // namespace oi
 
-#endif  // TYPES_H
+#endif  // OI_CORE_UTIL_TYPES_H_

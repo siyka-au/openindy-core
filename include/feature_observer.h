@@ -1,5 +1,5 @@
-#ifndef FEATUREOBSERVER_H
-#define FEATUREOBSERVER_H
+#ifndef OI_CORE_FEATURE_OBSERVER_H_
+#define OI_CORE_FEATURE_OBSERVER_H_
 
 #include <string>
 
@@ -90,4 +90,4 @@ class OI_CORE_EXPORT FeatureObserver {
 
 }  // namespace oi
 
-#endif  // FEATUREOBSERVER_H
+#endif  // OI_CORE_FEATURE_OBSERVER_H_

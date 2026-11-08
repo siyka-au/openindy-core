@@ -1,5 +1,5 @@
-#ifndef SPECIALFUNCTION__H
-#define SPECIALFUNCTION__H
+#ifndef OI_CORE_PLUGIN_FUNCTION_SPECIAL_FUNCTION_H_
+#define OI_CORE_PLUGIN_FUNCTION_SPECIAL_FUNCTION_H_
 
 #include "core_export.h"
 #include "function.h"
@@ -39,4 +39,4 @@ class OI_CORE_EXPORT SpecialFunction : public Function {
 #define SpecialFunction_iidd \
   STR2(CONCAT2(SPECIALFUNCTION_PREFIX, OI_PLUGIN_ABI_VERSION))
 
-#endif  // SPECIALFUNCTION__H
+#endif  // OI_CORE_PLUGIN_FUNCTION_SPECIAL_FUNCTION_H_

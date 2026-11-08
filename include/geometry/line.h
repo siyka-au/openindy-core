@@ -1,5 +1,5 @@
-#ifndef LINE_H
-#define LINE_H
+#ifndef OI_CORE_GEOMETRY_LINE_H_
+#define OI_CORE_GEOMETRY_LINE_H_
 #include <map>
 #include <string>
 
@@ -69,4 +69,4 @@ class OI_CORE_EXPORT Line : public Geometry {
 
 }  // namespace oi
 
-#endif  // LINE_H
+#endif  // OI_CORE_GEOMETRY_LINE_H_

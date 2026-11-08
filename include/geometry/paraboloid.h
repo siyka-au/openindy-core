@@ -1,5 +1,5 @@
-#ifndef PARABOLOID_H
-#define PARABOLOID_H
+#ifndef OI_CORE_GEOMETRY_PARABOLOID_H_
+#define OI_CORE_GEOMETRY_PARABOLOID_H_
 #include <map>
 #include <string>
 
@@ -92,4 +92,4 @@ class OI_CORE_EXPORT Paraboloid : public Geometry {
 
 }  // namespace oi
 
-#endif  // PARABOLOID_H
+#endif  // OI_CORE_GEOMETRY_PARABOLOID_H_

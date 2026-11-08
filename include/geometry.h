@@ -1,5 +1,5 @@
-#ifndef GEOMETRY_H
-#define GEOMETRY_H
+#ifndef OI_CORE_GEOMETRY_H_
+#define OI_CORE_GEOMETRY_H_
 #include <map>
 #include <optional>
 #include <string>
@@ -258,4 +258,4 @@ class OI_CORE_EXPORT Geometry : public Feature {
 
 }  // namespace oi
 
-#endif  // GEOMETRY_H
+#endif  // OI_CORE_GEOMETRY_H_

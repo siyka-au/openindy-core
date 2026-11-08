@@ -1,5 +1,5 @@
-#ifndef POINTCLOUD_H
-#define POINTCLOUD_H
+#ifndef OI_CORE_GEOMETRY_POINT_CLOUD_H_
+#define OI_CORE_GEOMETRY_POINT_CLOUD_H_
 #include <array>
 #include <string>
 #include <vector>
@@ -114,4 +114,4 @@ class OI_CORE_EXPORT PointCloud : public Geometry, public PointCollection {
 
 }  // namespace oi
 
-#endif  // POINTCLOUD_H
+#endif  // OI_CORE_GEOMETRY_POINT_CLOUD_H_

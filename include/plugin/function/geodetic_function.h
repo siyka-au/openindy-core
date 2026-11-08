@@ -1,5 +1,5 @@
-#ifndef GEODETICFUNCTION_H
-#define GEODETICFUNCTION_H
+#ifndef OI_CORE_PLUGIN_FUNCTION_GEODETIC_FUNCTION_H_
+#define OI_CORE_PLUGIN_FUNCTION_GEODETIC_FUNCTION_H_
 
 #include "core_export.h"
 #include "function.h"
@@ -39,4 +39,4 @@ class OI_CORE_EXPORT GeodeticFunction : public Function {
 #define GeodeticFunction_iidd \
   STR2(CONCAT2(GEODETICFUNCTION_PREFIX, OI_PLUGIN_ABI_VERSION))
 
-#endif  // GEODETICFUNCTION_H
+#endif  // OI_CORE_PLUGIN_FUNCTION_GEODETIC_FUNCTION_H_

@@ -1,5 +1,5 @@
-#ifndef RECORDINGJOBOBSERVER_H
-#define RECORDINGJOBOBSERVER_H
+#ifndef OI_CORE_TEST_COMMON_RECORDING_JOB_OBSERVER_H_
+#define OI_CORE_TEST_COMMON_RECORDING_JOB_OBSERVER_H_
 #include <format>
 #include <string>
 #include <vector>
@@ -211,4 +211,4 @@ class RecordingJobObserver : public oi::JobObserver {
   std::vector<oi::OiJob*> attached;
 };
 
-#endif  // RECORDINGJOBOBSERVER_H
+#endif  // OI_CORE_TEST_COMMON_RECORDING_JOB_OBSERVER_H_

@@ -1,5 +1,5 @@
-#ifndef OI_CODEC_WIRE_H_
-#define OI_CODEC_WIRE_H_
+#ifndef OI_CORE_SRC_CODEC_WIRE_H_
+#define OI_CORE_SRC_CODEC_WIRE_H_
 
 // Internal helpers shared by the codec's translation units.
 #include <google/protobuf/repeated_field.h>
@@ -124,4 +124,4 @@ inline MeasurementConfigKey configKeyOf(const oipb::MeasurementConfigRef& ref) {
 
 }  // namespace oi::codec
 
-#endif  // OI_CODEC_WIRE_H_
+#endif  // OI_CORE_SRC_CODEC_WIRE_H_

@@ -1,5 +1,5 @@
-#ifndef CIRCLE_H
-#define CIRCLE_H
+#ifndef OI_CORE_GEOMETRY_CIRCLE_H_
+#define OI_CORE_GEOMETRY_CIRCLE_H_
 #include <map>
 #include <string>
 
@@ -69,4 +69,4 @@ class OI_CORE_EXPORT Circle : public Geometry {
 
 }  // namespace oi
 
-#endif  // CIRCLE_H
+#endif  // OI_CORE_GEOMETRY_CIRCLE_H_

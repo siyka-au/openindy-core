@@ -1,5 +1,5 @@
-#ifndef HYPERBOLOID_H
-#define HYPERBOLOID_H
+#ifndef OI_CORE_GEOMETRY_HYPERBOLOID_H_
+#define OI_CORE_GEOMETRY_HYPERBOLOID_H_
 #include <map>
 #include <string>
 
@@ -99,4 +99,4 @@ class OI_CORE_EXPORT Hyperboloid : public Geometry {
 
 }  // namespace oi
 
-#endif  // HYPERBOLOID_H
+#endif  // OI_CORE_GEOMETRY_HYPERBOLOID_H_

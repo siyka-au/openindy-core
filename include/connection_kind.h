@@ -1,5 +1,5 @@
-#ifndef CONNECTIONKIND_H
-#define CONNECTIONKIND_H
+#ifndef OI_CORE_CONNECTION_KIND_H_
+#define OI_CORE_CONNECTION_KIND_H_
 #include <string>
 #include <vector>
 
@@ -49,4 +49,4 @@ class OI_CORE_EXPORT ConnectionKind {
 
 }  // namespace oi
 
-#endif  // CONNECTIONKIND_H
+#endif  // OI_CORE_CONNECTION_KIND_H_

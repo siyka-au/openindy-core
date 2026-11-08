@@ -1,5 +1,5 @@
-#ifndef COORDINATESYSTEM_H
-#define COORDINATESYSTEM_H
+#ifndef OI_CORE_COORDINATE_SYSTEM_H_
+#define OI_CORE_COORDINATE_SYSTEM_H_
 #include <map>
 #include <vector>
 
@@ -220,4 +220,4 @@ class OI_CORE_EXPORT CoordinateSystem : public Feature {
 
 }  // namespace oi
 
-#endif  // COORDINATESYSTEM_H
+#endif  // OI_CORE_COORDINATE_SYSTEM_H_

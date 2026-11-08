@@ -1,5 +1,5 @@
-#ifndef STATISTIC_H
-#define STATISTIC_H
+#ifndef OI_CORE_STATISTIC_H_
+#define OI_CORE_STATISTIC_H_
 #include <map>
 #include <vector>
 
@@ -99,4 +99,4 @@ class OI_CORE_EXPORT Statistic {
 
 }  // namespace oi
 
-#endif  // STATISTIC_H
+#endif  // OI_CORE_STATISTIC_H_

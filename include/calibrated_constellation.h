@@ -1,5 +1,5 @@
-#ifndef CALIBRATEDCONSTELLATION_H
-#define CALIBRATEDCONSTELLATION_H
+#ifndef OI_CORE_CALIBRATED_CONSTELLATION_H_
+#define OI_CORE_CALIBRATED_CONSTELLATION_H_
 #include <chrono>
 #include <optional>
 #include <string>
@@ -93,4 +93,4 @@ class OI_CORE_EXPORT CalibratedConstellation {
 
 }  // namespace oi
 
-#endif  // CALIBRATEDCONSTELLATION_H
+#endif  // OI_CORE_CALIBRATED_CONSTELLATION_H_

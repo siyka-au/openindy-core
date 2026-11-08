@@ -1,5 +1,5 @@
-#ifndef OI_STRINGUTIL_H_
-#define OI_STRINGUTIL_H_
+#ifndef OI_CORE_STRING_UTIL_H_
+#define OI_CORE_STRING_UTIL_H_
 
 // Small std-only string helpers.
 //
@@ -393,4 +393,4 @@ namespace detail {
 
 }  // namespace oi
 
-#endif  // OI_STRINGUTIL_H_
+#endif  // OI_CORE_STRING_UTIL_H_

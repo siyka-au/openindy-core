@@ -1,5 +1,5 @@
-#ifndef EXECUTOR_H
-#define EXECUTOR_H
+#ifndef OI_CORE_EXECUTOR_H_
+#define OI_CORE_EXECUTOR_H_
 
 #include <functional>
 
@@ -55,4 +55,4 @@ class OI_CORE_EXPORT InlineExecutor final : public Executor {
 
 }  // namespace oi
 
-#endif  // EXECUTOR_H
+#endif  // OI_CORE_EXECUTOR_H_

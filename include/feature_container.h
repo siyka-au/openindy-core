@@ -1,5 +1,5 @@
-#ifndef FEATURECONTAINER_H
-#define FEATURECONTAINER_H
+#ifndef OI_CORE_FEATURE_CONTAINER_H_
+#define OI_CORE_FEATURE_CONTAINER_H_
 #include <map>
 #include <memory>
 #include <string>
@@ -156,4 +156,4 @@ class OI_CORE_EXPORT FeatureContainer {
 
 }  // namespace oi
 
-#endif  // FEATURECONTAINER_H
+#endif  // OI_CORE_FEATURE_CONTAINER_H_

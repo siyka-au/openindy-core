@@ -1,5 +1,5 @@
-#ifndef OI_VALUE_H_
-#define OI_VALUE_H_
+#ifndef OI_CORE_VALUE_H_
+#define OI_CORE_VALUE_H_
 
 // A small dynamically typed value (bool, integer, number, text) for the few
 // places where core and plugins exchange loosely typed data: transient
@@ -100,4 +100,4 @@ using ValueMap = std::map<std::string, Value>;
 
 }  // namespace oi
 
-#endif  // OI_VALUE_H_
+#endif  // OI_CORE_VALUE_H_

@@ -1,5 +1,5 @@
-#ifndef QUEUEDEXECUTOR_H
-#define QUEUEDEXECUTOR_H
+#ifndef OI_CORE_TEST_COMMON_QUEUED_EXECUTOR_H_
+#define OI_CORE_TEST_COMMON_QUEUED_EXECUTOR_H_
 
 #include <functional>
 #include <utility>
@@ -22,4 +22,4 @@ class QueuedExecutor final : public oi::Executor {
   std::vector<std::function<void()>> tasks;
 };
 
-#endif  // QUEUEDEXECUTOR_H
+#endif  // OI_CORE_TEST_COMMON_QUEUED_EXECUTOR_H_

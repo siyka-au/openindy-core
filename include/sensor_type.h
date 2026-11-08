@@ -1,5 +1,5 @@
-#ifndef SENSORTYPE_H
-#define SENSORTYPE_H
+#ifndef OI_CORE_SENSOR_TYPE_H_
+#define OI_CORE_SENSOR_TYPE_H_
 #include <optional>
 #include <string>
 #include <vector>
@@ -69,4 +69,4 @@ class OI_CORE_EXPORT SensorTypeRegistry {
 
 }  // namespace oi
 
-#endif  // SENSORTYPE_H
+#endif  // OI_CORE_SENSOR_TYPE_H_

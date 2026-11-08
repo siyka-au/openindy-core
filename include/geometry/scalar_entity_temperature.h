@@ -1,5 +1,5 @@
-#ifndef SCALARENTITYTEMPERATURE_H
-#define SCALARENTITYTEMPERATURE_H
+#ifndef OI_CORE_GEOMETRY_SCALAR_ENTITY_TEMPERATURE_H_
+#define OI_CORE_GEOMETRY_SCALAR_ENTITY_TEMPERATURE_H_
 #include <map>
 #include <string>
 
@@ -72,4 +72,4 @@ class OI_CORE_EXPORT ScalarEntityTemperature : public Geometry {
 
 }  // namespace oi
 
-#endif  // SCALARENTITYTEMPERATURE_H
+#endif  // OI_CORE_GEOMETRY_SCALAR_ENTITY_TEMPERATURE_H_

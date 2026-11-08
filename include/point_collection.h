@@ -1,5 +1,5 @@
-#ifndef POINTCOLLECTION_H
-#define POINTCOLLECTION_H
+#ifndef OI_CORE_POINT_COLLECTION_H_
+#define OI_CORE_POINT_COLLECTION_H_
 #include <vector>
 
 #include "position.h"
@@ -47,4 +47,4 @@ class PointCollection {
 
 }  // namespace oi
 
-#endif  // POINTCOLLECTION_H
+#endif  // OI_CORE_POINT_COLLECTION_H_

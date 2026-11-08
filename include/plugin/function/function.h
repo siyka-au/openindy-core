@@ -1,5 +1,5 @@
-#ifndef FUNCTION_H
-#define FUNCTION_H
+#ifndef OI_CORE_PLUGIN_FUNCTION_FUNCTION_H_
+#define OI_CORE_PLUGIN_FUNCTION_FUNCTION_H_
 #include <math.h>
 
 #include <cmath>
@@ -515,4 +515,4 @@ class OI_CORE_EXPORT Function : public oi::Trackable {
 #define FUNCTION_PREFIX de.openIndy.plugin.function.v
 #define Function_iid STR2(CONCAT2(FUNCTION_PREFIX, OI_PLUGIN_ABI_VERSION))
 
-#endif  // FUNCTION_H
+#endif  // OI_CORE_PLUGIN_FUNCTION_FUNCTION_H_

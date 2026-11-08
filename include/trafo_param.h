@@ -1,5 +1,5 @@
-#ifndef TRAFOPARAM_H
-#define TRAFOPARAM_H
+#ifndef OI_CORE_TRAFO_PARAM_H_
+#define OI_CORE_TRAFO_PARAM_H_
 #include <map>
 #include <string>
 
@@ -150,4 +150,4 @@ class OI_CORE_EXPORT TrafoParam : public Feature {
 
 }  // namespace oi
 
-#endif  // TRAFOPARAM_H
+#endif  // OI_CORE_TRAFO_PARAM_H_

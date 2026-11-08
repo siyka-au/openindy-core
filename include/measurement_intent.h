@@ -1,5 +1,5 @@
-#ifndef MEASUREMENTINTENT_H
-#define MEASUREMENTINTENT_H
+#ifndef OI_CORE_MEASUREMENT_INTENT_H_
+#define OI_CORE_MEASUREMENT_INTENT_H_
 
 #include <string>
 
@@ -43,4 +43,4 @@ class MeasurementIntent {
 
 }  // namespace oi
 
-#endif  // MEASUREMENTINTENT_H
+#endif  // OI_CORE_MEASUREMENT_INTENT_H_

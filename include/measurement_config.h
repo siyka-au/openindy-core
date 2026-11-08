@@ -1,5 +1,5 @@
-#ifndef MEASUREMENTCONFIG_H
-#define MEASUREMENTCONFIG_H
+#ifndef OI_CORE_MEASUREMENT_CONFIG_H_
+#define OI_CORE_MEASUREMENT_CONFIG_H_
 #include <map>
 #include <string>
 #include <vector>
@@ -208,4 +208,4 @@ class OI_CORE_EXPORT MeasurementConfig {
 
 }  // namespace oi
 
-#endif  // MEASUREMENTCONFIG_H
+#endif  // OI_CORE_MEASUREMENT_CONFIG_H_

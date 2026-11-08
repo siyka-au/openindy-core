@@ -1,5 +1,5 @@
-#ifndef FEATURE_H
-#define FEATURE_H
+#ifndef OI_CORE_FEATURE_H_
+#define OI_CORE_FEATURE_H_
 #include <map>
 #include <memory>
 #include <optional>
@@ -344,4 +344,4 @@ class OI_CORE_EXPORT Feature : public Element {
 
 }  // namespace oi
 
-#endif  // FEATURE_H
+#endif  // OI_CORE_FEATURE_H_
