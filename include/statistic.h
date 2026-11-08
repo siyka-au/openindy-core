@@ -4,8 +4,8 @@
 #include <vector>
 
 #include "core_export.h"
-#include "oimat.h"
-#include "oivec.h"
+#include "oi_mat.h"
+#include "oi_vec.h"
 #include "types.h"
 
 namespace oi {

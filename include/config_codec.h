@@ -17,8 +17,8 @@
 #include <string>
 #include <string_view>
 
-#include "measurementconfig.h"
-#include "sensorconfiguration.h"
+#include "measurement_config.h"
+#include "sensor_configuration.h"
 
 namespace oi::codec {
 

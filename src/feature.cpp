@@ -7,9 +7,9 @@
 #include <vector>
 
 #include "containers.h"
-#include "featurewrapper.h"
+#include "feature_wrapper.h"
 #include "function.h"
-#include "oijob.h"
+#include "oi_job.h"
 #include "snapshot.h"
 
 using namespace oi;

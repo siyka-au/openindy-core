@@ -6,7 +6,7 @@
 
 #include "core_export.h"
 #include "geometry.h"
-#include "measurementintent.h"
+#include "measurement_intent.h"
 #include "position.h"
 
 namespace oi {

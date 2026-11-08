@@ -6,14 +6,14 @@
 #include <vector>
 
 #include "containers.h"
-#include "coordinatesystem.h"
-#include "fitfunction.h"
+#include "coordinate_system.h"
+#include "fit_function.h"
 #include "function.h"
 #include "observation.h"
-#include "oijob.h"
+#include "oi_job.h"
 #include "snapshot.h"
 #include "station.h"
-#include "stringutil.h"
+#include "string_util.h"
 
 using namespace oi;
 using namespace oi::math;

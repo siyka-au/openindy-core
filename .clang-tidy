@@ -21,7 +21,7 @@ Checks: >
   -cppcoreguidelines-avoid-non-const-global-variables
 # owning-memory: enabled. The core owns by raw new/delete today; the findings are the
 #   to-do list for the unique_ptr migration (warnings only, WarningsAsErrors is empty).
-# macro-to-enum: OI_PLUGIN_ABI_VERSION must stay a #define (CMake parses it out of pluginabi.h).
+# macro-to-enum: OI_PLUGIN_ABI_VERSION must stay a #define (CMake parses it out of plugin_abi.h).
 # macro-usage: the OI_DECLARE_PLUGIN* entry-point macros are unavoidable.
 # magic-numbers / non-private-members / non-const-globals: too noisy for the
 #   legacy code; revisit once the rest is clean.

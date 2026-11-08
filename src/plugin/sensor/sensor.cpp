@@ -4,9 +4,9 @@
 #include <vector>
 
 #include "containers.h"
-#include "measurementconfig.h"
+#include "measurement_config.h"
 #include "reading.h"
-#include "sensorcontrol.h"
+#include "sensor_control.h"
 #include "value.h"
 
 using namespace oi;

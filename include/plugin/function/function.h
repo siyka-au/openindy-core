@@ -11,38 +11,38 @@
 
 #include "circle.h"
 #include "cone.h"
-#include "coordinatesystem.h"
+#include "coordinate_system.h"
 #include "core_export.h"
 #include "cylinder.h"
 #include "ellipse.h"
 #include "ellipsoid.h"
-#include "featurewrapper.h"
-#include "functionobserver.h"
+#include "feature_wrapper.h"
+#include "function_observer.h"
 #include "guarded.h"
 #include "hyperboloid.h"
 #include "line.h"
-#include "messagesink.h"
+#include "message_sink.h"
 #include "nurbs.h"
 #include "observation.h"
 #include "paraboloid.h"
-#include "pipelinestage.h"
+#include "pipeline_stage.h"
 #include "plane.h"
-#include "pluginmetadata.h"
+#include "plugin_metadata.h"
 #include "point.h"
-#include "pointcloud.h"
-#include "producertransform.h"
+#include "point_cloud.h"
+#include "producer_transform.h"
 #include "progress.h"
 #include "reading.h"
-#include "scalarentityangle.h"
-#include "scalarentitydistance.h"
-#include "scalarentitymeasurementseries.h"
-#include "scalarentitytemperature.h"
-#include "slottedhole.h"
+#include "scalar_entity_angle.h"
+#include "scalar_entity_distance.h"
+#include "scalar_entity_measurement_series.h"
+#include "scalar_entity_temperature.h"
+#include "slotted_hole.h"
 #include "sphere.h"
 #include "station.h"
 #include "statistic.h"
 #include "torus.h"
-#include "trafoparam.h"
+#include "trafo_param.h"
 #include "types.h"
 #include "util.h"
 
@@ -243,7 +243,7 @@ class OI_CORE_EXPORT Function : public oi::Trackable {
   // dispatch, pipeline application, all of it, with a reason on failure
   // instead of a bare bool. exec() is kept, unchanged in signature, for
   // every pre-7d caller (tests calling a function directly without going
-  // through Feature::recalc(), cfvisitor.cpp, OiJob) - it is now a thin
+  // through Feature::recalc(), cf_visitor.cpp, OiJob) - it is now a thin
   // wrapper over execChecked().
   //
   // `ctx` carries the host's progress sink and cancellation request. It is
@@ -346,7 +346,7 @@ class OI_CORE_EXPORT Function : public oi::Trackable {
   // getInputElements()). Evaluated automatically by exec() - callers
   // that mutate this still need to trigger an ordinary recalc for it to
   // take effect, exactly like every other input-set change (OiJob does
-  // not auto-recalc on tagPoint either; see oijob.h).
+  // not auto-recalc on tagPoint either; see oi_job.h).
   [[nodiscard]] const std::vector<PipelineStage>& getPipeline(
       const int& position) const;
   void setPipeline(const int& position,
@@ -510,7 +510,7 @@ class OI_CORE_EXPORT Function : public oi::Trackable {
 #define CONCAT2(a, b) CONCAT(a, b)
 #endif
 
-#include "pluginabi.h"
+#include "plugin_abi.h"
 
 #define FUNCTION_PREFIX de.openIndy.plugin.function.v
 #define Function_iid STR2(CONCAT2(FUNCTION_PREFIX, OI_PLUGIN_ABI_VERSION))

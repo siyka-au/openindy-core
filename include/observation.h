@@ -9,7 +9,7 @@
 #include "core_export.h"
 #include "geometry/point.h"
 #include "guarded.h"
-#include "oivec.h"
+#include "oi_vec.h"
 #include "statistic.h"
 
 class TrafoController;
@@ -102,7 +102,7 @@ class OI_CORE_EXPORT Observation : public Point {
 
   // D12: backed by the inherited Point::intents (MeasurementIntent) list
   // rather than a second, Observation-only membership list - see
-  // point.h/measurementintent.h. Kept as oi::Guarded<Geometry> convenience
+  // point.h/measurement_intent.h. Kept as oi::Guarded<Geometry> convenience
   // accessors (resolved via job) so existing call sites did not all need
   // to move to raw ids; roleName is not exposed here, only feature
   // identity, since none of the pre-existing callers distinguished roles.

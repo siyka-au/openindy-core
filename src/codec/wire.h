@@ -10,11 +10,11 @@
 
 #include "convert.h"
 #include "feature.h"
-#include "featurewrapper.h"
-#include "measurementconfig.h"
+#include "feature_wrapper.h"
+#include "measurement_config.h"
 #include "openindy/project.pb.h"
-#include "pluginmetadata.h"
-#include "sensortype.h"
+#include "plugin_metadata.h"
+#include "sensor_type.h"
 
 namespace oi::codec {
 

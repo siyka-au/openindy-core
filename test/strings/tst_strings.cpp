@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-#include "stringutil.h"
+#include "string_util.h"
 #include "value.h"
 
 TEST_CASE("number: fixed") {

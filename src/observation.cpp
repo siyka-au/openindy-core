@@ -4,13 +4,13 @@
 #include <vector>
 
 #include "containers.h"
-#include "coordinatesystem.h"
+#include "coordinate_system.h"
 #include "function.h"
 #include "geometry.h"
-#include "oijob.h"
+#include "oi_job.h"
 #include "snapshot.h"
 #include "station.h"
-#include "stringutil.h"
+#include "string_util.h"
 
 using namespace oi;
 using namespace oi::math;

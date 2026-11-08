@@ -10,8 +10,8 @@
 #include "feature.h"
 #include "guarded.h"
 #include "point.h"
-#include "sensorcontrol.h"
-#include "stationobserver.h"
+#include "sensor_control.h"
+#include "station_observer.h"
 
 class ProjectExchanger;
 
@@ -180,7 +180,7 @@ class OI_CORE_EXPORT Station : public Feature {
 
   // ##############################################################
   // what the sensor reports back (command results, streams, messages)
-  // goes to this observer (see stationobserver.h); at most one, not
+  // goes to this observer (see station_observer.h); at most one, not
   // owned, null until someone sets it
   // ##############################################################
 

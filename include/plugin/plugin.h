@@ -4,13 +4,13 @@
 #include <string>
 #include <vector>
 
-#include "bundleadjustment.h"
-#include "exchangedefinedformat.h"
-#include "exchangesimpleascii.h"
+#include "bundle_adjustment.h"
+#include "exchange_defined_format.h"
+#include "exchange_simple_ascii.h"
 #include "function.h"
 #include "guarded.h"
 #include "sensor.h"
-#include "simulationmodel.h"
+#include "simulation_model.h"
 
 namespace oi {
 
@@ -66,7 +66,7 @@ class Plugin {
 #define CONCAT2(a, b) CONCAT(a, b)
 #endif
 
-#include "pluginabi.h"
+#include "plugin_abi.h"
 
 // Identifier of the plugin interface revision, keyed off the ABI version. It
 // is no longer used for loading (the entry point checks the version number),

@@ -15,7 +15,7 @@
 #include <vector>
 
 #include "guarded.h"
-#include "measurementconfig.h"
+#include "measurement_config.h"
 
 namespace oi {
 

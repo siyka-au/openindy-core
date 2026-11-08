@@ -9,7 +9,7 @@
 
 #include "containers.h"
 #include "snapshot.h"
-#include "specialfunction.h"
+#include "special_function.h"
 
 using namespace oi;
 
@@ -182,7 +182,7 @@ std::expected<void, std::string> Function::execChecked(
  * \brief Function::exec
  * Thin bool-returning wrapper over execChecked(), kept unchanged in
  * signature for every caller that predates Stage 7d (tests calling a
- * function directly, cfvisitor.cpp, OiJob) - see execChecked() above.
+ * function directly, cf_visitor.cpp, OiJob) - see execChecked() above.
  * \param feature
  * \return
  */
@@ -356,7 +356,7 @@ bool Function::canActAsProducer(const FeatureTypes& type, Function* function) {
 
   // SpecialFunction (e.g. ConfiguredFunction, openindy-default-plugin's
   // cf/) manages its own execution by overriding the top-level
-  // Function::exec()/execChecked() directly (specialfunction.h: "handles
+  // Function::exec()/execChecked() directly (special_function.h: "handles
   // special function e.g. configured functions") - it never goes through
   // execByFeatureType's Producer<T>/Transform<T> dispatch, so the mixin
   // check does not apply. Exempt here rather than in execByFeatureType,

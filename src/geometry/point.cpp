@@ -5,10 +5,10 @@
 #include <vector>
 
 #include "containers.h"
-#include "featurewrapper.h"
+#include "feature_wrapper.h"
 #include "observation.h"
 #include "snapshot.h"
-#include "stringutil.h"
+#include "string_util.h"
 
 using namespace oi;
 using namespace oi::math;

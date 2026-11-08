@@ -217,7 +217,7 @@ completely — one acquisition, thousands of points, forty geometries.
 **`NeededElement` carries an ordered `pipeline` (`QList<PipelineStage>`), literally.** Not a
 parallel structure keyed by position elsewhere — the pipeline lives on the same declaration
 a `roleName` does, so it travels with the function and persists the same way. A `PipelineStage`
-(`include/plugin/function/pipelinestage.h`) is one of:
+(`include/plugin/function/pipeline_stage.h`) is one of:
 
 - **`ExplicitList`** — only these element ids survive. The hand-picking case with no rejection
   reason needed (a curated set, not an exclusion).
@@ -251,7 +251,7 @@ scalars, so it round-trips through `Function`'s own XML methods alone.
 **Same mechanism at observation level, verified not assumed.** `BestFitPoint` (the one function
 touching raw `Observation`s, D13) needed no code changes either — a pipeline declared on its
 `eObservationElement` position works identically, proven end to end against the real class in
-`openindy-default-plugin/test/pipelinefilter/tst_pipelinefilter.cpp`.
+`openindy-default-plugin/test/pipeline_filter/tst_pipeline_filter.cpp`.
 
 **Why a value type, not a `QObject`/plugin-discoverable stage like `Function` itself.** The plan's
 wording ("plugin-provided and parameterized, same shape as functions") reads as "stages should be
@@ -491,7 +491,7 @@ one place this pattern needed a real fix, not just a wrapper.
 
 ## 8. Plugin ABI
 
-`OI_PLUGIN_ABI_VERSION` in [`include/plugin/pluginabi.h`](../include/plugin/pluginabi.h)
+`OI_PLUGIN_ABI_VERSION` in [`include/plugin/plugin_abi.h`](../include/plugin/plugin_abi.h)
 is a **hand-declared integer**, never derived.
 
 It replaced a version derived from `git describe`'s commit count, which changed every
@@ -502,7 +502,7 @@ plugin IID on every core commit whether or not the contract changed.
 - **A header, not a compile definition** — a header is a tracked source dependency, so
   changing it forces every plugin that includes it to rebuild. A configure-time define
   let a stale build tree keep the old value and silently ship a mismatched binary.
-- **`abiVersion` in `metaInfo.json`** — compatibility is checked from metadata *before*
+- **`abiVersion` in `meta_info.json`** — compatibility is checked from metadata *before*
   the library is instantiated, and a mismatch names the file, both versions and the fix.
   Previously a mismatch was indistinguishable from "not an OpenIndy plugin":
   `qobject_cast` returned null and an entire driver vanished with no message.
@@ -607,7 +607,7 @@ Recorded because each was silent, and the same class of bug keeps recurring.
    anything geometric. A dataset built by iterating a grid one axis at a time (e.g. all `x=0`
    points before any other `x`) hands it three collinear points as that first triple. Harmless
    for a hand-tagged or randomly-ordered dataset, a real landmine for programmatically generated
-   or synthetic test data — found while writing `tst_pipelinefilter.cpp` (Stage 7b), not a
+   or synthetic test data — found while writing `tst_pipeline_filter.cpp` (Stage 7b), not a
    regression.
 11. **`Feature::selfFeature` is not the `FeatureWrapper` that ends up in the job.** Every
    `Feature` constructs its own `FeatureWrapper` in its constructor
@@ -623,7 +623,7 @@ Recorded because each was silent, and the same class of bug keeps recurring.
    `usedForMap`/`previouslyNeededMap` (keyed by feature id) are unaffected and are the
    reliable way to check membership; list membership must be checked by
    `entry->getFeature()->getId()`, not `QPointer<FeatureWrapper>` identity. Found while
-   writing `tst_ownedsubgeometry.cpp` (Stage 7h) — not a regression, pre-existing since
+   writing `tst_owned_subgeometry.cpp` (Stage 7h) — not a regression, pre-existing since
    whenever `FeatureWrapper` gained per-feature construction, and every other test/call
    site either doesn't check `getUsedFor()`/`getPreviouslyNeeded()` by object identity or
    happens to use `getFeatureWrapper()` (== `selfFeature`) consistently on both sides.

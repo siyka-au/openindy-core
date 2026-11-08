@@ -9,7 +9,7 @@
 #include <string>
 #include <variant>
 
-#include "stringutil.h"
+#include "string_util.h"
 
 namespace oi {
 

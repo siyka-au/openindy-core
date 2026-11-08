@@ -8,11 +8,11 @@
 #include <vector>
 
 #include "convert.h"
-#include "featurewrapper.h"
+#include "feature_wrapper.h"
 #include "geometry/point.h"
-#include "geometry/pointcloud.h"
+#include "geometry/point_cloud.h"
 #include "guarded.h"
-#include "oijob.h"
+#include "oi_job.h"
 #include "wire.h"
 
 namespace oi::codec {

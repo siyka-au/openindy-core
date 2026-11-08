@@ -21,16 +21,16 @@
 #include "geometry/paraboloid.h"
 #include "geometry/plane.h"
 #include "geometry/point.h"
-#include "geometry/pointcloud.h"
-#include "geometry/scalarentityangle.h"
-#include "geometry/scalarentitydistance.h"
-#include "geometry/scalarentitymeasurementseries.h"
-#include "geometry/scalarentitytemperature.h"
-#include "geometry/slottedhole.h"
+#include "geometry/point_cloud.h"
+#include "geometry/scalar_entity_angle.h"
+#include "geometry/scalar_entity_distance.h"
+#include "geometry/scalar_entity_measurement_series.h"
+#include "geometry/scalar_entity_temperature.h"
+#include "geometry/slotted_hole.h"
 #include "geometry/sphere.h"
 #include "geometry/torus.h"
 #include "observation.h"
-#include "pointgroup.h"
+#include "point_group.h"
 
 namespace oi::codec {
 

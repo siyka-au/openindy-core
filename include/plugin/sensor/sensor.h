@@ -9,11 +9,11 @@
 
 #include "core_export.h"
 #include "guarded.h"
-#include "measurementconfig.h"
-#include "pluginmetadata.h"
+#include "measurement_config.h"
+#include "plugin_metadata.h"
 #include "reading.h"
-#include "sensorconfiguration.h"
-#include "sensorsink.h"
+#include "sensor_configuration.h"
+#include "sensor_sink.h"
 #include "types.h"
 #include "util.h"
 
@@ -346,7 +346,7 @@ class OI_CORE_EXPORT Sensor : public SensorInterface {
 #define CONCAT2(a, b) CONCAT(a, b)
 #endif
 
-#include "pluginabi.h"
+#include "plugin_abi.h"
 #include "value.h"
 
 #define SENSOR_PREFIX de.openIndy.plugin.sensor.v

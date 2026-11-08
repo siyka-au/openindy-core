@@ -15,9 +15,9 @@
 #include "access.h"
 #include "containers.h"
 #include "convert.h"
-#include "featurewrapper.h"
+#include "feature_wrapper.h"
 #include "plugin/sensor/sensor.h"
-#include "stringutil.h"
+#include "string_util.h"
 #include "wire.h"
 
 namespace oi::codec {

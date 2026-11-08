@@ -9,7 +9,7 @@
 
 #include "core_export.h"
 #include "element.h"
-#include "featureobserver.h"
+#include "feature_observer.h"
 #include "guarded.h"
 
 namespace oi {
@@ -233,7 +233,7 @@ class OI_CORE_EXPORT Feature : public Element {
  public:
   // ###################################################################
   // change notifications: a plain, non-owning observer (see
-  // featureobserver.h); null (nobody is told) until a job attaches itself
+  // feature_observer.h); null (nobody is told) until a job attaches itself
   // ###################################################################
 
   void setObserver(FeatureObserver* observer) { this->observer = observer; }

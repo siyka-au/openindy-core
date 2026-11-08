@@ -7,7 +7,7 @@
 
 #include <optional>
 
-#include "oirequestresponse.h"
+#include "oi_request_response.h"
 #include "openindy/network.pb.h"
 #include "types.h"
 

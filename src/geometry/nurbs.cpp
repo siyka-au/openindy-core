@@ -1,6 +1,6 @@
 #include "nurbs.h"
 
-#include "featurewrapper.h"
+#include "feature_wrapper.h"
 
 using namespace oi;
 

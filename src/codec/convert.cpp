@@ -1,6 +1,6 @@
 #include "convert.h"
 
-#include "sensortype.h"
+#include "sensor_type.h"
 
 namespace oi::codec {
 

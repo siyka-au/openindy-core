@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "containers.h"
-#include "featurewrapper.h"
+#include "feature_wrapper.h"
 
 namespace oi {
 
@@ -1525,7 +1525,7 @@ bool getIsGeometry(const FeatureTypes& type) {
       // the moment a Group actually reaches one of those call sites -
       // found via OiJob::checkAndSetUpNewFeature's identical getGeometry()
       // dereference while adding the first real Group to a job in
-      // tst_projectexchange.cpp, not a hypothetical.
+      // tst_project_exchange.cpp, not a hypothetical.
       || type == FeatureTypes::eGroupFeature ||
       type == FeatureTypes::ePointGroupFeature) {
     return false;

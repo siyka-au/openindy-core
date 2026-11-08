@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "containers.h"
-#include "featurewrapper.h"
+#include "feature_wrapper.h"
 #include "snapshot.h"
 
 using namespace oi;

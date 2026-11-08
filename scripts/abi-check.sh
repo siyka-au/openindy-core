@@ -9,7 +9,7 @@
 #   -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS=-g
 # (-g on top of Release keeps the Conan packages ABI-compatible, unlike Debug).
 #
-# Rule enforced here (see include/plugin/pluginabi.h):
+# Rule enforced here (see include/plugin/plugin_abi.h):
 #   * abidiff reports an incompatible change (exit bit 8) and
 #     OI_PLUGIN_ABI_VERSION equals abi/baseline.version  -> FAIL: bump the
 #     version and refresh the baseline in the same commit.
@@ -66,7 +66,7 @@ if ! readelf -S "$lib" 2>/dev/null | grep -q '\.debug_info'; then
 fi
 
 version=$(sed -n 's/^#define[[:space:]]\{1,\}OI_PLUGIN_ABI_VERSION[[:space:]]\{1,\}\([0-9]\{1,\}\).*/\1/p' \
-          "$root/include/plugin/pluginabi.h")
+          "$root/include/plugin/plugin_abi.h")
 [ -n "$version" ] || { echo "abi-check: cannot read OI_PLUGIN_ABI_VERSION" >&2; exit 2; }
 
 baseline=$root/abi/baseline.abi
@@ -128,7 +128,7 @@ fi
 
 if [ $((rc & 8)) -ne 0 ]; then
   echo "abi-check: FAIL - incompatible ABI change with OI_PLUGIN_ABI_VERSION unchanged ($version)." >&2
-  echo "  Bump OI_PLUGIN_ABI_VERSION in include/plugin/pluginabi.h and refresh the baseline" >&2
+  echo "  Bump OI_PLUGIN_ABI_VERSION in include/plugin/plugin_abi.h and refresh the baseline" >&2
   echo "  (scripts/abi-check.sh --update) in the same commit." >&2
   exit 1
 fi

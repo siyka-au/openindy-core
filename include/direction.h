@@ -2,7 +2,7 @@
 #define DIRECTION_H
 
 #include "core_export.h"
-#include "oivec.h"
+#include "oi_vec.h"
 
 namespace oi {
 

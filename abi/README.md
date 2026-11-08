@@ -2,7 +2,7 @@
 
 `libOpenIndyCore` is the binary contract between the host and every plugin. The
 runtime check is the integer `OI_PLUGIN_ABI_VERSION`
-([`include/plugin/pluginabi.h`](../include/plugin/pluginabi.h)), compared by the
+([`include/plugin/plugin_abi.h`](../include/plugin/plugin_abi.h)), compared by the
 plugin entry point handshake and `oi::PluginLoader` before a factory is created.
 This directory holds what makes sure that integer is bumped when it must be.
 

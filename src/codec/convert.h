@@ -9,19 +9,19 @@
 #include <memory>
 #include <optional>
 
-#include "coordinatesystem.h"
+#include "coordinate_system.h"
 #include "geometry.h"
 #include "group.h"
 #include "guarded.h"
-#include "measurementconfig.h"
+#include "measurement_config.h"
 #include "observation.h"
 #include "openindy/project.pb.h"
 #include "plugin/function/function.h"
-#include "plugin/networkAdjustment/bundleadjustment.h"
+#include "plugin/network_adjustment/bundle_adjustment.h"
 #include "reading.h"
-#include "sensorconfiguration.h"
+#include "sensor_configuration.h"
 #include "station.h"
-#include "trafoparam.h"
+#include "trafo_param.h"
 
 namespace oi::codec {
 

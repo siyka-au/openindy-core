@@ -1,0 +1,73 @@
+#ifndef POINTGROUP_H
+#define POINTGROUP_H
+#include <vector>
+
+#include "core_export.h"
+#include "group.h"
+#include "point_collection.h"
+
+namespace oi {
+
+class Point;
+
+/*!
+ * \brief The PointGroup class
+ * A Group that holds Points, and can therefore be handed to any function
+ * that asks for a PointCollection.
+ *
+ * Thin by design: all the grouping behaviour lives in Group, all the
+ * "give me points" behaviour is the PointCollection interface, and this
+ * class exists to fix the type constraint to Point and join the two. It is
+ * the counterpart to PointCloud - same interface to a fit function,
+ * completely different provenance:
+ *
+ *   PointCloud  - one scanner acquisition, bulk undifferentiated data.
+ *   PointGroup  - N individually measured Points, each one a real feature
+ *                 with its own observations, sigma and history, any of
+ *                 which may also belong to other groups.
+ *
+ * A thousand reflectorless shots automated across a factory wall land here,
+ * not in a point cloud: they are genuinely individual measurements that
+ * would each stand up on their own, and losing that by dumping them into
+ * undifferentiated bulk data would throw away exactly the pedigree that
+ * makes them worth having.
+ */
+class OI_CORE_EXPORT PointGroup : public Group, public PointCollection {
+  friend class OiJob;
+
+ public:
+  explicit PointGroup();
+  explicit PointGroup(const std::string& name);
+
+  PointGroup(const PointGroup& copy);
+  PointGroup& operator=(const PointGroup& copy);
+
+  ~PointGroup() override;
+
+  // #########################
+  // PointCollection interface
+  // #########################
+
+  [[nodiscard]] std::vector<Position> collectionPoints() const override;
+  [[nodiscard]] int collectionPointCount() const override;
+
+  // ####################
+  // point-specific access
+  // ####################
+
+  //! members as Points, skipping any deleted out from under the group.
+  //! Use this rather than collectionPoints() when per-point pedigree
+  //! (observations, sigma, solved state) matters - that information is
+  //! exactly what a PointGroup has and a PointCloud does not.
+  [[nodiscard]] std::vector<oi::Guarded<Point>> getPoints() const;
+
+  // ###############
+  // display methods
+  // ###############
+
+  [[nodiscard]] std::string getDisplayType() const override;
+};
+
+}  // namespace oi
+
+#endif  // POINTGROUP_H

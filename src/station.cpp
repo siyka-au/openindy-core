@@ -5,14 +5,14 @@
 #include <vector>
 
 #include "containers.h"
-#include "coordinatesystem.h"
-#include "featurewrapper.h"
-#include "oijob.h"
+#include "coordinate_system.h"
+#include "feature_wrapper.h"
+#include "oi_job.h"
 #include "reading.h"
 #include "sensor.h"
-#include "sensorcontrol.h"
+#include "sensor_control.h"
 #include "snapshot.h"
-#include "stringutil.h"
+#include "string_util.h"
 #include "value.h"
 
 using namespace oi;

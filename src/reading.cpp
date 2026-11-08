@@ -8,7 +8,7 @@
 #include "observation.h"
 #include "sensor.h"
 #include "snapshot.h"
-#include "stringutil.h"
+#include "string_util.h"
 
 using namespace oi;
 using namespace oi::math;

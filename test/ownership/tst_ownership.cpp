@@ -3,10 +3,10 @@
 #include <string>
 
 #include "catch_compat.h"
-#include "chooselalib.h"
-#include "constructfunction.h"
+#include "choose_la_lib.h"
+#include "construct_function.h"
 #include "containers.h"
-#include "fitfunction.h"
+#include "fit_function.h"
 #include "point.h"
 
 using namespace oi;

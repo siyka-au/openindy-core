@@ -5,7 +5,7 @@
 #include <string>
 
 #include "catch_compat.h"
-#include "chooselalib.h"
+#include "choose_la_lib.h"
 #include "convert.h"
 #include "openindy/project.pb.h"
 #include "reading.h"

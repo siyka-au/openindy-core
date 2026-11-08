@@ -38,14 +38,14 @@ set(OPENINDY_VERSION "${OI_CORE_GIT_VERSION}" CACHE STRING
 #
 # Deliberately NOT derived from the git version above. The product version
 # should change on every commit; the plugin ABI must change only when the
-# plugin contract changes. See include/plugin/pluginabi.h for the reasoning
+# plugin contract changes. See include/plugin/plugin_abi.h for the reasoning
 # and for when to bump it.
 #
 # The header is the single source of truth. It is read here only so plugins
-# can stamp the value into their metaInfo.json, letting the app report a
+# can stamp the value into their meta_info.json, letting the app report a
 # mismatch by reading metadata instead of discovering it after a failed load.
 
-set(OI_PLUGIN_ABI_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/include/plugin/pluginabi.h")
+set(OI_PLUGIN_ABI_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/include/plugin/plugin_abi.h")
 file(STRINGS "${OI_PLUGIN_ABI_HEADER}" OI_PLUGIN_ABI_LINE
      REGEX "^#define[ \t]+OI_PLUGIN_ABI_VERSION[ \t]+[0-9]+")
 string(REGEX MATCH "[0-9]+$" OI_PLUGIN_ABI_VERSION_VALUE "${OI_PLUGIN_ABI_LINE}")
@@ -58,12 +58,12 @@ endif()
 # CACHE INTERNAL so it crosses the FetchContent/add_subdirectory boundary into
 # the plugin repos, which build core as a subproject.
 set(OI_PLUGIN_ABI_VERSION "${OI_PLUGIN_ABI_VERSION_VALUE}" CACHE INTERNAL
-    "OpenIndy plugin ABI version, read from include/plugin/pluginabi.h" FORCE)
+    "OpenIndy plugin ABI version, read from include/plugin/plugin_abi.h" FORCE)
 
 message(STATUS "OpenIndy plugin ABI version: ${OI_PLUGIN_ABI_VERSION}")
 
 # Bumping the header must re-run configure, otherwise the plugins' generated
-# metaInfo.json keeps the stale number while their binaries get the new one -
+# meta_info.json keeps the stale number while their binaries get the new one -
 # which would be a worse version of the bug this is fixing.
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${OI_PLUGIN_ABI_HEADER}")
 
@@ -103,50 +103,50 @@ add_library(OpenIndyCore SHARED
     src/geometry/paraboloid.cpp
     src/geometry/plane.cpp
     src/geometry/point.cpp
-    src/geometry/pointcloud.cpp
-    src/geometry/scalarentityangle.cpp
-    src/geometry/scalarentitydistance.cpp
-    src/geometry/scalarentitymeasurementseries.cpp
-    src/geometry/scalarentitytemperature.cpp
-    src/geometry/slottedhole.cpp
+    src/geometry/point_cloud.cpp
+    src/geometry/scalar_entity_angle.cpp
+    src/geometry/scalar_entity_distance.cpp
+    src/geometry/scalar_entity_measurement_series.cpp
+    src/geometry/scalar_entity_temperature.cpp
+    src/geometry/slotted_hole.cpp
     src/geometry/sphere.cpp
     src/geometry/torus.cpp
-    src/plugin/exchange/exchangedefinedformat.cpp
-    src/plugin/exchange/exchangeinterface.cpp
-    src/plugin/exchange/exchangesimpleascii.cpp
+    src/plugin/exchange/exchange_defined_format.cpp
+    src/plugin/exchange/exchange_interface.cpp
+    src/plugin/exchange/exchange_simple_ascii.cpp
     src/plugin/function/function.cpp
-    src/plugin/function/pipelinestage.cpp
-    src/plugin/pluginloader.cpp
-    src/plugin/networkAdjustment/bundleadjustment.cpp
+    src/plugin/function/pipeline_stage.cpp
+    src/plugin/plugin_loader.cpp
+    src/plugin/network_adjustment/bundle_adjustment.cpp
     src/plugin/sensor/sensor.cpp
-    src/plugin/simulation/simulationmodel.cpp
+    src/plugin/simulation/simulation_model.cpp
     src/util/util.cpp
-    src/coordinatesystem.cpp
+    src/coordinate_system.cpp
     src/direction.cpp
     src/element.cpp
     src/executor.cpp
     src/log.cpp
     src/feature.cpp
-    src/featurecontainer.cpp
-    src/featurewrapper.cpp
+    src/feature_container.cpp
+    src/feature_wrapper.cpp
     src/geometry.cpp
-    src/measurementconfig.cpp
+    src/measurement_config.cpp
     src/observation.cpp
-    src/oijob.cpp
+    src/oi_job.cpp
     src/position.cpp
     src/reading.cpp
-    src/sensorconfiguration.cpp
-    src/sensortype.cpp
-    src/connectionkind.cpp
-    src/calibratedconstellation.cpp
+    src/sensor_configuration.cpp
+    src/sensor_type.cpp
+    src/connection_kind.cpp
+    src/calibrated_constellation.cpp
     src/group.cpp
-    src/pointgroup.cpp
-    src/sensorcontrol.cpp
-    src/sensorworker.cpp
-    src/sensorworkermessage.cpp
+    src/point_group.cpp
+    src/sensor_control.cpp
+    src/sensor_worker.cpp
+    src/sensor_worker_message.cpp
     src/station.cpp
     src/statistic.cpp
-    src/trafoparam.cpp
+    src/trafo_param.cpp
 
     include/geometry/circle.h
     include/geometry/cone.h
@@ -159,80 +159,80 @@ add_library(OpenIndyCore SHARED
     include/geometry/paraboloid.h
     include/geometry/plane.h
     include/geometry/point.h
-    include/geometry/pointcloud.h
-    include/geometry/scalarentityangle.h
-    include/geometry/scalarentitydistance.h
-    include/geometry/scalarentitymeasurementseries.h
-    include/geometry/scalarentitytemperature.h
-    include/geometry/slottedhole.h
+    include/geometry/point_cloud.h
+    include/geometry/scalar_entity_angle.h
+    include/geometry/scalar_entity_distance.h
+    include/geometry/scalar_entity_measurement_series.h
+    include/geometry/scalar_entity_temperature.h
+    include/geometry/slotted_hole.h
     include/geometry/sphere.h
     include/geometry/torus.h
-    include/plugin/exchange/exchangedefinedformat.h
-    include/plugin/exchange/exchangeinterface.h
-    include/plugin/exchange/exchangeobserver.h
-    include/plugin/exchange/exchangesimpleascii.h
+    include/plugin/exchange/exchange_defined_format.h
+    include/plugin/exchange/exchange_interface.h
+    include/plugin/exchange/exchange_observer.h
+    include/plugin/exchange/exchange_simple_ascii.h
     include/plugin/plugin.h
-    include/plugin/pluginloader.h
-    include/plugin/pluginmetadata.h
-    include/plugin/function/constructfunction.h
-    include/plugin/function/fitfunction.h
+    include/plugin/plugin_loader.h
+    include/plugin/plugin_metadata.h
+    include/plugin/function/construct_function.h
+    include/plugin/function/fit_function.h
     include/plugin/function/function.h
-    include/plugin/function/functionobserver.h
-    include/plugin/function/pipelinestage.h
-    include/plugin/function/producertransform.h
-    include/plugin/function/generatefeaturefunction.h
-    include/plugin/function/geodeticfunction.h
-    include/plugin/function/objecttransformation.h
-    include/plugin/function/systemtransformation.h
-    include/plugin/function/specialfunction.h
-    include/plugin/sensor/lasertracker.h
+    include/plugin/function/function_observer.h
+    include/plugin/function/pipeline_stage.h
+    include/plugin/function/producer_transform.h
+    include/plugin/function/generate_feature_function.h
+    include/plugin/function/geodetic_function.h
+    include/plugin/function/object_transformation.h
+    include/plugin/function/system_transformation.h
+    include/plugin/function/special_function.h
+    include/plugin/sensor/laser_tracker.h
     include/plugin/sensor/sensor.h
-    include/plugin/sensor/sensorsink.h
-    include/plugin/sensor/totalstation.h
-    include/plugin/simulation/simulationmodel.h
+    include/plugin/sensor/sensor_sink.h
+    include/plugin/sensor/total_station.h
+    include/plugin/simulation/simulation_model.h
     include/util/types.h
     include/util/util.h
-    include/coordinatesystem.h
+    include/coordinate_system.h
     include/direction.h
     include/element.h
     include/feature.h
-    include/featureattributes.h
-    include/featureobserver.h
-    include/jobobserver.h
+    include/feature_attributes.h
+    include/feature_observer.h
+    include/job_observer.h
     include/log.h
-    include/messagesink.h
+    include/message_sink.h
     include/executor.h
-    include/stationobserver.h
-    include/featurecontainer.h
-    include/featurewrapper.h
+    include/station_observer.h
+    include/feature_container.h
+    include/feature_wrapper.h
     include/geometry.h
-    include/measurementconfig.h
-    include/measurementintent.h
+    include/measurement_config.h
+    include/measurement_intent.h
     include/observation.h
-    include/oijob.h
-    include/oirequestresponse.h
+    include/oi_job.h
+    include/oi_request_response.h
     include/position.h
     include/radius.h
     include/reading.h
-    include/sensorconfiguration.h
-    include/sensortype.h
-    include/connectionkind.h
-    include/calibratedconstellation.h
+    include/sensor_configuration.h
+    include/sensor_type.h
+    include/connection_kind.h
+    include/calibrated_constellation.h
     include/group.h
     include/guarded.h
-    include/pointgroup.h
-    include/pointcollection.h
-    include/sensorcontrol.h
-    include/sensorworker.h
-    include/sensorworkermessage.h
+    include/point_group.h
+    include/point_collection.h
+    include/sensor_control.h
+    include/sensor_worker.h
+    include/sensor_worker_message.h
     include/station.h
     include/core_export.h
     include/progress.h
     include/snapshot.h
     include/statistic.h
-    include/trafoparam.h
-    include/plugin/networkAdjustment/bundleadjustment.h
-    include/plugin/pluginabi.h
+    include/trafo_param.h
+    include/plugin/network_adjustment/bundle_adjustment.h
+    include/plugin/plugin_abi.h
 )
 
 target_compile_definitions(OpenIndyCore
@@ -257,7 +257,7 @@ target_include_directories(OpenIndyCore
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/plugin>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/plugin/exchange>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/plugin/function>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/plugin/networkAdjustment>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/plugin/network_adjustment>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/plugin/sensor>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/plugin/simulation>
         $<INSTALL_INTERFACE:include>
@@ -334,7 +334,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 endif()
 add_test(NAME progress COMMAND tst_progress)
 
-add_executable(tst_valuetypes test/valuetypes/tst_valuetypes.cpp)
+add_executable(tst_valuetypes test/value_types/tst_value_types.cpp)
 target_link_libraries(tst_valuetypes PRIVATE OpenIndyCore OpenIndyMath Catch2::Catch2WithMain)
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_compile_options(tst_valuetypes PRIVATE -Wall -Wextra -Wpedantic)
@@ -352,7 +352,7 @@ target_link_libraries(tst_strings PRIVATE Catch2::Catch2WithMain)
 target_include_directories(tst_strings PRIVATE include)
 add_test(NAME strings COMMAND tst_strings)
 
-add_executable(tst_featurenames test/featurenames/tst_featurenames.cpp)
+add_executable(tst_featurenames test/feature_names/tst_feature_names.cpp)
 target_link_libraries(tst_featurenames PRIVATE OpenIndyCore OpenIndyMath Catch2::Catch2WithMain)
 add_test(NAME featurenames COMMAND tst_featurenames)
 
@@ -361,8 +361,8 @@ target_include_directories(tst_guarded PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/inclu
 target_link_libraries(tst_guarded PRIVATE Catch2::Catch2WithMain)
 add_test(NAME guarded COMMAND tst_guarded)
 
-add_executable(tst_measurementconfig test/measurementconfig/tst_measurementconfig.cpp)
-target_compile_definitions(tst_measurementconfig PRIVATE SRCDIR="${CMAKE_CURRENT_SOURCE_DIR}/test/measurementconfig")
+add_executable(tst_measurementconfig test/measurement_config/tst_measurement_config.cpp)
+target_compile_definitions(tst_measurementconfig PRIVATE SRCDIR="${CMAKE_CURRENT_SOURCE_DIR}/test/measurement_config")
 target_link_libraries(tst_measurementconfig PRIVATE Catch2::Catch2WithMain OpenIndyCore OpenIndyMath)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
@@ -371,7 +371,7 @@ endif()
 
 add_test(NAME measurementconfig COMMAND tst_measurementconfig)
 
-add_executable(tst_pointcollection test/pointcollection/tst_pointcollection.cpp)
+add_executable(tst_pointcollection test/point_collection/tst_point_collection.cpp)
 target_link_libraries(tst_pointcollection PRIVATE Catch2::Catch2WithMain OpenIndyCore OpenIndyMath)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
@@ -389,7 +389,7 @@ endif()
 
 add_test(NAME ownership COMMAND tst_ownership)
 
-add_executable(tst_featurestorage test/featurestorage/tst_featurestorage.cpp)
+add_executable(tst_featurestorage test/feature_storage/tst_feature_storage.cpp)
 target_link_libraries(tst_featurestorage PRIVATE Catch2::Catch2WithMain OpenIndyCore OpenIndyMath)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
@@ -398,7 +398,7 @@ endif()
 
 add_test(NAME featurestorage COMMAND tst_featurestorage)
 
-add_executable(tst_featureobserver test/featureobserver/tst_featureobserver.cpp)
+add_executable(tst_featureobserver test/feature_observer/tst_feature_observer.cpp)
 target_link_libraries(tst_featureobserver PRIVATE Catch2::Catch2WithMain OpenIndyCore OpenIndyMath)
 target_include_directories(tst_featureobserver PRIVATE test/common)
 
@@ -408,7 +408,7 @@ endif()
 
 add_test(NAME featureobserver COMMAND tst_featureobserver)
 
-add_executable(tst_jobobserver test/jobobserver/tst_jobobserver.cpp)
+add_executable(tst_jobobserver test/job_observer/tst_job_observer.cpp)
 target_link_libraries(tst_jobobserver PRIVATE Catch2::Catch2WithMain OpenIndyCore OpenIndyMath)
 target_include_directories(tst_jobobserver PRIVATE test/common)
 
@@ -418,7 +418,7 @@ endif()
 
 add_test(NAME jobobserver COMMAND tst_jobobserver)
 
-add_executable(tst_messagesink test/messagesink/tst_messagesink.cpp)
+add_executable(tst_messagesink test/message_sink/tst_message_sink.cpp)
 target_link_libraries(tst_messagesink PRIVATE Catch2::Catch2WithMain OpenIndyCore OpenIndyMath)
 target_include_directories(tst_messagesink PRIVATE test/common)
 
@@ -428,7 +428,7 @@ endif()
 
 add_test(NAME messagesink COMMAND tst_messagesink)
 
-add_executable(tst_ownedsubgeometry test/ownedsubgeometry/tst_ownedsubgeometry.cpp)
+add_executable(tst_ownedsubgeometry test/owned_subgeometry/tst_owned_subgeometry.cpp)
 target_link_libraries(tst_ownedsubgeometry PRIVATE Catch2::Catch2WithMain OpenIndyCore OpenIndyMath)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
@@ -437,7 +437,7 @@ endif()
 
 add_test(NAME ownedsubgeometry COMMAND tst_ownedsubgeometry)
 
-add_executable(tst_measurementintent test/measurementintent/tst_measurementintent.cpp)
+add_executable(tst_measurementintent test/measurement_intent/tst_measurement_intent.cpp)
 target_link_libraries(tst_measurementintent PRIVATE Catch2::Catch2WithMain OpenIndyCore OpenIndyMath)
 target_include_directories(tst_measurementintent PRIVATE test/common)
 
@@ -447,7 +447,7 @@ endif()
 
 add_test(NAME measurementintent COMMAND tst_measurementintent)
 
-add_executable(tst_sensorworker test/sensorworker/tst_sensorworker.cpp)
+add_executable(tst_sensorworker test/sensor_worker/tst_sensor_worker.cpp)
 target_link_libraries(tst_sensorworker PRIVATE Catch2::Catch2WithMain OpenIndyCore OpenIndyMath)
 target_include_directories(tst_sensorworker PRIVATE test/common)
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
@@ -464,7 +464,7 @@ endif()
 
 add_test(NAME pipeline COMMAND tst_pipeline)
 
-add_executable(tst_typenames test/typenames/tst_typenames.cpp)
+add_executable(tst_typenames test/type_names/tst_type_names.cpp)
 target_link_libraries(tst_typenames PRIVATE Catch2::Catch2WithMain OpenIndyCore OpenIndyMath)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
@@ -475,20 +475,20 @@ add_test(NAME typenames COMMAND tst_typenames)
 
 # Plugin loader: tiny plugins built here (a good one, one with the wrong ABI
 # version, one without entry points) are loaded by path.
-add_library(oi_test_plugin_good MODULE test/pluginloader/good_plugin.cpp)
-add_library(oi_test_plugin_wrong_abi MODULE test/pluginloader/wrong_abi_plugin.cpp)
-add_library(oi_test_plugin_no_entry MODULE test/pluginloader/no_entry_plugin.cpp)
+add_library(oi_test_plugin_good MODULE test/plugin_loader/good_plugin.cpp)
+add_library(oi_test_plugin_wrong_abi MODULE test/plugin_loader/wrong_abi_plugin.cpp)
+add_library(oi_test_plugin_no_entry MODULE test/plugin_loader/no_entry_plugin.cpp)
 foreach(t oi_test_plugin_good oi_test_plugin_wrong_abi oi_test_plugin_no_entry)
     target_link_libraries(${t} PRIVATE OpenIndyCore OpenIndyMath)
     set_target_properties(${t} PROPERTIES PREFIX "" LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/test-plugins)
 endforeach()
-add_executable(tst_pluginloader test/pluginloader/tst_pluginloader.cpp)
+add_executable(tst_pluginloader test/plugin_loader/tst_plugin_loader.cpp)
 target_link_libraries(tst_pluginloader PRIVATE OpenIndyCore OpenIndyMath Catch2::Catch2WithMain)
 target_compile_definitions(tst_pluginloader PRIVATE
     OI_TEST_GOOD_PLUGIN="$<TARGET_FILE:oi_test_plugin_good>"
     OI_TEST_WRONG_ABI_PLUGIN="$<TARGET_FILE:oi_test_plugin_wrong_abi>"
     OI_TEST_NO_ENTRY_PLUGIN="$<TARGET_FILE:oi_test_plugin_no_entry>"
-    OI_TEST_NOT_A_LIBRARY="${CMAKE_CURRENT_SOURCE_DIR}/test/pluginloader/tst_pluginloader.cpp")
+    OI_TEST_NOT_A_LIBRARY="${CMAKE_CURRENT_SOURCE_DIR}/test/plugin_loader/tst_plugin_loader.cpp")
 add_dependencies(tst_pluginloader oi_test_plugin_good oi_test_plugin_wrong_abi oi_test_plugin_no_entry)
 add_test(NAME pluginloader COMMAND tst_pluginloader)
 
@@ -505,7 +505,7 @@ add_test(NAME log COMMAND tst_log)
 # the same test with its own library.
 option(OI_BUILD_CLI "Build the oi-cli example" ON)
 if(OI_BUILD_CLI)
-    add_executable(oi-cli tools/oi-cli/main.cpp)
+    add_executable(oi-cli tools/oi_cli/main.cpp)
     target_link_libraries(oi-cli PRIVATE OpenIndyCodec OpenIndyCore OpenIndyMath)
     if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         target_compile_options(oi-cli PRIVATE -Wall -Wextra -Wpedantic)

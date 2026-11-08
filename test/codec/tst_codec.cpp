@@ -8,24 +8,24 @@
 #include <string>
 #include <vector>
 
-#include "bundleadjustment.h"
-#include "chooselalib.h"
+#include "bundle_adjustment.h"
+#include "choose_la_lib.h"
 #include "config_codec.h"
-#include "constructfunction.h"
+#include "construct_function.h"
 #include "containers.h"
 #include "convert.h"
 #include "digest.h"
-#include "fitfunction.h"
+#include "fit_function.h"
 #include "geometry/plane.h"
 #include "geometry/point.h"
 #include "group.h"
 #include "network_convert.h"
-#include "oijob.h"
+#include "oi_job.h"
 #include "openindy/network.pb.h"
 #include "openindy/project.pb.h"
-#include "pointgroup.h"
+#include "point_group.h"
 #include "project_codec.h"
-#include "sensortype.h"
+#include "sensor_type.h"
 #include "station.h"
 
 using namespace oi;

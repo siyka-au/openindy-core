@@ -4,11 +4,11 @@
 #include <vector>
 
 #include "catch_compat.h"
-#include "chooselalib.h"
-#include "featurewrapper.h"
-#include "fitfunction.h"
+#include "choose_la_lib.h"
+#include "feature_wrapper.h"
+#include "fit_function.h"
 #include "geometry/point.h"
-#include "oijob.h"
+#include "oi_job.h"
 
 using namespace oi;
 using namespace oi::math;
@@ -20,7 +20,7 @@ namespace {
  * ePointElement input, reports a per-element residual the same way the
  * real fit functions do (Function::addDisplayResidual) and a stdev
  * (Statistic::setStdev), and reads/reports shouldBeUsed/isUsed exactly
- * like p_bestfitplane.cpp does. Stands in for BestFitPlane/BestFitPoint
+ * like p_best_fit_plane.cpp does. Stands in for BestFitPlane/BestFitPoint
  * so Stage 7b's generic pipeline mechanism (Function::exec()) can be
  * exercised without a cross-repo test dependency or real geometry math -
  * the mechanism under test lives entirely in Function::exec(), not in

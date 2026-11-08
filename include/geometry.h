@@ -9,10 +9,10 @@
 #include "direction.h"
 #include "feature.h"
 #include "guarded.h"
-#include "measurementconfig.h"
+#include "measurement_config.h"
 #include "position.h"
 #include "radius.h"
-#include "simulationmodel.h"
+#include "simulation_model.h"
 #include "statistic.h"
 
 namespace oi {
