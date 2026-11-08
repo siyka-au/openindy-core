@@ -262,14 +262,14 @@ message Reading {
   // The reading's own measurement; which one is set is its type. Other
   // representations (e.g. cartesian from polar) are derived on load.
   oneof data {
-    PolarReading polar = 10;
-    CartesianReading cartesian = 11;
-    Cartesian6DReading cartesian_6d = 12;
-    DirectionReading direction = 13;
-    DistanceReading distance = 14;
-    TemperatureReading temperature = 15;
-    LevelReading level = 16;
-    UndefinedReading undefined = 17;
+    PolarReading polar = 7;
+    CartesianReading cartesian = 8;
+    Cartesian6DReading cartesian_6d = 9;
+    DirectionReading direction = 10;
+    DistanceReading distance = 11;
+    TemperatureReading temperature = 12;
+    LevelReading level = 13;
+    UndefinedReading undefined = 14;
   }
 }
 
@@ -469,25 +469,25 @@ message Geometry {
   MeasurementConfigRef measurement_config = 11;
 
   oneof shape {
-    CircleShape circle = 20;
-    ConeShape cone = 21;
-    CylinderShape cylinder = 22;
-    EllipseShape ellipse = 23;
-    EllipsoidShape ellipsoid = 24;
-    HyperboloidShape hyperboloid = 25;
-    LineShape line = 26;
-    NurbsShape nurbs = 27;
-    ParaboloidShape paraboloid = 28;
-    PlaneShape plane = 29;
-    PointShape point = 30;
-    PointCloudShape point_cloud = 31;
-    ScalarEntityAngleShape scalar_angle = 32;
-    ScalarEntityDistanceShape scalar_distance = 33;
-    ScalarEntityMeasurementSeriesShape scalar_measurement_series = 34;
-    ScalarEntityTemperatureShape scalar_temperature = 35;
-    SlottedHoleShape slotted_hole = 36;
-    SphereShape sphere = 37;
-    TorusShape torus = 38;
+    CircleShape circle = 12;
+    ConeShape cone = 13;
+    CylinderShape cylinder = 14;
+    EllipseShape ellipse = 15;
+    EllipsoidShape ellipsoid = 16;
+    HyperboloidShape hyperboloid = 17;
+    LineShape line = 18;
+    NurbsShape nurbs = 19;
+    ParaboloidShape paraboloid = 20;
+    PlaneShape plane = 21;
+    PointShape point = 22;
+    PointCloudShape point_cloud = 23;
+    ScalarEntityAngleShape scalar_angle = 24;
+    ScalarEntityDistanceShape scalar_distance = 25;
+    ScalarEntityMeasurementSeriesShape scalar_measurement_series = 26;
+    ScalarEntityTemperatureShape scalar_temperature = 27;
+    SlottedHoleShape slotted_hole = 28;
+    SphereShape sphere = 29;
+    TorusShape torus = 30;
   }
 }
 
@@ -758,23 +758,23 @@ message Project {
   uint32 format_version = 1;
   // The file stores no file name or path (it may be renamed or moved): the
   // host names the job after the file it loaded it from.
-  google.protobuf.Timestamp saved_at = 3;
+  google.protobuf.Timestamp saved_at = 2;
   // Version of the application that wrote the file (informational).
-  string app_version = 4;
+  string app_version = 3;
   // The next id the job will hand out, so reloading never reuses an id.
-  int32 next_id = 5;
+  int32 next_id = 4;
   // The station and coordinate system that were active; both must exist.
-  int32 active_station = 6;
-  int32 active_coordinate_system = 7;
+  int32 active_station = 5;
+  int32 active_coordinate_system = 6;
 
   // Only the configs the project itself defines; standard configs belong to
   // the application and are found again by name.
-  repeated MeasurementConfig measurement_configs = 16;
-  repeated Geometry geometries = 17;
-  repeated Group groups = 18;
-  repeated Station stations = 19;
+  repeated MeasurementConfig measurement_configs = 7;
+  repeated Geometry geometries = 8;
+  repeated Group groups = 9;
+  repeated Station stations = 10;
   // Nominal, bundle and station coordinate systems alike.
-  repeated CoordinateSystem coordinate_systems = 20;
-  repeated TrafoParam trafo_params = 21;
-  repeated Observation observations = 22;
+  repeated CoordinateSystem coordinate_systems = 11;
+  repeated TrafoParam trafo_params = 12;
+  repeated Observation observations = 13;
 }

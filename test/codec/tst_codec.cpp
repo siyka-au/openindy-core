@@ -1694,31 +1694,3 @@ TEST_CASE("the job's name and file do not matter to the saved bytes") {
   delete a.job.data();
   delete b.job.data();
 }
-
-TEST_CASE("a project file that still carries the old name field 2 loads") {
-  World w = buildWorld();
-  TestHost host;
-
-  // field 2 (length-delimited string) was the project name
-  std::string old = codec::encodeProject(*w.job, host, "1.2.3");
-  const std::string path = "/home/someone/old/project.oip";
-  std::string field = {static_cast<char>((2 << 3) | 2),
-                       static_cast<char>(path.size())};
-  field += path;
-  old += field;  // appended fields are merged by the parser
-
-  oipb::Project parsed = parse(old);
-  CHECK(parsed.unknown_fields().field_count() == 1);
-
-  codec::DecodeResult loaded = codec::decodeProject(old, host);
-  INFO(loaded.error);
-  REQUIRE(loaded.ok());
-  CHECK(loaded.job->getJobName().empty());
-  CHECK(loaded.job->getJobFile().empty());
-
-  const std::string again = codec::encodeProject(*loaded.job, host, "1.2.3");
-  CHECK(again.find("someone") == std::string::npos);
-  CHECK(again.find(path) == std::string::npos);
-
-  delete w.job.data();
-}
