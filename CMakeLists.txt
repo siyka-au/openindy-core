@@ -291,6 +291,9 @@ add_library(OpenIndyCodec STATIC
 )
 set_target_properties(OpenIndyCodec PROPERTIES POSITION_INDEPENDENT_CODE ON)
 set(OI_PROTO_GENERATED_DIR ${CMAKE_CURRENT_BINARY_DIR}/generated)
+# protoc fails if its output directory is missing, and with the Makefile
+# generator two parallel protoc runs race to create it: create it at configure time.
+file(MAKE_DIRECTORY ${OI_PROTO_GENERATED_DIR})
 protobuf_generate(
     TARGET OpenIndyCodec
     LANGUAGE cpp
