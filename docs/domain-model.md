@@ -491,7 +491,7 @@ one place this pattern needed a real fix, not just a wrapper.
 
 ## 8. Plugin ABI
 
-`OI_PLUGIN_ABI_VERSION` in [`include/plugin/plugin_abi.h`](../include/plugin/plugin_abi.h)
+`kPluginAbiVersion` in [`include/plugin/plugin_abi.h`](../include/plugin/plugin_abi.h)
 is a **hand-declared integer**, never derived.
 
 It replaced a version derived from `git describe`'s commit count, which changed every
@@ -511,7 +511,7 @@ plugin IID on every core commit whether or not the contract changed.
   `abidiff` compares the public ABI of `libOpenIndyCore` (declarations from `include/`,
   including the domain types plugins pass across the boundary: `Geometry`, `Position`,
   `Reading`, `Observation`, ...) with the committed `abi/baseline.abi`. An incompatible
-  change without an `OI_PLUGIN_ABI_VERSION` bump fails; a bump without a refreshed
+  change without an `kPluginAbiVersion` bump fails; a bump without a refreshed
   baseline fails too. See [`abi/README.md`](../abi/README.md).
 
 ### Rejected: a separate `openindy-plugin-api` repo

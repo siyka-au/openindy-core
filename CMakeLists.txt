@@ -47,12 +47,12 @@ set(OPENINDY_VERSION "${OI_CORE_GIT_VERSION}" CACHE STRING
 
 set(OI_PLUGIN_ABI_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/include/plugin/plugin_abi.h")
 file(STRINGS "${OI_PLUGIN_ABI_HEADER}" OI_PLUGIN_ABI_LINE
-     REGEX "^#define[ \t]+OI_PLUGIN_ABI_VERSION[ \t]+[0-9]+")
-string(REGEX MATCH "[0-9]+$" OI_PLUGIN_ABI_VERSION_VALUE "${OI_PLUGIN_ABI_LINE}")
+     REGEX "^inline constexpr int kPluginAbiVersion[ \t]*=[ \t]*[0-9]+")
+string(REGEX MATCH "[0-9]+" OI_PLUGIN_ABI_VERSION_VALUE "${OI_PLUGIN_ABI_LINE}")
 if(NOT OI_PLUGIN_ABI_VERSION_VALUE)
     message(FATAL_ERROR
-        "Could not read OI_PLUGIN_ABI_VERSION from ${OI_PLUGIN_ABI_HEADER}. "
-        "It must contain a line of the form '#define OI_PLUGIN_ABI_VERSION <integer>'.")
+        "Could not read kPluginAbiVersion from ${OI_PLUGIN_ABI_HEADER}. "
+        "It must contain a line of the form 'inline constexpr int kPluginAbiVersion = <integer>;'.")
 endif()
 
 # CACHE INTERNAL so it crosses the FetchContent/add_subdirectory boundary into

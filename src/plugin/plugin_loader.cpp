@@ -123,50 +123,50 @@ PluginLoadResult PluginLoader::loadImpl(const std::string& path) {
   using DestroyFn = void (*)(Plugin*);
   using MetaFn = const char* (*)();
 
-  const auto abi = symbolAs<AbiFn>(handle, OI_PLUGIN_SYMBOL_ABI_VERSION);
-  const auto create = symbolAs<CreateFn>(handle, OI_PLUGIN_SYMBOL_CREATE);
-  const auto destroy = symbolAs<DestroyFn>(handle, OI_PLUGIN_SYMBOL_DESTROY);
+  const auto abi = symbolAs<AbiFn>(handle, kPluginSymbolAbiVersion);
+  const auto create = symbolAs<CreateFn>(handle, kPluginSymbolCreate);
+  const auto destroy = symbolAs<DestroyFn>(handle, kPluginSymbolDestroy);
   if (!abi || !create || !destroy) {
     closeLibrary(handle);
     result.status = PluginLoadStatus::kMissingEntryPoint;
     result.error = where + "not an OpenIndy plugin (missing entry point " +
-                   (!abi      ? OI_PLUGIN_SYMBOL_ABI_VERSION
-                    : !create ? OI_PLUGIN_SYMBOL_CREATE
-                              : OI_PLUGIN_SYMBOL_DESTROY) +
+                   (!abi      ? kPluginSymbolAbiVersion
+                    : !create ? kPluginSymbolCreate
+                              : kPluginSymbolDestroy) +
                    ")";
     return result;
   }
 
   const int pluginAbi = abi();
-  if (pluginAbi != OI_PLUGIN_ABI_VERSION) {
+  if (pluginAbi != kPluginAbiVersion) {
     closeLibrary(handle);
     result.status = PluginLoadStatus::kAbiMismatch;
     result.error = where + "built against plugin ABI " +
                    std::to_string(pluginAbi) + ", this build requires " +
-                   std::to_string(OI_PLUGIN_ABI_VERSION) +
+                   std::to_string(kPluginAbiVersion) +
                    ". Rebuild the plugin against the current core.";
     return result;
   }
 
   using ToolchainFn = const char* (*)();
   const auto toolchainFn =
-      symbolAs<ToolchainFn>(handle, OI_PLUGIN_SYMBOL_TOOLCHAIN);
+      symbolAs<ToolchainFn>(handle, kPluginSymbolToolchain);
   if (!toolchainFn) {
     closeLibrary(handle);
     result.status = PluginLoadStatus::kMissingEntryPoint;
     result.error = where +
                    "not a usable OpenIndy plugin (missing entry point " +
-                   OI_PLUGIN_SYMBOL_TOOLCHAIN + ")";
+                   kPluginSymbolToolchain + ")";
     return result;
   }
   const char* pluginToolchainRaw = toolchainFn();
   const std::string pluginToolchain =
       pluginToolchainRaw ? pluginToolchainRaw : "";
-  if (pluginToolchain != OI_TOOLCHAIN) {
+  if (pluginToolchain != oi::kToolchain) {
     closeLibrary(handle);
     result.status = PluginLoadStatus::kToolchainMismatch;
     result.error = where + "built with toolchain \"" + pluginToolchain +
-                   "\", this build requires \"" + OI_TOOLCHAIN +
+                   "\", this build requires \"" + oi::kToolchain +
                    "\". Rebuild the plugin with a compatible toolchain "
                    "(see docs/plugin-abi.md).";
     return result;
@@ -200,7 +200,7 @@ PluginLoadResult PluginLoader::loadImpl(const std::string& path) {
   loaded.destroy_ = destroy;
   loaded.abiVersion_ = pluginAbi;
   loaded.path_ = path;
-  if (const auto meta = symbolAs<MetaFn>(handle, OI_PLUGIN_SYMBOL_METADATA)) {
+  if (const auto meta = symbolAs<MetaFn>(handle, kPluginSymbolMetadata)) {
     if (const char* json = meta()) {
       loaded.metadataJson_ = json;
     }

@@ -11,9 +11,9 @@
 #
 # Rule enforced here (see include/plugin/plugin_abi.h):
 #   * abidiff reports an incompatible change (exit bit 8) and
-#     OI_PLUGIN_ABI_VERSION equals abi/baseline.version  -> FAIL: bump the
+#     kPluginAbiVersion equals abi/baseline.version  -> FAIL: bump the
 #     version and refresh the baseline in the same commit.
-#   * OI_PLUGIN_ABI_VERSION differs from abi/baseline.version -> FAIL until the
+#   * kPluginAbiVersion differs from abi/baseline.version -> FAIL until the
 #     baseline is refreshed (--update) in the same commit as the bump, whether
 #     or not abidiff sees a difference, so that the baseline always documents
 #     the ABI of the current version. The diff is printed.
@@ -65,9 +65,9 @@ if ! readelf -S "$lib" 2>/dev/null | grep -q '\.debug_info'; then
   exit 2
 fi
 
-version=$(sed -n 's/^#define[[:space:]]\{1,\}OI_PLUGIN_ABI_VERSION[[:space:]]\{1,\}\([0-9]\{1,\}\).*/\1/p' \
+version=$(sed -n 's/^inline constexpr int kPluginAbiVersion[[:space:]]*=[[:space:]]*\([0-9]\{1,\}\);.*/\1/p' \
           "$root/include/plugin/plugin_abi.h")
-[ -n "$version" ] || { echo "abi-check: cannot read OI_PLUGIN_ABI_VERSION" >&2; exit 2; }
+[ -n "$version" ] || { echo "abi-check: cannot read kPluginAbiVersion" >&2; exit 2; }
 
 baseline=$root/abi/baseline.abi
 baseline_version_file=$root/abi/baseline.version
@@ -90,7 +90,7 @@ sed -i "s#path='$root/#path='#" "$current"
 if [ "$update" -eq 1 ]; then
   cp "$current" "$baseline"
   echo "$version" > "$baseline_version_file"
-  echo "abi-check: baseline refreshed for OI_PLUGIN_ABI_VERSION $version; commit abi/baseline.abi and abi/baseline.version"
+  echo "abi-check: baseline refreshed for kPluginAbiVersion $version; commit abi/baseline.abi and abi/baseline.version"
   exit 0
 fi
 
@@ -121,14 +121,14 @@ if [ $((rc & 3)) -ne 0 ]; then
 fi
 
 if [ "$version" != "$base_version" ]; then
-  echo "abi-check: FAIL - OI_PLUGIN_ABI_VERSION is $version but the baseline is for $base_version." >&2
+  echo "abi-check: FAIL - kPluginAbiVersion is $version but the baseline is for $base_version." >&2
   echo "  Refresh it in the same commit as the bump: scripts/abi-check.sh --update" >&2
   exit 1
 fi
 
 if [ $((rc & 8)) -ne 0 ]; then
-  echo "abi-check: FAIL - incompatible ABI change with OI_PLUGIN_ABI_VERSION unchanged ($version)." >&2
-  echo "  Bump OI_PLUGIN_ABI_VERSION in include/plugin/plugin_abi.h and refresh the baseline" >&2
+  echo "abi-check: FAIL - incompatible ABI change with kPluginAbiVersion unchanged ($version)." >&2
+  echo "  Bump kPluginAbiVersion in include/plugin/plugin_abi.h and refresh the baseline" >&2
   echo "  (scripts/abi-check.sh --update) in the same commit." >&2
   exit 1
 fi

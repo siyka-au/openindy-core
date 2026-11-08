@@ -244,24 +244,9 @@ class OI_CORE_EXPORT BundleAdjustment : public oi::Trackable {
 
 }  // namespace oi
 
-#ifndef STR
-#define STR(x) #x
-#endif
-#ifndef STR2
-#define STR2(x) STR(x)
-#endif
-
-#ifndef CONCAT
-#define CONCAT(a, b) a##b
-#endif
-#ifndef CONCAT2
-#define CONCAT2(a, b) CONCAT(a, b)
-#endif
-
 #include "plugin_abi.h"
 
-#define BUNDLEADJUSTMENT_PREFIX de.openIndy.plugin.bundleAdjustment.v
-#define BundleAdjustment_iidd \
-  STR2(CONCAT2(BUNDLEADJUSTMENT_PREFIX, OI_PLUGIN_ABI_VERSION))
+inline const std::string BundleAdjustment_iidd =
+    oi::pluginIid("de.openIndy.plugin.bundleAdjustment.v");
 
 #endif  // OI_CORE_PLUGIN_NETWORK_ADJUSTMENT_BUNDLE_ADJUSTMENT_H_

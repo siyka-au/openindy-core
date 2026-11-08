@@ -61,10 +61,14 @@ struct StringMaker<oi_test::CompareResult> {
 };
 }  // namespace Catch
 
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage): REQUIRE reports the call-site
+// expression text
 #define OI_COMPARE(actual, expected) \
   REQUIRE(oi_test::compare((actual), (expected)))
 
 // a condition with an explanation (const char* or std::string)
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage): REQUIRE/INFO capture the
+// call-site expression
 #define OI_REQUIRE2(condition, message) \
   do {                                  \
     INFO(message);                      \

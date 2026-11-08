@@ -12,19 +12,18 @@ Checks: >
   modernize-make-unique,
   modernize-make-shared,
   misc-throw-by-value-catch-by-reference,
-  -cppcoreguidelines-pro-bounds-pointer-arithmetic,
   -cppcoreguidelines-avoid-magic-numbers,
-  -cppcoreguidelines-macro-usage,
-  -cppcoreguidelines-macro-to-enum,
-  -modernize-macro-to-enum,
-  -cppcoreguidelines-non-private-member-variables-in-classes,
-  -cppcoreguidelines-avoid-non-const-global-variables
-# owning-memory: enabled. The core owns by raw new/delete today; the findings are the
-#   to-do list for the unique_ptr migration (warnings only, WarningsAsErrors is empty).
-# macro-to-enum: OI_PLUGIN_ABI_VERSION must stay a #define (CMake parses it out of plugin_abi.h).
-# macro-usage: the OI_DECLARE_PLUGIN* entry-point macros are unavoidable.
-# magic-numbers / non-private-members / non-const-globals: too noisy for the
-#   legacy code; revisit once the rest is clean.
+  -cppcoreguidelines-non-private-member-variables-in-classes
+# owning-memory: enabled (test/.clang-tidy turns it off for the tests).
+# magic-numbers / non-private-member-variables: still disabled, being worked off.
+# macro-usage: the OI_DECLARE_PLUGIN* entry-point macros are the only ones left
+#   in include/ and src/ (one NOLINT with the reason at the definition).
+# Anchored on the checkout directory name (CI checks the repo out as
+# openindy-core), so the sibling repos' and third-party headers are not linted.
+# sha256.h is being replaced by a library; its findings are not ours to fix.
+ExcludeHeaderFilterRegex: '.*/openindy-core/src/codec/sha256\.h'
 WarningsAsErrors: ''
-HeaderFilterRegex: '(include|src|controller|models|ui|functions|sensors|exchange|cf|tools|simulations)/.*'
+HeaderFilterRegex: '.*/openindy-core/(include|src|tools|test)/.*'
+# FormatStyle: clang-tidy formats the code its --fix fix-its produce with the
+# .clang-format found above the source file; it does not change what is reported.
 FormatStyle: file

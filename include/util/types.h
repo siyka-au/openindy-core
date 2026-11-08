@@ -1,6 +1,7 @@
 #ifndef OI_CORE_UTIL_TYPES_H_
 #define OI_CORE_UTIL_TYPES_H_
 #include <map>
+#include <numbers>
 #include <string>
 #include <vector>
 
@@ -12,9 +13,12 @@ namespace oi {
 // define scalar constants
 // #######################
 
-#define PI 3.141592653589793
-#define RHO_DEGREE (180.0 / PI)
-#define RHO_GON (200.0 / PI)
+//! pi
+inline constexpr double kPi = std::numbers::pi;
+//! degrees per radian
+inline constexpr double kRhoDegree = 180.0 / kPi;
+//! gon (grad) per radian
+inline constexpr double kRhoGon = 200.0 / kPi;
 
 // #######################
 // available message types

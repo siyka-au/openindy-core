@@ -36,7 +36,7 @@ class OI_CORE_EXPORT LoadedPlugin {
   }
 
   [[nodiscard]] const std::string& path() const noexcept { return path_; }
-  /// The ABI version the library reports (equals OI_PLUGIN_ABI_VERSION).
+  /// The ABI version the library reports (equals kPluginAbiVersion).
   [[nodiscard]] int abiVersion() const noexcept { return abiVersion_; }
   /// Text returned by the library's oi_plugin_metadata_json(); may be empty.
   [[nodiscard]] const std::string& metadataJson() const noexcept {
@@ -80,7 +80,7 @@ struct PluginLoadResult {
  * \brief Loads a compute plugin (a shared library with the entry points of
  * OI_DECLARE_PLUGIN) with dlopen/LoadLibrary. Std-only; knows nothing of Qt.
  *
- * The library's ABI version is read and compared with OI_PLUGIN_ABI_VERSION
+ * The library's ABI version is read and compared with kPluginAbiVersion
  * before oi_plugin_create is ever called, then its toolchain string (see
  * toolchain.h) is compared with the host's. Failures (missing file, not a
  * library, a missing entry point, an ABI or toolchain mismatch, a factory that

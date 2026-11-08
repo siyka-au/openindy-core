@@ -1,0 +1,12 @@
+# Tests inherit the repo's checks. Expected values in assertions are literals
+# by nature, so avoid-magic-numbers is off here; a named constant per expected
+# value would only hide what the test asserts.
+InheritParentConfig: true
+#
+# owning-memory is off for the same kind of reason: the tests exercise the
+# core's raw owning-pointer API (OiJob and friends hand out `new`ed objects the
+# caller deletes), and wrapping every call in a smart pointer would obscure what
+# the test checks. Production code (src/, tools/) keeps owning-memory on.
+Checks: >
+  -cppcoreguidelines-avoid-magic-numbers,
+  -cppcoreguidelines-owning-memory

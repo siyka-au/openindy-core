@@ -10,6 +10,8 @@
 #include "openindy/project.pb.h"
 #include "reading.h"
 
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage): REQUIRE reports the call-site
+// expression
 #define COMPARE_DOUBLE(actual, expected, threshold) \
   OI_REQUIRE2(                                      \
       std::abs(actual - expected) < threshold,      \

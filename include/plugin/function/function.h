@@ -185,7 +185,7 @@ class OI_CORE_EXPORT FunctionUtil {
     double cos = 0.0;  // cosine between normal and direction
     OiVec::dot(cos, normal, direction);
     double angle = std::abs(std::acos(cos));
-    if (angle > (PI / 2.0) && angle < PI) {
+    if (angle > (kPi / 2.0) && angle < kPi) {
       normal = normal * -1.0;
     }
   }
@@ -496,23 +496,9 @@ class OI_CORE_EXPORT Function : public oi::Trackable {
 
 }  // namespace oi
 
-#ifndef STR
-#define STR(x) #x
-#endif
-#ifndef STR2
-#define STR2(x) STR(x)
-#endif
-
-#ifndef CONCAT
-#define CONCAT(a, b) a##b
-#endif
-#ifndef CONCAT2
-#define CONCAT2(a, b) CONCAT(a, b)
-#endif
-
 #include "plugin_abi.h"
 
-#define FUNCTION_PREFIX de.openIndy.plugin.function.v
-#define Function_iid STR2(CONCAT2(FUNCTION_PREFIX, OI_PLUGIN_ABI_VERSION))
+inline const std::string Function_iid =
+    oi::pluginIid("de.openIndy.plugin.function.v");
 
 #endif  // OI_CORE_PLUGIN_FUNCTION_FUNCTION_H_

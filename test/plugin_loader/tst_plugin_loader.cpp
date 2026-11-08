@@ -10,7 +10,7 @@ TEST_CASE("PluginLoader loads a valid plugin") {
   REQUIRE(result);
   CHECK(result.status == oi::PluginLoadStatus::kOk);
   CHECK(result.error.empty());
-  CHECK(result.plugin.abiVersion() == OI_PLUGIN_ABI_VERSION);
+  CHECK(result.plugin.abiVersion() == kPluginAbiVersion);
   CHECK(result.plugin.path() == OI_TEST_GOOD_PLUGIN);
   CHECK(result.plugin.metadataJson() == R"({"name": "test plugin"})");
   CHECK(result.plugin->createSensors().empty());
@@ -42,11 +42,10 @@ TEST_CASE("PluginLoader rejects an ABI mismatch before creating anything") {
   auto result = oi::PluginLoader::load(OI_TEST_WRONG_ABI_PLUGIN);
   CHECK_FALSE(result);
   CHECK(result.status == oi::PluginLoadStatus::kAbiMismatch);
-  CHECK(result.error.find("ABI " + std::to_string(OI_PLUGIN_ABI_VERSION + 1)) !=
+  CHECK(result.error.find("ABI " + std::to_string(kPluginAbiVersion + 1)) !=
         std::string::npos);
-  CHECK(
-      result.error.find("requires " + std::to_string(OI_PLUGIN_ABI_VERSION)) !=
-      std::string::npos);
+  CHECK(result.error.find("requires " + std::to_string(kPluginAbiVersion)) !=
+        std::string::npos);
 }
 
 TEST_CASE("PluginLoader reports a library without entry points") {
@@ -54,7 +53,7 @@ TEST_CASE("PluginLoader reports a library without entry points") {
   CHECK_FALSE(result);
   CHECK(result.status == oi::PluginLoadStatus::kMissingEntryPoint);
   CHECK(result.error.find("missing entry point") != std::string::npos);
-  CHECK(result.error.find(OI_PLUGIN_SYMBOL_ABI_VERSION) != std::string::npos);
+  CHECK(result.error.find(kPluginSymbolAbiVersion) != std::string::npos);
 }
 
 TEST_CASE("PluginLoader reports a missing file") {
@@ -73,11 +72,12 @@ TEST_CASE("PluginLoader reports a file that is not a library") {
 }
 
 TEST_CASE("the host toolchain string is known and well formed") {
-  CHECK(std::string(OI_TOOLCHAIN) == std::string(OI_TOOLCHAIN_CXX_ABI
-                                                 "-" OI_TOOLCHAIN_STDLIB
-                                                 "-" OI_TOOLCHAIN_OS
-                                                 "-" OI_TOOLCHAIN_ARCH));
-  CHECK(std::string(OI_TOOLCHAIN).find("unknown") == std::string::npos);
+  const std::string expected = std::string(oi::kToolchainCxxAbi) + "-" +
+                               std::string(oi::kToolchainStdlib) + "-" +
+                               std::string(oi::kToolchainOs) + "-" +
+                               std::string(oi::kToolchainArch);
+  CHECK(std::string(oi::kToolchain) == expected);
+  CHECK(std::string(oi::kToolchain).find("unknown") == std::string::npos);
 }
 
 TEST_CASE("PluginLoader rejects a foreign toolchain and names both strings") {
@@ -85,14 +85,14 @@ TEST_CASE("PluginLoader rejects a foreign toolchain and names both strings") {
   CHECK_FALSE(result);
   CHECK(result.status == oi::PluginLoadStatus::kToolchainMismatch);
   CHECK(result.error.find("itanium-libfoo-plan9-m68k") != std::string::npos);
-  CHECK(result.error.find(OI_TOOLCHAIN) != std::string::npos);
+  CHECK(result.error.find(oi::kToolchain) != std::string::npos);
 }
 
 TEST_CASE("PluginLoader rejects a plugin without the toolchain entry point") {
   auto result = oi::PluginLoader::load(OI_TEST_NO_TOOLCHAIN_PLUGIN);
   CHECK_FALSE(result);
   CHECK(result.status == oi::PluginLoadStatus::kMissingEntryPoint);
-  CHECK(result.error.find(OI_PLUGIN_SYMBOL_TOOLCHAIN) != std::string::npos);
+  CHECK(result.error.find(kPluginSymbolToolchain) != std::string::npos);
 }
 
 TEST_CASE("the ABI version is checked before the toolchain") {

@@ -17,6 +17,7 @@
 #include <cctype>
 #include <charconv>
 #include <cmath>
+#include <memory>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -57,8 +58,8 @@ inline constexpr int kTieWindow = 40;
 [[nodiscard]] inline std::string fixedDigits(double absValue, int places) {
   std::string out(static_cast<std::size_t>(places) + kTieWindow + 330, '\0');
   const auto format = [&](int p) {
-    const auto r = std::to_chars(out.data(), out.data() + out.size(), absValue,
-                                 std::chars_format::fixed, p);
+    const auto r = std::to_chars(out.data(), std::to_address(out.end()),
+                                 absValue, std::chars_format::fixed, p);
     return std::string(out.data(), r.ptr);
   };
   const std::string wide = format(places + kTieWindow);
@@ -84,7 +85,7 @@ struct Scientific {
 [[nodiscard]] inline Scientific scientificDigits(double absValue, int sig) {
   std::string buffer(static_cast<std::size_t>(sig) + kTieWindow + 16, '\0');
   const auto format = [&](int p) {
-    const auto r = std::to_chars(buffer.data(), buffer.data() + buffer.size(),
+    const auto r = std::to_chars(buffer.data(), std::to_address(buffer.end()),
                                  absValue, std::chars_format::scientific, p);
     return std::string(buffer.data(), r.ptr);
   };
@@ -256,11 +257,12 @@ namespace detail {
     return std::nullopt;
   }
   double value = 0.0;
-  const auto result = std::from_chars(s.data(), s.data() + s.size(), value);
+  const auto result =
+      std::from_chars(s.data(), std::to_address(s.end()), value);
   if (result.ec == std::errc::result_out_of_range) {
     return std::nullopt;
   }
-  if (result.ec != std::errc() || result.ptr != s.data() + s.size()) {
+  if (result.ec != std::errc() || result.ptr != std::to_address(s.end())) {
     return std::nullopt;
   }
   return value;
@@ -283,8 +285,8 @@ namespace detail {
   }
   int value = 0;
   const auto result =
-      std::from_chars(s.data(), s.data() + s.size(), value, base);
-  if (result.ec != std::errc() || result.ptr != s.data() + s.size()) {
+      std::from_chars(s.data(), std::to_address(s.end()), value, base);
+  if (result.ec != std::errc() || result.ptr != std::to_address(s.end())) {
     return std::nullopt;
   }
   return value;

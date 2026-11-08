@@ -54,6 +54,19 @@
  * refreshed (scripts/abi-check.sh --update) in the same commit. See
  * abi/README.md.
  */
-#define OI_PLUGIN_ABI_VERSION 18
+#include <string>
+#include <string_view>
+
+inline constexpr int kPluginAbiVersion = 18;
+
+namespace oi {
+
+//! The interface identifier ("iid") of a plugin interface: `prefix` followed by
+//! the ABI version, so an interface revision never matches an older one.
+[[nodiscard]] inline std::string pluginIid(std::string_view prefix) {
+  return std::string(prefix) + std::to_string(kPluginAbiVersion);
+}
+
+}  // namespace oi
 
 #endif  // OI_CORE_PLUGIN_PLUGIN_ABI_H_

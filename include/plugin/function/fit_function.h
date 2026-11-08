@@ -293,7 +293,7 @@ class OI_CORE_EXPORT BestFitCircleUtil : public BestFitUtil {
     double angle = 0.0;  // angle between n and direction
     OiVec::dot(angle, n, direction);
     angle = std::abs(std::acos(angle));
-    if (angle > (PI / 2.0)) {
+    if (angle > (kPi / 2.0)) {
       n = n * -1.0;
     }
 
@@ -635,7 +635,7 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
       angle = std::abs(std::acos(angle));
     }
 
-    if (angle > (PI / 2.0)) {
+    if (angle > (kPi / 2.0)) {
       Direction cylinderDirection = cylinder.getDirection();
       cylinderDirection.setVector(axis * -1.0);
       cylinder.setCylinder(cylinderPosition, cylinderDirection,
@@ -829,8 +829,8 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
 
     // calculate rotation angles
     if (pn.getAt(1) == 0 && pn.getAt(2) == 0) {
-      a_alpha = PI / 2;
-      b_alpha = PI / 2;
+      a_alpha = kPi / 2;
+      b_alpha = kPi / 2;
     } else if (pn.getAt(1) == 0) {
       a_alpha = 0;
       b_alpha = 0;
@@ -864,8 +864,8 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
     pn.setAt(2, _y * std::sin(alpha) + _z * std::cos(alpha));
 
     if (pn.getAt(0) == 0 && pn.getAt(2) == 0) {
-      a_beta = PI / 2;
-      b_beta = PI / 2;
+      a_beta = kPi / 2;
+      b_beta = kPi / 2;
     } else if (pn.getAt(0) == 0) {
       a_beta = 0;
       b_beta = 0;
@@ -1413,12 +1413,12 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
    */
   double getCorrespondingCos(double a) {
     while (a < 0.0) {
-      a += 2.0 * PI;
+      a += 2.0 * kPi;
     }
-    while (a > 2.0 * PI) {
-      a -= 2.0 * PI;
+    while (a > 2.0 * kPi) {
+      a -= 2.0 * kPi;
     }
-    return 2.0 * PI - a;
+    return 2.0 * kPi - a;
   }
 
   /*!
@@ -1428,15 +1428,15 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
    */
   double getCorrespondingSin(double a) {
     while (a < 0.0) {
-      a += 2.0 * PI;
+      a += 2.0 * kPi;
     }
-    while (a > 2.0 * PI) {
-      a -= 2.0 * PI;
+    while (a > 2.0 * kPi) {
+      a -= 2.0 * kPi;
     }
-    if (a <= PI) {
-      return PI - a;
+    if (a <= kPi) {
+      return kPi - a;
     } else {
-      return 3.0 * PI - a;
+      return 3.0 * kPi - a;
     }
   }
 
@@ -1447,9 +1447,9 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
    * \return
    */
   bool compareAngles(double a, double b) {
-    double t = 2.0 * PI;
+    double t = 2.0 * kPi;
 
-    // a und b between 0 und 2*PI
+    // a und b between 0 und 2*kPi
     while (a < 0.0) {
       a += t;
     }
@@ -1472,26 +1472,12 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
 };
 
 };  // namespace oi
-#ifndef STR
-#define STR(x) #x
-#endif
-#ifndef STR2
-#define STR2(x) STR(x)
-#endif
-
-#ifndef CONCAT
-#define CONCAT(a, b) a##b
-#endif
-#ifndef CONCAT2
-#define CONCAT2(a, b) CONCAT(a, b)
-#endif
 
 #include <format>
 
 #include "plugin_abi.h"
 
-#define FITFUNCTION_PREFIX de.openIndy.plugin.function.fitFunction.v
-#define FitFunction_iidd \
-  STR2(CONCAT2(FITFUNCTION_PREFIX, OI_PLUGIN_ABI_VERSION))
+inline const std::string FitFunction_iidd =
+    oi::pluginIid("de.openIndy.plugin.function.fitFunction.v");
 
 #endif  // OI_CORE_PLUGIN_FUNCTION_FIT_FUNCTION_H_

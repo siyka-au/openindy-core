@@ -365,7 +365,7 @@ bool TrafoParam::setTransformationParameters(const OiMat& rotation,
     if (std::fabs(std::cos(r.getAt(1)) * std::cos(r.getAt(2))) -
             std::fabs(rotation.getAt(0, 0)) >
         0.01) {
-      r.setAt(1, PI - r.getAt(1));
+      r.setAt(1, kPi - r.getAt(1));
     }
 
     this->translation = t;

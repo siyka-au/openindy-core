@@ -2,6 +2,7 @@
 
 #include <cctype>
 #include <map>
+#include <mutex>
 #include <vector>
 
 #include "containers.h"
@@ -33,8 +34,6 @@ std::map<std::string, SensorType>& registry() {
   static std::map<std::string, SensorType> instance;
   return instance;
 }
-
-bool seeded = false;
 
 }  // namespace
 
@@ -96,18 +95,17 @@ bool SensorType::operator!=(const SensorType& other) const {
 }
 
 void SensorTypeRegistry::ensureSeeded() {
-  if (seeded) {
-    return;
-  }
-  seeded = true;
-  registry().insert_or_assign(
-      std::string("laserTracker"),
-      SensorType(std::string("laserTracker"), std::string("Laser Tracker"),
-                 std::string("laserTracker")));
-  registry().insert_or_assign(
-      std::string("totalStation"),
-      SensorType(std::string("totalStation"), std::string("Total Station"),
-                 std::string("totalStation")));
+  static std::once_flag seeded;
+  std::call_once(seeded, [] {
+    registry().insert_or_assign(
+        std::string("laserTracker"),
+        SensorType(std::string("laserTracker"), std::string("Laser Tracker"),
+                   std::string("laserTracker")));
+    registry().insert_or_assign(
+        std::string("totalStation"),
+        SensorType(std::string("totalStation"), std::string("Total Station"),
+                   std::string("totalStation")));
+  });
 }
 
 void SensorTypeRegistry::registerType(const SensorType& type) {

@@ -20,7 +20,7 @@ A plugin and the host it is loaded into must share:
 | OS | Linux plugins load into Linux hosts only. |
 | Compiler family and standard library | In practice libstdc++ with GCC or clang (both Itanium C++ ABI). libc++ and libstdc++ are mutually incompatible. |
 | Architecture and pointer width | x86_64 with x86_64, and so on. |
-| `OI_PLUGIN_ABI_VERSION` | Hand-declared in `include/plugin/plugin_abi.h`; see `abi/README.md`. |
+| `kPluginAbiVersion` | Hand-declared in `include/plugin/plugin_abi.h`; see `abi/README.md`. |
 
 Rules of thumb:
 
@@ -57,7 +57,7 @@ after the ABI version check and before `oi_plugin_create`. A mismatch is
 refused with `PluginLoadStatus::kToolchainMismatch` and an error naming both
 strings; a plugin without the symbol is refused like a missing entry point
 (`kMissingEntryPoint`). The compiler name (`gcc`, `clang`, `mingw`, `msvc`) is
-available as `OI_TOOLCHAIN_COMPILER` and is reported in the plugin metadata's
+available as `oi::kToolchainCompiler` and is reported in the plugin metadata's
 `compiler` field for diagnostics only (the plugins' CMake and
 `OiMetaData::getCompiler()` use the same words).
 

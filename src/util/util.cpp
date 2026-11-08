@@ -20,84 +20,72 @@ namespace internal {
 // settings keys. Changing one silently breaks loading. See util.h.
 // ############################################################################
 
-std::map<ElementTypes, std::string> elementTypesMap;
-std::map<ElementTypes, std::string> elementTypesPluralMap;
-std::map<FeatureTypes, std::string> featureTypesMap;
-std::map<GeometryTypes, std::string> geometryTypesMap;
+struct Tables {
+  std::map<ElementTypes, std::string> elementTypesMap;
+  std::map<ElementTypes, std::string> elementTypesPluralMap;
+  std::map<FeatureTypes, std::string> featureTypesMap;
+  std::map<GeometryTypes, std::string> geometryTypesMap;
 
-// ############################################################################
-// DISPLAY NAMES - shown to the user, never persisted, safe to edit freely.
-// Deliberately separate maps rather than a transform of the tokens above, so
-// that changing what a user reads can never change what a file contains.
-// ############################################################################
+  // ############################################################################
+  // DISPLAY NAMES - shown to the user, never persisted, safe to edit freely.
+  // Deliberately separate maps rather than a transform of the tokens above, so
+  // that changing what a user reads can never change what a file contains.
+  // ############################################################################
 
-std::map<ElementTypes, std::string> elementTypesDisplayMap;
-std::map<ElementTypes, std::string> elementTypesDisplayPluralMap;
-std::map<FeatureTypes, std::string> featureTypesDisplayMap;
-std::map<GeometryTypes, std::string> geometryTypesDisplayMap;
+  std::map<ElementTypes, std::string> elementTypesDisplayMap;
+  std::map<ElementTypes, std::string> elementTypesDisplayPluralMap;
+  std::map<FeatureTypes, std::string> featureTypesDisplayMap;
+  std::map<GeometryTypes, std::string> geometryTypesDisplayMap;
 
-std::map<ElementTypes, std::string> elementTypeIcons;
-std::map<FeatureTypes, std::string> featureTypeIcons;
+  std::map<ElementTypes, std::string> elementTypeIcons;
+  std::map<FeatureTypes, std::string> featureTypeIcons;
 
-std::map<ReadingTypes, std::string> readingTypesMap;
+  std::map<ReadingTypes, std::string> readingTypesMap;
 
-std::map<FeatureDisplayAttributes, std::string> featureDisplayAttributesMap;
-std::map<TrafoParamDisplayAttributes, std::string>
-    trafoParamDisplayAttributesMap;
-std::map<ObservationDisplayAttributes, std::string>
-    observationDisplayAttributesMap;
-std::map<ReadingDisplayAttributes, std::string> readingDisplayAttributesMap;
+  std::map<FeatureDisplayAttributes, std::string> featureDisplayAttributesMap;
+  std::map<TrafoParamDisplayAttributes, std::string>
+      trafoParamDisplayAttributesMap;
+  std::map<ObservationDisplayAttributes, std::string>
+      observationDisplayAttributesMap;
+  std::map<ReadingDisplayAttributes, std::string> readingDisplayAttributesMap;
 
-std::vector<int> featureDisplayAttributes;
-std::vector<ObservationDisplayAttributes> observationDisplayAttributes;
-std::vector<ReadingDisplayAttributes> readingDisplayAttributes;
+  std::vector<int> featureDisplayAttributes;
+  std::vector<ObservationDisplayAttributes> observationDisplayAttributes;
+  std::vector<ReadingDisplayAttributes> readingDisplayAttributes;
 
-std::map<UnitType, std::string> unitTypesMap;
+  std::map<UnitType, std::string> unitTypesMap;
 
-std::map<SensorFunctions, std::string> sensorFunctionsMap;
+  std::map<SensorFunctions, std::string> sensorFunctionsMap;
 
-std::map<ToolTypes, std::string> toolTypesMap;
+  std::map<ToolTypes, std::string> toolTypesMap;
 
-std::map<MessageTypes, std::string> messageTypesMap;
+  std::map<MessageTypes, std::string> messageTypesMap;
 
-std::map<GeometryParameters, std::string> geometryParametersMap;
-std::map<TrafoParamParameters, std::string> trafoParamParametersMap;
+  std::map<GeometryParameters, std::string> geometryParametersMap;
+  std::map<TrafoParamParameters, std::string> trafoParamParametersMap;
 
-std::map<ActualNominalFilter, std::string> actualNominalFilterMap;
+  std::map<ActualNominalFilter, std::string> actualNominalFilterMap;
 
-std::string undefined = "";
+  std::map<MaterialsTempComp, std::string> materialStringsMap;
+  std::map<MaterialsTempComp, double> materialValuesMap;
 
-std::map<MaterialsTempComp, std::string> materialStringsMap;
-std::map<MaterialsTempComp, double> materialValuesMap;
+  Tables();
+};
 
-bool isInit = false;
+//! The lookup tables, built once on first use (thread-safe).
+const Tables& tables();
 
-void init() {
-  // clear maps
-  elementTypesMap.clear();
-  elementTypesPluralMap.clear();
-  elementTypesDisplayMap.clear();
-  elementTypesDisplayPluralMap.clear();
-  featureTypesDisplayMap.clear();
-  geometryTypesDisplayMap.clear();
-  featureTypesMap.clear();
-  geometryTypesMap.clear();
-  readingTypesMap.clear();
-  featureDisplayAttributesMap.clear();
-  observationDisplayAttributesMap.clear();
-  readingDisplayAttributesMap.clear();
-  trafoParamDisplayAttributesMap.clear();
-  featureDisplayAttributes.clear();
-  observationDisplayAttributes.clear();
-  readingDisplayAttributes.clear();
-  unitTypesMap.clear();
-  toolTypesMap.clear();
-  messageTypesMap.clear();
-  geometryParametersMap.clear();
-  actualNominalFilterMap.clear();
-  materialStringsMap.clear();
-  materialValuesMap.clear();
+const std::string undefined;
 
+//! The name stored for `key`, or the empty string when there is none.
+template <typename Key>
+const std::string& nameOrUndefined(const std::map<Key, std::string>& names,
+                                   const Key& key) {
+  const auto it = names.find(key);
+  return it == names.cend() ? undefined : it->second;
+}
+
+Tables::Tables() {
   // fill element map
   elementTypesMap.insert_or_assign(ElementTypes::eCircleElement, "circle");
   elementTypesMap.insert_or_assign(ElementTypes::eConeElement, "cone");
@@ -1061,8 +1049,11 @@ void init() {
                                            "Torus");
   geometryTypesDisplayMap.insert_or_assign(GeometryTypes::ePlaneLevelGeometry,
                                            "Level");
+}
 
-  isInit = true;
+const Tables& tables() {
+  static const Tables instance;
+  return instance;
 }
 
 }  // namespace internal
@@ -1076,12 +1067,7 @@ void init() {
  * \return
  */
 std::vector<ElementTypes> getAvailableElementTypes() {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
-  return oi::keys(internal::elementTypesMap);
+  return oi::keys(internal::tables().elementTypesMap);
 }
 
 /*!
@@ -1089,12 +1075,7 @@ std::vector<ElementTypes> getAvailableElementTypes() {
  * \return
  */
 std::vector<FeatureTypes> getAvailableFeatureTypes() {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
-  return oi::keys(internal::featureTypesMap);
+  return oi::keys(internal::tables().featureTypesMap);
 }
 
 /*!
@@ -1102,12 +1083,7 @@ std::vector<FeatureTypes> getAvailableFeatureTypes() {
  * \return
  */
 std::vector<GeometryTypes> getAvailableGeometryTypes() {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
-  return oi::keys(internal::geometryTypesMap);
+  return oi::keys(internal::tables().geometryTypesMap);
 }
 
 /*!
@@ -1116,14 +1092,9 @@ std::vector<GeometryTypes> getAvailableGeometryTypes() {
  * \return
  */
 const std::string& getElementTypeName(const ElementTypes& type) {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
   // get the corresponding element name
-  if (internal::elementTypesMap.contains(type)) {
-    return internal::elementTypesMap[type];
+  if (internal::tables().elementTypesMap.contains(type)) {
+    return internal::tables().elementTypesMap.at(type);
   }
   return internal::undefined;
 }
@@ -1134,14 +1105,9 @@ const std::string& getElementTypeName(const ElementTypes& type) {
  * \return
  */
 const std::string& getElementTypePluralName(const ElementTypes& type) {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
   // get the corresponding element name
-  if (internal::elementTypesPluralMap.contains(type)) {
-    return internal::elementTypesPluralMap[type];
+  if (internal::tables().elementTypesPluralMap.contains(type)) {
+    return internal::tables().elementTypesPluralMap.at(type);
   }
   return internal::undefined;
 }
@@ -1152,16 +1118,11 @@ const std::string& getElementTypePluralName(const ElementTypes& type) {
  * \return
  */
 ElementTypes getElementTypeEnum(const std::string& name) {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
   // get the corresponding element enum value
-  ElementTypes type =
-      oi::key(internal::elementTypesMap, name, ElementTypes::eUndefinedElement);
+  ElementTypes type = oi::key(internal::tables().elementTypesMap, name,
+                              ElementTypes::eUndefinedElement);
   if (type == ElementTypes::eUndefinedElement) {
-    type = oi::key(internal::elementTypesPluralMap, name,
+    type = oi::key(internal::tables().elementTypesPluralMap, name,
                    ElementTypes::eUndefinedElement);
     ;
   }
@@ -1265,14 +1226,9 @@ ElementTypes getElementTypeEnum(const ReadingTypes& type) {
  * \return
  */
 const std::string& getFeatureTypeName(const FeatureTypes& type) {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
   // get the corresponding feature name
-  if (internal::featureTypesMap.contains(type)) {
-    return internal::featureTypesMap[type];
+  if (internal::tables().featureTypesMap.contains(type)) {
+    return internal::tables().featureTypesMap.at(type);
   }
   return internal::undefined;
 }
@@ -1283,13 +1239,8 @@ const std::string& getFeatureTypeName(const FeatureTypes& type) {
  * \return
  */
 FeatureTypes getFeatureTypeEnum(const std::string& name) {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
   // get the corresponding feature enum value
-  return oi::key(internal::featureTypesMap, name,
+  return oi::key(internal::tables().featureTypesMap, name,
                  FeatureTypes::eUndefinedFeature);
 }
 
@@ -1299,14 +1250,9 @@ FeatureTypes getFeatureTypeEnum(const std::string& name) {
  * \return
  */
 const std::string& getGeometryTypeName(const GeometryTypes& type) {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
   // get the corresponding geometry name
-  if (internal::geometryTypesMap.contains(type)) {
-    return internal::geometryTypesMap[type];
+  if (internal::tables().geometryTypesMap.contains(type)) {
+    return internal::tables().geometryTypesMap.at(type);
   }
   return internal::undefined;
 }
@@ -1317,13 +1263,8 @@ const std::string& getGeometryTypeName(const GeometryTypes& type) {
  * \return
  */
 GeometryTypes getGeometryTypeEnum(const std::string& name) {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
   // get the corresponding geometry enum value
-  return oi::key(internal::geometryTypesMap, name,
+  return oi::key(internal::tables().geometryTypesMap, name,
                  GeometryTypes::eUndefinedGeometry);
 }
 
@@ -1333,11 +1274,6 @@ GeometryTypes getGeometryTypeEnum(const std::string& name) {
  * \return
  */
 GeometryTypes getGeometryTypeEnum(const FeatureTypes& type) {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
   switch (type) {
     case FeatureTypes::eCircleFeature:
       return GeometryTypes::eCircleGeometry;
@@ -1395,13 +1331,8 @@ GeometryTypes getGeometryTypeEnum(const FeatureTypes& type) {
  * \return
  */
 const std::string& getElementTypeDisplayName(const ElementTypes& type) {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
-  if (internal::elementTypesDisplayMap.contains(type)) {
-    return internal::elementTypesDisplayMap[type];
+  if (internal::tables().elementTypesDisplayMap.contains(type)) {
+    return internal::tables().elementTypesDisplayMap.at(type);
   }
   return internal::undefined;
 }
@@ -1414,13 +1345,8 @@ const std::string& getElementTypeDisplayName(const ElementTypes& type) {
  * \return
  */
 const std::string& getElementTypeDisplayPluralName(const ElementTypes& type) {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
-  if (internal::elementTypesDisplayPluralMap.contains(type)) {
-    return internal::elementTypesDisplayPluralMap[type];
+  if (internal::tables().elementTypesDisplayPluralMap.contains(type)) {
+    return internal::tables().elementTypesDisplayPluralMap.at(type);
   }
   return internal::undefined;
 }
@@ -1433,13 +1359,8 @@ const std::string& getElementTypeDisplayPluralName(const ElementTypes& type) {
  * \return
  */
 const std::string& getFeatureTypeDisplayName(const FeatureTypes& type) {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
-  if (internal::featureTypesDisplayMap.contains(type)) {
-    return internal::featureTypesDisplayMap[type];
+  if (internal::tables().featureTypesDisplayMap.contains(type)) {
+    return internal::tables().featureTypesDisplayMap.at(type);
   }
   return internal::undefined;
 }
@@ -1452,13 +1373,8 @@ const std::string& getFeatureTypeDisplayName(const FeatureTypes& type) {
  * \return
  */
 const std::string& getGeometryTypeDisplayName(const GeometryTypes& type) {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
-  if (internal::geometryTypesDisplayMap.contains(type)) {
-    return internal::geometryTypesDisplayMap[type];
+  if (internal::tables().geometryTypesDisplayMap.contains(type)) {
+    return internal::tables().geometryTypesDisplayMap.at(type);
   }
   return internal::undefined;
 }
@@ -1554,14 +1470,9 @@ bool getIsScalarEntity(const FeatureTypes& type) {
  * \return
  */
 const std::string& getElementTypeIconPath(const ElementTypes& type) {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
   // get the corresponding element type icon
-  if (internal::elementTypeIcons.contains(type)) {
-    return internal::elementTypeIcons[type];
+  if (internal::tables().elementTypeIcons.contains(type)) {
+    return internal::tables().elementTypeIcons.at(type);
   }
   return internal::undefined;
 }
@@ -1572,14 +1483,9 @@ const std::string& getElementTypeIconPath(const ElementTypes& type) {
  * \return
  */
 const std::string& getFeatureTypeIconPath(const FeatureTypes& type) {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
   // get the corresponding feature type icon
-  if (internal::featureTypeIcons.contains(type)) {
-    return internal::featureTypeIcons[type];
+  if (internal::tables().featureTypeIcons.contains(type)) {
+    return internal::tables().featureTypeIcons.at(type);
   }
   return internal::undefined;
 }
@@ -1590,14 +1496,9 @@ const std::string& getFeatureTypeIconPath(const FeatureTypes& type) {
  * \return
  */
 const std::string& getReadingTypeName(const ReadingTypes& type) {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
   // get the corresponding reading name
-  if (internal::readingTypesMap.contains(type)) {
-    return internal::readingTypesMap[type];
+  if (internal::tables().readingTypesMap.contains(type)) {
+    return internal::tables().readingTypesMap.at(type);
   }
   return internal::undefined;
 }
@@ -1608,13 +1509,8 @@ const std::string& getReadingTypeName(const ReadingTypes& type) {
  * \return
  */
 ReadingTypes getReadingTypeEnum(const std::string& name) {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
   // get the corresponding reading enum value
-  return oi::key(internal::readingTypesMap, name,
+  return oi::key(internal::tables().readingTypesMap, name,
                  ReadingTypes::eUndefinedReading);
 }
 
@@ -1624,12 +1520,7 @@ ReadingTypes getReadingTypeEnum(const std::string& name) {
  * \return
  */
 const std::vector<int>& getFeatureDisplayAttributes() {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
-  return internal::featureDisplayAttributes;
+  return internal::tables().featureDisplayAttributes;
 }
 
 /*!
@@ -1638,12 +1529,7 @@ const std::vector<int>& getFeatureDisplayAttributes() {
  */
 const std::vector<ObservationDisplayAttributes>&
 getObservationDisplayAttributes() {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
-  return internal::observationDisplayAttributes;
+  return internal::tables().observationDisplayAttributes;
 }
 
 /*!
@@ -1651,12 +1537,7 @@ getObservationDisplayAttributes() {
  * \return
  */
 const std::vector<ReadingDisplayAttributes>& getReadingDisplayAttributes() {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
-  return internal::readingDisplayAttributes;
+  return internal::tables().readingDisplayAttributes;
 }
 
 /*!
@@ -1694,18 +1575,15 @@ bool getIsTrafoParamDisplayAttribute(const int& attr) {
  * \return
  */
 const std::string& getFeatureDisplayAttributeName(const int& attr) {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
   if (getIsFeatureDisplayAttribute(attr)) {  // feature display attribute
-    return internal::featureDisplayAttributesMap[(
-        FeatureDisplayAttributes)attr];
+    return internal::nameOrUndefined(
+        internal::tables().featureDisplayAttributesMap,
+        static_cast<FeatureDisplayAttributes>(attr));
   } else if (getIsTrafoParamDisplayAttribute(
                  attr)) {  // trafo param display attribute
-    return internal::trafoParamDisplayAttributesMap[(
-        TrafoParamDisplayAttributes)attr];
+    return internal::nameOrUndefined(
+        internal::tables().trafoParamDisplayAttributesMap,
+        static_cast<TrafoParamDisplayAttributes>(attr));
   }
 
   return internal::undefined;
@@ -1718,12 +1596,7 @@ const std::string& getFeatureDisplayAttributeName(const int& attr) {
  */
 const std::string& getFeatureDisplayAttributeName(
     const FeatureDisplayAttributes& attr) {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
-  return internal::featureDisplayAttributesMap[attr];
+  return internal::tables().featureDisplayAttributesMap.at(attr);
 }
 
 /*!
@@ -1733,12 +1606,7 @@ const std::string& getFeatureDisplayAttributeName(
  */
 const std::string& getFeatureDisplayAttributeName(
     const TrafoParamDisplayAttributes& attr) {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
-  return internal::trafoParamDisplayAttributesMap[attr];
+  return internal::tables().trafoParamDisplayAttributesMap.at(attr);
 }
 
 /*!
@@ -1879,12 +1747,7 @@ bool getReadingDisplayAttributeVisibility(const ReadingDisplayAttributes& attr,
  */
 const std::string& getObservationDisplayAttributesName(
     const ObservationDisplayAttributes& attr) {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
-  return internal::observationDisplayAttributesMap[attr];
+  return internal::tables().observationDisplayAttributesMap.at(attr);
 }
 
 /*!
@@ -1894,12 +1757,7 @@ const std::string& getObservationDisplayAttributesName(
  */
 const std::string& getReadingDisplayAttributeName(
     const ReadingDisplayAttributes& attr) {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
-  return internal::readingDisplayAttributesMap[attr];
+  return internal::tables().readingDisplayAttributesMap.at(attr);
 }
 
 /*!
@@ -1909,13 +1767,8 @@ const std::string& getReadingDisplayAttributeName(
  */
 ObservationDisplayAttributes getObservationDisplayAttributeEnum(
     const std::string& name) {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
   // get the corresponding observation enum value
-  return oi::key(internal::observationDisplayAttributesMap, name,
+  return oi::key(internal::tables().observationDisplayAttributesMap, name,
                  eObservationDisplayId);
 }
 
@@ -1926,13 +1779,8 @@ ObservationDisplayAttributes getObservationDisplayAttributeEnum(
  */
 ReadingDisplayAttributes getReadingDisplayAttributeEnum(
     const std::string& name) {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
   // get the corresponding reading enum value
-  return oi::key(internal::readingDisplayAttributesMap, name,
+  return oi::key(internal::tables().readingDisplayAttributesMap, name,
                  eReadingDisplayId);
 }
 
@@ -1952,11 +1800,11 @@ double convertToDefault(const double& value, const UnitType& type) {
     case UnitType::eUnitMilliRadians:
       return value * (1.0 / 1000.0);
     case UnitType::eUnitGon:
-      return value * (1.0 / RHO_GON);
+      return value * (1.0 / kRhoGon);
     case UnitType::eUnitArcSeconds:
       return value * (1.0 / 206264.8062471);
     case UnitType::eUnitDecimalDegree:
-      return value * (1.0 / RHO_DEGREE);
+      return value * (1.0 / kRhoDegree);
     case UnitType::eUnitFahrenheit:
       return (value - 32.0) / 1.8;
     case UnitType::eUnitKelvin:
@@ -1982,11 +1830,11 @@ double convertFromDefault(const double& value, const UnitType& type) {
     case UnitType::eUnitMilliRadians:
       return value * 1000.0;
     case UnitType::eUnitGon:
-      return value * RHO_GON;
+      return value * kRhoGon;
     case UnitType::eUnitArcSeconds:
       return value * 206264.8062471;
     case UnitType::eUnitDecimalDegree:
-      return value * RHO_DEGREE;
+      return value * kRhoDegree;
     case UnitType::eUnitFahrenheit:
       return value * 1.8 + 32.0;
     case UnitType::eUnitKelvin:
@@ -2002,14 +1850,9 @@ double convertFromDefault(const double& value, const UnitType& type) {
  * \return
  */
 const std::string& getUnitTypeName(const UnitType& type) {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
   // get the corresponding reading name
-  if (internal::unitTypesMap.contains(type)) {
-    return internal::unitTypesMap[type];
+  if (internal::tables().unitTypesMap.contains(type)) {
+    return internal::tables().unitTypesMap.at(type);
   }
   return internal::undefined;
 }
@@ -2020,13 +1863,8 @@ const std::string& getUnitTypeName(const UnitType& type) {
  * \return
  */
 UnitType getUnitTypeEnum(const std::string& name) {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
   // get the corresponding reading enum value
-  return oi::key(internal::unitTypesMap, name, UnitType::eNoUnit);
+  return oi::key(internal::tables().unitTypesMap, name, UnitType::eNoUnit);
 }
 
 /*!
@@ -2055,12 +1893,7 @@ bool almostEqual(const double& a, const double& b, const int& digits) {
  * \return
  */
 std::vector<SensorFunctions> getAvailableSensorFunctions() {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
-  return oi::keys(internal::sensorFunctionsMap);
+  return oi::keys(internal::tables().sensorFunctionsMap);
 }
 
 /*!
@@ -2069,14 +1902,9 @@ std::vector<SensorFunctions> getAvailableSensorFunctions() {
  * \return
  */
 const std::string& getSensorFunctionName(const SensorFunctions& type) {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
   // get the corresponding sensor function name
-  if (internal::sensorFunctionsMap.contains(type)) {
-    return internal::sensorFunctionsMap[type];
+  if (internal::tables().sensorFunctionsMap.contains(type)) {
+    return internal::tables().sensorFunctionsMap.at(type);
   }
   return internal::undefined;
 }
@@ -2087,13 +1915,8 @@ const std::string& getSensorFunctionName(const SensorFunctions& type) {
  * \return
  */
 SensorFunctions getSensorFunctionEnum(const std::string& name) {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
   // get the corresponding sensor function enum value
-  return oi::key(internal::sensorFunctionsMap, name,
+  return oi::key(internal::tables().sensorFunctionsMap, name,
                  SensorFunctions::eInitialize);
 }
 
@@ -2102,12 +1925,7 @@ SensorFunctions getSensorFunctionEnum(const std::string& name) {
  * \return
  */
 std::vector<ToolTypes> getAvailableToolTypes() {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
-  return oi::keys(internal::toolTypesMap);
+  return oi::keys(internal::tables().toolTypesMap);
 }
 
 /*!
@@ -2116,14 +1934,9 @@ std::vector<ToolTypes> getAvailableToolTypes() {
  * \return
  */
 const std::string& getToolTypeName(const ToolTypes& type) {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
   // get the corresponding tool type name
-  if (internal::toolTypesMap.contains(type)) {
-    return internal::toolTypesMap[type];
+  if (internal::tables().toolTypesMap.contains(type)) {
+    return internal::tables().toolTypesMap.at(type);
   }
   return internal::undefined;
 }
@@ -2134,13 +1947,9 @@ const std::string& getToolTypeName(const ToolTypes& type) {
  * \return
  */
 ToolTypes getToolTypeEnum(const std::string& name) {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
   // get the corresponding tool type enum value
-  return oi::key(internal::toolTypesMap, name, ToolTypes::eUnknownTool);
+  return oi::key(internal::tables().toolTypesMap, name,
+                 ToolTypes::eUnknownTool);
 }
 
 /*!
@@ -2148,12 +1957,7 @@ ToolTypes getToolTypeEnum(const std::string& name) {
  * \return
  */
 std::vector<MessageTypes> getAvailableMessageTypes() {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
-  return oi::keys(internal::messageTypesMap);
+  return oi::keys(internal::tables().messageTypesMap);
 }
 
 /*!
@@ -2162,14 +1966,9 @@ std::vector<MessageTypes> getAvailableMessageTypes() {
  * \return
  */
 const std::string& getMessageTypeName(const MessageTypes& type) {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
   // get the corresponding message type name
-  if (internal::messageTypesMap.contains(type)) {
-    return internal::messageTypesMap[type];
+  if (internal::tables().messageTypesMap.contains(type)) {
+    return internal::tables().messageTypesMap.at(type);
   }
   return internal::undefined;
 }
@@ -2180,13 +1979,8 @@ const std::string& getMessageTypeName(const MessageTypes& type) {
  * \return
  */
 MessageTypes getMessageTypeEnum(const std::string& name) {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
   // get the corresponding message type enum value
-  return oi::key(internal::messageTypesMap, name,
+  return oi::key(internal::tables().messageTypesMap, name,
                  MessageTypes::eInformationMessage);
 }
 
@@ -2195,12 +1989,7 @@ MessageTypes getMessageTypeEnum(const std::string& name) {
  * \return
  */
 std::vector<GeometryParameters> getAvailableGeometryParameters() {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
-  return oi::keys(internal::geometryParametersMap);
+  return oi::keys(internal::tables().geometryParametersMap);
 }
 
 /*!
@@ -2210,14 +1999,9 @@ std::vector<GeometryParameters> getAvailableGeometryParameters() {
  */
 const std::string& getGeometryParameterName(
     const GeometryParameters& parameter) {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
   // get the corresponding geometry parameter name
-  if (internal::geometryParametersMap.contains(parameter)) {
-    return internal::geometryParametersMap[parameter];
+  if (internal::tables().geometryParametersMap.contains(parameter)) {
+    return internal::tables().geometryParametersMap.at(parameter);
   }
   return internal::undefined;
 }
@@ -2228,13 +2012,8 @@ const std::string& getGeometryParameterName(
  * \return
  */
 GeometryParameters getGeometryParameterEnum(const std::string& name) {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
   // get the corresponding geometry parameter enum value
-  return oi::key(internal::geometryParametersMap, name,
+  return oi::key(internal::tables().geometryParametersMap, name,
                  GeometryParameters::eUnknownX);
 }
 
@@ -2396,12 +2175,7 @@ std::vector<GeometryParameters> getGeometryParameters(
  * \return
  */
 std::vector<TrafoParamParameters> getAvailableTrafoParamParameters() {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
-  return oi::keys(internal::trafoParamParametersMap);
+  return oi::keys(internal::tables().trafoParamParametersMap);
 }
 
 /*!
@@ -2411,14 +2185,9 @@ std::vector<TrafoParamParameters> getAvailableTrafoParamParameters() {
  */
 const std::string& getTrafoParamParameterName(
     const TrafoParamParameters& parameter) {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
   // get the corresponding trafo param parameter name
-  if (internal::trafoParamParametersMap.contains(parameter)) {
-    return internal::trafoParamParametersMap[parameter];
+  if (internal::tables().trafoParamParametersMap.contains(parameter)) {
+    return internal::tables().trafoParamParametersMap.at(parameter);
   }
   return internal::undefined;
 }
@@ -2429,13 +2198,8 @@ const std::string& getTrafoParamParameterName(
  * \return
  */
 TrafoParamParameters getTrafoParamParameterEnum(const std::string& name) {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
   // get the corresponding trafo param parameter enum value
-  return oi::key(internal::trafoParamParametersMap, name,
+  return oi::key(internal::tables().trafoParamParametersMap, name,
                  TrafoParamParameters::eUnknownTX);
 }
 
@@ -2444,12 +2208,7 @@ TrafoParamParameters getTrafoParamParameterEnum(const std::string& name) {
  * \return
  */
 std::vector<ActualNominalFilter> getAvailableActualNominalFilters() {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
-  return oi::keys(internal::actualNominalFilterMap);
+  return oi::keys(internal::tables().actualNominalFilterMap);
 }
 
 /*!
@@ -2458,14 +2217,9 @@ std::vector<ActualNominalFilter> getAvailableActualNominalFilters() {
  * \return
  */
 const std::string& getActualNominalFilterName(const ActualNominalFilter& type) {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
   // get the corresponding actual nominal filter name
-  if (internal::actualNominalFilterMap.contains(type)) {
-    return internal::actualNominalFilterMap[type];
+  if (internal::tables().actualNominalFilterMap.contains(type)) {
+    return internal::tables().actualNominalFilterMap.at(type);
   }
   return internal::undefined;
 }
@@ -2476,13 +2230,8 @@ const std::string& getActualNominalFilterName(const ActualNominalFilter& type) {
  * \return
  */
 ActualNominalFilter getActualNominalFilterEnum(const std::string& name) {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
   // get the corresponding actual nominal filter enum value
-  return oi::key(internal::actualNominalFilterMap, name,
+  return oi::key(internal::tables().actualNominalFilterMap, name,
                  ActualNominalFilter::eFilterActualNominal);
 }
 
@@ -2492,14 +2241,9 @@ ActualNominalFilter getActualNominalFilterEnum(const std::string& name) {
  * \return
  */
 const std::string& getMaterialName(const MaterialsTempComp& material) {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
   // get the corresponding actual nominal filter name
-  if (internal::materialStringsMap.contains(material)) {
-    return internal::materialStringsMap[material];
+  if (internal::tables().materialStringsMap.contains(material)) {
+    return internal::tables().materialStringsMap.at(material);
   }
   return internal::undefined;
 }
@@ -2510,14 +2254,9 @@ const std::string& getMaterialName(const MaterialsTempComp& material) {
  * \return
  */
 double getMaterialValue(const MaterialsTempComp& material) {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
   // get the corresponding actual nominal filter name
-  if (internal::materialValuesMap.contains(material)) {
-    return internal::materialValuesMap[material];
+  if (internal::tables().materialValuesMap.contains(material)) {
+    return internal::tables().materialValuesMap.at(material);
   }
   return 0.0;
 }
@@ -2527,12 +2266,7 @@ double getMaterialValue(const MaterialsTempComp& material) {
  * \return
  */
 std::vector<std::string> getMaterials() {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
-  return oi::values(internal::materialStringsMap);
+  return oi::values(internal::tables().materialStringsMap);
 }
 
 /*!
@@ -2544,13 +2278,9 @@ std::vector<std::string> getMaterials() {
  */
 double getTemperatureExpansion(const std::string material, double actual,
                                double nominal) {
-  // fill helper maps if not yet done
-  if (!internal::isInit) {
-    internal::init();
-  }
-
-  double exp = oi::value(internal::materialValuesMap,
-                         oi::key(internal::materialStringsMap, material));
+  double exp =
+      oi::value(internal::tables().materialValuesMap,
+                oi::key(internal::tables().materialStringsMap, material));
   double expansion = (actual - nominal) * exp;
 
   return 1.0 / (1.0 + expansion);

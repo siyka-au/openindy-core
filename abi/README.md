@@ -1,7 +1,7 @@
 # Plugin ABI baseline
 
 `libOpenIndyCore` is the binary contract between the host and every plugin. The
-runtime check is the integer `OI_PLUGIN_ABI_VERSION`
+runtime check is the integer `kPluginAbiVersion`
 ([`include/plugin/plugin_abi.h`](../include/plugin/plugin_abi.h)), compared by the
 plugin entry point handshake and `oi::PluginLoader` before a factory is created,
 followed by the toolchain string (`oi_plugin_toolchain()`, see
@@ -13,17 +13,17 @@ generated with the CI floor compiler, GCC 14). This directory holds what makes s
 | File | Purpose |
 | --- | --- |
 | `baseline.abi` | libabigail abixml of the public ABI (declarations from `include/`) at `baseline.version` |
-| `baseline.version` | the `OI_PLUGIN_ABI_VERSION` the baseline was generated for |
+| `baseline.version` | the `kPluginAbiVersion` the baseline was generated for |
 | `suppressions.abignore` | host-only types hidden from baseline and comparison |
 | `suppressions-diff.abignore` | standard-library differences ignored by abidiff only (compiler noise) |
 
 ## Rule
 
-An ABI break detected by `abidiff` must come with an `OI_PLUGIN_ABI_VERSION`
+An ABI break detected by `abidiff` must come with an `kPluginAbiVersion`
 bump, and the baseline is refreshed **in the same commit**:
 
 1. Change the headers; run the check (below). If it reports an incompatible
-   change, bump `OI_PLUGIN_ABI_VERSION`.
+   change, bump `kPluginAbiVersion`.
 2. Run `scripts/abi-check.sh --update` and commit `abi/baseline.abi` and
    `abi/baseline.version` together with the bump.
 

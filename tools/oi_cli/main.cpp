@@ -18,6 +18,7 @@
 #include <iostream>
 #include <iterator>
 #include <memory>
+#include <span>
 #include <sstream>
 #include <string>
 #include <string_view>
@@ -285,13 +286,14 @@ int main(int argc, char** argv) {
   std::string out;
   std::string fixture;
   bool selftest = false;
-  for (int i = 1; i < argc; ++i) {
-    const std::string_view arg = argv[i];
+  const std::span<char*> args(argv, static_cast<std::size_t>(argc));
+  for (std::size_t i = 1; i < args.size(); ++i) {
+    const std::string_view arg = args[i];
     auto value = [&](std::string& into) {
-      if (i + 1 >= argc) {
+      if (i + 1 >= args.size()) {
         return false;
       }
-      into = argv[++i];
+      into = args[++i];
       return true;
     };
     if (arg == "--plugin") {

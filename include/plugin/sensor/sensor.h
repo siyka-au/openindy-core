@@ -332,24 +332,10 @@ class OI_CORE_EXPORT Sensor : public SensorInterface {
 
 }  // namespace oi
 
-#ifndef STR
-#define STR(x) #x
-#endif
-#ifndef STR2
-#define STR2(x) STR(x)
-#endif
-
-#ifndef CONCAT
-#define CONCAT(a, b) a##b
-#endif
-#ifndef CONCAT2
-#define CONCAT2(a, b) CONCAT(a, b)
-#endif
-
 #include "plugin_abi.h"
 #include "value.h"
 
-#define SENSOR_PREFIX de.openIndy.plugin.sensor.v
-#define Sensor_iidd STR2(CONCAT2(SENSOR_PREFIX, OI_PLUGIN_ABI_VERSION))
+inline const std::string Sensor_iidd =
+    oi::pluginIid("de.openIndy.plugin.sensor.v");
 
 #endif  // OI_CORE_PLUGIN_SENSOR_SENSOR_H_

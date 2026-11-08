@@ -41,25 +41,9 @@ class OI_CORE_EXPORT ExchangeDefinedFormat : public ExchangeInterface {
 
 }  // namespace oi
 
-#ifndef STR
-#define STR(x) #x
-#endif
-#ifndef STR2
-#define STR2(x) STR(x)
-#endif
-
-#ifndef CONCAT
-#define CONCAT(a, b) a##b
-#endif
-#ifndef CONCAT2
-#define CONCAT2(a, b) CONCAT(a, b)
-#endif
-
 #include "plugin_abi.h"
 
-#define EXCHANGE_DEFINEDFORMAT_PREFIX \
-  de.openIndy.plugin.exchange.exchangeDefinedFormat.v
-#define ExchangeDefinedFormat_iidd \
-  STR2(CONCAT2(EXCHANGE_DEFINEDFORMAT_PREFIX, OI_PLUGIN_ABI_VERSION))
+inline const std::string ExchangeDefinedFormat_iidd =
+    oi::pluginIid("de.openIndy.plugin.exchange.exchangeDefinedFormat.v");
 
 #endif  // OI_CORE_PLUGIN_EXCHANGE_EXCHANGE_DEFINED_FORMAT_H_

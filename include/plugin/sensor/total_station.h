@@ -90,24 +90,9 @@ class OI_CORE_EXPORT TotalStation : public Sensor {
 
 }  // namespace oi
 
-#ifndef STR
-#define STR(x) #x
-#endif
-#ifndef STR2
-#define STR2(x) STR(x)
-#endif
-
-#ifndef CONCAT
-#define CONCAT(a, b) a##b
-#endif
-#ifndef CONCAT2
-#define CONCAT2(a, b) CONCAT(a, b)
-#endif
-
 #include "plugin_abi.h"
 
-#define TOTALSTATION_PREFIX de.openIndy.plugin.sensor.totalStation.v
-#define TotalStation_iidd \
-  STR2(CONCAT2(TOTALSTATION_PREFIX, OI_PLUGIN_ABI_VERSION))
+inline const std::string TotalStation_iidd =
+    oi::pluginIid("de.openIndy.plugin.sensor.totalStation.v");
 
 #endif  // OI_CORE_PLUGIN_SENSOR_TOTAL_STATION_H_
