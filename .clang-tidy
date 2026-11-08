@@ -13,6 +13,12 @@ Checks: >
   modernize-make-shared,
   misc-throw-by-value-catch-by-reference,
   -cppcoreguidelines-non-private-member-variables-in-classes
+# non-private-member-variables-in-classes: disabled, 108 findings in include/ (+2 in
+#   test/): the protected data members of the plugin base classes (Feature,
+#   Geometry, Function, Sensor, BundleAdjustment, SimulationModel, Exchange*,
+#   Group, Element). The default and Leica plugins and the app read them in
+#   several hundred places; making them private needs accessors and a plugin ABI
+#   break, tracked as its own change. Plugins, app and math enable the check.
 # owning-memory: enabled (test/.clang-tidy turns it off for the tests).
 # magic-numbers: enabled (test/.clang-tidy turns it off for the tests).
 # macro-usage: the OI_DECLARE_PLUGIN* entry-point macros are the only ones left
