@@ -1,6 +1,7 @@
 #ifndef STATIONOBSERVER_H
 #define STATIONOBSERVER_H
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -55,7 +56,7 @@ class OI_CORE_EXPORT StationObserver {
   virtual void onCommandFinished(bool /*success*/, const std::string& /*msg*/,
                                  SensorAction /*sensorAction*/) {}
   virtual void onMeasurementFinished(
-      int /*geomId*/, const std::vector<oi::Guarded<Reading>>& /*readings*/) {}
+      int /*geomId*/, std::vector<std::unique_ptr<Reading>> /*readings*/) {}
   virtual void onMeasurementDone(bool /*success*/) {}
 
   // what the driver reports on its own

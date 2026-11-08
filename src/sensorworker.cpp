@@ -138,40 +138,43 @@ Sensor SensorWorker::getSensor() const {
   return Sensor(*this->snapshot);
 }
 
-void SensorWorker::setSensor(const oi::Guarded<Sensor>& newSensor) {
-  if (newSensor.isNull()) {
+void SensorWorker::setSensor(std::unique_ptr<Sensor> newSensor) {
+  if (!newSensor) {
     return;
   }
+  const oi::Guarded<Sensor> view(newSensor.get());
 
-  oi::Guarded<Sensor> old;
+  std::unique_ptr<Sensor> old;
   {
     const std::scoped_lock lock(this->stateMutex);
-    old = this->sensor;
-    this->sensor = newSensor;
-  }
-  if (old == newSensor) {
-    return;
+    old = std::move(this->ownedSensor);
+    this->ownedSensor = std::move(newSensor);
+    this->sensor = view;
   }
 
-  if (!old.isNull()) {
+  if (old) {
     old->setSensorSink(nullptr);
+    // a running command may still use it: it dies on the worker thread, after
+    // everything queued so far (or with the queue when the worker stops)
+    const std::shared_ptr<Sensor> doomed(std::move(old));
+    this->runOnWorker([doomed] {});
   }
-  newSensor->setSensorSink(this);
-  this->storeSnapshot(newSensor);
-  this->lastKnownConnected = newSensor->getConnectionState();
+  view->setSensorSink(this);
+  this->storeSnapshot(view);
+  this->lastKnownConnected = view->getConnectionState();
 }
 
-oi::Guarded<Sensor> SensorWorker::takeSensor() {
+std::unique_ptr<Sensor> SensorWorker::takeSensor() {
   // the sensor must not be in use by a command while someone else gets it
   const std::scoped_lock driver(this->driverMutex);
 
-  oi::Guarded<Sensor> taken;
+  std::unique_ptr<Sensor> taken;
   {
     const std::scoped_lock lock(this->stateMutex);
-    taken = this->sensor;
+    taken = std::move(this->ownedSensor);
     this->sensor = oi::Guarded<Sensor>(nullptr);
   }
-  if (!taken.isNull()) {
+  if (taken) {
     taken->setSensorSink(nullptr);
   }
   this->storeSnapshot(oi::Guarded<Sensor>(nullptr));
@@ -199,8 +202,13 @@ void SensorWorker::runResetSensor() {
     this->sensor = oi::Guarded<Sensor>(nullptr);
   }
 
-  // delete sensor
-  delete current.data();
+  // delete sensor (the command runs on the worker thread under the driver
+  // lock, so nothing else is using it)
+  std::unique_ptr<Sensor> doomed;
+  {
+    const std::scoped_lock lock(this->stateMutex);
+    doomed = std::move(this->ownedSensor);
+  }
 }
 
 // ####################################################################
@@ -328,10 +336,10 @@ void SensorWorker::finished(bool success, const std::string& msg,
 // measurementDone is reported after commandFinished and measurementFinished
 void SensorWorker::finishedMeasurement(
     bool success, const std::string& msg, SensorAction action, int geomId,
-    const std::vector<oi::Guarded<Reading>>& readings) {
+    std::vector<std::unique_ptr<Reading>> readings) {
   this->finished(success, msg, action);
   if (success) {
-    this->out.onMeasurementFinished(geomId, readings);
+    this->out.onMeasurementFinished(geomId, std::move(readings));
   }
   this->out.onMeasurementDone(success);
 }
@@ -488,7 +496,7 @@ void SensorWorker::runMeasure(int geomId, const MeasurementConfig& mConfig) {
   // check wether the sensor is already connected
   std::string msg = SensorWorkerMessage::FAILED_TO_MEASURE;
   bool success = false;
-  std::vector<oi::Guarded<Reading>> readings;
+  std::vector<std::unique_ptr<Reading>> readings;
 
   if (!sensor->isSensorAsync()) {
     if (!sensor->getConnectionState()) {
@@ -505,7 +513,7 @@ void SensorWorker::runMeasure(int geomId, const MeasurementConfig& mConfig) {
     // same logic like SensorWorker::onAsyncMeasurementResult; measurementDone
     // is reported last (the application always saw it after the others)
     this->finishedMeasurement(success, msg, SensorAction::eSensorActionMeasure,
-                              geomId, readings);
+                              geomId, std::move(readings));
   } else {
     oi::ValueMap request;
     request.insert_or_assign("method", "measure");
@@ -533,7 +541,7 @@ void SensorWorker::runMovePolar(double azimuth, double zenith, double distance,
   // check wether the sensor is already connected
   std::string msg = SensorWorkerMessage::FAILED_TO_MOVE_SENSOR;
   bool success = false;
-  std::vector<oi::Guarded<Reading>> readings;
+  std::vector<std::unique_ptr<Reading>> readings;
   if (!sensor->getConnectionState()) {
     msg = SensorWorkerMessage::SENSOR_IS_NOT_CONNECTED;
   } else {
@@ -565,7 +573,7 @@ void SensorWorker::runMovePolar(double azimuth, double zenith, double distance,
 
   this->finished(success, msg, SensorAction::eSensorActionMove);
   if (success && measure) {
-    this->out.onMeasurementFinished(geomId, readings);
+    this->out.onMeasurementFinished(geomId, std::move(readings));
   }
 }
 
@@ -584,7 +592,7 @@ void SensorWorker::runMoveCartesian(double x, double y, double z, bool measure,
     // check wether the sensor is already connected
     std::string msg = SensorWorkerMessage::FAILED_TO_MOVE_SENSOR;
     bool success = false;
-    std::vector<oi::Guarded<Reading>> readings;
+    std::vector<std::unique_ptr<Reading>> readings;
     if (!sensor->getConnectionState()) {
       msg = SensorWorkerMessage::SENSOR_IS_NOT_CONNECTED;
     } else {
@@ -617,7 +625,7 @@ void SensorWorker::runMoveCartesian(double x, double y, double z, bool measure,
 
     this->finished(success, msg, SensorAction::eSensorActionMove);
     if (success && measure) {
-      this->out.onMeasurementFinished(geomId, readings);
+      this->out.onMeasurementFinished(geomId, std::move(readings));
     }
   } else {
     oi::ValueMap request;
@@ -999,16 +1007,19 @@ void SensorWorker::onAsyncSensorResponse(const oi::ValueMap& response,
 }
 
 void SensorWorker::onAsyncMeasurementResult(
-    const int& geomId, const std::vector<oi::Guarded<Reading>>& measurements,
+    const int& geomId, std::vector<std::unique_ptr<Reading>> measurements,
     SensorAction sensorAction) {
-  this->dispatch([this, geomId, measurements, sensorAction] {
+  // a std::function task must be copyable: the readings travel in a shared box
+  const auto box = std::make_shared<std::vector<std::unique_ptr<Reading>>>(
+      std::move(measurements));
+  this->dispatch([this, geomId, box, sensorAction] {
     // same logic like SensorWorker::runMeasure
-    const bool success = measurements.size() > 0;
+    const bool success = box->size() > 0;
     this->finishedMeasurement(
         success,
         success ? SensorWorkerMessage::MEASUREMENT_DATA_RECEIVED
                 : SensorWorkerMessage::MEASUREMENT_DIT_NOT_DELIVER_ANY_RESULTS,
-        sensorAction, geomId, measurements);
+        sensorAction, geomId, std::move(*box));
   });
 }
 

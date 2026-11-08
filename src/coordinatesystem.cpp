@@ -121,21 +121,18 @@ CoordinateSystem& CoordinateSystem::operator=(const CoordinateSystem& copy) {
 CoordinateSystem::~CoordinateSystem() {
   // delete all observations made from this station coordinate system (only if
   // this is a station system)
-  for (const oi::Guarded<Observation>& observation :
-       oi::snapshot(this->observationsList)) {
-    if (!observation.isNull()) {
-      delete observation.data();
-    }
+  while (!this->ownedObservations.empty()) {
+    std::unique_ptr<Observation> doomed =
+        std::move(this->ownedObservations.back());
+    this->ownedObservations.pop_back();
+    doomed.reset();  // detaches itself from the lists below
   }
 
   // The transformation parameter sets and the nominals referenced from here
   // are features of the job: the job's FeatureContainer owns them, and
   // OiJob::removeFeature removes a system's parameter sets with it.
 
-  // delete bundle adjustment
-  if (!this->bundlePlugin.isNull()) {
-    delete this->bundlePlugin.data();
-  }
+  // the bundle adjustment is freed by ownedBundle
 }
 
 /*!
@@ -268,15 +265,15 @@ oi::Guarded<Observation> CoordinateSystem::getObservation(
  * \param observation
  * \return
  */
-bool CoordinateSystem::addObservation(
-    const oi::Guarded<Observation>& observation) {
-  // check if this is a station system
+bool CoordinateSystem::addObservation(std::unique_ptr<Observation> owned) {
+  // check if this is a station system (the observation is freed otherwise)
   if (!this->isStationSystem || this->station.isNull()) {
     return false;
   }
 
-  if (!observation.isNull() && !observation->getReading().isNull() &&
-      observation->getStation().isNull()) {
+  if (owned && !owned->getReading().isNull() && owned->getStation().isNull()) {
+    const oi::Guarded<Observation> observation(owned.get());
+
     // set observation's station
     observation->setStation(this->station);
 
@@ -297,6 +294,7 @@ bool CoordinateSystem::addObservation(
     // add observation to the coordinate system
     this->observationsList.push_back(observation);
     this->observationsMap.insert_or_assign(observation->getId(), observation);
+    this->ownedObservations.push_back(std::move(owned));
 
     this->notify(&FeatureObserver::onObservationsChanged, this->id,
                  observation->getId());
@@ -305,6 +303,30 @@ bool CoordinateSystem::addObservation(
   }
 
   return false;
+}
+
+/*!
+ * \brief CoordinateSystem::deleteObservation
+ * Destroys the observation if this system owns it.
+ * \param obs
+ */
+void CoordinateSystem::deleteObservation(const oi::Guarded<Observation>& obs) {
+  if (obs.isNull()) {
+    return;
+  }
+  const auto it = std::find_if(this->ownedObservations.begin(),
+                               this->ownedObservations.end(),
+                               [&obs](const std::unique_ptr<Observation>& o) {
+                                 return o.get() == obs.data();
+                               });
+  if (it == this->ownedObservations.end()) {
+    return;
+  }
+
+  // move it out first: its destructor detaches itself from this system
+  std::unique_ptr<Observation> doomed = std::move(*it);
+  this->ownedObservations.erase(it);
+  doomed.reset();
 }
 
 /*!
@@ -547,25 +569,27 @@ const oi::Guarded<BundleAdjustment>& CoordinateSystem::getBundlePlugin() const {
  * \brief CoordinateSystem::setBundlePlugin
  * \param bundle
  */
-void CoordinateSystem::setBundlePlugin(
-    const oi::Guarded<BundleAdjustment>& bundle) {
+bool CoordinateSystem::setBundlePlugin(
+    std::unique_ptr<BundleAdjustment> bundle) {
   // check if the system is a bundle system
   if (!this->isBundleSystem) {
-    return;
+    return false;  // the bundle is freed
   }
 
   // check bundle plugin
-  if (bundle.isNull()) {
-    return;
+  if (!bundle) {
+    return false;
   }
 
   // pass coordinate system to bundle plugin
   bundle->setBundleSystem(this);
 
-  // set bundle
-  this->bundlePlugin = bundle;
+  // set bundle (the previous one, if any, is freed)
+  this->bundlePlugin = bundle.get();
+  this->ownedBundle = std::move(bundle);
   this->notify(&FeatureObserver::onBundlePluginChanged,
                this->id);  // TODO OI-932 not used
+  return true;
 }
 
 /*!

@@ -69,7 +69,7 @@ class ProjectHost {
 
 struct DecodeResult {
   /*! The loaded job, owned by the caller; null if the load failed. */
-  oi::Guarded<OiJob> job;
+  std::unique_ptr<OiJob> job;
   /*! Why the load failed. Empty on success. */
   std::string error;
   /*! "plugin/name" of every plugin object the project needs and the host
@@ -79,7 +79,7 @@ struct DecodeResult {
    *  configs), for the host to register. */
   std::vector<MeasurementConfig> projectConfigs;
 
-  [[nodiscard]] bool ok() const { return !job.isNull(); }
+  [[nodiscard]] bool ok() const { return job != nullptr; }
 };
 
 [[nodiscard]] DecodeResult decodeProject(std::string_view bytes,

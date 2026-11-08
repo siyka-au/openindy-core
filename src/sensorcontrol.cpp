@@ -124,9 +124,13 @@ class SensorControl::Relay final : public StationObserver {
     });
   }
   void onMeasurementFinished(
-      int geomId, const std::vector<oi::Guarded<Reading>>& readings) override {
-    this->delivery->post([geomId, readings](StationObserver& o) {
-      o.onMeasurementFinished(geomId, readings);
+      int geomId, std::vector<std::unique_ptr<Reading>> readings) override {
+    // a std::function call must be copyable: the readings travel in a shared
+    // box, and are freed with it when the observer is gone
+    const auto box = std::make_shared<std::vector<std::unique_ptr<Reading>>>(
+        std::move(readings));
+    this->delivery->post([geomId, box](StationObserver& o) {
+      o.onMeasurementFinished(geomId, std::move(*box));
     });
   }
   void onMeasurementDone(bool success) override {
@@ -196,9 +200,9 @@ Sensor SensorControl::getSensor() { return this->worker->getSensor(); }
  * Sets the current sensor to the given one
  * \param sensor
  */
-void SensorControl::setSensor(const oi::Guarded<Sensor>& sensor) {
+void SensorControl::setSensor(std::unique_ptr<Sensor> sensor) {
   // check sensor
-  if (sensor.isNull()) {
+  if (!sensor) {
     return;
   }
 
@@ -207,7 +211,7 @@ void SensorControl::setSensor(const oi::Guarded<Sensor>& sensor) {
     this->usedSensors.push_back(this->getSensor());
   }
 
-  this->worker->setSensor(sensor);
+  this->worker->setSensor(std::move(sensor));
 
   // set sensor valid
   this->sensorValid = true;
@@ -219,13 +223,13 @@ void SensorControl::setSensor(const oi::Guarded<Sensor>& sensor) {
  * the sensor worker
  * \return
  */
-oi::Guarded<Sensor> SensorControl::takeSensor() {
+std::unique_ptr<Sensor> SensorControl::takeSensor() {
   // check old sensor and add it to the list of used sensors
   if (this->sensorValid) {
     this->usedSensors.push_back(this->getSensor());
   }
 
-  oi::Guarded<Sensor> sensor = this->worker->takeSensor();
+  std::unique_ptr<Sensor> sensor = this->worker->takeSensor();
 
   // set sensor invalid
   this->sensorValid = false;

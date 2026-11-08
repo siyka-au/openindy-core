@@ -55,8 +55,8 @@ class OI_CORE_EXPORT SensorControl final {
 
   // get or set sensor
   Sensor getSensor();
-  void setSensor(const oi::Guarded<Sensor>& sensor);
-  oi::Guarded<Sensor> takeSensor();
+  void setSensor(std::unique_ptr<Sensor> sensor);
+  std::unique_ptr<Sensor> takeSensor();
   void resetSensor();
 
   // previously used sensors

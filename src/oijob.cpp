@@ -237,7 +237,7 @@ bool OiJob::validateFeatureName(const std::string& name,
   }
 
   // get a list of features with name name
-  std::vector<oi::Guarded<FeatureWrapper> > features =
+  std::vector<oi::Guarded<FeatureWrapper>> features =
       this->featureContainer.getFeaturesByName(name);
 
   // accept name if no other feature with that name exists
@@ -339,8 +339,7 @@ const std::vector<MeasurementConfigKey>& OiJob::getUsedMeasurementConfigs()
  * \brief OiJob::getFeaturesList
  * \return
  */
-const std::vector<oi::Guarded<FeatureWrapper> >& OiJob::getFeaturesList()
-    const {
+const std::vector<oi::Guarded<FeatureWrapper>>& OiJob::getFeaturesList() const {
   return this->featureContainer.getFeaturesList();
 }
 
@@ -349,7 +348,7 @@ const std::vector<oi::Guarded<FeatureWrapper> >& OiJob::getFeaturesList()
  * Returns a list of all nominal systems
  * \return
  */
-const std::vector<oi::Guarded<CoordinateSystem> >&
+const std::vector<oi::Guarded<CoordinateSystem>>&
 OiJob::getCoordinateSystemsList() const {
   return this->featureContainer.getCoordinateSystemsList();
 }
@@ -358,7 +357,7 @@ OiJob::getCoordinateSystemsList() const {
  * \brief OiJob::getStationSystems
  * \return
  */
-std::vector<oi::Guarded<CoordinateSystem> > OiJob::getStationSystemsList()
+std::vector<oi::Guarded<CoordinateSystem>> OiJob::getStationSystemsList()
     const {
   return this->featureContainer.getStationSystemsList();
 }
@@ -378,7 +377,7 @@ TODO OI-982 remove return this->featureContainer.getBundleSystemList();
  * \brief OiJob::getStationsList
  * \return
  */
-const std::vector<oi::Guarded<Station> >& OiJob::getStationsList() const {
+const std::vector<oi::Guarded<Station>>& OiJob::getStationsList() const {
   return this->featureContainer.getStationsList();
 }
 
@@ -386,7 +385,7 @@ const std::vector<oi::Guarded<Station> >& OiJob::getStationsList() const {
  * \brief OiJob::getTransformationParametersList
  * \return
  */
-const std::vector<oi::Guarded<TrafoParam> >&
+const std::vector<oi::Guarded<TrafoParam>>&
 OiJob::getTransformationParametersList() const {
   return this->featureContainer.getTransformationParametersList();
 }
@@ -395,7 +394,7 @@ OiJob::getTransformationParametersList() const {
  * \brief OiJob::getGeometriesList
  * \return
  */
-const std::vector<oi::Guarded<FeatureWrapper> >& OiJob::getGeometriesList()
+const std::vector<oi::Guarded<FeatureWrapper>>& OiJob::getGeometriesList()
     const {
   return this->featureContainer.getGeometriesList();
 }
@@ -415,7 +414,7 @@ oi::Guarded<FeatureWrapper> OiJob::getFeatureById(const int& featureId) const {
  * \param startWith use name as "start with" pattern
  * \return
  */
-std::vector<oi::Guarded<FeatureWrapper> > OiJob::getFeaturesByName(
+std::vector<oi::Guarded<FeatureWrapper>> OiJob::getFeaturesByName(
     const std::string& name, const bool startWith) const {
   return this->featureContainer.getFeaturesByName(name, startWith);
 }
@@ -425,7 +424,7 @@ std::vector<oi::Guarded<FeatureWrapper> > OiJob::getFeaturesByName(
  * \param group
  * \return
  */
-std::vector<oi::Guarded<FeatureWrapper> > OiJob::getFeaturesByGroup(
+std::vector<oi::Guarded<FeatureWrapper>> OiJob::getFeaturesByGroup(
     const std::string& group) const {
   return this->featureContainer.getFeaturesByGroup(group);
 }
@@ -435,7 +434,7 @@ std::vector<oi::Guarded<FeatureWrapper> > OiJob::getFeaturesByGroup(
  * \param type
  * \return
  */
-std::vector<oi::Guarded<FeatureWrapper> > OiJob::getFeaturesByType(
+std::vector<oi::Guarded<FeatureWrapper>> OiJob::getFeaturesByType(
     const FeatureTypes& type) const {
   return this->featureContainer.getFeaturesByType(type);
 }
@@ -445,7 +444,7 @@ std::vector<oi::Guarded<FeatureWrapper> > OiJob::getFeaturesByType(
  * \param mConfig
  * \return
  */
-std::vector<oi::Guarded<Geometry> > OiJob::getGeometriesByMConfig(
+std::vector<oi::Guarded<Geometry>> OiJob::getGeometriesByMConfig(
     const MeasurementConfigKey& key) const {
   return this->featureContainer.getGeometriesByMConfig(key);
 }
@@ -569,9 +568,9 @@ oi::Guarded<FeatureWrapper> OiJob::addFeature(
  * \param fAttr
  * \return
  */
-std::vector<oi::Guarded<FeatureWrapper> > OiJob::addFeatures(
+std::vector<oi::Guarded<FeatureWrapper>> OiJob::addFeatures(
     const FeatureAttributes& fAttr) {
-  std::vector<oi::Guarded<FeatureWrapper> > result;
+  std::vector<oi::Guarded<FeatureWrapper>> result;
 
   // at least one feature should be created
   if (fAttr.count <= 0) {
@@ -585,7 +584,7 @@ std::vector<oi::Guarded<FeatureWrapper> > OiJob::addFeatures(
   //(the ordinary case for a fit-produced actual).
   oi::Guarded<CoordinateSystem> nominalSystem;
   if (getIsGeometry(fAttr.typeOfFeature) && !fAttr.nominalSystem.empty()) {
-    std::vector<oi::Guarded<FeatureWrapper> > features =
+    std::vector<oi::Guarded<FeatureWrapper>> features =
         this->featureContainer.getFeaturesByName(fAttr.nominalSystem);
     if (features.size() != 1 || features.at(0).isNull() ||
         features.at(0)->getCoordinateSystem().isNull() ||
@@ -601,9 +600,9 @@ std::vector<oi::Guarded<FeatureWrapper> > OiJob::addFeatures(
   // job
   oi::Guarded<CoordinateSystem> startSystem, destSystem;
   if (fAttr.typeOfFeature == FeatureTypes::eTrafoParamFeature) {
-    std::vector<oi::Guarded<FeatureWrapper> > startSystems =
+    std::vector<oi::Guarded<FeatureWrapper>> startSystems =
         this->featureContainer.getFeaturesByName(fAttr.startSystem);
-    std::vector<oi::Guarded<FeatureWrapper> > destinationSystems =
+    std::vector<oi::Guarded<FeatureWrapper>> destinationSystems =
         this->featureContainer.getFeaturesByName(fAttr.destinationSystem);
     if (startSystems.size() != 1 || destinationSystems.size() != 1 ||
         startSystems.at(0).isNull() || destinationSystems.at(0).isNull()) {
@@ -796,7 +795,7 @@ std::vector<oi::Guarded<FeatureWrapper> > OiJob::addFeatures(
  * \param features
  * \return
  */
-bool OiJob::addFeatures(std::vector<std::unique_ptr<Feature> > features,
+bool OiJob::addFeatures(std::vector<std::unique_ptr<Feature>> features,
                         bool overwrite) {
   std::vector<FeatureTypes> addedFeatureTypes;
 
@@ -993,7 +992,7 @@ bool OiJob::removeFeatures(const std::set<int>& featureIds) {
  * \return
  */
 bool OiJob::removeFeatures(
-    const std::vector<oi::Guarded<FeatureWrapper> >& features) {
+    const std::vector<oi::Guarded<FeatureWrapper>>& features) {
   bool success = true;
 
   // check all features wether they could be removed
@@ -1033,33 +1032,37 @@ void OiJob::removeAll() { this->featureContainer.removeAll(); }
  * \brief OiJob::addFunction
  * \param function
  */
-void OiJob::addFunction(const oi::Guarded<Function>& function) {
+bool OiJob::addFunction(std::unique_ptr<Function> owned) {
   // check active feature
   if (this->activeFeature.isNull() ||
       this->activeFeature->getFeature().isNull()) {
     this->sendMessage("No active feature", MessageTypes::eErrorMessage);
-    return;
+    return false;
   }
 
   // check function
-  if (function.isNull()) {
-    return;
+  if (!owned) {
+    return false;
   }
+  const oi::Guarded<Function> function(owned.get());
 
   // connect the function
-  this->adoptFunction(function.data());
+  this->adoptFunction(owned.get());
 
-  // add the function to the active feature
-  this->activeFeature->getFeature()->addFunction(function);
+  // add the function to the active feature (it frees what it rejects)
+  if (!this->activeFeature->getFeature()->addFunction(std::move(owned))) {
+    return false;
+  }
 
   // set up dependencies
-  std::map<int, std::vector<InputElement> > inputElements =
+  std::map<int, std::vector<InputElement>> inputElements =
       function->getInputElements();
   for (int key : oi::keys(inputElements)) {
     for (const InputElement& element : oi::snapshot(inputElements[key])) {
       this->setUpDependencies(element, this->activeFeature->getFeature());
     }
   }
+  return true;
 }
 
 /*!
@@ -1073,7 +1076,7 @@ void OiJob::addFunction(const oi::Guarded<Function>& function) {
  */
 bool OiJob::addOwnedSubGeometry(const oi::Guarded<FeatureWrapper>& owner,
                                 const oi::Guarded<FeatureWrapper>& subGeometry,
-                                const oi::Guarded<Function>& producerFunction,
+                                std::unique_ptr<Function> producerFunction,
                                 const int& neededElementsIndex) {
   // check owner
   if (owner.isNull() || owner->getGeometry().isNull()) {
@@ -1109,17 +1112,19 @@ bool OiJob::addOwnedSubGeometry(const oi::Guarded<FeatureWrapper>& owner,
   }
 
   // check function
-  if (producerFunction.isNull()) {
+  if (!producerFunction) {
     this->sendMessage("No valid function for owned sub-geometry",
                       MessageTypes::eErrorMessage);
     return false;
   }
 
   // connect the function the same way OiJob::addFunction does
-  this->adoptFunction(producerFunction.data());
+  this->adoptFunction(producerFunction.get());
 
   // attach the function - mints its id, appends to functionList
-  subGeometry->getGeometry()->addFunction(producerFunction);
+  if (!subGeometry->getGeometry()->addFunction(std::move(producerFunction))) {
+    return false;
+  }
 
   // bind the owner as this function's input and wire the ordinary
   // dependency edges (previouslyNeeded/usedFor), exactly as if the user
@@ -1164,7 +1169,7 @@ void OiJob::removeFunction(const int& functionIndex) {
   }
 
   // get a list of remaining function
-  std::vector<oi::Guarded<Function> > remainingFunctions;
+  std::vector<oi::Guarded<Function>> remainingFunctions;
   for (const oi::Guarded<Function>& f :
        oi::snapshot(this->activeFeature->getFeature()->getFunctions())) {
     if (f.isNull() || f == function) {
@@ -1174,7 +1179,7 @@ void OiJob::removeFunction(const int& functionIndex) {
   }
 
   // get a list of input elements and reset dependencies
-  std::map<int, std::vector<InputElement> > inputElements =
+  std::map<int, std::vector<InputElement>> inputElements =
       function->getInputElements();
   for (int key : oi::keys(inputElements)) {
     for (const InputElement& element : oi::snapshot(inputElements[key])) {
@@ -1196,7 +1201,6 @@ void OiJob::removeFunction(const int& functionIndex) {
 
   // remove and delete the function
   this->activeFeature->getFeature()->removeFunction(functionIndex);
-  delete function.data();
 }
 
 /*!
@@ -1306,7 +1310,7 @@ void OiJob::resolvePointIntent(const oi::Guarded<Point>& point,
     return;
   }
 
-  const std::vector<oi::Guarded<Function> >& functions =
+  const std::vector<oi::Guarded<Function>>& functions =
       target->getFeature()->getFunctions();
   for (int functionPosition = 0; functionPosition < std::ssize(functions);
        ++functionPosition) {
@@ -1851,19 +1855,14 @@ void OiJob::removeInputElement(const oi::Guarded<FeatureWrapper>& target,
  * \param readings
  */
 void OiJob::addMeasurementResults(
-    const int& geomId, const std::vector<oi::Guarded<Reading> >& readings) {
+    const int& geomId, std::vector<std::unique_ptr<Reading>> readings) {
   // check active station
   oi::Guarded<Station> activeStation = this->activeStation;
   if (activeStation.isNull() || activeStation->getCoordinateSystem().isNull()) {
     this->sendMessage(
         "Measurement rejected: no active station with a coordinate system",
         MessageTypes::eErrorMessage, MessageDestinations::eMessageBoxMessage);
-    for (const oi::Guarded<Reading>& reading : oi::snapshot(readings)) {
-      if (!reading.isNull()) {
-        delete reading.data();
-      }
-    }
-    return;
+    return;  // the readings are freed with the vector
   }
 
   // get and check feature with the id geomId - this is the acquisition's
@@ -1877,27 +1876,26 @@ void OiJob::addMeasurementResults(
             "Measurement rejected: target feature {} could not be resolved",
             geomId),
         MessageTypes::eErrorMessage, MessageDestinations::eMessageBoxMessage);
-    for (const oi::Guarded<Reading>& reading : oi::snapshot(readings)) {
-      if (!reading.isNull()) {
-        delete reading.data();
-      }
-    }
-    return;
+    return;  // the readings are freed with the vector
   }
 
   // create one station-owned Observation per reading, unchanged from
   // before - these hold the raw shots and are what makes the new Point
   //"a measurement" (Point::getOwnerDescription, point.cpp)
-  std::vector<oi::Guarded<Observation> > observations;
+  std::vector<oi::Guarded<Observation>> observations;
   bool isDummyPoint = false;
-  for (const oi::Guarded<Reading>& reading : oi::snapshot(readings)) {
-    if (reading.isNull()) {
+  for (std::unique_ptr<Reading>& reading : readings) {
+    if (!reading) {
       continue;
     }
 
-    oi::Guarded<Observation> observation = new Observation();
-    reading->setObservation(observation);
-    activeStation->getCoordinateSystem()->addObservation(observation);
+    auto created = std::make_unique<Observation>();
+    const oi::Guarded<Observation> observation(created.get());
+    created->adoptReading(std::move(reading));
+    if (!activeStation->getCoordinateSystem()->addObservation(
+            std::move(created))) {
+      continue;
+    }
     observations.push_back(observation);
     isDummyPoint = isDummyPoint || observation->getIsDummyPoint();
   }
@@ -1987,10 +1985,10 @@ void OiJob::removeObservations(const int& featureId) {
   }
 
   // run through all observations of the feature
-  std::vector<oi::Guarded<Observation> > observations =
+  std::vector<oi::Guarded<Observation>> observations =
       feature->getGeometry()->getObservations();
   for (const oi::Guarded<Observation>& obs : oi::snapshot(observations)) {
-    delete obs.data();
+    this->destroyObservation(obs);
   }
 
   // recalculate the feature
@@ -2048,7 +2046,7 @@ void OiJob::enableOrDisableGeometryObservations(const int& featureId,
   }
 
   // run through all observations of the feature
-  std::vector<oi::Guarded<Observation> > observations =
+  std::vector<oi::Guarded<Observation>> observations =
       feature->getGeometry()->getObservations();
   for (const oi::Guarded<Observation>& obs : oi::snapshot(observations)) {
     if ((!station.isNull() && station->getId() != obs->getStation()->getId()) ||
@@ -2098,11 +2096,11 @@ void OiJob::removeObservations(const int& featureId,
   }
 
   // run through all observations of the feature
-  std::vector<oi::Guarded<Observation> > observations =
+  std::vector<oi::Guarded<Observation>> observations =
       feature->getGeometry()->getObservations();
   for (const oi::Guarded<Observation>& obs : oi::snapshot(observations)) {
     if (oi::contains(selectedIds, obs->getId())) {
-      delete obs.data();
+      this->destroyObservation(obs);
     }
   }
 
@@ -2115,11 +2113,24 @@ void OiJob::removeObservations(const int& featureId,
 }
 
 /*!
+ * \brief OiJob::destroyObservation
+ * An observation is owned by the coordinate system of its station.
+ * \param obs
+ */
+void OiJob::destroyObservation(const oi::Guarded<Observation>& obs) {
+  if (obs.isNull() || obs->getStation().isNull() ||
+      obs->getStation()->getCoordinateSystem().isNull()) {
+    return;
+  }
+  obs->getStation()->getCoordinateSystem()->deleteObservation(obs);
+}
+
+/*!
  * \brief OiJob::removeAllObservations
  */
 void OiJob::removeAllObservations() {
   // get a list of all geometries
-  std::vector<oi::Guarded<FeatureWrapper> > geometries =
+  std::vector<oi::Guarded<FeatureWrapper>> geometries =
       this->featureContainer.getGeometriesList();
 
   // remove all observations
@@ -2336,7 +2347,7 @@ void OiJob::setActiveStation(const int& featureId) {
     // set sensor of the new station and reset sensor of old one
     if (!this->activeStation.isNull()) {
       // take sensor from the active station
-      oi::Guarded<Sensor> sensor(nullptr);
+      std::unique_ptr<Sensor> sensor;
       if (this->activeStation->getIsSensorSet()) {
         sensor = this->activeStation->takeSensor();
       }
@@ -2345,8 +2356,8 @@ void OiJob::setActiveStation(const int& featureId) {
       this->activeStation = feature->getStation();
 
       // set sensor of activated station
-      if (!sensor.isNull()) {
-        this->activeStation->setSensor(sensor);
+      if (sensor) {
+        this->activeStation->setSensor(std::move(sensor));
       }
 
     } else {
@@ -3086,7 +3097,7 @@ bool OiJob::checkAndSetUpNewFeature(std::unique_ptr<Feature>& newFeature,
         feature->getFeatureTypeEnum() == FeatureTypes::ePointFeature) {
       // get existing feature and set new values
       // get a list of features with name name
-      std::vector<oi::Guarded<FeatureWrapper> > features =
+      std::vector<oi::Guarded<FeatureWrapper>> features =
           this->featureContainer.getFeaturesByName(
               feature->getFeature()->getFeatureName());
 
@@ -3300,7 +3311,7 @@ void OiJob::removeOwnedSubGeometries(
 
   // copy first: removeFeature (via ~Geometry) mutates the owner's
   // ownedSubGeometries list as each child is actually deleted
-  const std::vector<oi::Guarded<Geometry> > owned =
+  const std::vector<oi::Guarded<Geometry>> owned =
       feature->getGeometry()->getOwnedSubGeometries();
 
   for (const oi::Guarded<Geometry>& child : oi::snapshot(owned)) {
@@ -3745,8 +3756,7 @@ void OiJob::resetDependencies(const InputElement& element,
  * ProjectExchanger)
  * \param features
  */
-void OiJob::addFeaturesFromXml(
-    std::vector<std::unique_ptr<Feature> > features) {
+void OiJob::addFeaturesFromXml(std::vector<std::unique_ptr<Feature>> features) {
   for (std::unique_ptr<Feature>& newFeature : features) {
     // check if feature is valid
     if (!newFeature || newFeature->getFeatureWrapper().isNull()) {
@@ -3830,7 +3840,7 @@ void OiJob::createTemplateFromJob() {
   this->removeAllObservations();  // from geometries
 
   // set first station to active station
-  std::vector<oi::Guarded<Station> > stations = this->getStationsList();
+  std::vector<oi::Guarded<Station>> stations = this->getStationsList();
   std::sort(
       stations.begin(), stations.end(),
       [](const oi::Guarded<Station>& lhs, const oi::Guarded<Station>& rhs) {
@@ -3854,17 +3864,19 @@ void OiJob::createTemplateFromJob() {
     // remove observations from coordinate system
     oi::Guarded<CoordinateSystem> coordianteSystem =
         station->getCoordinateSystem();
-    for (oi::Guarded<Observation> obs : coordianteSystem->getObservations()) {
-      coordianteSystem->removeObservation(obs);
+    for (oi::Guarded<Observation> obs :
+         oi::snapshot(coordianteSystem->getObservations())) {
+      coordianteSystem->deleteObservation(obs);
     }
   }
 
   // remove observations from coordinate system
-  std::vector<oi::Guarded<CoordinateSystem> > coordianteSystems =
+  std::vector<oi::Guarded<CoordinateSystem>> coordianteSystems =
       this->getCoordinateSystemsList();
   for (oi::Guarded<CoordinateSystem> coordianteSystem : coordianteSystems) {
-    for (oi::Guarded<Observation> obs : coordianteSystem->getObservations()) {
-      coordianteSystem->removeObservation(obs);
+    for (oi::Guarded<Observation> obs :
+         oi::snapshot(coordianteSystem->getObservations())) {
+      coordianteSystem->deleteObservation(obs);
     }
 
     oi::Guarded<BundleAdjustment> bundle = coordianteSystem->getBundlePlugin();
@@ -3874,7 +3886,7 @@ void OiJob::createTemplateFromJob() {
   }
 
   // remove transformations parameter
-  std::vector<oi::Guarded<TrafoParam> > trafoParams =
+  std::vector<oi::Guarded<TrafoParam>> trafoParams =
       this->getTransformationParametersList();
   OiVec rotation(3);
   OiVec translation(3);

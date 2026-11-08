@@ -98,7 +98,12 @@ class Log {
 // A sensor driver whose calls are logged with the calling thread.
 class FakeSensor : public Sensor {
  public:
-  Log calls;
+  // shared so a test can keep reading the log after the worker (which owns
+  // the sensor) is gone
+  std::shared_ptr<Log> callsBox = std::make_shared<Log>();
+  Log& calls = *callsBox;
+  std::atomic<bool> stopReporter{false};
+  std::thread reporter;
   std::atomic<bool> connected{false};
   std::atomic<bool> async{false};
   std::atomic<int> connectDelayMs{0};
@@ -111,6 +116,24 @@ class FakeSensor : public Sensor {
   std::atomic<bool> overlapped{false};
 
   explicit FakeSensor() : Sensor() {}
+  ~FakeSensor() override {
+    this->stopReporter = true;
+    if (this->reporter.joinable()) {
+      this->reporter.join();
+    }
+  }
+
+  // a driver thread that reports on its own until the driver is destroyed
+  void startReporter() {
+    this->reporter = std::thread([this] {
+      while (!this->stopReporter) {
+        this->sensorMessage("m", MessageTypes::eInformationMessage);
+        oi::ValueMap m;
+        m["n"] = 1;
+        this->asyncStreamResult(m);
+      }
+    });
+  }
 
   bool isSensorAsync() const override { return this->async; }
 
@@ -133,16 +156,17 @@ class FakeSensor : public Sensor {
     this->calls.add("status");
     return {{"state", "ok"}};
   }
-  std::vector<oi::Guarded<Reading>> measure(const MeasurementConfig&) override {
+  std::vector<std::unique_ptr<Reading>> measure(
+      const MeasurementConfig&) override {
     const Guard g(*this, "measure");
     std::this_thread::sleep_for(
         std::chrono::milliseconds(this->measureDelayMs));
-    std::vector<oi::Guarded<Reading>> result;
+    std::vector<std::unique_ptr<Reading>> result;
     for (int i = 0; i < this->readings; ++i) {
       ReadingCartesian r;
       r.isValid = true;
       r.xyz.setAt(0, i);
-      result.push_back(new Reading(r));
+      result.push_back(std::make_unique<Reading>(r));
     }
     return result;
   }
@@ -221,7 +245,7 @@ class RecordingObserver : public StationObserver {
                               msg, static_cast<int>(action)));
   }
   void onMeasurementFinished(
-      int geomId, const std::vector<oi::Guarded<Reading>>& readings) override {
+      int geomId, std::vector<std::unique_ptr<Reading>> readings) override {
     const Scope s(*this);
     this->log.add(
         std::format("measurementFinished:{}:{}", geomId, readings.size()));
@@ -331,10 +355,11 @@ void SensorWorkerTest::initTestCase() {
 
 void SensorWorkerTest::commandsRunOnTheWorkerThreadInFifoOrder() {
   RecordingObserver results;
-  auto* sensor = new FakeSensor;
+  auto own_sensor = std::make_unique<FakeSensor>();
+  FakeSensor* sensor = own_sensor.get();
   {
     SensorWorker worker(results);
-    worker.setSensor(sensor);
+    worker.setSensor(std::move(own_sensor));
     worker.connectSensor();
     worker.initialize();
     worker.selfDefinedAction("a");
@@ -365,16 +390,16 @@ void SensorWorkerTest::commandsRunOnTheWorkerThreadInFifoOrder() {
         events.front().what,
         std::format("finished:1:{}:0", SensorWorkerMessage::SENSOR_CONNECTED));
   }
-  delete sensor;
 }
 
 void SensorWorkerTest::aSlowCommandDoesNotBlockTheCaller() {
   RecordingObserver results;
-  FakeSensor sensor;
+  auto own_sensor = std::make_unique<FakeSensor>();
+  FakeSensor& sensor = *own_sensor;
   sensor.connected = true;
   sensor.measureDelayMs = 400;
   SensorWorker worker(results);
-  worker.setSensor(&sensor);
+  worker.setSensor(std::move(own_sensor));
 
   const auto start = std::chrono::steady_clock::now();
   worker.measure(1, MeasurementConfig());
@@ -395,10 +420,11 @@ void SensorWorkerTest::aSlowCommandDoesNotBlockTheCaller() {
 
 void SensorWorkerTest::measurementFlow() {
   RecordingObserver results;
-  FakeSensor sensor;
+  auto own_sensor = std::make_unique<FakeSensor>();
+  FakeSensor& sensor = *own_sensor;
   sensor.connected = true;
   SensorWorker worker(results);
-  worker.setSensor(&sensor);
+  worker.setSensor(std::move(own_sensor));
 
   worker.measure(7, MeasurementConfig());
   REQUIRE(results.log.waitForCount("done", 1));
@@ -414,9 +440,10 @@ void SensorWorkerTest::measurementFlow() {
 
 void SensorWorkerTest::measurementFailureReportsDoneLast() {
   RecordingObserver results;
-  FakeSensor sensor;  // not connected
+  auto own_sensor = std::make_unique<FakeSensor>();
+  FakeSensor& sensor = *own_sensor;  // not connected
   SensorWorker worker(results);
-  worker.setSensor(&sensor);
+  worker.setSensor(std::move(own_sensor));
 
   worker.measure(7, MeasurementConfig());
   REQUIRE(results.log.waitForCount("done", 1));
@@ -445,11 +472,12 @@ void SensorWorkerTest::commandsWithoutSensorReportAnError() {
 
 void SensorWorkerTest::readingStreamYieldsReadingsThenStops() {
   RecordingObserver results;
-  FakeSensor sensor;
+  auto own_sensor = std::make_unique<FakeSensor>();
+  FakeSensor& sensor = *own_sensor;
   sensor.connected = true;
   sensor.streamDelayMs = 1;
   SensorWorker worker(results);
-  worker.setSensor(&sensor);
+  worker.setSensor(std::move(own_sensor));
   worker.setStreamFormat(ReadingTypes::eCartesianReading);
 
   worker.startReadingStream();
@@ -475,11 +503,12 @@ void SensorWorkerTest::readingStreamYieldsReadingsThenStops() {
 
 void SensorWorkerTest::aRestartedStreamKeepsRunning() {
   RecordingObserver results;
-  FakeSensor sensor;
+  auto own_sensor = std::make_unique<FakeSensor>();
+  FakeSensor& sensor = *own_sensor;
   sensor.connected = true;
   sensor.streamDelayMs = 1;
   SensorWorker worker(results);
-  worker.setSensor(&sensor);
+  worker.setSensor(std::move(own_sensor));
 
   worker.startReadingStream();
   REQUIRE(results.log.waitForCount("reading", 3));
@@ -499,11 +528,12 @@ void SensorWorkerTest::aRestartedStreamKeepsRunning() {
 
 void SensorWorkerTest::commandsAreInterleavedWithARunningStream() {
   RecordingObserver results;
-  FakeSensor sensor;
+  auto own_sensor = std::make_unique<FakeSensor>();
+  FakeSensor& sensor = *own_sensor;
   sensor.connected = true;
   sensor.streamDelayMs = 1;
   SensorWorker worker(results);
-  worker.setSensor(&sensor);
+  worker.setSensor(std::move(own_sensor));
 
   worker.startReadingStream();
   REQUIRE(results.log.waitForCount("reading", 3));
@@ -517,10 +547,11 @@ void SensorWorkerTest::commandsAreInterleavedWithARunningStream() {
 
 void SensorWorkerTest::statusStreamReportsStatus() {
   RecordingObserver results;
-  FakeSensor sensor;
+  auto own_sensor = std::make_unique<FakeSensor>();
+  FakeSensor& sensor = *own_sensor;
   sensor.connected = true;
   SensorWorker worker(results);
-  worker.setSensor(&sensor);
+  worker.setSensor(std::move(own_sensor));
 
   worker.startStatusMonitoringStream();
   REQUIRE(results.log.waitForCount("status", 3));
@@ -533,9 +564,10 @@ void SensorWorkerTest::statusStreamReportsStatus() {
 
 void SensorWorkerTest::connectionMonitoringReportsLostAndReceived() {
   RecordingObserver results;
-  FakeSensor sensor;
+  auto own_sensor = std::make_unique<FakeSensor>();
+  FakeSensor& sensor = *own_sensor;
   SensorWorker worker(results);
-  worker.setSensor(&sensor);
+  worker.setSensor(std::move(own_sensor));
 
   worker.startConnectionMonitoringStream();
   sensor.connected = true;
@@ -553,10 +585,11 @@ void SensorWorkerTest::connectionMonitoringReportsLostAndReceived() {
 
 void SensorWorkerTest::asyncSensorReportsFromForeignThreadsAreSerialised() {
   RecordingObserver results;
-  FakeSensor sensor;
+  auto own_sensor = std::make_unique<FakeSensor>();
+  FakeSensor& sensor = *own_sensor;
   sensor.async = true;
   SensorWorker worker(results);
-  worker.setSensor(&sensor);
+  worker.setSensor(std::move(own_sensor));
 
   constexpr int threads = 4;
   constexpr int perThread = 100;
@@ -573,8 +606,7 @@ void SensorWorkerTest::asyncSensorReportsFromForeignThreadsAreSerialised() {
           sensor.asyncSensorResponse(response, SensorAction::eSensorActionMove);
         }
         if (i % 50 == 0) {
-          std::vector<oi::Guarded<Reading>> none;
-          sensor.asyncMeasurementResult(t, none);
+          sensor.asyncMeasurementResult(t, {});
         }
       }
     });
@@ -606,9 +638,10 @@ void SensorWorkerTest::asyncSensorReportsFromForeignThreadsAreSerialised() {
 
 void SensorWorkerTest::sensorMessagesFromForeignThreadsAreForwarded() {
   RecordingObserver results;
-  FakeSensor sensor;
+  auto own_sensor = std::make_unique<FakeSensor>();
+  FakeSensor& sensor = *own_sensor;
   SensorWorker worker(results);
-  worker.setSensor(&sensor);
+  worker.setSensor(std::move(own_sensor));
 
   std::thread t([&sensor] {
     sensor.sensorMessage("hello", MessageTypes::eInformationMessage);
@@ -617,25 +650,26 @@ void SensorWorkerTest::sensorMessagesFromForeignThreadsAreForwarded() {
   OI_COMPARE(results.log.names(), (std::vector<std::string>{"message:hello"}));
 
   // without a sink the report is dropped
-  worker.takeSensor();
+  const std::unique_ptr<Sensor> taken = worker.takeSensor();
   sensor.sensorMessage("dropped", MessageTypes::eInformationMessage);
   OI_COMPARE(results.log.count("message"), 1);
 }
 
 void SensorWorkerTest::takeSensorWaitsForTheRunningCommandAndDetaches() {
   RecordingObserver results;
-  FakeSensor sensor;
+  auto own_sensor = std::make_unique<FakeSensor>();
+  FakeSensor& sensor = *own_sensor;
   sensor.connectDelayMs = 200;
   SensorWorker worker(results);
-  worker.setSensor(&sensor);
+  worker.setSensor(std::move(own_sensor));
   OI_COMPARE(sensor.getSensorSink(), &worker);
 
   worker.connectSensor();
   REQUIRE(sensor.calls.waitForCount("connect", 1));
-  const oi::Guarded<Sensor> taken = worker.takeSensor();
+  const std::unique_ptr<Sensor> taken = worker.takeSensor();
   // the command was complete when the sensor was handed back
   REQUIRE(sensor.connected);
-  OI_COMPARE(taken.data(), &sensor);
+  OI_COMPARE(taken.get(), &sensor);
   REQUIRE(sensor.getSensorSink() == nullptr);
   REQUIRE(worker.getSensor().getSensorConfiguration().getSensorName().empty());
   REQUIRE(!worker.getIsSensorConnected());
@@ -643,77 +677,70 @@ void SensorWorkerTest::takeSensorWaitsForTheRunningCommandAndDetaches() {
 
 void SensorWorkerTest::destructionWithPendingCommandsDropsThem() {
   RecordingObserver results;
-  FakeSensor sensor;
+  auto own_sensor = std::make_unique<FakeSensor>();
+  FakeSensor& sensor = *own_sensor;
   sensor.connectDelayMs = 150;
+  const std::shared_ptr<Log> calls = sensor.callsBox;
   {
     SensorWorker worker(results);
-    worker.setSensor(&sensor);
+    worker.setSensor(std::move(own_sensor));
     worker.connectSensor();
     for (int i = 0; i < 50; ++i) {
       worker.selfDefinedAction(oi::number(i));
     }
     REQUIRE(sensor.calls.waitForCount("connect", 1));
-  }  // destroyed while connect runs and 50 commands wait
-  const int executed = sensor.calls.count("action");
+  }  // destroyed while connect runs and 50 commands wait; frees the sensor
+  const int executed = calls->count("action");
   REQUIRE(executed < 50);
-  REQUIRE(sensor.getSensorSink() == nullptr);
   std::this_thread::sleep_for(30ms);
-  OI_COMPARE(sensor.calls.count("action"),
-             executed);  // nothing runs afterwards
+  OI_COMPARE(calls->count("action"), executed);  // nothing runs afterwards
 }
 
 void SensorWorkerTest::destructionWhileAStreamRunsStopsCleanly() {
   RecordingObserver results;
-  FakeSensor sensor;
+  auto own_sensor = std::make_unique<FakeSensor>();
+  FakeSensor& sensor = *own_sensor;
   sensor.connected = true;
+  const std::shared_ptr<Log> calls = sensor.callsBox;
   {
     SensorWorker worker(results);
-    worker.setSensor(&sensor);
+    worker.setSensor(std::move(own_sensor));
     worker.startReadingStream();
     worker.startConnectionMonitoringStream();
     worker.startStatusMonitoringStream();
     REQUIRE(results.log.waitForCount("reading", 3));
     REQUIRE(results.log.waitForCount("status", 3));
-  }
-  const int streamCalls = sensor.calls.count("stream");
-  const int statusCalls = sensor.calls.count("status");
+    REQUIRE(!sensor.overlapped);
+  }  // frees the sensor
+  const int streamCalls = calls->count("stream");
+  const int statusCalls = calls->count("status");
   std::this_thread::sleep_for(30ms);
-  OI_COMPARE(sensor.calls.count("stream"), streamCalls);
-  OI_COMPARE(sensor.calls.count("status"), statusCalls);
-  REQUIRE(!sensor.overlapped);
+  OI_COMPARE(calls->count("stream"), streamCalls);
+  OI_COMPARE(calls->count("status"), statusCalls);
 }
 
 void SensorWorkerTest::destructionWhileTheDriverReportsFromAnotherThread() {
   RecordingObserver results;
-  FakeSensor sensor;
-  sensor.async = true;
-  std::atomic<bool> stop{false};
-  std::thread reporter([&] {
-    while (!stop) {
-      sensor.sensorMessage("m", MessageTypes::eInformationMessage);
-      oi::ValueMap m;
-      m["n"] = 1;
-      sensor.asyncStreamResult(m);
-    }
-  });
   for (int round = 0; round < 20; ++round) {
+    auto own_sensor = std::make_unique<FakeSensor>();
+    own_sensor->async = true;
+    own_sensor->startReporter();
     SensorWorker worker(results);
-    worker.setSensor(&sensor);
+    worker.setSensor(std::move(own_sensor));
     worker.startReadingStream();
     std::this_thread::sleep_for(2ms);
-  }  // each worker dies while the driver is reporting
-  stop = true;
-  reporter.join();
-  REQUIRE(sensor.getSensorSink() == nullptr);
+  }  // each worker dies while the driver is reporting; the driver (which owns
+     // its reporting thread) is freed with it
 }
 
 void SensorWorkerTest::controlDeliversThroughTheExecutorInOrder() {
   RecordingObserver results;
   ManualExecutor executor;
-  FakeSensor sensor;
+  auto own_sensor = std::make_unique<FakeSensor>();
+  FakeSensor& sensor = *own_sensor;
   sensor.connected = true;
   SensorControl control(&results, &executor);
-  control.setSensor(&sensor);
+  control.setSensor(std::move(own_sensor));
 
   control.measure(3, MeasurementConfig());
   control.home();
@@ -741,11 +768,12 @@ void SensorWorkerTest::controlDeliversThroughTheExecutorInOrder() {
 void SensorWorkerTest::tasksStillQueuedAfterDestructionAreDropped() {
   RecordingObserver results;
   ManualExecutor executor;
-  FakeSensor sensor;
+  auto own_sensor = std::make_unique<FakeSensor>();
+  FakeSensor& sensor = *own_sensor;
   sensor.connected = true;
   {
     SensorControl control(&results, &executor);
-    control.setSensor(&sensor);
+    control.setSensor(std::move(own_sensor));
     control.measure(1, MeasurementConfig());
     REQUIRE(executor.waitForPending(3));
   }  // the control is gone, its results are still queued in the executor
@@ -755,10 +783,11 @@ void SensorWorkerTest::tasksStillQueuedAfterDestructionAreDropped() {
 
 void SensorWorkerTest::anExecutorCanBeDestroyedRightAfterItWasReplaced() {
   RecordingObserver results;
-  FakeSensor sensor;
+  auto own_sensor = std::make_unique<FakeSensor>();
+  FakeSensor& sensor = *own_sensor;
   sensor.connected = true;
   SensorControl control(&results, nullptr);
-  control.setSensor(&sensor);
+  control.setSensor(std::move(own_sensor));
   for (int round = 0; round < 50; ++round) {
     auto executor = std::make_unique<ManualExecutor>();
     control.setExecutor(executor.get());
@@ -773,11 +802,12 @@ void SensorWorkerTest::anExecutorCanBeDestroyedRightAfterItWasReplaced() {
 
 void SensorWorkerTest::stationCommandMethodsReachTheSensor() {
   RecordingObserver results;
-  FakeSensor sensor;
+  auto own_sensor = std::make_unique<FakeSensor>();
+  FakeSensor& sensor = *own_sensor;
   Station station("S1");
   station.setStationObserver(&results);
   station.setActiveStationState(true);
-  station.setSensor(&sensor);
+  station.setSensor(std::move(own_sensor));
   REQUIRE(station.getIsSensorSet());
 
   station.connectSensor();
@@ -830,9 +860,11 @@ void SensorWorkerTest::stationObserverIsToldAndForgotten() {
   station->setActiveStationState(true);
   OI_COMPARE(station->getStationObserver(), &results);
 
-  FakeSensor sensor;
+  auto own_sensor = std::make_unique<FakeSensor>();
+
+  FakeSensor& sensor = *own_sensor;
   sensor.connected = true;
-  station->setSensor(&sensor);
+  station->setSensor(std::move(own_sensor));
   station->measure(1, MeasurementConfig());
   REQUIRE(executor.waitForPending(3));
 
@@ -845,7 +877,8 @@ void SensorWorkerTest::stationObserverIsToldAndForgotten() {
 void SensorWorkerTest::stationsOfAJobUseTheJobsExecutor() {
   ManualExecutor executor;
   RecordingObserver results;
-  FakeSensor sensor;
+  auto own_sensor = std::make_unique<FakeSensor>();
+  FakeSensor& sensor = *own_sensor;
   sensor.connected = true;
   OiJob job;
 
@@ -869,7 +902,7 @@ void SensorWorkerTest::stationsOfAJobUseTheJobsExecutor() {
 
   late->setStationObserver(&results);
   late->setActiveStationState(true);
-  late->setSensor(&sensor);
+  late->setSensor(std::move(own_sensor));
   late->measure(1, MeasurementConfig());
   REQUIRE(executor.waitForPending(3));
   OI_COMPARE(results.log.names().size(), 0);
@@ -900,12 +933,14 @@ void SensorWorkerTest::stationReportsActiveStationAndSensorChangesToTheJob() {
   OI_COMPARE(job.getActiveStation().data(), station.data());
   REQUIRE(jobObserver.count("activeStationChanged") >= 1);
 
-  FakeSensor sensor;
-  station->setSensor(&sensor);
+  auto own_sensor = std::make_unique<FakeSensor>();
+
+  FakeSensor& sensor = *own_sensor;
+  station->setSensor(std::move(own_sensor));
   OI_COMPARE(jobObserver.count("stationSensorChanged"), 1);
-  oi::Guarded<Sensor> taken = station->takeSensor();
+  std::unique_ptr<Sensor> taken = station->takeSensor();
   OI_COMPARE(jobObserver.count("stationSensorChanged"), 2);
-  OI_COMPARE(taken.data(), &sensor);
+  OI_COMPARE(taken.get(), &sensor);
 }
 
 TEST_CASE("SensorWorkerTest::commandsRunOnTheWorkerThreadInFifoOrder",

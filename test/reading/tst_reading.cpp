@@ -33,7 +33,7 @@ class ReadingTest {
   void testMeasuredAtSurvivesRoundTrip();
 
  private:
-  oi::Guarded<Reading> roundTrip(oi::Guarded<Reading> r);
+  std::unique_ptr<Reading> roundTrip(const std::unique_ptr<Reading>& r);
 };
 
 void ReadingTest::initTestCase() {
@@ -43,7 +43,8 @@ void ReadingTest::initTestCase() {
 ReadingTest::ReadingTest() {}
 
 // What a reading goes through when a project is saved and loaded again.
-oi::Guarded<Reading> ReadingTest::roundTrip(oi::Guarded<Reading> r) {
+std::unique_ptr<Reading> ReadingTest::roundTrip(
+    const std::unique_ptr<Reading>& r) {
   std::string bytes;
   if (!oi::codec::toProto(*r).SerializeToString(&bytes)) {
     throw std::runtime_error("failed to serialise the reading");
@@ -59,13 +60,13 @@ oi::Guarded<Reading> ReadingTest::roundTrip(oi::Guarded<Reading> r) {
 void ReadingTest::testMeasuredAtSurvivesRoundTrip() {
   using namespace std::chrono;
   ReadingUndefined u;
-  oi::Guarded<Reading> reading = new Reading(u);
+  auto reading = std::make_unique<Reading>(u);
   const sys_time<nanoseconds> when = sys_days{year{2024} / 5 / 17} + hours{13} +
                                      minutes{45} + seconds{9} +
                                      nanoseconds{123456789};
   reading->setMeasuredAt(when);
 
-  oi::Guarded<Reading> back = roundTrip(reading);
+  auto back = roundTrip(reading);
   OI_COMPARE(time_point_cast<nanoseconds>(back->getMeasuredAt())
                  .time_since_epoch()
                  .count(),
@@ -82,8 +83,8 @@ void ReadingTest::testCartesian6D() {
   reading.ijk.setAt(1, 0.9);
   reading.ijk.setAt(2, 0.2);
 
-  oi::Guarded<Reading> outReading = new Reading(reading);
-  oi::Guarded<Reading> inReading = this->roundTrip(outReading);
+  auto outReading = std::make_unique<Reading>(reading);
+  auto inReading = this->roundTrip(outReading);
 
   ReadingCartesian6D in = inReading->getCartesianReading6D();
 
@@ -105,8 +106,8 @@ void ReadingTest::testCartesian() {
   reading.xyz.setAt(2, 3.);
   ;
 
-  oi::Guarded<Reading> outReading = new Reading(reading);
-  oi::Guarded<Reading> inReading = this->roundTrip(outReading);
+  auto outReading = std::make_unique<Reading>(reading);
+  auto inReading = this->roundTrip(outReading);
 
   ReadingCartesian in = inReading->getCartesianReading();
 
@@ -122,8 +123,8 @@ void ReadingTest::testDistanceReading() {
   reading.isValid = true;
   reading.distance = 123.4;
 
-  oi::Guarded<Reading> outReading = new Reading(reading);
-  oi::Guarded<Reading> inReading = this->roundTrip(outReading);
+  auto outReading = std::make_unique<Reading>(reading);
+  auto inReading = this->roundTrip(outReading);
 
   ReadingDistance in = inReading->getDistanceReading();
 
@@ -139,8 +140,8 @@ void ReadingTest::testPolarReading() {
   reading.zenith = 23.3;
   reading.distance = 56.8;
 
-  oi::Guarded<Reading> outReading = new Reading(reading);
-  oi::Guarded<Reading> inReading = this->roundTrip(outReading);
+  auto outReading = std::make_unique<Reading>(reading);
+  auto inReading = this->roundTrip(outReading);
 
   ReadingPolar in = inReading->getPolarReading();
 
@@ -157,8 +158,8 @@ void ReadingTest::testDirectionReading() {
   reading.azimuth = 12.2;
   reading.zenith = 23.3;
 
-  oi::Guarded<Reading> outReading = new Reading(reading);
-  oi::Guarded<Reading> inReading = this->roundTrip(outReading);
+  auto outReading = std::make_unique<Reading>(reading);
+  auto inReading = this->roundTrip(outReading);
 
   ReadingDirection in = inReading->getDirectionReading();
 
@@ -173,8 +174,8 @@ void ReadingTest::testTemperatureReading() {
   reading.isValid = true;
   reading.temperature = 27.1;
 
-  oi::Guarded<Reading> outReading = new Reading(reading);
-  oi::Guarded<Reading> inReading = this->roundTrip(outReading);
+  auto outReading = std::make_unique<Reading>(reading);
+  auto inReading = this->roundTrip(outReading);
 
   ReadingTemperature in = inReading->getTemperatureReading();
 
@@ -190,8 +191,8 @@ void ReadingTest::testLevelReading() {
   reading.j = 0.9;
   reading.k = 0.2;
 
-  oi::Guarded<Reading> outReading = new Reading(reading);
-  oi::Guarded<Reading> inReading = this->roundTrip(outReading);
+  auto outReading = std::make_unique<Reading>(reading);
+  auto inReading = this->roundTrip(outReading);
 
   ReadingLevel in = inReading->getLevelReading();
 

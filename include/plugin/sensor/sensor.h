@@ -1,6 +1,7 @@
 #ifndef SENSOR_H
 #define SENSOR_H
 #include <map>
+#include <memory>
 #include <mutex>
 #include <string>
 #include <utility>
@@ -125,7 +126,7 @@ class OI_CORE_EXPORT SensorInterface : public oi::Trackable {
   virtual bool disconnectSensor() = 0;
 
   // measurements
-  virtual std::vector<oi::Guarded<Reading>> measure(
+  virtual std::vector<std::unique_ptr<Reading>> measure(
       const MeasurementConfig& mConfig) = 0;
   virtual oi::ValueMap readingStream(const ReadingTypes& streamFormat) = 0;
 
@@ -165,7 +166,7 @@ class OI_CORE_EXPORT SensorInterface : public oi::Trackable {
       const oi::ValueMap& response,
       const SensorAction sensorAction = SensorAction::eSensorActionUndefind);
   void asyncMeasurementResult(
-      const int& geomId, const std::vector<oi::Guarded<Reading>>& measurements,
+      const int& geomId, std::vector<std::unique_ptr<Reading>> measurements,
       const SensorAction sensorAction = SensorAction::eSensorActionUndefind);
   void asyncStreamResult(const oi::ValueMap& reading);
   void asyncSensorNotification(const oi::ValueMap& response);
@@ -268,7 +269,7 @@ class OI_CORE_EXPORT Sensor : public SensorInterface {
   bool disconnectSensor() override;
 
   // measurements
-  std::vector<oi::Guarded<Reading>> measure(
+  std::vector<std::unique_ptr<Reading>> measure(
       const MeasurementConfig& mConfig) override;
   oi::ValueMap readingStream(const ReadingTypes& streamFormat) override;
 
@@ -294,8 +295,10 @@ class OI_CORE_EXPORT Sensor : public SensorInterface {
   SensorConfiguration sensorConfiguration;
   MeasurementConfig actualMeasurementConfig;
 
-  std::pair<ReadingTypes, oi::Guarded<Reading>>
-      lastReading;  // the last reading produced by this sensor
+  // The last reading produced by this sensor: a view; setLastReading() keeps
+  // it and its owner in step (the previous one is freed).
+  std::pair<ReadingTypes, oi::Guarded<Reading>> lastReading;
+  void setLastReading(ReadingTypes type, std::unique_ptr<Reading> reading);
 
   // ###########################
   // input and output parameters
@@ -322,6 +325,9 @@ class OI_CORE_EXPORT Sensor : public SensorInterface {
   std::map<std::string, int> integerParameters;
   std::map<std::string, double> doubleParameters;
   std::multimap<std::string, std::string> stringParameters;
+
+ private:
+  std::unique_ptr<Reading> ownedLastReading;  // what lastReading views
 };
 
 }  // namespace oi

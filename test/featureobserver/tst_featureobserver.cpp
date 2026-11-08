@@ -150,7 +150,7 @@ void FeatureObserverTest::functionAddedAndUsedFor() {
   Point other;
   point.setObserver(&rec);
 
-  point.addFunction(new FakeFit());
+  point.addFunction(std::make_unique<FakeFit>());
   OI_COMPARE(rec.count("featureFunctionList"), 1);
 
   // usedFor/previouslyNeeded bookkeeping never notified (nothing emitted the
@@ -212,10 +212,12 @@ void FeatureObserverTest::stationSystemObservationAdded() {
 
   ReadingCartesian r;
   r.isValid = true;
-  oi::Guarded<Reading> reading = new Reading(r);
-  oi::Guarded<Observation> obs = new Observation();
-  reading->setObservation(obs);
-  REQUIRE(station->getCoordinateSystem()->addObservation(obs));
+  auto owned_reading = std::make_unique<Reading>(r);
+  const oi::Guarded<Reading> reading(owned_reading.get());
+  auto owned_obs = std::make_unique<Observation>();
+  const oi::Guarded<Observation> obs(owned_obs.get());
+  owned_obs->adoptReading(std::move(owned_reading));
+  REQUIRE(station->getCoordinateSystem()->addObservation(std::move(owned_obs)));
   OI_COMPARE(spy.count("systemObservationsChanged"), 1);
 }
 
@@ -244,7 +246,7 @@ void FeatureObserverTest::featuresWithoutObserverNotifyNobody() {
   point.setIsSolved(true);
   point.setCommonState(true);
   point.announceObservationsChanged();
-  point.addFunction(new FakeFit());
+  point.addFunction(std::make_unique<FakeFit>());
 
   TrafoParam tp;
   tp.setIsUsed(true);
@@ -343,7 +345,7 @@ void FeatureObserverTest::jobRelaysIntoItsOwnSignals() {
   point.setCommonState(true);
   OI_COMPARE(rec.count("geometryIsCommonChanged"), 1);
 
-  point.addFunction(new FakeFit());
+  point.addFunction(std::make_unique<FakeFit>());
   OI_COMPARE(rec.count("featureFunctionsChanged"), 1);
 }
 

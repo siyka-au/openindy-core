@@ -48,7 +48,6 @@ Observation::Observation(const Observation& copy)
       originalSigmaIjk(copy.originalSigmaIjk),
       originalSigmaXyz(copy.originalSigmaXyz),
       originalXyz(copy.originalXyz),
-      reading(copy.reading),
       sigmaIjk(copy.sigmaIjk),
       sigmaXyz(copy.sigmaXyz),
       station(copy.station),
@@ -57,7 +56,12 @@ Observation::Observation(const Observation& copy)
 
   // this->isActiveCoordSys = copy.isActiveCoordSys;
 
-  // copy reading and station
+  // an observation owns its reading: the copy gets a copy of it
+  if (copy.reading.isNull()) {
+    return;
+  }
+  this->ownedReading = std::make_unique<Reading>(*copy.reading.data());
+  this->reading = this->ownedReading.get();
 }
 
 /*!
@@ -135,8 +139,14 @@ Observation& Observation::operator=(const Observation& copy) {
   this->originalSigmaIjk = copy.originalSigmaIjk;
   this->isDummyPoint = copy.isDummyPoint;
 
-  // copy reading and station
-  this->reading = copy.reading;
+  // copy reading (the observation owns its own) and station
+  if (copy.reading.isNull()) {
+    this->ownedReading.reset();
+    this->reading = nullptr;
+  } else if (this != &copy) {
+    this->ownedReading = std::make_unique<Reading>(*copy.reading.data());
+    this->reading = this->ownedReading.get();
+  }
   this->station = copy.station;
 
   return *this;
@@ -189,8 +199,21 @@ Observation::~Observation() {
     this->getStation()->getCoordinateSystem()->blockSignals(false);
   }
 
-  // delete the corresponding reading
-  delete this->getReading().data();
+  // the corresponding reading is freed with ownedReading
+}
+
+/*!
+ * \brief Observation::adoptReading
+ * The observation takes the reading and takes its values from it.
+ * \param newReading
+ */
+void Observation::adoptReading(std::unique_ptr<Reading> newReading) {
+  if (!newReading) {
+    return;
+  }
+  this->ownedReading = std::move(newReading);
+  this->reading = this->ownedReading.get();
+  this->ownedReading->setObservation(oi::Guarded<Observation>(this));
 }
 
 /*!

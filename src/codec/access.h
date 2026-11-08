@@ -103,15 +103,11 @@ struct Access {
     set4(o.originalSigmaIjk, m.original_sigma_ijk());
   }
 
-  static void setReading(Observation& o, const oi::Guarded<Reading>& reading) {
-    o.reading = reading;
-  }
-
   static void encodeObservation(const Observation& o, oipb::Observation* m);
 
   // ---- Reading ----
   static void encodeReading(const Reading& r, oipb::Reading* m);
-  static oi::Guarded<Reading> decodeReading(const oipb::Reading& m);
+  static std::unique_ptr<Reading> decodeReading(const oipb::Reading& m);
 
   // ---- Geometry (geometry.cpp) ----
   template <class T>
@@ -175,8 +171,10 @@ struct Access {
         break;
     }
   }
-  static void addSystemObservation(
-      CoordinateSystem& system, const oi::Guarded<Observation>& observation) {
+  static void addSystemObservation(CoordinateSystem& system,
+                                   std::unique_ptr<Observation> owned) {
+    const oi::Guarded<Observation> observation(owned.get());
+    system.ownedObservations.push_back(std::move(owned));
     system.observationsList.push_back(observation);
     system.observationsMap.insert_or_assign(observation->getId(), observation);
   }

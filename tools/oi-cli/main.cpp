@@ -191,8 +191,9 @@ int runProject(const std::string& pluginPath, const std::string& projectPath,
   }
 
   // 3. the fit, through the plugin
-  oi::Guarded<oi::Function> fit = loaded.plugin->createFunction(kFitFunction);
-  if (fit.isNull()) {
+  std::unique_ptr<oi::Function> fit =
+      loaded.plugin->createFunction(kFitFunction);
+  if (!fit) {
     return fail(std::string("plugin has no function ") + kFitFunction);
   }
   fit->init();

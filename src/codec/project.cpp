@@ -169,15 +169,17 @@ struct Staging {
   std::map<int, oi::Guarded<FeatureWrapper>> trafos;
   std::map<int, oi::Guarded<FeatureWrapper>> geometries;
   std::map<int, oi::Guarded<FeatureWrapper>> groups;
-  std::vector<oi::Guarded<Function>>
-      functions;  // not yet attached to a feature
 
   // The owner of every staged feature until it is handed on (to the job,
   // or to the station that owns its position and system). The maps above
   // are lookup handles only, so a decode that fails midway frees whatever
   // was built by construction.
   std::vector<std::unique_ptr<Feature>> owned;
-  bool released = false;  // functions and observations have been adopted
+
+  // The owner of every observation until a coordinate system takes it (declared
+  // after `owned`, so it is freed first: an observation detaches itself from
+  // its station when it dies).
+  std::vector<std::unique_ptr<Observation>> ownedObservations;
 
   Staging() = default;
   Staging(const Staging&) = delete;
@@ -185,16 +187,26 @@ struct Staging {
   Staging(Staging&&) = delete;
   Staging& operator=(Staging&&) = delete;
 
-  ~Staging() {
-    if (released) {
-      return;
+  ~Staging() = default;
+
+  // Hands a staged observation on; null when it was already taken.
+  [[nodiscard]] std::unique_ptr<Observation> takeObservation(int id) {
+    const auto found = observations.find(id);
+    if (found == observations.end() || found->second.isNull()) {
+      return nullptr;
     }
-    for (const auto& function : functions) {
-      delete function.data();
+    const Observation* const raw = found->second.data();
+    const auto it =
+        std::find_if(ownedObservations.begin(), ownedObservations.end(),
+                     [raw](const std::unique_ptr<Observation>& o) {
+                       return o.get() == raw;
+                     });
+    if (it == ownedObservations.end()) {
+      return nullptr;
     }
-    for (const auto& [id, observation] : observations) {
-      delete observation.data();
-    }
+    std::unique_ptr<Observation> result = std::move(*it);
+    ownedObservations.erase(it);
+    return result;
   }
 
   // Hands a staged feature on; null when it was already taken.
@@ -294,10 +306,10 @@ class Linker {
   void linkCommon(const oipb::FeatureCommon& common,
                   const oi::Guarded<FeatureWrapper>& wrapper);
   void attachFunctions(const oipb::FeatureCommon& common, Feature& feature);
-  [[nodiscard]] oi::Guarded<Function> buildFunction(
+  [[nodiscard]] std::unique_ptr<Function> buildFunction(
       const oipb::FunctionRecord& record);
   [[nodiscard]] bool resolveInput(InputElement& element) const;
-  [[nodiscard]] oi::Guarded<BundleAdjustment> buildBundle(
+  [[nodiscard]] std::unique_ptr<BundleAdjustment> buildBundle(
       const oipb::BundleAdjustmentRecord& record,
       const oi::Guarded<CoordinateSystem>& system);
   void linkMeasurementConfig(const oipb::Geometry& message, Geometry& geometry);
@@ -312,14 +324,15 @@ class Linker {
 
 bool Linker::create() {
   for (const auto& message : project_.observations()) {
-    oi::Guarded<Observation> observation = createObservation(message);
-    if (observation.isNull() || staging_.observations.contains(message.id())) {
-      delete observation.data();
-      continue;
+    std::unique_ptr<Observation> observation = createObservation(message);
+    if (!observation || staging_.observations.contains(message.id())) {
+      continue;  // the duplicate is freed here
     }
-    staging_.observations.insert_or_assign(message.id(), observation);
-    staging_.readings.insert_or_assign(observation->getReading()->getId(),
-                                       observation->getReading());
+    const oi::Guarded<Observation> view(observation.get());
+    staging_.observations.insert_or_assign(message.id(), view);
+    staging_.readings.insert_or_assign(view->getReading()->getId(),
+                                       view->getReading());
+    staging_.ownedObservations.push_back(std::move(observation));
   }
 
   // Every duplicate id is dropped (the first one wins) rather than silently
@@ -408,16 +421,16 @@ void Linker::linkCommon(const oipb::FeatureCommon& common,
 void Linker::attachFunctions(const oipb::FeatureCommon& common,
                              Feature& feature) {
   for (const auto& record : common.functions()) {
-    oi::Guarded<Function> function = buildFunction(record);
-    if (function.isNull()) {
+    std::unique_ptr<Function> function = buildFunction(record);
+    if (!function) {
       continue;  // already reported as missing
     }
-    oi::removeOne(staging_.functions, function);
-    feature.addFunction(function);
+    [[maybe_unused]] const bool attached =
+        feature.addFunction(std::move(function));
   }
 }
 
-oi::Guarded<Function> Linker::buildFunction(
+std::unique_ptr<Function> Linker::buildFunction(
     const oipb::FunctionRecord& record) {
   std::unique_ptr<Function> created =
       host_.createFunction(record.plugin().plugin(), record.plugin().name());
@@ -425,8 +438,7 @@ oi::Guarded<Function> Linker::buildFunction(
     missing(record.plugin());
     return {};
   }
-  oi::Guarded<Function> function = created.release();
-  staging_.functions.push_back(function);
+  std::unique_ptr<Function> function = std::move(created);
   applyRecord(record, *function);
 
   // point the inputs at the objects they name; one that no longer exists is
@@ -589,7 +601,7 @@ bool Linker::resolveInput(InputElement& element) const {
   return false;
 }
 
-oi::Guarded<BundleAdjustment> Linker::buildBundle(
+std::unique_ptr<BundleAdjustment> Linker::buildBundle(
     const oipb::BundleAdjustmentRecord& record,
     const oi::Guarded<CoordinateSystem>& system) {
   std::unique_ptr<BundleAdjustment> created = host_.createBundleAdjustment(
@@ -598,10 +610,9 @@ oi::Guarded<BundleAdjustment> Linker::buildBundle(
     missing(record.plugin());
     return {};
   }
-  oi::Guarded<BundleAdjustment> bundle = created.release();
-  applyRecord(record, *bundle);
-  bundle->setBundleSystem(system);
-  return bundle;
+  applyRecord(record, *created);
+  created->setBundleSystem(system);
+  return created;
 }
 
 // ---- per entity ------------------------------------------------------------
@@ -657,7 +668,7 @@ void Linker::linkStations() {
       std::unique_ptr<Sensor> sensor = host_.createSensor(
           message.active_sensor().plugin(), message.active_sensor().name());
       if (sensor) {
-        station->setSensor(sensor.release());
+        station->setSensor(std::move(sensor));
       } else {
         missing(message.active_sensor());
       }
@@ -692,17 +703,15 @@ void Linker::linkSystems() {
     const oi::Guarded<CoordinateSystem> system = wrapper->getCoordinateSystem();
 
     if (message.has_bundle_adjustment()) {
-      const oi::Guarded<BundleAdjustment> bundle =
-          buildBundle(message.bundle_adjustment(), system);
-      if (!bundle.isNull()) {
-        system->setBundlePlugin(bundle);
+      if (auto bundle = buildBundle(message.bundle_adjustment(), system)) {
+        [[maybe_unused]] const bool attached =
+            system->setBundlePlugin(std::move(bundle));
       }
     }
 
     for (const int id : message.observations()) {
-      if (staging_.observations.contains(id)) {
-        Access::addSystemObservation(*system,
-                                     oi::value(staging_.observations, id));
+      if (auto observation = staging_.takeObservation(id)) {
+        Access::addSystemObservation(*system, std::move(observation));
       }
     }
     for (const int id : message.nominal_geometries()) {
@@ -954,7 +963,7 @@ DecodeResult decodeProject(std::string_view bytes, ProjectHost& host) {
     }
   }
 
-  oi::Guarded<OiJob> job = new OiJob();
+  auto job = std::make_unique<OiJob>();
   const auto adoptAll = [&](const auto& wrappers) {
     std::vector<std::unique_ptr<Feature>> features;
     for (const oi::Guarded<FeatureWrapper>& wrapper : wrappers) {
@@ -969,7 +978,6 @@ DecodeResult decodeProject(std::string_view bytes, ProjectHost& host) {
   adoptAll(oi::values(staging.trafos));
   adoptAll(geometries);
   adoptAll(oi::values(staging.groups));
-  staging.released = true;
 
   if (project.next_id() > 0) {
     Access::setNextId(*job, project.next_id());
@@ -991,7 +999,7 @@ DecodeResult decodeProject(std::string_view bytes, ProjectHost& host) {
     }
   }
 
-  result.job = job;
+  result.job = std::move(job);
   return result;
 }
 

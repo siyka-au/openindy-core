@@ -246,14 +246,14 @@ Sensor Station::getSensor() const {
  * \brief Station::setSensor
  * \param sensor
  */
-void Station::setSensor(const oi::Guarded<Sensor>& sensor) {
+void Station::setSensor(std::unique_ptr<Sensor> sensor) {
   // check active station state
   if (!this->isActiveStation) {
     return;
   }
 
   // check sensor
-  if (sensor.isNull()) {
+  if (!sensor) {
     return;
   }
 
@@ -262,7 +262,7 @@ void Station::setSensor(const oi::Guarded<Sensor>& sensor) {
     return;
   }
 
-  this->sensorControl->setSensor(sensor);
+  this->sensorControl->setSensor(std::move(sensor));
   this->notify(&FeatureObserver::onSensorChanged, this->id);
 }
 
@@ -270,13 +270,13 @@ void Station::setSensor(const oi::Guarded<Sensor>& sensor) {
  * \brief Station::takeSensor
  * \return
  */
-oi::Guarded<Sensor> Station::takeSensor() {
+std::unique_ptr<Sensor> Station::takeSensor() {
   // check sensor control
   if (!this->sensorControl) {
-    return oi::Guarded<Sensor>(nullptr);
+    return nullptr;
   }
 
-  oi::Guarded<Sensor> sensor = this->sensorControl->takeSensor();
+  std::unique_ptr<Sensor> sensor = this->sensorControl->takeSensor();
 
   this->notify(&FeatureObserver::onSensorChanged, this->id);
 
@@ -714,8 +714,8 @@ void Station::nameWasChanged(const std::string& oldName) {
  * \param geomId
  * \param readings
  */
-void Station::addReadings(const int& geomId,
-                          const std::vector<oi::Guarded<Reading>>& readings) {
+void Station::addReadings(
+    const int& geomId, const std::vector<std::unique_ptr<Reading>>& readings) {
   MeasurementConfigKey measurementConfig;
   if (!this->job.isNull()) {
     const oi::Guarded<FeatureWrapper> feature =
@@ -725,11 +725,12 @@ void Station::addReadings(const int& geomId,
     }
   }
 
-  for (const oi::Guarded<Reading>& reading : oi::snapshot(readings)) {
+  for (const std::unique_ptr<Reading>& owned : readings) {
     // check reading
-    if (reading.isNull()) {
+    if (!owned) {
       continue;
     }
+    const oi::Guarded<Reading> reading(owned.get());
 
     // set sensor configuration of reading
     reading->setSensorConfiguration(this->getSensorConfiguration());
@@ -851,11 +852,12 @@ class Station::SensorResults final : public StationObserver {
     }
   }
   void onMeasurementFinished(
-      int geomId, const std::vector<oi::Guarded<Reading>>& readings) override {
-    // the readings belong to the station before anybody hears about them
+      int geomId, std::vector<std::unique_ptr<Reading>> readings) override {
+    // the station lists the readings before anybody hears about them; the
+    // observer then owns them (they are freed here when nobody listens)
     this->station.addReadings(geomId, readings);
     if (auto* o = this->observer()) {
-      o->onMeasurementFinished(geomId, readings);
+      o->onMeasurementFinished(geomId, std::move(readings));
     }
   }
   void onMeasurementDone(bool success) override {

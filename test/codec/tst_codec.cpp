@@ -182,13 +182,12 @@ oipb::Reading readingBase(int id) {
 }
 
 void requireReadingRoundTrip(const oipb::Reading& in) {
-  const oi::Guarded<Reading> reading = codec::createReading(in);
-  REQUIRE_FALSE(reading.isNull());
+  const std::unique_ptr<Reading> reading = codec::createReading(in);
+  REQUIRE(reading != nullptr);
   const oipb::Reading out = codec::toProto(*reading);
   INFO(in.ShortDebugString());
   INFO(out.ShortDebugString());
   CHECK(MessageDifferencer::Equals(in, out));
-  delete reading.data();
 }
 
 }  // namespace
@@ -252,19 +251,18 @@ TEST_CASE("a reading keeps its time to the nanosecond and its face") {
   useArmadillo();
   oipb::Reading m = readingBase(21);
   m.mutable_distance()->set_distance(1.0);
-  const oi::Guarded<Reading> reading = codec::createReading(m);
-  REQUIRE_FALSE(reading.isNull());
+  const std::unique_ptr<Reading> reading = codec::createReading(m);
+  REQUIRE(reading != nullptr);
   CHECK(reading->getFace() == SensorFaces::eBackSide);
   CHECK(reading->isImported());
   CHECK(std::chrono::duration_cast<std::chrono::nanoseconds>(
             reading->getMeasuredAt().time_since_epoch())
             .count() == 1730000000123456789LL);
-  delete reading.data();
 }
 
 TEST_CASE("a reading with no measurement is rejected") {
   useArmadillo();
-  CHECK(codec::createReading(readingBase(30)).isNull());
+  CHECK(codec::createReading(readingBase(30)) == nullptr);
 }
 
 TEST_CASE("an observation round trips, including the original coordinates") {
@@ -287,20 +285,19 @@ TEST_CASE("an observation round trips, including the original coordinates") {
   in.mutable_reading()->mutable_distance()->set_distance(3.0);
   // station / measured_target_geometry are references, resolved by the linker
 
-  const oi::Guarded<Observation> observation = codec::createObservation(in);
-  REQUIRE_FALSE(observation.isNull());
+  const std::unique_ptr<Observation> observation = codec::createObservation(in);
+  REQUIRE(observation != nullptr);
   CHECK(MessageDifferencer::Equals(in, codec::toProto(*observation)));
   REQUIRE_FALSE(observation->getReading().isNull());
-  CHECK(observation->getReading()->getObservation() == observation);
-  delete observation->getReading().data();
-  delete observation.data();
+  CHECK(observation->getReading()->getObservation().data() ==
+        observation.get());
 }
 
 TEST_CASE("an observation without its reading cannot be created") {
   useArmadillo();
   oipb::Observation in;
   in.set_id(50);
-  CHECK(codec::createObservation(in).isNull());
+  CHECK(codec::createObservation(in) == nullptr);
 }
 
 TEST_CASE("transformation parameters round trip, matrix included") {
@@ -701,9 +698,9 @@ TEST_CASE(
 TEST_CASE("a feature's functions are part of its common record") {
   useArmadillo();
   Point point;
-  auto* fit = new TestFit();
-  fit->setUserParameters();
-  point.addFunction(fit);
+  auto owned_fit = std::make_unique<TestFit>();
+  owned_fit->setUserParameters();
+  point.addFunction(std::move(owned_fit));
 
   const oipb::Geometry out = codec::toProto(point);
   REQUIRE(out.common().functions_size() == 1);
@@ -788,8 +785,7 @@ TEST_CASE("a bundle adjustment record round trips, base station included") {
 TEST_CASE("a bundle system saves its attached bundle adjustment") {
   useArmadillo();
   CoordinateSystem system(true);
-  auto* bundle = new TestBundle();
-  system.setBundlePlugin(bundle);
+  system.setBundlePlugin(std::make_unique<TestBundle>());
 
   const oipb::CoordinateSystem out = codec::toProto(system);
   REQUIRE(out.has_bundle_adjustment());
@@ -854,11 +850,17 @@ bool addToJob(OiJob& job, const oi::Guarded<T>& feature,
   return !job.addFeature(std::unique_ptr<Feature>(feature.data())).isNull();
 }
 
+template <class T>
+bool addToJob(OiJob& job, std::unique_ptr<T> feature) {
+  return !job.addFeature(std::move(feature)).isNull();
+}
+
 oi::Guarded<Point> addPoint(OiJob& job, const std::string& name, double x) {
-  oi::Guarded<Point> point = new Point(Position(x, 2.0, 3.0));
+  auto owned_point = std::make_unique<Point>(Position(x, 2.0, 3.0));
+  const oi::Guarded<Point> point(owned_point.get());
   point->setFeatureName(name);
   point->setIsSolved(true);
-  REQUIRE(addToJob<Point>(job, point, &FeatureWrapper::setPoint));
+  REQUIRE(addToJob<Point>(job, std::move(owned_point)));
   return point;
 }
 
@@ -886,11 +888,12 @@ World buildWorld() {
   w.station->setActiveStationState(true);
   w.station->getCoordinateSystem()->setActiveCoordinateSystemState(true);
 
-  oi::Guarded<CoordinateSystem> bundle = new CoordinateSystem(true);
+  auto owned_bundle = std::make_unique<CoordinateSystem>(true);
+
+  const oi::Guarded<CoordinateSystem> bundle(owned_bundle.get());
   bundle->setFeatureName("Bundle01");
-  bundle->setBundlePlugin(new TestBundle());
-  REQUIRE(addToJob<CoordinateSystem>(*w.job, bundle,
-                                     &FeatureWrapper::setCoordinateSystem));
+  bundle->setBundlePlugin(std::make_unique<TestBundle>());
+  REQUIRE(addToJob<CoordinateSystem>(*w.job, std::move(owned_bundle)));
 
   w.a = addPoint(*w.job, "A", 1.0);
   w.b = addPoint(*w.job, "B", 2.0);
@@ -898,7 +901,8 @@ World buildWorld() {
   // c is computed by a function from a and b
   w.c = new Point();
   w.c->setFeatureName("C");
-  auto* fit = new TestFit();
+  auto owned_fit = std::make_unique<TestFit>();
+  TestFit* const fit = owned_fit.get();
   fit->setUserParameters();
   InputElement inA(w.a->getId());
   inA.typeOfElement = ElementTypes::ePointElement;
@@ -910,7 +914,7 @@ World buildWorld() {
   inB.point = w.b;
   inB.geometry = w.b;
   fit->addInput(0, inB);
-  w.c->addFunction(fit);
+  w.c->addFunction(std::move(owned_fit));
   REQUIRE(addToJob<Point>(*w.job, w.c, &FeatureWrapper::setPoint));
 
   w.plane = new Plane();
@@ -968,7 +972,6 @@ TEST_CASE("a project saves, loads and saves again to the same content") {
   CHECK(same);
   CHECK(loaded.job->getDigest() == w.job->getDigest());
 
-  delete loaded.job.data();
   delete w.job.data();
 }
 
@@ -1025,7 +1028,6 @@ TEST_CASE("loading links the references the file only holds as ids") {
   // ids carry on from where the saved job left off
   CHECK(job.generateUniqueId() == w.job->generateUniqueId());
 
-  delete loaded.job.data();
   delete w.job.data();
 }
 
@@ -1037,11 +1039,48 @@ TEST_CASE("a project that needs a plugin that is not installed does not load") {
   host.pluginsInstalled = false;
   const codec::DecodeResult loaded = codec::decodeProject(bytes, host);
   CHECK_FALSE(loaded.ok());
-  CHECK(loaded.job.isNull());
+  CHECK(loaded.job == nullptr);
   CHECK(loaded.missingPlugins ==
         std::vector<std::string>{"Test Plugin/TestBundle",
                                  "Test Plugin/TestFit"});
   CHECK_FALSE(loaded.error.empty());
+
+  delete w.job.data();
+}
+
+TEST_CASE("a load that fails midway leaves nothing behind") {
+  // run under AddressSanitizer with detect_leaks=1: everything the decoder
+  // built (features, station position and system, observations and their
+  // readings, functions, bundle adjustments) must be freed when the project
+  // then fails on a plugin that is not installed
+  World w = buildWorld();
+  std::vector<std::unique_ptr<Reading>> readings;
+  for (int i = 0; i < 3; ++i) {
+    ReadingCartesian r;
+    r.isValid = true;
+    r.xyz.setAt(0, 1.0 + i);
+    r.xyz.setAt(1, 2.0);
+    r.xyz.setAt(2, 3.0);
+    readings.push_back(std::make_unique<Reading>(r));
+  }
+  w.job->addMeasurementResults(w.a->getId(), std::move(readings));
+  TestHost host;
+  const std::string bytes = codec::encodeProject(*w.job, host, "x");
+  REQUIRE(parse(bytes).observations_size() == 3);
+
+  host.pluginsInstalled = false;
+  const codec::DecodeResult failed = codec::decodeProject(bytes, host);
+  CHECK_FALSE(failed.ok());
+  CHECK(failed.job == nullptr);
+  CHECK_FALSE(failed.missingPlugins.empty());
+
+  // and a load that works with the same observations frees them with the job
+  host.pluginsInstalled = true;
+  const codec::DecodeResult loaded = codec::decodeProject(bytes, host);
+  REQUIRE(loaded.ok());
+  CHECK(
+      parse(codec::encodeProject(*loaded.job, host, "x")).observations_size() ==
+      3);
 
   delete w.job.data();
 }
@@ -1116,7 +1155,7 @@ TEST_CASE("an actual writes the nominal it realises, a nominal writes none") {
   useArmadillo();
   Point nominal(101, Position());
   Point actual(202, Position());
-  actual.addFunction(new TestFit());
+  actual.addFunction(std::make_unique<TestFit>());
   REQUIRE(actual.setRealises(nominal.getFeatureWrapper()->getGeometry()));
 
   CHECK(codec::toProto(actual).realises() == 101);
@@ -1127,7 +1166,7 @@ TEST_CASE("a geometry writes the feature that owns it, an owner writes none") {
   useArmadillo();
   Point owner(303, Position());
   Point child(404, Position());
-  child.addFunction(new TestConstruct());
+  child.addFunction(std::make_unique<TestConstruct>());
   REQUIRE(child.setOwnerFeature(owner.getFeatureWrapper()->getGeometry()));
   child.setIsSolved(true);
 

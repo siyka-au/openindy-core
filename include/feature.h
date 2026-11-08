@@ -75,7 +75,9 @@ class OI_CORE_EXPORT Feature : public Element {
   getProducerFunction() const;
   [[nodiscard]] const std::vector<oi::Guarded<Function>>&
   getTransformFunctions() const;
-  void addFunction(const oi::Guarded<Function>& function);
+  // Takes the function; returns false (and frees it) when it fits neither slot.
+  bool addFunction(std::unique_ptr<Function> function);
+  // Removes and destroys the function at the getFunctions() index.
   void removeFunction(const int& index);
 
   [[nodiscard]] const bool& getIsActiveFeature() const;
@@ -307,6 +309,9 @@ class OI_CORE_EXPORT Feature : public Element {
   // validated-and-rejected input: it is a shape addFunction() will not
   // construct (see Function::canActAsProducer/canActAsTransform, the
   // runtime dynamic_cast check at the attach call site).
+  // owners; producerFunction/transformFunctions are the non-owning views
+  std::unique_ptr<Function> ownedProducer;
+  std::vector<std::unique_ptr<Function>> ownedTransforms;
   std::optional<oi::Guarded<Function>> producerFunction;
   std::vector<oi::Guarded<Function>> transformFunctions;
 

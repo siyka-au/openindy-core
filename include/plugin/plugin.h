@@ -1,5 +1,6 @@
 #ifndef PLUGIN_H
 #define PLUGIN_H
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -24,29 +25,29 @@ class Plugin {
   // create instances of all available plugin types in a plugin
   // ##########################################################
 
-  virtual std::vector<oi::Guarded<Sensor> > createSensors() = 0;
-  virtual std::vector<oi::Guarded<Function> > createFunctions() = 0;
-  virtual std::vector<oi::Guarded<BundleAdjustment> >
+  virtual std::vector<std::unique_ptr<Sensor>> createSensors() = 0;
+  virtual std::vector<std::unique_ptr<Function>> createFunctions() = 0;
+  virtual std::vector<std::unique_ptr<BundleAdjustment>>
   createBundleAdjustments() = 0;
-  virtual std::vector<oi::Guarded<SimulationModel> > createSimulations() = 0;
-  virtual std::vector<oi::Guarded<ExchangeSimpleAscii> >
+  virtual std::vector<std::unique_ptr<SimulationModel>> createSimulations() = 0;
+  virtual std::vector<std::unique_ptr<ExchangeSimpleAscii>>
   createSimpleAsciiExchanges() = 0;
-  virtual std::vector<oi::Guarded<ExchangeDefinedFormat> >
+  virtual std::vector<std::unique_ptr<ExchangeDefinedFormat>>
   createDefinedFormatExchanges() = 0;
 
   // ###################################################
   // create instances of a plugin type with a given name
   // ###################################################
 
-  virtual oi::Guarded<Sensor> createSensor(const std::string& name) = 0;
-  virtual oi::Guarded<Function> createFunction(const std::string& name) = 0;
-  virtual oi::Guarded<BundleAdjustment> createBundleAdjustment(
+  virtual std::unique_ptr<Sensor> createSensor(const std::string& name) = 0;
+  virtual std::unique_ptr<Function> createFunction(const std::string& name) = 0;
+  virtual std::unique_ptr<BundleAdjustment> createBundleAdjustment(
       const std::string& name) = 0;
-  virtual oi::Guarded<SimulationModel> createSimulation(
+  virtual std::unique_ptr<SimulationModel> createSimulation(
       const std::string& name) = 0;
-  virtual oi::Guarded<ExchangeSimpleAscii> createSimpleAsciiExchange(
+  virtual std::unique_ptr<ExchangeSimpleAscii> createSimpleAsciiExchange(
       const std::string& name) = 0;
-  virtual oi::Guarded<ExchangeDefinedFormat> createDefinedFormatExchange(
+  virtual std::unique_ptr<ExchangeDefinedFormat> createDefinedFormatExchange(
       const std::string& name) = 0;
 };
 
@@ -109,18 +110,22 @@ using namespace oi;
  * storage) returned by oi_plugin_metadata_json(); the host reads the plugin's
  * name, version, compiler and so on from it.
  */
-#define OI_DECLARE_PLUGIN_WITH_METADATA(ClassName, metadataJson)              \
-  extern "C" {                                                                \
-  OI_PLUGIN_EXPORT int oi_plugin_abi_version() {                              \
-    return OI_PLUGIN_ABI_VERSION;                                             \
-  }                                                                           \
-  OI_PLUGIN_EXPORT oi::Plugin* oi_plugin_create() { return new ClassName(); } \
-  OI_PLUGIN_EXPORT void oi_plugin_destroy(oi::Plugin* plugin) {               \
-    delete plugin;                                                            \
-  }                                                                           \
-  OI_PLUGIN_EXPORT const char* oi_plugin_metadata_json() {                    \
-    return metadataJson;                                                      \
-  }                                                                           \
+#define OI_DECLARE_PLUGIN_WITH_METADATA(ClassName, metadataJson)             \
+  extern "C" {                                                               \
+  OI_PLUGIN_EXPORT int oi_plugin_abi_version() {                             \
+    return OI_PLUGIN_ABI_VERSION;                                            \
+  }                                                                          \
+  /* the C ABI cannot carry a unique_ptr: ownership passes to the loader, */ \
+  /* which hands the factory back to oi_plugin_destroy */                    \
+  OI_PLUGIN_EXPORT oi::Plugin* oi_plugin_create() {                          \
+    return std::make_unique<ClassName>().release();                          \
+  }                                                                          \
+  OI_PLUGIN_EXPORT void oi_plugin_destroy(oi::Plugin* plugin) {              \
+    const std::unique_ptr<oi::Plugin> owner(plugin);                         \
+  }                                                                          \
+  OI_PLUGIN_EXPORT const char* oi_plugin_metadata_json() {                   \
+    return metadataJson;                                                     \
+  }                                                                          \
   }
 
 #define OI_DECLARE_PLUGIN(ClassName) \

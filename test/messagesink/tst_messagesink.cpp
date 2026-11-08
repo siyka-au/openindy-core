@@ -145,8 +145,10 @@ void MessageSinkTest::
   rec.attach(&job);
   const Fixture f = addActivePoint(job);
 
-  oi::Guarded<ChattyFunction> function = new ChattyFunction();
-  job.addFunction(function);
+  auto owned_function = std::make_unique<ChattyFunction>();
+
+  const oi::Guarded<ChattyFunction> function(owned_function.get());
+  job.addFunction(std::move(owned_function));
   OI_COMPARE(function->getMessageSink(), static_cast<MessageSink*>(&job));
 
   function->sendMessage("hello from the function",
@@ -170,8 +172,10 @@ void MessageSinkTest::removingAFunctionFromTheJobStopsItReportingToTheJob() {
   rec.attach(&job);
   const Fixture f = addActivePoint(job);
 
-  oi::Guarded<ChattyFunction> function = new ChattyFunction();
-  job.addFunction(function);
+  auto owned_function = std::make_unique<ChattyFunction>();
+
+  const oi::Guarded<ChattyFunction> function(owned_function.get());
+  job.addFunction(std::move(owned_function));
   OI_COMPARE(function->getMessageSink(), static_cast<MessageSink*>(&job));
 
   // removing the feature detaches its functions from the job
@@ -186,20 +190,22 @@ void MessageSinkTest::removingAFunctionFromTheJobStopsItReportingToTheJob() {
   // removing just the function deletes it: nothing left that could dangle
   OiJob job2;
   const Fixture g = addActivePoint(job2);
-  oi::Guarded<ChattyFunction> second = new ChattyFunction();
-  job2.addFunction(second);
+  auto owned_second = std::make_unique<ChattyFunction>();
+  const oi::Guarded<ChattyFunction> second(owned_second.get());
+  job2.addFunction(std::move(owned_second));
   job2.removeFunction(0);
   REQUIRE(second.isNull());
 }
 
 void MessageSinkTest::aFunctionOutlivingItsJobDoesNotReportToADeadJob() {
-  oi::Guarded<ChattyFunction> function = new ChattyFunction();
+  auto owned_function = std::make_unique<ChattyFunction>();
+  const oi::Guarded<ChattyFunction> function(owned_function.get());
   RecordingSink after;
   {
     OiJob job;
     const Fixture f = addActivePoint(job);
     // keep the function alive past the job: detach it from its feature first
-    job.addFunction(function);
+    job.addFunction(std::move(owned_function));
     OI_COMPARE(function->getMessageSink(), static_cast<MessageSink*>(&job));
     // the feature owns the function; the job's destructor must clear the
     // sink before the features go
@@ -249,14 +255,15 @@ void MessageSinkTest::aBundleAdjustmentReportsToItsJob() {
 
 void MessageSinkTest::aBundleAdjustmentOutlivingItsJobIsDetached() {
   // destroying the job must not leave its bundle plugin pointing at it
-  oi::Guarded<BundleAdjustment> bundle = new BundleAdjustment();
+  auto owned_bundle = std::make_unique<BundleAdjustment>();
+  const oi::Guarded<BundleAdjustment> bundle(owned_bundle.get());
   {
     OiJob job;
     auto own_system = std::make_unique<oi::CoordinateSystem>(true);
     oi::Guarded<CoordinateSystem> system = own_system.get();
     oi::Guarded<oi::FeatureWrapper> wrapper = system->getFeatureWrapper();
     system->setFeatureName("Bundle01");
-    system->setBundlePlugin(bundle);
+    system->setBundlePlugin(std::move(owned_bundle));
     REQUIRE(job.addFeature(std::move(own_system)));
     bundle->setCurrentJob(&job);
     OI_COMPARE(bundle->getMessageSink(), static_cast<MessageSink*>(&job));
@@ -310,8 +317,9 @@ void MessageSinkTest::exchangeReportsMessagesProgressAndCompletion() {
 void MessageSinkTest::aFunctionSeesTheOperationContextOfItsExec() {
   OiJob job;
   const Fixture f = addActivePoint(job);
-  oi::Guarded<ChattyFunction> function = new ChattyFunction();
-  job.addFunction(function);
+  auto owned_function = std::make_unique<ChattyFunction>();
+  const oi::Guarded<ChattyFunction> function(owned_function.get());
+  job.addFunction(std::move(owned_function));
 
   // progress and the context visible to the function
   RecordingProgress progress;

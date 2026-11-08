@@ -80,7 +80,11 @@ class OI_CORE_EXPORT CoordinateSystem : public Feature {
       const;
   [[nodiscard]] oi::Guarded<Observation> getObservation(
       const int& observationId) const;
-  bool addObservation(const oi::Guarded<Observation>& observation);
+  // Takes the observation (it must hold its reading); false, and it is freed,
+  // when this is not a station system or the observation is not usable.
+  bool addObservation(std::unique_ptr<Observation> observation);
+  // Destroys an observation this system owns.
+  void deleteObservation(const oi::Guarded<Observation>& obs);
 
   // transformation parameters
   [[nodiscard]] const std::vector<oi::Guarded<TrafoParam>>&
@@ -105,7 +109,9 @@ class OI_CORE_EXPORT CoordinateSystem : public Feature {
 
   // bundle adjustment
   [[nodiscard]] const oi::Guarded<BundleAdjustment>& getBundlePlugin() const;
-  void setBundlePlugin(const oi::Guarded<BundleAdjustment>& bundle);
+  // Takes the bundle adjustment; false (and the bundle freed) when this is
+  // not a bundle system.
+  bool setBundlePlugin(std::unique_ptr<BundleAdjustment> bundle);
 
   // ###########################
   // reexecute the function list
@@ -190,6 +196,7 @@ class OI_CORE_EXPORT CoordinateSystem : public Feature {
 
   // the bundle plugin that is used to solve the bundle
   std::string bundleTemplate;
+  std::unique_ptr<BundleAdjustment> ownedBundle;
   oi::Guarded<BundleAdjustment> bundlePlugin;
 
   // #######################################
@@ -197,6 +204,7 @@ class OI_CORE_EXPORT CoordinateSystem : public Feature {
   // #######################################
 
   // observations
+  std::vector<std::unique_ptr<Observation>> ownedObservations;
   std::vector<oi::Guarded<Observation>> observationsList;
   std::map<int, oi::Guarded<Observation>>
       observationsMap;  // same observations but id as key

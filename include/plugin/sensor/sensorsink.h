@@ -1,6 +1,7 @@
 #ifndef SENSORSINK_H
 #define SENSORSINK_H
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -48,7 +49,7 @@ class OI_CORE_EXPORT SensorSink {
   virtual void onAsyncSensorResponse(const oi::ValueMap& response,
                                      SensorAction sensorAction) = 0;
   virtual void onAsyncMeasurementResult(
-      const int& geomId, const std::vector<oi::Guarded<Reading>>& measurements,
+      const int& geomId, std::vector<std::unique_ptr<Reading>> measurements,
       SensorAction sensorAction) = 0;
   virtual void onAsyncStreamResult(const oi::ValueMap& reading) = 0;
   virtual void onAsyncSensorNotification(const oi::ValueMap& response) = 0;

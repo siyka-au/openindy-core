@@ -155,7 +155,9 @@ class OI_CORE_EXPORT OiJob : public oi::Trackable,
   // ##########################################
 
   // add or remove functions
-  void addFunction(const oi::Guarded<Function>& function);
+  // Attaches the function to the active feature; false (function freed) when
+  // there is no active feature or the feature rejects it.
+  bool addFunction(std::unique_ptr<Function> function);
   void removeFunction(const int& functionIndex);
 
   // #############################################################
@@ -176,7 +178,7 @@ class OI_CORE_EXPORT OiJob : public oi::Trackable,
   // pass for other owner/accessor pairs reuses unchanged.
   bool addOwnedSubGeometry(const oi::Guarded<FeatureWrapper>& owner,
                            const oi::Guarded<FeatureWrapper>& subGeometry,
-                           const oi::Guarded<Function>& producerFunction,
+                           std::unique_ptr<Function> producerFunction,
                            const int& neededElementsIndex = 0);
 
   // add input elements to a feature's function
@@ -215,11 +217,14 @@ class OI_CORE_EXPORT OiJob : public oi::Trackable,
   // ##########################
 
   // add new observations
+  // The observations created from the readings take ownership of them; the
+  // readings are freed when the measurement is rejected.
   void addMeasurementResults(const int& geomId,
-                             const std::vector<oi::Guarded<Reading>>& readings);
+                             std::vector<std::unique_ptr<Reading>> readings);
 
   // remove existing observations
   void removeObservations(const int& featureId);
+  void destroyObservation(const oi::Guarded<Observation>& obs);
   void removeObservations(const int& featureId,
                           const std::vector<int> selectedIds);
   void removeAllObservations();

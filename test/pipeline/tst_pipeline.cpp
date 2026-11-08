@@ -116,7 +116,7 @@ class PipelineTest {
 
  private:
   std::unique_ptr<Point> makeTargetPoint(const std::string& name);
-  oi::Guarded<Point> makeCandidate(double x, oi::Guarded<OiJob> job);
+  oi::Guarded<Point> makeCandidate(double x, const std::unique_ptr<OiJob>& job);
 };
 
 void PipelineTest::initTestCase() {
@@ -129,8 +129,8 @@ std::unique_ptr<Point> PipelineTest::makeTargetPoint(const std::string& name) {
   return point;
 }
 
-oi::Guarded<Point> PipelineTest::makeCandidate(double x,
-                                               oi::Guarded<OiJob> job) {
+oi::Guarded<Point> PipelineTest::makeCandidate(
+    double x, const std::unique_ptr<OiJob>& job) {
   auto own_point = std::make_unique<oi::Point>();
   oi::Guarded<Point> point = own_point.get();
   // a job rejects an unnamed feature, and a duplicate name
@@ -149,13 +149,14 @@ oi::Guarded<Point> PipelineTest::makeCandidate(double x,
  * asked for.
  */
 void PipelineTest::undeclaredPipelineLeavesShouldBeUsedUntouched() {
-  oi::Guarded<OiJob> job = new OiJob();
+  auto job = std::make_unique<OiJob>();
   oi::Guarded<FeatureWrapper> target =
       job->addFeature(this->makeTargetPoint("Target1"));
   REQUIRE(target);
 
-  oi::Guarded<FakeAverageFit> function = new FakeAverageFit();
-  target->getPoint()->addFunction(function);
+  auto own_function = std::make_unique<FakeAverageFit>();
+  const oi::Guarded<FakeAverageFit> function = own_function.get();
+  target->getPoint()->addFunction(std::move(own_function));
 
   oi::Guarded<Point> p1 = this->makeCandidate(0.0, job);
   oi::Guarded<Point> p2 = this->makeCandidate(10.0, job);
@@ -183,13 +184,14 @@ void PipelineTest::undeclaredPipelineLeavesShouldBeUsedUntouched() {
 }
 
 void PipelineTest::explicitListStageKeepsOnlyListedIdsAndRecordsReasons() {
-  oi::Guarded<OiJob> job = new OiJob();
+  auto job = std::make_unique<OiJob>();
   oi::Guarded<FeatureWrapper> target =
       job->addFeature(this->makeTargetPoint("Target2"));
   REQUIRE(target);
 
-  oi::Guarded<FakeAverageFit> function = new FakeAverageFit();
-  target->getPoint()->addFunction(function);
+  auto own_function = std::make_unique<FakeAverageFit>();
+  const oi::Guarded<FakeAverageFit> function = own_function.get();
+  target->getPoint()->addFunction(std::move(own_function));
 
   oi::Guarded<Point> p1 = this->makeCandidate(0.0, job);
   oi::Guarded<Point> p2 = this->makeCandidate(10.0, job);
@@ -222,13 +224,14 @@ void PipelineTest::explicitListStageKeepsOnlyListedIdsAndRecordsReasons() {
 }
 
 void PipelineTest::excludeStageDropsSpecificIdWithReason() {
-  oi::Guarded<OiJob> job = new OiJob();
+  auto job = std::make_unique<OiJob>();
   oi::Guarded<FeatureWrapper> target =
       job->addFeature(this->makeTargetPoint("Target3"));
   REQUIRE(target);
 
-  oi::Guarded<FakeAverageFit> function = new FakeAverageFit();
-  target->getPoint()->addFunction(function);
+  auto own_function = std::make_unique<FakeAverageFit>();
+  const oi::Guarded<FakeAverageFit> function = own_function.get();
+  target->getPoint()->addFunction(std::move(own_function));
 
   oi::Guarded<Point> p1 = this->makeCandidate(0.0, job);
   oi::Guarded<Point> p2 = this->makeCandidate(10.0, job);
@@ -266,13 +269,14 @@ void PipelineTest::excludeStageDropsSpecificIdWithReason() {
  * reportable with a reason (traceability requirement).
  */
 void PipelineTest::residualOutlierRejectionExcludesTheOutlierAndConverges() {
-  oi::Guarded<OiJob> job = new OiJob();
+  auto job = std::make_unique<OiJob>();
   oi::Guarded<FeatureWrapper> target =
       job->addFeature(this->makeTargetPoint("Target4"));
   REQUIRE(target);
 
-  oi::Guarded<FakeAverageFit> function = new FakeAverageFit();
-  target->getPoint()->addFunction(function);
+  auto own_function = std::make_unique<FakeAverageFit>();
+  const oi::Guarded<FakeAverageFit> function = own_function.get();
+  target->getPoint()->addFunction(std::move(own_function));
 
   // 20 good points plus one deliberate gross outlier. A small sample
   //(e.g. 5-6 points) suffers the classic sigma-clipping masking effect:
@@ -335,13 +339,14 @@ void PipelineTest::residualOutlierRejectionExcludesTheOutlierAndConverges() {
  * to actually change the result, not just be inert scaffolding.
  */
 void PipelineTest::omittingTheFilterLeavesTheResultSkewedByTheOutlier() {
-  oi::Guarded<OiJob> job = new OiJob();
+  auto job = std::make_unique<OiJob>();
   oi::Guarded<FeatureWrapper> target =
       job->addFeature(this->makeTargetPoint("Target5"));
   REQUIRE(target);
 
-  oi::Guarded<FakeAverageFit> function = new FakeAverageFit();
-  target->getPoint()->addFunction(function);
+  auto own_function = std::make_unique<FakeAverageFit>();
+  const oi::Guarded<FakeAverageFit> function = own_function.get();
+  target->getPoint()->addFunction(std::move(own_function));
 
   std::vector<double> xs;
   for (int i = 0; i < 20; i++) {
@@ -373,13 +378,14 @@ void PipelineTest::omittingTheFilterLeavesTheResultSkewedByTheOutlier() {
  * ordinary recalc, not just the recalc immediately after it was declared.
  */
 void PipelineTest::addingANewOutlierLaterReTriggersTheFilterOnRecalc() {
-  oi::Guarded<OiJob> job = new OiJob();
+  auto job = std::make_unique<OiJob>();
   oi::Guarded<FeatureWrapper> target =
       job->addFeature(this->makeTargetPoint("Target6"));
   REQUIRE(target);
 
-  oi::Guarded<FakeAverageFit> function = new FakeAverageFit();
-  target->getPoint()->addFunction(function);
+  auto own_function = std::make_unique<FakeAverageFit>();
+  const oi::Guarded<FakeAverageFit> function = own_function.get();
+  target->getPoint()->addFunction(std::move(own_function));
 
   // 20 good points, same reasoning as
   // residualOutlierRejectionExcludesTheOutlierAndConverges() re: sample

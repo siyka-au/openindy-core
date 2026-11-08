@@ -13,7 +13,7 @@ TEST_CASE("PluginLoader loads a valid plugin") {
   CHECK(result.plugin.path() == OI_TEST_GOOD_PLUGIN);
   CHECK(result.plugin.metadataJson() == R"({"name": "test plugin"})");
   CHECK(result.plugin->createSensors().empty());
-  CHECK(result.plugin->createFunction("x").isNull());
+  CHECK(result.plugin->createFunction("x") == nullptr);
 }
 
 TEST_CASE("LoadedPlugin is movable and the moved-from one is empty") {

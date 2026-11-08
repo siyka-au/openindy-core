@@ -104,7 +104,8 @@ bool PointCloud::hasPosition() const { return true; }
  * Returns a list of all point cloud points
  * \return
  */
-const std::vector<Point_PC*>& PointCloud::getPointCloudPoints() const {
+const std::vector<std::unique_ptr<Point_PC>>& PointCloud::getPointCloudPoints()
+    const {
   return this->points;
 }
 
@@ -112,11 +113,11 @@ const std::vector<Point_PC*>& PointCloud::getPointCloudPoints() const {
  * \brief PointCloud::addPointCloudPoint
  * \param point
  */
-void PointCloud::addPointCloudPoint(Point_PC* point) {
-  if (point == nullptr) {
+void PointCloud::addPointCloudPoint(std::unique_ptr<Point_PC> point) {
+  if (!point) {
     return;
   }
-  this->points.push_back(point);
+  this->points.push_back(std::move(point));
 }
 
 /*!
@@ -130,7 +131,7 @@ std::vector<Position> PointCloud::collectionPoints() const {
   std::vector<Position> positions;
   positions.reserve(this->points.size());
 
-  for (Point_PC* point : oi::snapshot(this->points)) {
+  for (const auto& point : this->points) {
     // isUsed is the cloud's own inclusion flag - a point excluded by
     // segmentation or filtering is still stored, but is not part of the
     // collection a fit should see
@@ -152,7 +153,7 @@ int PointCloud::collectionPointCount() const {
   // counted without materialising positions - a real scan is millions of
   // points and this gets asked just to answer "is there enough data yet"
   int count = 0;
-  for (Point_PC* point : oi::snapshot(this->points)) {
+  for (const auto& point : this->points) {
     if (point != nullptr && point->isUsed) {
       ++count;
     }

@@ -58,13 +58,13 @@ namespace oi::codec {
 // ---------------------------------------------------------------------------
 
 [[nodiscard]] openindy::v1::Reading toProto(const Reading& reading);
-[[nodiscard]] oi::Guarded<Reading> createReading(
+[[nodiscard]] std::unique_ptr<Reading> createReading(
     const openindy::v1::Reading& message);
 
 [[nodiscard]] openindy::v1::Observation toProto(const Observation& observation);
 /*! Creates the observation and the reading it owns, and points the reading
  *  back at the observation. */
-[[nodiscard]] oi::Guarded<Observation> createObservation(
+[[nodiscard]] std::unique_ptr<Observation> createObservation(
     const openindy::v1::Observation& message);
 
 [[nodiscard]] openindy::v1::TrafoParam toProto(const TrafoParam& trafoParam);

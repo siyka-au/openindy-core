@@ -86,9 +86,9 @@ class OI_CORE_EXPORT SensorWorker final : public SensorSink {
 
   // a copy of the sensor's static properties (not the live sensor)
   [[nodiscard]] Sensor getSensor() const;
-  void setSensor(const oi::Guarded<Sensor>& sensor);
+  void setSensor(std::unique_ptr<Sensor> sensor);
   // waits for a running command, then hands the sensor back
-  oi::Guarded<Sensor> takeSensor();
+  std::unique_ptr<Sensor> takeSensor();
   // disconnects (if connected) and deletes the sensor on the worker thread
   void resetSensor();
 
@@ -157,7 +157,7 @@ class OI_CORE_EXPORT SensorWorker final : public SensorSink {
   void onAsyncSensorResponse(const oi::ValueMap& response,
                              SensorAction sensorAction) override;
   void onAsyncMeasurementResult(
-      const int& geomId, const std::vector<oi::Guarded<Reading>>& measurements,
+      const int& geomId, std::vector<std::unique_ptr<Reading>> measurements,
       SensorAction sensorAction) override;
   void onAsyncStreamResult(const oi::ValueMap& reading) override;
   void onAsyncSensorNotification(const oi::ValueMap& response) override;
@@ -200,7 +200,7 @@ class OI_CORE_EXPORT SensorWorker final : public SensorSink {
                 SensorAction action = SensorAction::eSensorActionUndefind);
   void finishedMeasurement(bool success, const std::string& msg,
                            SensorAction action, int geomId,
-                           const std::vector<oi::Guarded<Reading>>& readings);
+                           std::vector<std::unique_ptr<Reading>> readings);
 
   // streams (worker thread)
   void runStartReadingStream();
@@ -225,6 +225,7 @@ class OI_CORE_EXPORT SensorWorker final : public SensorSink {
   // across a driver call. driverMutex is held by the worker for every driver
   // interaction (recursive: a result delivered inline may call back).
   mutable std::mutex stateMutex;
+  std::unique_ptr<Sensor> ownedSensor;  // freed after the thread has stopped
   oi::Guarded<Sensor> sensor;
   std::recursive_mutex driverMutex;
 

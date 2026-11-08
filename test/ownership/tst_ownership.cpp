@@ -68,15 +68,17 @@ void OwnershipTest::freshGeometryIsUserOwnedAndEditable() {
 
 void OwnershipTest::constructFunctionProducerLeavesGeometryEditable() {
   Point point;
-  oi::Guarded<FakeConstruct> construct = new FakeConstruct();
-  point.addFunction(construct);
+  auto owned_construct = std::make_unique<FakeConstruct>();
+  const oi::Guarded<FakeConstruct> construct(owned_construct.get());
+  point.addFunction(std::move(owned_construct));
   REQUIRE(!point.getOwnerDescription().has_value());
 }
 
 void OwnershipTest::fitFunctionProducerMakesGeometryReadOnly() {
   Point point;
-  oi::Guarded<FakeFit> fit = new FakeFit();
-  point.addFunction(fit);
+  auto owned_fit = std::make_unique<FakeFit>();
+  const oi::Guarded<FakeFit> fit(owned_fit.get());
+  point.addFunction(std::move(owned_fit));
   const std::optional<std::string> owner = point.getOwnerDescription();
   REQUIRE(owner.has_value());
   REQUIRE(owner->contains("FakeFit"));
@@ -86,8 +88,10 @@ void OwnershipTest::readOnlyGeometryRejectsDirectParameterEdits() {
   Point point;
   point.setPoint(Position(1.0, 2.0, 3.0));
 
-  oi::Guarded<FakeFit> fit = new FakeFit();
-  point.addFunction(fit);
+  auto owned_fit = std::make_unique<FakeFit>();
+
+  const oi::Guarded<FakeFit> fit(owned_fit.get());
+  point.addFunction(std::move(owned_fit));
   REQUIRE(point.getOwnerDescription().has_value());
 
   std::map<GeometryParameters, double> edit;
@@ -104,7 +108,7 @@ void OwnershipTest::actualCanRealiseAnEditableNominal() {
   REQUIRE(!nominal.getOwnerDescription().has_value());
 
   Point actual;
-  actual.addFunction(new FakeFit());
+  actual.addFunction(std::make_unique<FakeFit>());
   REQUIRE(actual.getOwnerDescription().has_value());
 
   REQUIRE(actual.setRealises(nominal.getFeatureWrapper()->getGeometry()));
@@ -123,9 +127,9 @@ void OwnershipTest::manyActualsMayRealiseTheSameNominal() {
   Point nominal;
 
   Point actualA;
-  actualA.addFunction(new FakeFit());
+  actualA.addFunction(std::make_unique<FakeFit>());
   Point actualB;
-  actualB.addFunction(new FakeFit());
+  actualB.addFunction(std::make_unique<FakeFit>());
 
   REQUIRE(actualA.setRealises(nominal.getFeatureWrapper()->getGeometry()));
   REQUIRE(actualB.setRealises(nominal.getFeatureWrapper()->getGeometry()));
@@ -138,10 +142,10 @@ void OwnershipTest::manyActualsMayRealiseTheSameNominal() {
 
 void OwnershipTest::actualCannotBeRealisedByAnotherActual() {
   Point actualA;
-  actualA.addFunction(new FakeFit());
+  actualA.addFunction(std::make_unique<FakeFit>());
 
   Point actualB;
-  actualB.addFunction(new FakeFit());
+  actualB.addFunction(std::make_unique<FakeFit>());
 
   // realising another actual makes no sense - only a user-owned
   //(editable) geometry can be the nominal side of the relationship
@@ -166,8 +170,9 @@ void OwnershipTest::ownedSubGeometryIsReadOnlyAndNamesItsOwner() {
   owner.setFeatureName("Plane1");
 
   Point child;
-  oi::Guarded<FakeConstruct> construct = new FakeConstruct();
-  child.addFunction(construct);
+  auto owned_construct = std::make_unique<FakeConstruct>();
+  const oi::Guarded<FakeConstruct> construct(owned_construct.get());
+  child.addFunction(std::move(owned_construct));
 
   // still editable before ownership is recorded - the same construct
   // function, unowned, is 7c-i's independent path
@@ -185,7 +190,7 @@ void OwnershipTest::ownedSubGeometryRejectsDirectParameterEdits() {
   Point owner;
   Point child;
   child.setPoint(Position(1.0, 2.0, 3.0));
-  child.addFunction(new FakeConstruct());
+  child.addFunction(std::make_unique<FakeConstruct>());
   REQUIRE(child.setOwnerFeature(owner.getFeatureWrapper()->getGeometry()));
 
   std::map<GeometryParameters, double> edit;

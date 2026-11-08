@@ -71,17 +71,18 @@ class MeasurementIntentTest {
   void unresolvableTargetIsRejectedWithAMessage();
 
  private:
-  oi::Guarded<OiJob> makeJobWithActiveStation(oi::Guarded<Station>& outStation);
-  oi::Guarded<Reading> makeCartesianReading(double x, double y, double z);
+  std::unique_ptr<OiJob> makeJobWithActiveStation(
+      oi::Guarded<Station>& outStation);
+  std::unique_ptr<Reading> makeCartesianReading(double x, double y, double z);
 };
 
 void MeasurementIntentTest::initTestCase() {
   ChooseLALib::setLinearAlgebra(ChooseLALib::LinearAlgebraLibrary::Armadillo);
 }
 
-oi::Guarded<OiJob> MeasurementIntentTest::makeJobWithActiveStation(
+std::unique_ptr<OiJob> MeasurementIntentTest::makeJobWithActiveStation(
     oi::Guarded<Station>& outStation) {
-  oi::Guarded<OiJob> job = new OiJob();
+  auto job = std::make_unique<OiJob>();
 
   auto own_station = std::make_unique<oi::Station>("S1");
   oi::Guarded<Station> station = own_station.get();
@@ -97,19 +98,20 @@ oi::Guarded<OiJob> MeasurementIntentTest::makeJobWithActiveStation(
   return job;
 }
 
-oi::Guarded<Reading> MeasurementIntentTest::makeCartesianReading(double x,
-                                                                 double y,
-                                                                 double z) {
+std::unique_ptr<Reading> MeasurementIntentTest::makeCartesianReading(double x,
+                                                                     double y,
+                                                                     double z) {
   ReadingCartesian r;
   r.isValid = true;
   r.xyz.setAt(0, x);
   r.xyz.setAt(1, y);
   r.xyz.setAt(2, z);
-  return new Reading(r);
+  return std::make_unique<Reading>(r);
 }
 
 void MeasurementIntentTest::pointWithObservationsAndNoFunctionAveragesThem() {
-  oi::Guarded<Point> point = new Point();
+  auto own_point = std::make_unique<Point>();
+  const oi::Guarded<Point> point = own_point.get();
 
   // stand in for "TrafoController already transformed these" (core has
   // no TrafoController - see point.cpp's Point::recalc() comment)
@@ -118,7 +120,8 @@ void MeasurementIntentTest::pointWithObservationsAndNoFunctionAveragesThem() {
   xyzA.setAt(1, 0.0);
   xyzA.setAt(2, 0.0);
   xyzA.setAt(3, 1.0);
-  oi::Guarded<Observation> obsA = new Observation();
+  auto own_obsA = std::make_unique<Observation>();
+  const oi::Guarded<Observation> obsA = own_obsA.get();
   obsA->setXYZ(xyzA);
   obsA->setIsSolved(true);
 
@@ -127,7 +130,8 @@ void MeasurementIntentTest::pointWithObservationsAndNoFunctionAveragesThem() {
   xyzB.setAt(1, 0.0);
   xyzB.setAt(2, 0.0);
   xyzB.setAt(3, 1.0);
-  oi::Guarded<Observation> obsB = new Observation();
+  auto own_obsB = std::make_unique<Observation>();
+  const oi::Guarded<Observation> obsB = own_obsB.get();
   obsB->setXYZ(xyzB);
   obsB->setIsSolved(true);
 
@@ -148,10 +152,13 @@ void MeasurementIntentTest::pointWithObservationsAndNoFunctionAveragesThem() {
 }
 
 void MeasurementIntentTest::pointWithObservationsIsStationOwned() {
-  oi::Guarded<Station> station = new Station("S1");
-  oi::Guarded<Point> point = new Point();
+  auto own_station = std::make_unique<Station>("S1");
+  const oi::Guarded<Station> station = own_station.get();
+  auto own_point = std::make_unique<Point>();
+  const oi::Guarded<Point> point = own_point.get();
 
-  oi::Guarded<Observation> obs = new Observation();
+  auto own_obs = std::make_unique<Observation>();
+  const oi::Guarded<Observation> obs = own_obs.get();
   obs->setStation(station);
   point->addObservation(obs);
 
@@ -172,7 +179,7 @@ void MeasurementIntentTest::pointWithNoObservationsIsUnaffected() {
 
 void MeasurementIntentTest::measuringAlwaysCreatesExactlyOneNewPoint() {
   oi::Guarded<Station> station;
-  oi::Guarded<OiJob> job = makeJobWithActiveStation(station);
+  auto job = makeJobWithActiveStation(station);
 
   auto own_targetPoint = std::make_unique<oi::Point>();
   oi::Guarded<Point> targetPoint = own_targetPoint.get();
@@ -185,19 +192,20 @@ void MeasurementIntentTest::measuringAlwaysCreatesExactlyOneNewPoint() {
 
   // D15a: a MeasurementConfig count of 10 yields one Point with ten
   // readings, not ten Points
-  std::vector<oi::Guarded<Reading> > readings;
-  readings = {makeCartesianReading(1.0, 2.0, 3.0),
-              makeCartesianReading(1.01, 2.0, 3.0),
-              makeCartesianReading(0.99, 2.0, 3.0)};
+  std::vector<std::unique_ptr<Reading>> readings;
+  readings.push_back(makeCartesianReading(1.0, 2.0, 3.0));
+  readings.push_back(makeCartesianReading(1.01, 2.0, 3.0));
+  readings.push_back(makeCartesianReading(0.99, 2.0, 3.0));
 
-  job->addMeasurementResults(targetFeature->getFeature()->getId(), readings);
+  job->addMeasurementResults(targetFeature->getFeature()->getId(),
+                             std::move(readings));
 
   OI_COMPARE(job->getFeaturesList().size(), featureCountBefore + 1);
 }
 
 void MeasurementIntentTest::measuredPointHasObservationsDerivedPointDoesNot() {
   oi::Guarded<Station> station;
-  oi::Guarded<OiJob> job = makeJobWithActiveStation(station);
+  auto job = makeJobWithActiveStation(station);
 
   auto own_targetPoint = std::make_unique<oi::Point>();
   oi::Guarded<Point> targetPoint = own_targetPoint.get();
@@ -206,10 +214,11 @@ void MeasurementIntentTest::measuredPointHasObservationsDerivedPointDoesNot() {
   targetFeature->getFeature()->setFeatureName("target");
   job->addFeature(std::move(own_targetPoint));
 
-  std::vector<oi::Guarded<Reading> > readings;
-  readings = {makeCartesianReading(1.0, 2.0, 3.0),
-              makeCartesianReading(1.0, 2.0, 3.0)};
-  job->addMeasurementResults(targetFeature->getFeature()->getId(), readings);
+  std::vector<std::unique_ptr<Reading>> readings;
+  readings.push_back(makeCartesianReading(1.0, 2.0, 3.0));
+  readings.push_back(makeCartesianReading(1.0, 2.0, 3.0));
+  job->addMeasurementResults(targetFeature->getFeature()->getId(),
+                             std::move(readings));
 
   // find the newly created point - the only ePointFeature besides the
   // target itself
@@ -237,7 +246,7 @@ void MeasurementIntentTest::measuredPointHasObservationsDerivedPointDoesNot() {
 void MeasurementIntentTest::
     tagResolutionFeedsAMatchingFunctionWithNoBindingStep() {
   oi::Guarded<Station> station;
-  oi::Guarded<OiJob> job = makeJobWithActiveStation(station);
+  auto job = makeJobWithActiveStation(station);
 
   auto own_targetPoint = std::make_unique<oi::Point>();
   oi::Guarded<Point> targetPoint = own_targetPoint.get();
@@ -246,15 +255,17 @@ void MeasurementIntentTest::
   targetFeature->getFeature()->setFeatureName("target");
   job->addFeature(std::move(own_targetPoint));
 
-  oi::Guarded<FakeConsumer> consumer = new FakeConsumer("default");
-  targetPoint->addFunction(consumer);
+  auto own_consumer = std::make_unique<FakeConsumer>("default");
+  const oi::Guarded<FakeConsumer> consumer = own_consumer.get();
+  targetPoint->addFunction(std::move(own_consumer));
 
   OI_REQUIRE2(oi::value(consumer->getInputElements(), 0).empty(),
               "nothing tagged yet");
 
-  std::vector<oi::Guarded<Reading> > readings;
+  std::vector<std::unique_ptr<Reading>> readings;
   readings.push_back(makeCartesianReading(5.0, 5.0, 5.0));
-  job->addMeasurementResults(targetFeature->getFeature()->getId(), readings);
+  job->addMeasurementResults(targetFeature->getFeature()->getId(),
+                             std::move(readings));
 
   // no binding step: the function already declared role "default" for
   // ePointFeature, and measuring for that same feature fed it directly
@@ -263,7 +274,7 @@ void MeasurementIntentTest::
 
 void MeasurementIntentTest::aPointCarryingTwoTagsIsFoundByBothConsumers() {
   oi::Guarded<Station> station;
-  oi::Guarded<OiJob> job = makeJobWithActiveStation(station);
+  auto job = makeJobWithActiveStation(station);
 
   auto own_featureA = std::make_unique<oi::Point>();
   oi::Guarded<Point> featureA = own_featureA.get();
@@ -277,14 +288,17 @@ void MeasurementIntentTest::aPointCarryingTwoTagsIsFoundByBothConsumers() {
   wrapperB->getFeature()->setFeatureName("B");
   job->addFeature(std::move(own_featureB));
 
-  oi::Guarded<FakeConsumer> consumerA = new FakeConsumer("default");
-  featureA->addFunction(consumerA);
-  oi::Guarded<FakeConsumer> consumerB = new FakeConsumer("default");
-  featureB->addFunction(consumerB);
+  auto own_consumerA = std::make_unique<FakeConsumer>("default");
+  const oi::Guarded<FakeConsumer> consumerA = own_consumerA.get();
+  featureA->addFunction(std::move(own_consumerA));
+  auto own_consumerB = std::make_unique<FakeConsumer>("default");
+  const oi::Guarded<FakeConsumer> consumerB = own_consumerB.get();
+  featureB->addFunction(std::move(own_consumerB));
 
-  std::vector<oi::Guarded<Reading> > readings;
+  std::vector<std::unique_ptr<Reading>> readings;
   readings.push_back(makeCartesianReading(1.0, 1.0, 1.0));
-  job->addMeasurementResults(wrapperA->getFeature()->getId(), readings);
+  job->addMeasurementResults(wrapperA->getFeature()->getId(),
+                             std::move(readings));
 
   // find the point that was just created and tag it for B as well - the
   // retroactive hand-allocation path (domain-model.md S3: "hand-allocation
@@ -307,7 +321,7 @@ void MeasurementIntentTest::aPointCarryingTwoTagsIsFoundByBothConsumers() {
 
 void MeasurementIntentTest::renamingTheFeatureDoesNotOrphanTags() {
   oi::Guarded<Station> station;
-  oi::Guarded<OiJob> job = makeJobWithActiveStation(station);
+  auto job = makeJobWithActiveStation(station);
 
   auto own_targetPoint = std::make_unique<oi::Point>();
   oi::Guarded<Point> targetPoint = own_targetPoint.get();
@@ -316,32 +330,34 @@ void MeasurementIntentTest::renamingTheFeatureDoesNotOrphanTags() {
   targetFeature->getFeature()->setFeatureName("target");
   job->addFeature(std::move(own_targetPoint));
 
-  oi::Guarded<FakeConsumer> consumer = new FakeConsumer("default");
-  targetPoint->addFunction(consumer);
+  auto own_consumer = std::make_unique<FakeConsumer>("default");
+  const oi::Guarded<FakeConsumer> consumer = own_consumer.get();
+  targetPoint->addFunction(std::move(own_consumer));
 
   // rename *before* measuring - tags anchor to id (MeasurementIntent,
   // measurementintent.h), never to the name in effect at tag time
   targetFeature->getFeature()->setFeatureName("renamed-wall-01");
 
-  std::vector<oi::Guarded<Reading> > readings;
+  std::vector<std::unique_ptr<Reading>> readings;
   readings.push_back(makeCartesianReading(3.0, 3.0, 3.0));
-  job->addMeasurementResults(targetFeature->getFeature()->getId(), readings);
+  job->addMeasurementResults(targetFeature->getFeature()->getId(),
+                             std::move(readings));
 
   OI_COMPARE(oi::value(consumer->getInputElements(), 0).size(), 1);
 }
 
 void MeasurementIntentTest::unresolvableTargetIsRejectedWithAMessage() {
   oi::Guarded<Station> station;
-  oi::Guarded<OiJob> job = makeJobWithActiveStation(station);
+  auto job = makeJobWithActiveStation(station);
 
   RecordingJobObserver spy;
-  spy.attach(job.data());
+  spy.attach(job.get());
 
   const int featureCountBefore = job->getFeaturesList().size();
 
-  std::vector<oi::Guarded<Reading> > readings;
+  std::vector<std::unique_ptr<Reading>> readings;
   readings.push_back(makeCartesianReading(1.0, 1.0, 1.0));
-  job->addMeasurementResults(999999, readings);
+  job->addMeasurementResults(999999, std::move(readings));
 
   OI_REQUIRE2(spy.count("sendMessage") > 0,
               "core must report why the measurement was rejected");

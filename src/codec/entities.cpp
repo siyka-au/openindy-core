@@ -202,8 +202,8 @@ void Access::encodeReading(const Reading& r, oipb::Reading* m) {
   }
 }
 
-oi::Guarded<Reading> Access::decodeReading(const oipb::Reading& m) {
-  oi::Guarded<Reading> reading;
+std::unique_ptr<Reading> Access::decodeReading(const oipb::Reading& m) {
+  std::unique_ptr<Reading> reading;
   switch (m.data_case()) {
     case oipb::Reading::kPolar: {
       ReadingPolar v;
@@ -214,7 +214,7 @@ oi::Guarded<Reading> Access::decodeReading(const oipb::Reading& m) {
       v.sigmaZenith = m.polar().sigma_zenith();
       v.sigmaDistance = m.polar().sigma_distance();
       v.isValid = true;
-      reading = new Reading(v);
+      reading = std::make_unique<Reading>(v);
       break;
     }
     case oipb::Reading::kCartesian: {
@@ -222,7 +222,7 @@ oi::Guarded<Reading> Access::decodeReading(const oipb::Reading& m) {
       v.xyz = toVec(m.cartesian().xyz());
       v.sigmaXyz = toVec(m.cartesian().sigma_xyz());
       v.isValid = true;
-      reading = new Reading(v);
+      reading = std::make_unique<Reading>(v);
       break;
     }
     case oipb::Reading::kCartesian6D: {
@@ -231,7 +231,7 @@ oi::Guarded<Reading> Access::decodeReading(const oipb::Reading& m) {
       v.ijk = toVec(m.cartesian_6d().ijk());
       v.sigmaXyz = toVec(m.cartesian_6d().sigma_xyz());
       v.isValid = true;
-      reading = new Reading(v);
+      reading = std::make_unique<Reading>(v);
       break;
     }
     case oipb::Reading::kDirection: {
@@ -241,7 +241,7 @@ oi::Guarded<Reading> Access::decodeReading(const oipb::Reading& m) {
       v.sigmaAzimuth = m.direction().sigma_azimuth();
       v.sigmaZenith = m.direction().sigma_zenith();
       v.isValid = true;
-      reading = new Reading(v);
+      reading = std::make_unique<Reading>(v);
       break;
     }
     case oipb::Reading::kDistance: {
@@ -249,7 +249,7 @@ oi::Guarded<Reading> Access::decodeReading(const oipb::Reading& m) {
       v.distance = m.distance().distance();
       v.sigmaDistance = m.distance().sigma_distance();
       v.isValid = true;
-      reading = new Reading(v);
+      reading = std::make_unique<Reading>(v);
       break;
     }
     case oipb::Reading::kTemperature: {
@@ -257,7 +257,7 @@ oi::Guarded<Reading> Access::decodeReading(const oipb::Reading& m) {
       v.temperature = m.temperature().temperature();
       v.sigmaTemperature = m.temperature().sigma_temperature();
       v.isValid = true;
-      reading = new Reading(v);
+      reading = std::make_unique<Reading>(v);
       break;
     }
     case oipb::Reading::kLevel: {
@@ -269,7 +269,7 @@ oi::Guarded<Reading> Access::decodeReading(const oipb::Reading& m) {
       v.sigmaJ = m.level().sigma_j();
       v.sigmaK = m.level().sigma_k();
       v.isValid = true;
-      reading = new Reading(v);
+      reading = std::make_unique<Reading>(v);
       break;
     }
     case oipb::Reading::kUndefined: {
@@ -281,7 +281,7 @@ oi::Guarded<Reading> Access::decodeReading(const oipb::Reading& m) {
         v.sigmaValues.insert_or_assign((key), value);
       }
       v.isValid = true;
-      reading = new Reading(v);
+      reading = std::make_unique<Reading>(v);
       break;
     }
     case oipb::Reading::DATA_NOT_SET:
@@ -306,7 +306,7 @@ oipb::Reading toProto(const Reading& reading) {
   return m;
 }
 
-oi::Guarded<Reading> createReading(const oipb::Reading& message) {
+std::unique_ptr<Reading> createReading(const oipb::Reading& message) {
   return Access::decodeReading(message);
 }
 
@@ -341,18 +341,18 @@ oipb::Observation toProto(const Observation& observation) {
   return m;
 }
 
-oi::Guarded<Observation> createObservation(const oipb::Observation& message) {
+std::unique_ptr<Observation> createObservation(
+    const oipb::Observation& message) {
   if (!message.has_reading()) {
     return {};  // an observation without its reading is not usable
   }
-  oi::Guarded<Reading> reading = createReading(message.reading());
-  if (reading.isNull()) {
+  std::unique_ptr<Reading> reading = createReading(message.reading());
+  if (!reading) {
     return {};
   }
-  oi::Guarded<Observation> observation = new Observation();
+  auto observation = std::make_unique<Observation>();
   Access::restoreObservation(*observation, message);
-  Access::setReading(*observation, reading);
-  reading->setObservation(observation);
+  observation->adoptReading(std::move(reading));
   return observation;
 }
 

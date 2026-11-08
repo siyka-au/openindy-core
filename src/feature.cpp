@@ -107,15 +107,10 @@ Feature::~Feature() {
   }
 
   // delete all functions when deleting the feature
-  if (this->producerFunction.has_value() && !this->producerFunction->isNull()) {
-    delete this->producerFunction->data();
-  }
-  for (const oi::Guarded<Function>& function :
-       oi::snapshot(this->transformFunctions)) {
-    if (!function.isNull()) {
-      delete function.data();
-    }
-  }
+  this->producerFunction = std::nullopt;
+  this->ownedProducer.reset();
+  this->transformFunctions.clear();
+  this->ownedTransforms.clear();
 
   // the observer is told once, then forgotten: nothing may reach it after
   // this object is gone
@@ -328,18 +323,18 @@ const std::vector<oi::Guarded<Function> >& Feature::getTransformFunctions()
  * dynamically-loaded Function* with no compile-time geometry type, so a
  * template-constrained attach API could not be used at those call sites.
  * See domain-model.md S7 "Dispatch boundary" and D21's left-open call.
- * \param function
+ * \param owned the function; freed when it cannot be attached
+ * \return whether the feature took it
  */
-void Feature::addFunction(const oi::Guarded<Function>& function) {
-  if (function.isNull() || this->selfFeature.isNull()) {
-    return;
+bool Feature::addFunction(std::unique_ptr<Function> owned) {
+  if (!owned || this->selfFeature.isNull()) {
+    return false;
   }
+  Function* const function = owned.get();
 
   const FeatureTypes type = this->selfFeature->getFeatureTypeEnum();
-  const bool producerCapable =
-      Function::canActAsProducer(type, function.data());
-  const bool transformCapable =
-      Function::canActAsTransform(type, function.data());
+  const bool producerCapable = Function::canActAsProducer(type, function);
+  const bool transformCapable = Function::canActAsTransform(type, function);
 
   bool attachAsProducer = false;
 
@@ -361,7 +356,7 @@ void Feature::addFunction(const oi::Guarded<Function>& function) {
                   function->getMetaData().name, this->getFeatureName());
     function->sendMessage(reason, MessageTypes::eCriticalMessage,
                           MessageDestinations::eMessageBoxMessage);
-    return;
+    return false;  // owned is freed here
   }
 
   // let the current job generate a unique id if it is valid
@@ -370,13 +365,16 @@ void Feature::addFunction(const oi::Guarded<Function>& function) {
   }
 
   if (attachAsProducer) {
-    this->producerFunction = function;
+    this->ownedProducer = std::move(owned);
+    this->producerFunction = oi::Guarded<Function>(function);
   } else {
-    this->transformFunctions.push_back(function);
+    this->ownedTransforms.push_back(std::move(owned));
+    this->transformFunctions.push_back(oi::Guarded<Function>(function));
   }
 
   this->isUpdated = false;
   this->notify(&FeatureObserver::onFeatureFunctionListChanged, this->id);
+  return true;
 }
 
 /*!
@@ -393,6 +391,7 @@ void Feature::removeFunction(const int& index) {
   if (this->producerFunction.has_value()) {
     if (index == 0) {
       this->producerFunction = std::nullopt;
+      this->ownedProducer.reset();
       this->isUpdated = false;
       this->notify(&FeatureObserver::onFeatureFunctionListChanged, this->id);
       return;
@@ -400,6 +399,7 @@ void Feature::removeFunction(const int& index) {
     const int transformIndex = index - 1;
     if (transformIndex < std::ssize(this->transformFunctions)) {
       oi::removeAt(this->transformFunctions, transformIndex);
+      oi::removeAt(this->ownedTransforms, transformIndex);
       this->isUpdated = false;
       this->notify(&FeatureObserver::onFeatureFunctionListChanged, this->id);
     }
@@ -408,6 +408,7 @@ void Feature::removeFunction(const int& index) {
 
   if (index < std::ssize(this->transformFunctions)) {
     oi::removeAt(this->transformFunctions, index);
+    oi::removeAt(this->ownedTransforms, index);
     this->isUpdated = false;
     this->notify(&FeatureObserver::onFeatureFunctionListChanged, this->id);
   }

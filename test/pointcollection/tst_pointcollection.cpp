@@ -195,15 +195,17 @@ void PointCollectionTest::unsolvedPointsAreNotPartOfTheCollection() {
 }
 
 void PointCollectionTest::pointCloudSatisfiesPointCollection() {
-  oi::Guarded<PointCloud> cloud = new PointCloud();
-  cloud->addPointCloudPoint(new Point_PC(1.0f, 2.0f, 3.0f));
-  cloud->addPointCloudPoint(new Point_PC(4.0f, 5.0f, 6.0f));
+  auto ownedCloud = std::make_unique<PointCloud>();
+  const oi::Guarded<PointCloud> cloud(ownedCloud.get());
+  pool().push_back(std::move(ownedCloud));
+  cloud->addPointCloudPoint(std::make_unique<Point_PC>(1.0f, 2.0f, 3.0f));
+  cloud->addPointCloudPoint(std::make_unique<Point_PC>(4.0f, 5.0f, 6.0f));
 
   // excluded by the cloud's own inclusion flag (segmentation/filtering),
   // stored but not part of the collection a fit should see
-  Point_PC* excluded = new Point_PC(9.0f, 9.0f, 9.0f);
+  auto excluded = std::make_unique<Point_PC>(9.0f, 9.0f, 9.0f);
   excluded->isUsed = false;
-  cloud->addPointCloudPoint(excluded);
+  cloud->addPointCloudPoint(std::move(excluded));
 
   PointCollection* collection = cloud.data();
   OI_COMPARE(collection->collectionPointCount(), 2);
@@ -222,9 +224,11 @@ void PointCollectionTest::
   group.addMember(makePoint(0.0, 0.0, 0.0, 1));
   group.addMember(makePoint(1.0, 0.0, 0.0, 2));
 
-  oi::Guarded<PointCloud> cloud = new PointCloud();
-  cloud->addPointCloudPoint(new Point_PC(0.0f, 0.0f, 0.0f));
-  cloud->addPointCloudPoint(new Point_PC(1.0f, 0.0f, 0.0f));
+  auto ownedCloud = std::make_unique<PointCloud>();
+  const oi::Guarded<PointCloud> cloud(ownedCloud.get());
+  pool().push_back(std::move(ownedCloud));
+  cloud->addPointCloudPoint(std::make_unique<Point_PC>(0.0f, 0.0f, 0.0f));
+  cloud->addPointCloudPoint(std::make_unique<Point_PC>(1.0f, 0.0f, 0.0f));
 
   std::vector<PointCollection*> collections;
   collections.push_back(&group);

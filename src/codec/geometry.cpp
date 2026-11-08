@@ -266,7 +266,7 @@ void Access::encodeGeometry(const Geometry& g, oipb::Geometry* m) {
     }
   } else if (const auto* cloud = dynamic_cast<const PointCloud*>(&g)) {
     auto* shape = m->mutable_point_cloud();
-    for (const Point_PC* p : cloud->points) {
+    for (const auto& p : cloud->points) {
       shape->add_coordinates(p->xyz[0]);
       shape->add_coordinates(p->xyz[1]);
       shape->add_coordinates(p->xyz[2]);
@@ -371,11 +371,11 @@ std::unique_ptr<Geometry> Access::decodeGeometry(const oipb::Geometry& m) {
       const auto& shape = m.point_cloud();
       const int count = shape.coordinates_size() / 3;
       for (int i = 0; i < count; ++i) {
-        auto* p =
-            new Point_PC(shape.coordinates(3 * i), shape.coordinates(3 * i + 1),
-                         shape.coordinates(3 * i + 2));
+        auto p = std::make_unique<Point_PC>(shape.coordinates(3 * i),
+                                            shape.coordinates(3 * i + 1),
+                                            shape.coordinates(3 * i + 2));
         p->isUsed = i < shape.used_size() ? shape.used(i) : true;
-        cloud->points.push_back(p);
+        cloud->points.push_back(std::move(p));
       }
       if (shape.bbox_min_size() == 3 && shape.bbox_max_size() == 3) {
         for (int i = 0; i < 3; ++i) {

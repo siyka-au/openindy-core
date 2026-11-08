@@ -49,11 +49,12 @@ void SensorInterface::asyncSensorResponse(const oi::ValueMap& response,
 }
 
 void SensorInterface::asyncMeasurementResult(
-    const int& geomId, const std::vector<oi::Guarded<Reading>>& measurements,
+    const int& geomId, std::vector<std::unique_ptr<Reading>> measurements,
     const SensorAction sensorAction) {
   const std::scoped_lock lock(this->sinkMutex);
   if (this->sink != nullptr) {
-    this->sink->onAsyncMeasurementResult(geomId, measurements, sensorAction);
+    this->sink->onAsyncMeasurementResult(geomId, std::move(measurements),
+                                         sensorAction);
   }
 }
 
@@ -130,6 +131,13 @@ Sensor& Sensor::operator=(const Sensor& copy) {
  * \brief Sensor::~Sensor
  */
 Sensor::~Sensor() {}
+
+void Sensor::setLastReading(ReadingTypes type,
+                            std::unique_ptr<Reading> reading) {
+  this->lastReading.first = type;
+  this->lastReading.second = reading.get();
+  this->ownedLastReading = std::move(reading);
+}
 
 /*!
  * \brief Sensor::getSensorConfiguration
@@ -331,12 +339,12 @@ bool Sensor::disconnectSensor() {
  * \param mConfig
  * \return
  */
-std::vector<oi::Guarded<Reading>> Sensor::measure(
+std::vector<std::unique_ptr<Reading>> Sensor::measure(
     const MeasurementConfig& /*mConfig*/) {
   this->sensorMessage(
       std::string("Sensor not implemented correctly: measure method missing"),
       MessageTypes::eCriticalMessage, MessageDestinations::eMessageBoxMessage);
-  return std::vector<oi::Guarded<Reading>>();
+  return {};
 }
 
 /*!

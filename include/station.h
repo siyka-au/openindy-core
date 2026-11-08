@@ -69,8 +69,8 @@ class OI_CORE_EXPORT Station : public Feature {
 
   // get or set sensor
   [[nodiscard]] Sensor getSensor() const;
-  void setSensor(const oi::Guarded<Sensor>& sensor);
-  oi::Guarded<Sensor> takeSensor();
+  void setSensor(std::unique_ptr<Sensor> sensor);
+  std::unique_ptr<Sensor> takeSensor();
   void resetSensor();
 
   // previously used sensors
@@ -260,7 +260,7 @@ class OI_CORE_EXPORT Station : public Feature {
 
   // add or remove readings
   void addReadings(const int& geomId,
-                   const std::vector<oi::Guarded<Reading>>& readings);
+                   const std::vector<std::unique_ptr<Reading>>& readings);
   void removeReading(const oi::Guarded<Reading>& reading);
 
   // set previously used sensors

@@ -74,8 +74,9 @@ class OI_CORE_EXPORT PointCloud : public Geometry, public PointCollection {
   // get or set point cloud parameters
   // #################################
 
-  [[nodiscard]] const std::vector<Point_PC*>& getPointCloudPoints() const;
-  void addPointCloudPoint(Point_PC* point);
+  [[nodiscard]] const std::vector<std::unique_ptr<Point_PC>>&
+  getPointCloudPoints() const;
+  void addPointCloudPoint(std::unique_ptr<Point_PC> point);
 
   // #########################
   // PointCollection interface
@@ -102,10 +103,11 @@ class OI_CORE_EXPORT PointCloud : public Geometry, public PointCollection {
   // point cloud attributes
   // ######################
 
-  std::vector<Point_PC*> points;  // all points of the pointcloud (owned)
-  BoundingBox_PC bbox;            // bounding box of the pointcloud
+  std::vector<std::unique_ptr<Point_PC>>
+      points;           // all points of the pointcloud (owned)
+  BoundingBox_PC bbox;  // bounding box of the pointcloud
 
-  std::vector<oi::Guarded<FeatureWrapper> >
+  std::vector<oi::Guarded<FeatureWrapper>>
       detectedSegments;  // geometry-segments that were detected in the
                          // pointcloud
 };

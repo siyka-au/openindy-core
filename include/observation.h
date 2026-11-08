@@ -2,6 +2,7 @@
 #define OBSERVATION_H
 #include <math.h>
 
+#include <memory>
 #include <optional>
 #include <vector>
 
@@ -115,6 +116,10 @@ class OI_CORE_EXPORT Observation : public Point {
 
   const oi::Guarded<Reading>& getReading() const;
 
+  // The observation owns its reading from here on and takes its values from
+  // it (Reading::setObservation).
+  void adoptReading(std::unique_ptr<Reading> reading);
+
   // D19/D20: always station-owned, always read-only - see observation.cpp
   std::optional<std::string> getOwnerDescription() const override;
 
@@ -180,6 +185,7 @@ class OI_CORE_EXPORT Observation : public Point {
   // each call - see observation.cpp
   mutable Position positionCache;
 
+  std::unique_ptr<Reading> ownedReading;
   oi::Guarded<Reading> reading;
 
   // ###################################################

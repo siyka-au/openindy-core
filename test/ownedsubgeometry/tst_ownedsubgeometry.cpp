@@ -92,18 +92,20 @@ class OwnedSubGeometryTest {
   void removingTheOwnerCascadesToItsOwnedChild();
 
  private:
-  oi::Guarded<OiJob> makeJob();
+  std::unique_ptr<OiJob> makeJob();
 };
 
 void OwnedSubGeometryTest::initTestCase() {
   ChooseLALib::setLinearAlgebra(ChooseLALib::LinearAlgebraLibrary::Armadillo);
 }
 
-oi::Guarded<OiJob> OwnedSubGeometryTest::makeJob() { return new OiJob(); }
+std::unique_ptr<OiJob> OwnedSubGeometryTest::makeJob() {
+  return std::make_unique<OiJob>();
+}
 
 void OwnedSubGeometryTest::
     generatingAnOwnedAccessorAttachesFunctionBindsInputAndMarksOwnership() {
-  oi::Guarded<OiJob> job = this->makeJob();
+  const std::unique_ptr<OiJob> job = this->makeJob();
 
   auto own_owner = std::make_unique<oi::Point>();
   oi::Guarded<Point> owner = own_owner.get();
@@ -117,8 +119,11 @@ void OwnedSubGeometryTest::
   child->setFeatureName("Child1");
   REQUIRE(job->addFeature(std::move(own_child)));
 
-  oi::Guarded<CopyPointFunction> function = new CopyPointFunction();
-  REQUIRE(job->addOwnedSubGeometry(ownerWrapper, childWrapper, function, 0));
+  auto owned_function = std::make_unique<CopyPointFunction>();
+
+  const oi::Guarded<CopyPointFunction> function(owned_function.get());
+  REQUIRE(job->addOwnedSubGeometry(ownerWrapper, childWrapper,
+                                   std::move(owned_function), 0));
 
   // the function got attached, and the owner got bound as its input -
   // reusing Feature::addFunction/OiJob::addInputFeature, not a parallel
@@ -162,7 +167,7 @@ void OwnedSubGeometryTest::
 
 void OwnedSubGeometryTest::
     ownerRecalcOnlyDirtiesOwnedChildWhenItsValueActuallyChanges() {
-  oi::Guarded<OiJob> job = this->makeJob();
+  const std::unique_ptr<OiJob> job = this->makeJob();
 
   auto own_owner = std::make_unique<oi::Point>();
   oi::Guarded<Point> owner = own_owner.get();
@@ -170,11 +175,13 @@ void OwnedSubGeometryTest::
   owner->setFeatureName("Owner2");
   REQUIRE(job->addFeature(std::move(own_owner)));
 
-  oi::Guarded<FixedPositionFunction> ownerFn = new FixedPositionFunction();
+  auto owned_ownerFn = std::make_unique<FixedPositionFunction>();
+
+  const oi::Guarded<FixedPositionFunction> ownerFn(owned_ownerFn.get());
   ownerFn->x = 1.0;
   ownerFn->y = 2.0;
   ownerFn->z = 3.0;
-  owner->addFunction(ownerFn);
+  owner->addFunction(std::move(owned_ownerFn));
 
   auto own_child = std::make_unique<oi::Point>();
   oi::Guarded<Point> child = own_child.get();
@@ -183,7 +190,7 @@ void OwnedSubGeometryTest::
   REQUIRE(job->addFeature(std::move(own_child)));
 
   REQUIRE(job->addOwnedSubGeometry(ownerWrapper, childWrapper,
-                                   new CopyPointFunction(), 0));
+                                   std::make_unique<CopyPointFunction>(), 0));
 
   // first pass: owner solves for the first time, child computes from the
   // owner's now-current position. There is no FeatureUpdater in core to
@@ -220,7 +227,7 @@ void OwnedSubGeometryTest::
 }
 
 void OwnedSubGeometryTest::aSecondFeatureCanReferenceTheOwnedChildAsInput() {
-  oi::Guarded<OiJob> job = this->makeJob();
+  const std::unique_ptr<OiJob> job = this->makeJob();
 
   auto own_owner = std::make_unique<oi::Point>();
   oi::Guarded<Point> owner = own_owner.get();
@@ -235,7 +242,7 @@ void OwnedSubGeometryTest::aSecondFeatureCanReferenceTheOwnedChildAsInput() {
   REQUIRE(job->addFeature(std::move(own_child)));
 
   REQUIRE(job->addOwnedSubGeometry(ownerWrapper, childWrapper,
-                                   new CopyPointFunction(), 0));
+                                   std::make_unique<CopyPointFunction>(), 0));
 
   // a third, ordinary feature takes the owned child as an input - proves
   // an owned accessor is just an ordinary feature to the input
@@ -248,8 +255,10 @@ void OwnedSubGeometryTest::aSecondFeatureCanReferenceTheOwnedChildAsInput() {
   consumer->setFeatureName("Consumer3");
   REQUIRE(job->addFeature(std::move(own_consumer)));
 
-  oi::Guarded<CopyPointFunction> consumerFn = new CopyPointFunction();
-  consumer->addFunction(consumerFn);
+  auto owned_consumerFn = std::make_unique<CopyPointFunction>();
+
+  const oi::Guarded<CopyPointFunction> consumerFn(owned_consumerFn.get());
+  consumer->addFunction(std::move(owned_consumerFn));
   job->addInputFeature(consumerWrapper, 0, 0, childWrapper);
 
   OI_COMPARE(oi::value(consumerFn->getInputElements(), 0).size(), 1);
@@ -259,7 +268,7 @@ void OwnedSubGeometryTest::aSecondFeatureCanReferenceTheOwnedChildAsInput() {
 }
 
 void OwnedSubGeometryTest::removingTheOwnerCascadesToItsOwnedChild() {
-  oi::Guarded<OiJob> job = this->makeJob();
+  const std::unique_ptr<OiJob> job = this->makeJob();
 
   auto own_owner = std::make_unique<oi::Point>();
   oi::Guarded<Point> owner = own_owner.get();
@@ -274,7 +283,7 @@ void OwnedSubGeometryTest::removingTheOwnerCascadesToItsOwnedChild() {
   REQUIRE(job->addFeature(std::move(own_child)));
 
   REQUIRE(job->addOwnedSubGeometry(ownerWrapper, childWrapper,
-                                   new CopyPointFunction(), 0));
+                                   std::make_unique<CopyPointFunction>(), 0));
 
   const int childId = child->getId();
   REQUIRE(!job->getFeatureById(childId).isNull());
