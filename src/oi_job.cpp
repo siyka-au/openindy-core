@@ -13,6 +13,14 @@
 #include "string_util.h"
 using namespace oi;
 
+namespace {
+//! Projects up to this version (22.1) carry no version-compatibility check.
+constexpr int kLastUnversionedMajor = 22;
+constexpr int kLastUnversionedMinor = 1;
+//! Numbers below this have one digit and are padded with a leading zero.
+constexpr int kFirstTwoDigitNumber = 10;
+}  // namespace
+
 /*!
  * \brief The feature observer installed on a station's own coordinate system.
  * That system is not a feature of the job, so (as the old signal connections
@@ -188,7 +196,7 @@ CompatibilyCheckResult OiJob::checkCompatibilty() const {
   int oiMajor = oi::toInt(oiParts.at(0)).value_or(0);
   int oiMinor = oi::toInt(oiParts.at(1)).value_or(0);
 
-  if (jobMajor <= 22 && jobMinor <= 1) {
+  if (jobMajor <= kLastUnversionedMajor && jobMinor <= kLastUnversionedMinor) {
     return CompatibilyCheckResult::eCheckResult_job_lt_oi_22_1;
   } else if (oiMajor == jobMajor) {
     if (oiMinor == jobMinor) {
@@ -2998,7 +3006,8 @@ std::vector<std::string> OiJob::createFeatureNames(const std::string& name,
       }
     }
 
-    if (leadZeros.compare("") == 0 && oi::toInt(postFix).value_or(0) < 10) {
+    if (leadZeros.compare("") == 0 &&
+        oi::toInt(postFix).value_or(0) < kFirstTwoDigitNumber) {
       leadZeros.append("0");
     }
 

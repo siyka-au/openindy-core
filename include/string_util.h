@@ -29,6 +29,13 @@ namespace oi {
 
 // ---- numbers to text --------------------------------------------------------
 
+//! Digits after the decimal point / significant digits QString::number uses
+//! when the caller gives none.
+inline constexpr int kDefaultNumberPrecision = 6;
+
+//! The base toInt() parses in by default.
+inline constexpr int kDecimalBase = 10;
+
 namespace detail {
 
 //! Adds one unit in the last place to a string of decimal digits (a '.' is
@@ -52,11 +59,21 @@ inline void incrementDecimal(std::string& digits) {
 //! to tell an exact tie from a value that merely lies close to one
 inline constexpr int kTieWindow = 40;
 
+//! Characters beyond the requested digits that hold the integer part of a
+//! double in fixed notation (DBL_MAX has 309 integer digits) with its sign and
+//! decimal point.
+inline constexpr int kFixedHeadroom = 330;
+
+//! Characters beyond the requested digits for sign, decimal point and exponent
+//! ("e+308") in scientific notation.
+inline constexpr int kScientificHeadroom = 16;
+
 //! |value| in fixed notation with `places` decimals. Like QString::number
 //! (double-conversion), and unlike printf, a value exactly halfway between two
 //! results rounds up (0.125 -> "0.13", 2.5 -> "3").
 [[nodiscard]] inline std::string fixedDigits(double absValue, int places) {
-  std::string out(static_cast<std::size_t>(places) + kTieWindow + 330, '\0');
+  std::string out(
+      static_cast<std::size_t>(places) + kTieWindow + kFixedHeadroom, '\0');
   const auto format = [&](int p) {
     const auto r = std::to_chars(out.data(), std::to_address(out.end()),
                                  absValue, std::chars_format::fixed, p);
@@ -83,7 +100,8 @@ struct Scientific {
 };
 
 [[nodiscard]] inline Scientific scientificDigits(double absValue, int sig) {
-  std::string buffer(static_cast<std::size_t>(sig) + kTieWindow + 16, '\0');
+  std::string buffer(
+      static_cast<std::size_t>(sig) + kTieWindow + kScientificHeadroom, '\0');
   const auto format = [&](int p) {
     const auto r = std::to_chars(buffer.data(), std::to_address(buffer.end()),
                                  absValue, std::chars_format::scientific, p);
@@ -139,8 +157,8 @@ struct Scientific {
 //! and infinities come out as "nan", "inf" and "-inf"; zero has no sign. A
 //! value exactly halfway between two results rounds away from zero, as Qt
 //! does (printf rounds to even).
-[[nodiscard]] inline std::string number(double value, char format = 'g',
-                                        int precision = 6) {
+[[nodiscard]] inline std::string number(
+    double value, char format = 'g', int precision = kDefaultNumberPrecision) {
   if (std::isnan(value)) {
     return "nan";
   }
@@ -148,7 +166,7 @@ struct Scientific {
     return value < 0 ? "-inf" : "inf";
   }
   if (precision < 0) {
-    precision = 6;
+    precision = kDefaultNumberPrecision;
   }
   const bool upper = format == 'E' || format == 'G';
   const bool isZero = value == 0.0;
@@ -270,7 +288,7 @@ namespace detail {
 
 //! An integer from the whole text (QString::toInt with its ok flag).
 [[nodiscard]] inline std::optional<int> toInt(std::string_view s,
-                                              int base = 10) {
+                                              int base = kDecimalBase) {
   while (!s.empty() && detail::isSpace(s.front())) {
     s.remove_prefix(1);
   }

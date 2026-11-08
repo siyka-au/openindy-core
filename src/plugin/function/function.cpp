@@ -979,7 +979,7 @@ bool Function::applyResidualPipelineStages() {
         this->neededElements.at(position).pipeline;
 
     bool hasResidualStage = false;
-    double sigmaMultiplier = 3.0;
+    double sigmaMultiplier = PipelineStage::kDefaultSigmaMultiplier;
     for (const PipelineStage& stage : std::as_const(stages)) {
       if (stage.type == PipelineStageType::eResidualOutlierRejectionStage) {
         hasResidualStage = true;

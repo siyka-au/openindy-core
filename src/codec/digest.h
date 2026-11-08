@@ -15,10 +15,13 @@ namespace oi::codec {
  * (which rules out std::hash).
  */
 [[nodiscard]] constexpr std::uint64_t fnv1a64(std::string_view bytes) noexcept {
-  std::uint64_t hash = 14695981039346656037ULL;
+  constexpr std::uint64_t kOffsetBasis =
+      14695981039346656037ULL;  // FNV-1a 64-bit
+  constexpr std::uint64_t kPrime = 1099511628211ULL;
+  std::uint64_t hash = kOffsetBasis;
   for (const char c : bytes) {
     hash ^= static_cast<std::uint8_t>(c);
-    hash *= 1099511628211ULL;
+    hash *= kPrime;
   }
   return hash;
 }

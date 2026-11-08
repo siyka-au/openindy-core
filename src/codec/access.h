@@ -17,6 +17,9 @@
 
 namespace oi::codec {
 
+//! A homogeneous transformation matrix is 4 x 4.
+inline constexpr int kHomogenMatrixSize = 4 * 4;
+
 struct Access {
   // ---- Element / Feature ----
   static void setId(Element& element, int id) { element.id = id; }
@@ -66,7 +69,7 @@ struct Access {
     set3(trafo.scale, m.scale());
     trafo.isDatumTrafo = m.datum_trafo();
     trafo.isUsed = m.used();
-    if (m.homogen_matrix_size() == 16) {
+    if (m.homogen_matrix_size() == kHomogenMatrixSize) {
       for (int row = 0; row < 4; ++row) {
         for (int col = 0; col < 4; ++col) {
           trafo.homogenMatrix.setAt(row, col, m.homogen_matrix(row * 4 + col));

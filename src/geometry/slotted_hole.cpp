@@ -11,6 +11,11 @@
 using namespace oi;
 using namespace oi::math;
 
+namespace {
+//! The centre of a slot lies half way between its two arc centres.
+constexpr double kMidpoint = 0.5;
+}  // namespace
+
 /*!
  * \brief SlottedHole::SlottedHole
  */
@@ -227,8 +232,8 @@ void SlottedHole::setSlottedHole(const Position& circleCenterA,
 
   // calculate the other parameters
   this->center.setVector(this->circleCenterA.getVector() +
-                         0.5 * (this->circleCenterB.getVector() -
-                                this->circleCenterA.getVector()));
+                         kMidpoint * (this->circleCenterB.getVector() -
+                                      this->circleCenterA.getVector()));
   OiVec axis =
       this->circleCenterB.getVector() - this->circleCenterA.getVector();
   OiVec::dot(this->length, axis, axis);

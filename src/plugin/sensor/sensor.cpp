@@ -11,6 +11,12 @@
 
 using namespace oi;
 
+namespace {
+//! JSON-RPC 2.0 reserves -32000 to -32099 for implementation-defined server
+//! errors; -32000 is the generic one.
+constexpr int kJsonRpcServerError = -32000;
+}  // namespace
+
 SensorInterface::SensorInterface() {}
 
 void SensorInterface::setSensorSink(SensorSink* sink) {
@@ -296,7 +302,7 @@ bool Sensor::accept(const SensorFunctions& /*method*/,
 oi::ValueMap Sensor::performAsyncSensorCommand(const oi::ValueMap& request) {
   oi::ValueMap response;
   response.insert_or_assign("jsonrpc", "2.0");
-  response.insert_or_assign("errorCode", -32000);
+  response.insert_or_assign("errorCode", kJsonRpcServerError);
   response.insert_or_assign(
       "error",
       "this sensor does not implement the interface methode for "

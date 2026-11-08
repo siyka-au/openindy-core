@@ -124,8 +124,10 @@ jobs:
           git ls-files | grep -E '\.(cpp|h|hpp|cc)$' | grep -vE '^(lib|third_party|3rdparty|build)/' \
             | xargs uvx clang-format==$CLANG_TOOLS_VERSION --dry-run -Werror --style=file
 
-  # owning-memory has zero findings in core and is a failing check; the full
-  # .clang-tidy set is informational (log uploaded, never fails the job).
+  # The checks that .clang-tidy enables and that have zero findings in the files
+  # core owns (include/, src/, tools/, test/) fail the job; the rest of the
+  # cppcoreguidelines-* set is informational (log uploaded, never fails the job).
+  # No --checks on the command line: it would override test/.clang-tidy.
   clang-tidy:
     runs-on: ubuntu-24.04
     steps:
@@ -152,19 +154,33 @@ jobs:
           cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
                 -DCMAKE_TOOLCHAIN_FILE=build/conan/conan_toolchain.cmake
           cmake --build build -j$(nproc)
-      - name: cppcoreguidelines-owning-memory (must be clean)
+      - name: Own files list
         working-directory: openindy-core
         run: |
-          git ls-files 'src/*.cpp' 'tools/*.cpp' | xargs -P$(nproc) -n4 \
+          git ls-files 'src/*.cpp' 'tools/*.cpp' 'test/*.cpp' | while read -r f; do
+            grep -q "/$f\"" build/compile_commands.json && echo "$f"
+          done > tidy-files.txt
+          wc -l tidy-files.txt
+      - name: Zero-finding checks (must stay clean)
+        working-directory: openindy-core
+        env:
+          GATE: >-
+            cppcoreguidelines-pro-bounds-pointer-arithmetic,
+            cppcoreguidelines-macro-usage,
+            cppcoreguidelines-macro-to-enum,
+            modernize-macro-to-enum,
+            cppcoreguidelines-avoid-non-const-global-variables,
+            cppcoreguidelines-avoid-magic-numbers,
+            cppcoreguidelines-owning-memory
+        run: |
+          xargs -a tidy-files.txt -P$(nproc) -n4 \
             uvx --from clang-tidy==$CLANG_TOOLS_VERSION clang-tidy -p build --quiet \
-              --checks='-*,cppcoreguidelines-owning-memory' \
-              --warnings-as-errors='cppcoreguidelines-owning-memory' \
-              --header-filter='.*/openindy-core/(include|src)/.*'
+              --warnings-as-errors="$(echo $GATE | tr -d ' ')"
       - name: Full .clang-tidy (informational)
         continue-on-error: true
         working-directory: openindy-core
         run: |
-          git ls-files 'src/*.cpp' 'tools/*.cpp' | xargs -P$(nproc) -n4 \
+          xargs -a tidy-files.txt -P$(nproc) -n4 \
             uvx --from clang-tidy==$CLANG_TOOLS_VERSION clang-tidy -p build --quiet \
             > clang-tidy-full.log 2>&1 || true
           echo "warnings: $(grep -c 'warning:' clang-tidy-full.log || true)"

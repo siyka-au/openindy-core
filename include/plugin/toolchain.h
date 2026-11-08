@@ -31,6 +31,7 @@
  */
 
 #include <array>
+#include <climits>
 #include <cstddef>
 #include <string_view>
 #include <version>  // defines the standard library's identifying macros
@@ -90,15 +91,18 @@ inline constexpr std::string_view kToolchainArch = "arm";
 inline constexpr std::string_view kToolchainArch = "unknown-arch";
 #endif
 
+inline constexpr std::size_t kBits64 = 64;
+inline constexpr std::size_t kBits32 = 32;
+
 // Sanity: the architecture name must agree with the pointer width, and the
 // layout assumptions of the codec/protocol are little endian.
 #if defined(__x86_64__) || defined(_M_X64) || defined(__aarch64__) || \
     defined(_M_ARM64)
-static_assert(sizeof(void*) == 8,
+static_assert(sizeof(void*) * CHAR_BIT == kBits64,
               "64-bit architecture with non-64-bit pointers");
 #elif defined(__i386__) || defined(_M_IX86) || defined(__arm__) || \
     defined(_M_ARM)
-static_assert(sizeof(void*) == 4,
+static_assert(sizeof(void*) * CHAR_BIT == kBits32,
               "32-bit architecture with non-32-bit pointers");
 #endif
 #if defined(__BYTE_ORDER__) && defined(__ORDER_LITTLE_ENDIAN__)

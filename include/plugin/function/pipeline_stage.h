@@ -83,16 +83,22 @@ class OI_CORE_EXPORT PipelineExclusion {
  */
 class OI_CORE_EXPORT PipelineStage {
  public:
+  //! The residual outlier rejection stage rejects residuals larger than this
+  //! many standard deviations ("3 sigma") unless the stage says otherwise.
+  static constexpr double kDefaultSigmaMultiplier = 3.0;
+
   PipelineStage()
-      : type(PipelineStageType::eExcludeStage), sigmaMultiplier(3.0) {}
+      : type(PipelineStageType::eExcludeStage),
+        sigmaMultiplier(kDefaultSigmaMultiplier) {}
   explicit PipelineStage(PipelineStageType type)
-      : type(type), sigmaMultiplier(3.0) {}
+      : type(type), sigmaMultiplier(kDefaultSigmaMultiplier) {}
 
   static PipelineStage explicitList(const std::vector<int>& ids);
   static PipelineStage exclude(int elementId, const std::string& reason);
   static PipelineStage exclude(
       const std::vector<PipelineExclusion>& exclusions);
-  static PipelineStage residualOutlierRejection(double sigmaMultiplier = 3.0);
+  static PipelineStage residualOutlierRejection(
+      double sigmaMultiplier = kDefaultSigmaMultiplier);
 
   PipelineStageType type;
 

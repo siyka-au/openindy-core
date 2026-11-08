@@ -7,12 +7,17 @@
 
 using namespace oi;
 
+namespace {
+//! Decimal places the ASCII exchange writes angles with by default (radian).
+constexpr int kDefaultAngleDigits = 6;
+}  // namespace
+
 /*!
  * \brief ExchangeSimpleAscii::ExchangeSimpleAscii
  */
 ExchangeSimpleAscii::ExchangeSimpleAscii() : ExchangeInterface() {
   this->distanceDigits = 2;
-  this->angleDigits = 6;
+  this->angleDigits = kDefaultAngleDigits;
   this->temperatureDigits = 1;
 }
 

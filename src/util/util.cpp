@@ -6,12 +6,58 @@
 
 #include "containers.h"
 #include "feature_wrapper.h"
+#include "string_util.h"
 
 namespace oi {
 
 // #################################################
 // maps with element enums and corresponding strings
 // #################################################
+
+namespace {
+
+// ############################################################################
+// UNIT CONVERSION FACTORS - each factor is defined once; convertToDefault()
+// multiplies by 1 / factor where convertFromDefault() multiplies by factor, so
+// the two directions cannot drift apart. The default units are metre, radian
+// and degree Celsius.
+// ############################################################################
+
+//! millimetres per metre
+constexpr double kMillimetersPerMeter = 1000.0;
+//! milliradians per radian
+constexpr double kMilliradiansPerRadian = 1000.0;
+//! international inches per metre (1 / 0.0254, rounded to 8 decimals)
+constexpr double kInchesPerMeter = 39.37007874;
+//! arc seconds per radian (180 * 3600 / pi)
+constexpr double kArcSecondsPerRadian = 206264.8062471;
+//! degrees Fahrenheit per degree Celsius (temperature difference)
+constexpr double kFahrenheitPerCelsius = 1.8;
+//! the Fahrenheit reading at 0 degrees Celsius
+constexpr double kFahrenheitAtZeroCelsius = 32.0;
+//! the Kelvin reading at 0 degrees Celsius
+constexpr double kKelvinAtZeroCelsius = 273.15;
+
+// ############################################################################
+// LINEAR THERMAL EXPANSION COEFFICIENTS used by the temperature compensation,
+// in 1/K (the same as 1/degC): a length changes by length * alpha * dT. The
+// values are the ones of the original OpenIndy material table and are
+// deliberately unchanged.
+// ############################################################################
+
+constexpr double kThermalExpansionSteel = 0.00001139;
+constexpr double kThermalExpansionAluminum = 0.000024;
+constexpr double kThermalExpansionPlumb = 0.000030;
+constexpr double kThermalExpansionIron = 0.000012;
+constexpr double kThermalExpansionGrayCastIron = 0.000009;
+constexpr double kThermalExpansionCopper = 0.000017;
+constexpr double kThermalExpansionBrass = 0.000018;
+constexpr double kThermalExpansionZinc = 0.000027;
+constexpr double kThermalExpansionPlatinum = 0.000009;
+constexpr double kThermalExpansionConcrete = 0.000012;
+constexpr double kThermalExpansionReinforcedConcrete = 0.000013;
+
+}  // namespace
 
 namespace internal {
 
@@ -795,27 +841,28 @@ Tables::Tables() {
       MaterialsTempComp::eMaterialReinforcedConcrete, "reinforced concrete");
 
   materialValuesMap.insert_or_assign(MaterialsTempComp::eMaterialSteel,
-                                     0.00001139);
+                                     kThermalExpansionSteel);
   materialValuesMap.insert_or_assign(MaterialsTempComp::eMaterialAluminum,
-                                     0.000024);
+                                     kThermalExpansionAluminum);
   materialValuesMap.insert_or_assign(MaterialsTempComp::eMaterialPlumb,
-                                     0.000030);
+                                     kThermalExpansionPlumb);
   materialValuesMap.insert_or_assign(MaterialsTempComp::eMaterialIron,
-                                     0.000012);
+                                     kThermalExpansionIron);
   materialValuesMap.insert_or_assign(MaterialsTempComp::eMaterialGrayCastIron,
-                                     0.000009);
+                                     kThermalExpansionGrayCastIron);
   materialValuesMap.insert_or_assign(MaterialsTempComp::eMaterialCopper,
-                                     0.000017);
+                                     kThermalExpansionCopper);
   materialValuesMap.insert_or_assign(MaterialsTempComp::eMaterialBrass,
-                                     0.000018);
+                                     kThermalExpansionBrass);
   materialValuesMap.insert_or_assign(MaterialsTempComp::eMaterialZinc,
-                                     0.000027);
+                                     kThermalExpansionZinc);
   materialValuesMap.insert_or_assign(MaterialsTempComp::eMaterialPlatinum,
-                                     0.000009);
+                                     kThermalExpansionPlatinum);
   materialValuesMap.insert_or_assign(MaterialsTempComp::eMaterialConcrete,
-                                     0.000012);
+                                     kThermalExpansionConcrete);
   materialValuesMap.insert_or_assign(
-      MaterialsTempComp::eMaterialReinforcedConcrete, 0.000013);
+      MaterialsTempComp::eMaterialReinforcedConcrete,
+      kThermalExpansionReinforcedConcrete);
 
   // ########################################################################
   // DISPLAY NAMES
@@ -1562,10 +1609,9 @@ bool getIsFeatureDisplayAttribute(const int& attr) {
  * \return
  */
 bool getIsTrafoParamDisplayAttribute(const int& attr) {
-  if ((attr >= 0 && attr < 10) || (attr >= 400 && attr < 415)) {
-    return true;
-  }
-  return false;
+  return (attr >= eTrafoParamDisplayType && attr <= eTrafoParamDisplayStDev) ||
+         (attr >= eTrafoParamDisplayStartSystem &&
+          attr <= eTrafoParamDisplayIsDatumTransformation);
 }
 
 /*!
@@ -1794,21 +1840,21 @@ ReadingDisplayAttributes getReadingDisplayAttributeEnum(
 double convertToDefault(const double& value, const UnitType& type) {
   switch (type) {
     case UnitType::eUnitMilliMeter:
-      return value * (1.0 / 1000.0);
+      return value * (1.0 / kMillimetersPerMeter);
     case UnitType::eUnitInch:
-      return value * (1.0 / 39.37007874);
+      return value * (1.0 / kInchesPerMeter);
     case UnitType::eUnitMilliRadians:
-      return value * (1.0 / 1000.0);
+      return value * (1.0 / kMilliradiansPerRadian);
     case UnitType::eUnitGon:
       return value * (1.0 / kRhoGon);
     case UnitType::eUnitArcSeconds:
-      return value * (1.0 / 206264.8062471);
+      return value * (1.0 / kArcSecondsPerRadian);
     case UnitType::eUnitDecimalDegree:
       return value * (1.0 / kRhoDegree);
     case UnitType::eUnitFahrenheit:
-      return (value - 32.0) / 1.8;
+      return (value - kFahrenheitAtZeroCelsius) / kFahrenheitPerCelsius;
     case UnitType::eUnitKelvin:
-      return value - 273.15;
+      return value - kKelvinAtZeroCelsius;
     default:
       return value;
   }
@@ -1824,21 +1870,21 @@ double convertToDefault(const double& value, const UnitType& type) {
 double convertFromDefault(const double& value, const UnitType& type) {
   switch (type) {
     case UnitType::eUnitMilliMeter:
-      return value * 1000.0;
+      return value * kMillimetersPerMeter;
     case UnitType::eUnitInch:
-      return value * 39.37007874;
+      return value * kInchesPerMeter;
     case UnitType::eUnitMilliRadians:
-      return value * 1000.0;
+      return value * kMilliradiansPerRadian;
     case UnitType::eUnitGon:
       return value * kRhoGon;
     case UnitType::eUnitArcSeconds:
-      return value * 206264.8062471;
+      return value * kArcSecondsPerRadian;
     case UnitType::eUnitDecimalDegree:
       return value * kRhoDegree;
     case UnitType::eUnitFahrenheit:
-      return value * 1.8 + 32.0;
+      return value * kFahrenheitPerCelsius + kFahrenheitAtZeroCelsius;
     case UnitType::eUnitKelvin:
-      return value + 273.15;
+      return value + kKelvinAtZeroCelsius;
     default:
       return value;
   }
@@ -1881,7 +1927,7 @@ bool almostEqual(const double& a, const double& b, const int& digits) {
   // calculate epsilon
   double epsilon = 1.0;
   for (int i = 0; i < digits; i++) {
-    epsilon = epsilon / 10.0;
+    epsilon = epsilon / kDecimalBase;
   }
 
   // check difference

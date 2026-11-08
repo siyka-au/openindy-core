@@ -185,7 +185,7 @@ class OI_CORE_EXPORT FunctionUtil {
     double cos = 0.0;  // cosine between normal and direction
     OiVec::dot(cos, normal, direction);
     double angle = std::abs(std::acos(cos));
-    if (angle > (kPi / 2.0) && angle < kPi) {
+    if (angle > (kPi / 2) && angle < kPi) {
       normal = normal * -1.0;
     }
   }

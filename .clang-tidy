@@ -12,10 +12,9 @@ Checks: >
   modernize-make-unique,
   modernize-make-shared,
   misc-throw-by-value-catch-by-reference,
-  -cppcoreguidelines-avoid-magic-numbers,
   -cppcoreguidelines-non-private-member-variables-in-classes
 # owning-memory: enabled (test/.clang-tidy turns it off for the tests).
-# magic-numbers / non-private-member-variables: still disabled, being worked off.
+# magic-numbers: enabled (test/.clang-tidy turns it off for the tests).
 # macro-usage: the OI_DECLARE_PLUGIN* entry-point macros are the only ones left
 #   in include/ and src/ (one NOLINT with the reason at the definition).
 # Anchored on the checkout directory name (CI checks the repo out as

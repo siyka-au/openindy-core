@@ -16,6 +16,28 @@
 
 namespace oi {
 
+//! Constants of the best-fit algorithms.
+namespace fit {
+
+//! The plane fit is singular when the middle eigenvalue of the scatter matrix
+//! is smaller than this fraction of the largest one.
+inline constexpr double kSingularEigenvalueRatio = 1.0e-12;
+//! Unknowns of the cylinder adjustment: radius, X0, Y0, alpha, beta.
+inline constexpr int kCylinderUnknowns = 5;
+//! Unknowns of the circle adjustment: centre x, centre y, radius.
+inline constexpr int kCircleUnknowns = 3;
+//! First step length of the cylinder adjustment's Armijo line search (it is
+//! halved before the first trial, so the first trial is the full step).
+inline constexpr double kArmijoInitialStep = 2;
+//! The cylinder iteration stops when the squared correction falls below this.
+inline constexpr double kMinSquaredCorrection = 0.0000000000001;
+//! The cylinder iteration gives up after this many iterations.
+inline constexpr int kMaxIterations = 1000;
+//! Two angles (radian) closer than this are treated as equal.
+inline constexpr double kAngleEqualityTolerance = 0.001;
+
+}  // namespace fit
+
 template <typename T>
 int sgn(T val) {
   return (T(0) < val) - (val < T(0));
@@ -201,7 +223,7 @@ class OI_CORE_EXPORT BestFitPlaneUtil : public BestFitUtil {
     // scale with the extent of the data. Deliberately conservative: this
     // rejects the genuinely singular case, not merely ill-conditioned
     // input, so it cannot start failing fits that used to work.
-    if (largest <= 0.0 || (middle / largest) < 1.0e-12) {
+    if (largest <= 0.0 || (middle / largest) < fit::kSingularEigenvalueRatio) {
       return false;
     }
 
@@ -293,7 +315,7 @@ class OI_CORE_EXPORT BestFitCircleUtil : public BestFitUtil {
     double angle = 0.0;  // angle between n and direction
     OiVec::dot(angle, n, direction);
     angle = std::abs(std::acos(angle));
-    if (angle > (kPi / 2.0)) {
+    if (angle > (kPi / 2)) {
       n = n * -1.0;
     }
 
@@ -366,12 +388,11 @@ class OI_CORE_EXPORT BestFitCircleUtil : public BestFitUtil {
 
     // calculate center and radius in 2D space
     OiVec xm(3);
-    xm.setAt(0, (-1.0 * s.getAt(0) / 2.0) + centroid2D.getAt(0));
-    xm.setAt(1, (-1.0 * s.getAt(1) / 2.0) + centroid2D.getAt(1));
+    xm.setAt(0, (-1.0 * s.getAt(0) / 2) + centroid2D.getAt(0));
+    xm.setAt(1, (-1.0 * s.getAt(1) / 2) + centroid2D.getAt(1));
     xm.setAt(2, (t * centroid).getAt(2));
-    double radius =
-        std::sqrt(0.25 * (s.getAt(0) * s.getAt(0) + s.getAt(1) * s.getAt(1)) -
-                  s.getAt(2));
+    double radius = std::sqrt(
+        (s.getAt(0) * s.getAt(0) + s.getAt(1) * s.getAt(1)) / 4 - s.getAt(2));
 
     // calculate distance of each observation from the 2D circle
     OiVec circleDistances;
@@ -446,8 +467,9 @@ class OI_CORE_EXPORT BestFitCircleUtil : public BestFitUtil {
       double v_i = circleDistances.getAt(i);
       stdev += v_i * v_i;
     }
-    stdev = std::sqrt(
-        stdev / (static_cast<double>(centroidReducedCoordinates.size()) - 3.0));
+    stdev = std::sqrt(stdev /
+                      (static_cast<double>(centroidReducedCoordinates.size()) -
+                       fit::kCircleUnknowns));
     function->statistic.setIsValid(true);
     function->statistic.setStdev(stdev);
     circle.setStatistic(function->statistic);
@@ -635,7 +657,7 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
       angle = std::abs(std::acos(angle));
     }
 
-    if (angle > (kPi / 2.0)) {
+    if (angle > (kPi / 2)) {
       Direction cylinderDirection = cylinder.getDirection();
       cylinderDirection.setVector(axis * -1.0);
       cylinder.setCylinder(cylinderPosition, cylinderDirection,
@@ -972,16 +994,15 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
     }
 
     // calculate midpoint + radius
-    x_m = (-1.0 * s.getAt(0) / 2.0) + centroid2D.getAt(0);
-    y_m = (-1.0 * s.getAt(1) / 2.0) + centroid2D.getAt(1);
-    radius =
-        std::sqrt(0.25 * (s.getAt(0) * s.getAt(0) + s.getAt(1) * s.getAt(1)) -
-                  s.getAt(2));
+    x_m = (-1.0 * s.getAt(0) / 2) + centroid2D.getAt(0);
+    y_m = (-1.0 * s.getAt(1) / 2) + centroid2D.getAt(1);
+    radius = std::sqrt((s.getAt(0) * s.getAt(0) + s.getAt(1) * s.getAt(1)) / 4 -
+                       s.getAt(2));
 
     // calculate statistic
     v = -1.0 * A1 - A2 * s;
     OiVec::dot(sum_vv, v, v);
-    sum_vv = std::sqrt(sum_vv / (numPoints - 3.0));
+    sum_vv = std::sqrt(sum_vv / (numPoints - fit::kCircleUnknowns));
 
     // add approximation
     CylinderApproximation approximation;
@@ -1015,11 +1036,12 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
     OiVec centroid(4);
 
     // initialize variables
-    OiVec v(numPoints * 3);                 // approximation of corrections
-    OiVec L0(numPoints * 3);                // L + v
-    OiVec c(numPoints + 5);                 // right side
-    OiMat N(numPoints + 5, numPoints + 5);  // normal equation matrix
-    OiVec res(numPoints + 5);               // adjustment result
+    OiVec v(numPoints * 3);   // approximation of corrections
+    OiVec L0(numPoints * 3);  // L + v
+    OiVec c(numPoints + fit::kCylinderUnknowns);  // right side
+    OiMat N(numPoints + fit::kCylinderUnknowns,
+            numPoints + fit::kCylinderUnknowns);    // normal equation matrix
+    OiVec res(numPoints + fit::kCylinderUnknowns);  // adjustment result
     double _r = 0.0, _X0 = 0.0, _Y0 = 0.0, _alpha = 0.0, _beta = 0.0;
     double _r_armijo = 0.0, _X0_armijo = 0.0, _Y0_armijo = 0.0,
            _alpha_armijo = 0.0, _beta_armijo = 0.0;
@@ -1031,7 +1053,7 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
     double _x_armijo = 0.0, _y_armijo = 0.0, _z_armijo = 0.0;
     double a1 = 0.0, a2 = 0.0;
     double diff = 0.0, _xr = 0.0, _yr = 0.0;
-    double sigma = 2.0;
+    double sigma = fit::kArmijoInitialStep;
     OiMat Ralpha(3, 3);
     OiMat Rbeta(3, 3);
     OiMat Rall(3, 3);
@@ -1042,7 +1064,7 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
     _Y0 = approximation.approxYm;
     _alpha = approximation.approxAlpha;
     _beta = approximation.approxBeta;
-    OiVec x(5);  // vector of unknown corrections
+    OiVec x(fit::kCylinderUnknowns);  // vector of unknown corrections
 
     // fill L vector
     for (int i = 0; i < numPoints; i++) {
@@ -1181,7 +1203,7 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
       }
 
       // get new corrections for unknowns
-      for (int i = numPoints; i < numPoints + 5; i++) {
+      for (int i = numPoints; i < numPoints + fit::kCylinderUnknowns; i++) {
         x.setAt(i - numPoints, res.getAt(i));
       }
 
@@ -1214,7 +1236,7 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
       }
 
       while (true) {
-        sigma = sigma / 2.0;
+        sigma = sigma / 2;
 
         _r_armijo = _r + sigma * x.getAt(0);
         _X0_armijo = _X0 + sigma * x.getAt(1);
@@ -1276,16 +1298,17 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
       x = sigma * x;
       v = sigma * v;
 
-      sigma = 2.0;
+      sigma = fit::kArmijoInitialStep;
 
       numIterations++;
 
-      if (!(stopXX > 0.0000000000001 && numIterations < 1000)) {
+      if (!(stopXX > fit::kMinSquaredCorrection &&
+            numIterations < fit::kMaxIterations)) {
         break;
       }
     }
 
-    if (numIterations >= 1000) {
+    if (numIterations >= fit::kMaxIterations) {
       function->sendMessage(
           std::format("to many iterations: {}", numIterations),
           MessageTypes::eWarningMessage);
@@ -1400,7 +1423,8 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
     Position cylinderPosition(xyz);
     cylinder.setCylinder(cylinderPosition, cylinderDirection, cylinderRadius);
     function->statistic.setIsValid(true);
-    function->statistic.setStdev(std::sqrt(sumVV / ((double)numPoints - 5.0)));
+    function->statistic.setStdev(std::sqrt(
+        sumVV / (static_cast<double>(numPoints) - fit::kCylinderUnknowns)));
     cylinder.setStatistic(function->statistic);
 
     return true;
@@ -1413,12 +1437,12 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
    */
   double getCorrespondingCos(double a) {
     while (a < 0.0) {
-      a += 2.0 * kPi;
+      a += 2 * kPi;
     }
-    while (a > 2.0 * kPi) {
-      a -= 2.0 * kPi;
+    while (a > 2 * kPi) {
+      a -= 2 * kPi;
     }
-    return 2.0 * kPi - a;
+    return 2 * kPi - a;
   }
 
   /*!
@@ -1428,15 +1452,15 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
    */
   double getCorrespondingSin(double a) {
     while (a < 0.0) {
-      a += 2.0 * kPi;
+      a += 2 * kPi;
     }
-    while (a > 2.0 * kPi) {
-      a -= 2.0 * kPi;
+    while (a > 2 * kPi) {
+      a -= 2 * kPi;
     }
     if (a <= kPi) {
       return kPi - a;
     } else {
-      return 3.0 * kPi - a;
+      return 3 * kPi - a;
     }
   }
 
@@ -1447,7 +1471,7 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
    * \return
    */
   bool compareAngles(double a, double b) {
-    double t = 2.0 * kPi;
+    double t = 2 * kPi;
 
     // a und b between 0 und 2*kPi
     while (a < 0.0) {
@@ -1464,7 +1488,8 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
     }
 
     double diff = a - b;
-    if (diff < 0.001 && diff > -0.001) {
+    if (diff < fit::kAngleEqualityTolerance &&
+        diff > -fit::kAngleEqualityTolerance) {
       return true;
     }
     return false;

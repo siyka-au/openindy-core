@@ -13,6 +13,12 @@
 using namespace oi;
 using namespace oi::math;
 
+namespace {
+//! If the cosine product of the second solution of the Euler angles exceeds the
+//! first one's |R00| by more than this, the other rotation branch is taken.
+constexpr double kRotationBranchTolerance = 0.01;
+}  // namespace
+
 /*!
  * \brief TrafoParam::TrafoParam
  */
@@ -364,7 +370,7 @@ bool TrafoParam::setTransformationParameters(const OiMat& rotation,
             std::atan2(-rotation.getAt(1, 0), rotation.getAt(0, 0)));  // gamma
     if (std::fabs(std::cos(r.getAt(1)) * std::cos(r.getAt(2))) -
             std::fabs(rotation.getAt(0, 0)) >
-        0.01) {
+        kRotationBranchTolerance) {
       r.setAt(1, kPi - r.getAt(1));
     }
 

@@ -10,6 +10,7 @@
 
 #include <chrono>
 #include <cmath>
+#include <limits>
 #include <string>
 
 #include "access.h"
@@ -23,6 +24,10 @@
 namespace oi::codec {
 
 namespace oipb = openindy::v1;
+
+//! Digits that print a double so it reads back exactly.
+constexpr int kDoubleRoundTripDigits =
+    std::numeric_limits<double>::max_digits10;
 
 namespace {
 
@@ -61,7 +66,7 @@ std::string jsonText(const google::protobuf::Struct& object,
     return value.string_value();
   }
   if (value.has_number_value()) {
-    return oi::number(value.number_value(), 'g', 17);
+    return oi::number(value.number_value(), 'g', kDoubleRoundTripDigits);
   }
   return {};
 }
@@ -83,7 +88,8 @@ oipb::BundleTemplate bundleTemplateOf(const std::string& json) {
       if (parameter.has_string_value()) {
         out.add_parameters(parameter.string_value());
       } else if (parameter.has_number_value()) {
-        out.add_parameters(oi::number(parameter.number_value(), 'g', 17));
+        out.add_parameters(
+            oi::number(parameter.number_value(), 'g', kDoubleRoundTripDigits));
       } else {
         out.add_parameters("");
       }

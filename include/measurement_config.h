@@ -110,6 +110,11 @@ class OI_CORE_EXPORT MeasurementConfigKey {
  */
 class OI_CORE_EXPORT MeasurementConfig {
  public:
+  //! Decimal places two distance intervals are compared to (operator==).
+  static constexpr int kDistanceIntervalDecimals = 8;
+  //! The number of observations a new config measures at most.
+  static constexpr int kDefaultMaxObservations = 500;
+
   MeasurementConfig();
 
   MeasurementConfig(const MeasurementConfig& copy);
@@ -127,7 +132,7 @@ class OI_CORE_EXPORT MeasurementConfig {
            left.getMaxObservations() == right.getMaxObservations() &&
            left.getTimeInterval() == right.getTimeInterval() &&
            almostEqual(left.getDistanceInterval(), right.getDistanceInterval(),
-                       8) &&
+                       MeasurementConfig::kDistanceIntervalDecimals) &&
            left.getSensorType() == right.getSensorType();
   }
 

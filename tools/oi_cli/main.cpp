@@ -40,6 +40,10 @@
 
 namespace {
 
+//! Largest deviation of the fitted plane normal from the fixture's (selftest).
+constexpr double kNormalTolerance = 1e-6;
+//! Largest deviation of the plane normal after a save/reload round trip.
+constexpr double kReloadTolerance = 1e-12;
 constexpr int kExitOk = 0;
 constexpr int kExitFailed = 1;
 constexpr int kExitUsage = 2;
@@ -119,7 +123,7 @@ oi::Guarded<oi::OiJob> makeFixtureJob() {
 
   const double xs[] = {0.0, 1.0, 0.0, 2.0, 1.5, 3.0};
   const double ys[] = {0.0, 0.0, 1.0, 1.0, 2.5, 2.0};
-  for (int i = 0; i < 6; ++i) {
+  for (std::size_t i = 0; i < std::size(xs); ++i) {
     const double z = 0.5 + 0.1 * xs[i] - 0.05 * ys[i];
     auto own_point = std::make_unique<oi::Point>(oi::Position(xs[i], ys[i], z));
     oi::Guarded<oi::Point> point = own_point.get();
@@ -223,7 +227,7 @@ int runProject(const std::string& pluginPath, const std::string& projectPath,
     const double len = std::sqrt(0.1 * 0.1 + 0.05 * 0.05 + 1.0);
     const double expected[] = {-0.1 / len, 0.05 / len, 1.0 / len};
     for (int i = 0; i < 3; ++i) {
-      if (std::abs(fitted[i] - expected[i]) > 1e-6) {
+      if (std::abs(fitted[i] - expected[i]) > kNormalTolerance) {
         return fail("the fitted normal is not the fixture's plane normal");
       }
     }
@@ -253,7 +257,7 @@ int runProject(const std::string& pluginPath, const std::string& projectPath,
   }
   const std::vector<double> back = normalOf(*again);
   for (int i = 0; i < 3; ++i) {
-    if (std::abs(back[i] - fitted[i]) > 1e-12) {
+    if (std::abs(back[i] - fitted[i]) > kReloadTolerance) {
       return fail(
           std::format("plane normal differs after reload (axis {})", i));
     }

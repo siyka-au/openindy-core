@@ -155,21 +155,21 @@ int32_t toProto(oi::BaudRate v) {
 
 oi::BaudRate baudFromProto(int32_t v) {
   switch (v) {
-    case 1200:
+    case static_cast<int32_t>(oi::BaudRate::Baud1200):
       return oi::BaudRate::Baud1200;
-    case 2400:
+    case static_cast<int32_t>(oi::BaudRate::Baud2400):
       return oi::BaudRate::Baud2400;
-    case 4800:
+    case static_cast<int32_t>(oi::BaudRate::Baud4800):
       return oi::BaudRate::Baud4800;
-    case 9600:
+    case static_cast<int32_t>(oi::BaudRate::Baud9600):
       return oi::BaudRate::Baud9600;
-    case 19200:
+    case static_cast<int32_t>(oi::BaudRate::Baud19200):
       return oi::BaudRate::Baud19200;
-    case 38400:
+    case static_cast<int32_t>(oi::BaudRate::Baud38400):
       return oi::BaudRate::Baud38400;
-    case 57600:
+    case static_cast<int32_t>(oi::BaudRate::Baud57600):
       return oi::BaudRate::Baud57600;
-    case 115200:
+    case static_cast<int32_t>(oi::BaudRate::Baud115200):
       return oi::BaudRate::Baud115200;
     default:
       return oi::BaudRate::Baud9600;

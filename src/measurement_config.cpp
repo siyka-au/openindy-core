@@ -12,7 +12,7 @@ using namespace oi;
  */
 MeasurementConfig::MeasurementConfig()
     : distanceInterval(0.0),
-      maxObservations(500),
+      maxObservations(MeasurementConfig::kDefaultMaxObservations),
       measureTwoSides(false),
       measurementMode(MeasurementModes::eFast_MeasurementMode),
       measurementType(MeasurementTypes::eSinglePoint_MeasurementType),
