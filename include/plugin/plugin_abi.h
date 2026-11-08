@@ -54,6 +54,6 @@
  * refreshed (scripts/abi-check.sh --update) in the same commit. See
  * abi/README.md.
  */
-#define OI_PLUGIN_ABI_VERSION 17
+#define OI_PLUGIN_ABI_VERSION 18
 
 #endif  // OI_CORE_PLUGIN_PLUGIN_ABI_H_

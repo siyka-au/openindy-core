@@ -148,6 +148,30 @@ PluginLoadResult PluginLoader::loadImpl(const std::string& path) {
     return result;
   }
 
+  using ToolchainFn = const char* (*)();
+  const auto toolchainFn =
+      symbolAs<ToolchainFn>(handle, OI_PLUGIN_SYMBOL_TOOLCHAIN);
+  if (!toolchainFn) {
+    closeLibrary(handle);
+    result.status = PluginLoadStatus::kMissingEntryPoint;
+    result.error = where +
+                   "not a usable OpenIndy plugin (missing entry point " +
+                   OI_PLUGIN_SYMBOL_TOOLCHAIN + ")";
+    return result;
+  }
+  const char* pluginToolchainRaw = toolchainFn();
+  const std::string pluginToolchain =
+      pluginToolchainRaw ? pluginToolchainRaw : "";
+  if (pluginToolchain != OI_TOOLCHAIN) {
+    closeLibrary(handle);
+    result.status = PluginLoadStatus::kToolchainMismatch;
+    result.error = where + "built with toolchain \"" + pluginToolchain +
+                   "\", this build requires \"" + OI_TOOLCHAIN +
+                   "\". Rebuild the plugin with a compatible toolchain "
+                   "(see docs/plugin-abi.md).";
+    return result;
+  }
+
   Plugin* plugin = nullptr;
   try {
     plugin = create();

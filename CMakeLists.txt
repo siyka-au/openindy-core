@@ -173,6 +173,7 @@ add_library(OpenIndyCore SHARED
     include/plugin/exchange/exchange_simple_ascii.h
     include/plugin/plugin.h
     include/plugin/plugin_loader.h
+    include/plugin/toolchain.h
     include/plugin/plugin_metadata.h
     include/plugin/function/construct_function.h
     include/plugin/function/fit_function.h
@@ -478,7 +479,14 @@ add_test(NAME typenames COMMAND tst_typenames)
 add_library(oi_test_plugin_good MODULE test/plugin_loader/good_plugin.cpp)
 add_library(oi_test_plugin_wrong_abi MODULE test/plugin_loader/wrong_abi_plugin.cpp)
 add_library(oi_test_plugin_no_entry MODULE test/plugin_loader/no_entry_plugin.cpp)
-foreach(t oi_test_plugin_good oi_test_plugin_wrong_abi oi_test_plugin_no_entry)
+# same source as the good plugin, but claiming a foreign toolchain
+add_library(oi_test_plugin_wrong_toolchain MODULE test/plugin_loader/good_plugin.cpp)
+target_compile_definitions(oi_test_plugin_wrong_toolchain PRIVATE
+    OI_TOOLCHAIN_OVERRIDE="itanium-libfoo-plan9-m68k")
+# a current-ABI plugin that predates the toolchain entry point
+add_library(oi_test_plugin_no_toolchain MODULE test/plugin_loader/no_toolchain_plugin.cpp)
+foreach(t oi_test_plugin_good oi_test_plugin_wrong_abi oi_test_plugin_no_entry
+          oi_test_plugin_wrong_toolchain oi_test_plugin_no_toolchain)
     target_link_libraries(${t} PRIVATE OpenIndyCore OpenIndyMath)
     set_target_properties(${t} PROPERTIES PREFIX "" LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/test-plugins)
 endforeach()
@@ -488,8 +496,11 @@ target_compile_definitions(tst_pluginloader PRIVATE
     OI_TEST_GOOD_PLUGIN="$<TARGET_FILE:oi_test_plugin_good>"
     OI_TEST_WRONG_ABI_PLUGIN="$<TARGET_FILE:oi_test_plugin_wrong_abi>"
     OI_TEST_NO_ENTRY_PLUGIN="$<TARGET_FILE:oi_test_plugin_no_entry>"
+    OI_TEST_WRONG_TOOLCHAIN_PLUGIN="$<TARGET_FILE:oi_test_plugin_wrong_toolchain>"
+    OI_TEST_NO_TOOLCHAIN_PLUGIN="$<TARGET_FILE:oi_test_plugin_no_toolchain>"
     OI_TEST_NOT_A_LIBRARY="${CMAKE_CURRENT_SOURCE_DIR}/test/plugin_loader/tst_plugin_loader.cpp")
-add_dependencies(tst_pluginloader oi_test_plugin_good oi_test_plugin_wrong_abi oi_test_plugin_no_entry)
+add_dependencies(tst_pluginloader oi_test_plugin_good oi_test_plugin_wrong_abi oi_test_plugin_no_entry
+    oi_test_plugin_wrong_toolchain oi_test_plugin_no_toolchain)
 add_test(NAME pluginloader COMMAND tst_pluginloader)
 
 add_executable(tst_log test/log/tst_log.cpp)

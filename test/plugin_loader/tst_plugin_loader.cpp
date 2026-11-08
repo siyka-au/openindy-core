@@ -3,6 +3,7 @@
 #include <utility>
 
 #include "plugin_loader.h"
+#include "toolchain.h"
 
 TEST_CASE("PluginLoader loads a valid plugin") {
   auto result = oi::PluginLoader::load(OI_TEST_GOOD_PLUGIN);
@@ -69,4 +70,33 @@ TEST_CASE("PluginLoader reports a file that is not a library") {
   auto result = oi::PluginLoader::load(OI_TEST_NOT_A_LIBRARY);
   CHECK_FALSE(result);
   CHECK_FALSE(result.error.empty());
+}
+
+TEST_CASE("the host toolchain string is known and well formed") {
+  CHECK(std::string(OI_TOOLCHAIN) == std::string(OI_TOOLCHAIN_CXX_ABI
+                                                 "-" OI_TOOLCHAIN_STDLIB
+                                                 "-" OI_TOOLCHAIN_OS
+                                                 "-" OI_TOOLCHAIN_ARCH));
+  CHECK(std::string(OI_TOOLCHAIN).find("unknown") == std::string::npos);
+}
+
+TEST_CASE("PluginLoader rejects a foreign toolchain and names both strings") {
+  auto result = oi::PluginLoader::load(OI_TEST_WRONG_TOOLCHAIN_PLUGIN);
+  CHECK_FALSE(result);
+  CHECK(result.status == oi::PluginLoadStatus::kToolchainMismatch);
+  CHECK(result.error.find("itanium-libfoo-plan9-m68k") != std::string::npos);
+  CHECK(result.error.find(OI_TOOLCHAIN) != std::string::npos);
+}
+
+TEST_CASE("PluginLoader rejects a plugin without the toolchain entry point") {
+  auto result = oi::PluginLoader::load(OI_TEST_NO_TOOLCHAIN_PLUGIN);
+  CHECK_FALSE(result);
+  CHECK(result.status == oi::PluginLoadStatus::kMissingEntryPoint);
+  CHECK(result.error.find(OI_PLUGIN_SYMBOL_TOOLCHAIN) != std::string::npos);
+}
+
+TEST_CASE("the ABI version is checked before the toolchain") {
+  // wrong_abi_plugin has neither a matching version nor a toolchain symbol
+  auto result = oi::PluginLoader::load(OI_TEST_WRONG_ABI_PLUGIN);
+  CHECK(result.status == oi::PluginLoadStatus::kAbiMismatch);
 }

@@ -67,6 +67,7 @@ class Plugin {
 #endif
 
 #include "plugin_abi.h"
+#include "toolchain.h"
 
 // Identifier of the plugin interface revision, keyed off the ABI version. It
 // is no longer used for loading (the entry point checks the version number),
@@ -84,14 +85,17 @@ using namespace oi;
 // OI_DECLARE_PLUGIN; do not write them by hand):
 //
 //   int          oi_plugin_abi_version();    // OI_PLUGIN_ABI_VERSION it was
-//   built with oi::Plugin*  oi_plugin_create();         // new factory, owned
-//   by the caller void         oi_plugin_destroy(oi::Plugin*);  // frees it
-//   inside the plugin const char*  oi_plugin_metadata_json();  // optional:
-//   static JSON text
+//                                            // built with
+//   const char*  oi_plugin_toolchain();      // OI_TOOLCHAIN, see toolchain.h
+//   oi::Plugin*  oi_plugin_create();         // new factory, owned by the
+//   caller void         oi_plugin_destroy(oi::Plugin*);  // frees it inside the
+//   plugin const char*  oi_plugin_metadata_json();  // optional: static JSON
+//   text
 //
-// The loader (oi::PluginLoader) checks the ABI version before it calls
-// oi_plugin_create, so a plugin built against another interface revision is
-// rejected instead of being called through a mismatching vtable.
+// The loader (oi::PluginLoader) checks the ABI version, then the toolchain
+// string, before it calls oi_plugin_create, so a plugin built against another
+// interface revision or another C++ ABI / standard library / OS / architecture
+// is rejected instead of being called through a mismatching vtable.
 #if defined(_WIN32) || defined(__CYGWIN__)
 #define OI_PLUGIN_EXPORT __declspec(dllexport)
 #else
@@ -99,6 +103,7 @@ using namespace oi;
 #endif
 
 #define OI_PLUGIN_SYMBOL_ABI_VERSION "oi_plugin_abi_version"
+#define OI_PLUGIN_SYMBOL_TOOLCHAIN "oi_plugin_toolchain"
 #define OI_PLUGIN_SYMBOL_CREATE "oi_plugin_create"
 #define OI_PLUGIN_SYMBOL_DESTROY "oi_plugin_destroy"
 #define OI_PLUGIN_SYMBOL_METADATA "oi_plugin_metadata_json"
@@ -110,22 +115,23 @@ using namespace oi;
  * storage) returned by oi_plugin_metadata_json(); the host reads the plugin's
  * name, version, compiler and so on from it.
  */
-#define OI_DECLARE_PLUGIN_WITH_METADATA(ClassName, metadataJson)             \
-  extern "C" {                                                               \
-  OI_PLUGIN_EXPORT int oi_plugin_abi_version() {                             \
-    return OI_PLUGIN_ABI_VERSION;                                            \
-  }                                                                          \
-  /* the C ABI cannot carry a unique_ptr: ownership passes to the loader, */ \
-  /* which hands the factory back to oi_plugin_destroy */                    \
-  OI_PLUGIN_EXPORT oi::Plugin* oi_plugin_create() {                          \
-    return std::make_unique<ClassName>().release();                          \
-  }                                                                          \
-  OI_PLUGIN_EXPORT void oi_plugin_destroy(oi::Plugin* plugin) {              \
-    const std::unique_ptr<oi::Plugin> owner(plugin);                         \
-  }                                                                          \
-  OI_PLUGIN_EXPORT const char* oi_plugin_metadata_json() {                   \
-    return metadataJson;                                                     \
-  }                                                                          \
+#define OI_DECLARE_PLUGIN_WITH_METADATA(ClassName, metadataJson)              \
+  extern "C" {                                                                \
+  OI_PLUGIN_EXPORT int oi_plugin_abi_version() {                              \
+    return OI_PLUGIN_ABI_VERSION;                                             \
+  }                                                                           \
+  OI_PLUGIN_EXPORT const char* oi_plugin_toolchain() { return OI_TOOLCHAIN; } \
+  /* the C ABI cannot carry a unique_ptr: ownership passes to the loader, */  \
+  /* which hands the factory back to oi_plugin_destroy */                     \
+  OI_PLUGIN_EXPORT oi::Plugin* oi_plugin_create() {                           \
+    return std::make_unique<ClassName>().release();                           \
+  }                                                                           \
+  OI_PLUGIN_EXPORT void oi_plugin_destroy(oi::Plugin* plugin) {               \
+    const std::unique_ptr<oi::Plugin> owner(plugin);                          \
+  }                                                                           \
+  OI_PLUGIN_EXPORT const char* oi_plugin_metadata_json() {                    \
+    return metadataJson;                                                      \
+  }                                                                           \
   }
 
 #define OI_DECLARE_PLUGIN(ClassName) \

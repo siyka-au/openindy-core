@@ -61,6 +61,7 @@ enum class PluginLoadStatus {
   kCannotLoadLibrary,  ///< missing file, not a library, unresolved dependency
   kMissingEntryPoint,  ///< a library, but not an OpenIndy plugin
   kAbiMismatch,        ///< built against another plugin ABI version
+  kToolchainMismatch,  ///< other C++ ABI / standard library / OS / architecture
   kFactoryFailed       ///< oi_plugin_create threw or returned null
 };
 
@@ -80,10 +81,11 @@ struct PluginLoadResult {
  * OI_DECLARE_PLUGIN) with dlopen/LoadLibrary. Std-only; knows nothing of Qt.
  *
  * The library's ABI version is read and compared with OI_PLUGIN_ABI_VERSION
- * before oi_plugin_create is ever called. Failures (missing file, not a
- * library, a missing entry point, an ABI mismatch, a factory that throws or
- * returns null) come back as text in PluginLoadResult::error; load() does not
- * throw. A library that fails to load is unloaded again.
+ * before oi_plugin_create is ever called, then its toolchain string (see
+ * toolchain.h) is compared with the host's. Failures (missing file, not a
+ * library, a missing entry point, an ABI or toolchain mismatch, a factory that
+ * throws or returns null) come back as text in PluginLoadResult::error; load()
+ * does not throw. A library that fails to load is unloaded again.
  */
 class OI_CORE_EXPORT PluginLoader {
  public:
