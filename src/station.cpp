@@ -17,6 +17,84 @@
 
 using namespace oi;
 
+// Defined before the Station constructor: clang instantiates the destructor of
+// the unique_ptr<SensorResults> member there and needs the complete type.
+/*!
+ * The observer of the sensor control. Runs wherever the executor runs the
+ * results (never after the station's destructor started): takes the readings
+ * of a measurement into the station and hands everything on to the station's
+ * own observer.
+ */
+class Station::SensorResults final : public StationObserver {
+ public:
+  explicit SensorResults(Station& station) : station(station) {}
+
+  void onRealTimeReading(const oi::ValueMap& reading) override {
+    if (auto* o = this->observer()) {
+      o->onRealTimeReading(reading);
+    }
+  }
+  void onRealTimeStatus(
+      const std::map<std::string, std::string>& status) override {
+    if (auto* o = this->observer()) {
+      o->onRealTimeStatus(status);
+    }
+  }
+  void onConnectionLost() override {
+    if (auto* o = this->observer()) {
+      o->onConnectionLost();
+    }
+  }
+  void onConnectionReceived() override {
+    if (auto* o = this->observer()) {
+      o->onConnectionReceived();
+    }
+  }
+  void onIsReadyForMeasurement(bool isReady) override {
+    if (auto* o = this->observer()) {
+      o->onIsReadyForMeasurement(isReady);
+    }
+  }
+  void onCommandFinished(bool success, const std::string& msg,
+                         SensorAction action) override {
+    if (auto* o = this->observer()) {
+      o->onCommandFinished(success, msg, action);
+    }
+  }
+  void onMeasurementFinished(
+      int geomId, std::vector<std::unique_ptr<Reading>> readings) override {
+    // the station lists the readings before anybody hears about them; the
+    // observer then owns them (they are freed here when nobody listens)
+    this->station.addReadings(geomId, readings);
+    if (auto* o = this->observer()) {
+      o->onMeasurementFinished(geomId, std::move(readings));
+    }
+  }
+  void onMeasurementDone(bool success) override {
+    if (auto* o = this->observer()) {
+      o->onMeasurementDone(success);
+    }
+  }
+  void onSensorMessage(const std::string& msg, MessageTypes msgType,
+                       MessageDestinations msgDest) override {
+    if (auto* o = this->observer()) {
+      o->onSensorMessage(msg, msgType, msgDest);
+    }
+  }
+  void onSensorStatus(SensorStatus status, const std::string& msg) override {
+    if (auto* o = this->observer()) {
+      o->onSensorStatus(status, msg);
+    }
+  }
+
+ private:
+  [[nodiscard]] StationObserver* observer() const {
+    return this->station.stationObserver.load();
+  }
+
+  Station& station;
+};
+
 /*!
  * \brief Station::Station
  */
@@ -808,82 +886,6 @@ void Station::setJob(const oi::Guarded<OiJob>& job) {
 // ###############################################################
 // sensor communication
 // ###############################################################
-
-/*!
- * The observer of the sensor control. Runs wherever the executor runs the
- * results (never after the station's destructor started): takes the readings
- * of a measurement into the station and hands everything on to the station's
- * own observer.
- */
-class Station::SensorResults final : public StationObserver {
- public:
-  explicit SensorResults(Station& station) : station(station) {}
-
-  void onRealTimeReading(const oi::ValueMap& reading) override {
-    if (auto* o = this->observer()) {
-      o->onRealTimeReading(reading);
-    }
-  }
-  void onRealTimeStatus(
-      const std::map<std::string, std::string>& status) override {
-    if (auto* o = this->observer()) {
-      o->onRealTimeStatus(status);
-    }
-  }
-  void onConnectionLost() override {
-    if (auto* o = this->observer()) {
-      o->onConnectionLost();
-    }
-  }
-  void onConnectionReceived() override {
-    if (auto* o = this->observer()) {
-      o->onConnectionReceived();
-    }
-  }
-  void onIsReadyForMeasurement(bool isReady) override {
-    if (auto* o = this->observer()) {
-      o->onIsReadyForMeasurement(isReady);
-    }
-  }
-  void onCommandFinished(bool success, const std::string& msg,
-                         SensorAction action) override {
-    if (auto* o = this->observer()) {
-      o->onCommandFinished(success, msg, action);
-    }
-  }
-  void onMeasurementFinished(
-      int geomId, std::vector<std::unique_ptr<Reading>> readings) override {
-    // the station lists the readings before anybody hears about them; the
-    // observer then owns them (they are freed here when nobody listens)
-    this->station.addReadings(geomId, readings);
-    if (auto* o = this->observer()) {
-      o->onMeasurementFinished(geomId, std::move(readings));
-    }
-  }
-  void onMeasurementDone(bool success) override {
-    if (auto* o = this->observer()) {
-      o->onMeasurementDone(success);
-    }
-  }
-  void onSensorMessage(const std::string& msg, MessageTypes msgType,
-                       MessageDestinations msgDest) override {
-    if (auto* o = this->observer()) {
-      o->onSensorMessage(msg, msgType, msgDest);
-    }
-  }
-  void onSensorStatus(SensorStatus status, const std::string& msg) override {
-    if (auto* o = this->observer()) {
-      o->onSensorStatus(status, msg);
-    }
-  }
-
- private:
-  [[nodiscard]] StationObserver* observer() const {
-    return this->station.stationObserver.load();
-  }
-
-  Station& station;
-};
 
 void Station::createSensorControl() {
   this->sensorResults = std::make_unique<SensorResults>(*this);
