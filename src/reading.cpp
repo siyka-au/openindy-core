@@ -1,5 +1,6 @@
 #include "reading.h"
 
+#include <algorithm>
 #include <chrono>
 #include <cmath>
 #include <format>
@@ -990,8 +991,8 @@ void Reading::toCartesian() {
  * \brief Reading::toPolar
  */
 void Reading::toPolar() {
-  if (!this->rPolar.isValid           // check if the polar reading is not valid
-      || this->rCartesian.isValid) {  // cartesian reading available
+  if (!this->rCartesian.isValid   // nothing to convert from
+      || this->rPolar.isValid) {  // polar reading already available
     return;
   }
 
@@ -1001,7 +1002,13 @@ void Reading::toPolar() {
   double z = this->rCartesian.xyz.getAt(2);
   this->rPolar.azimuth = std::atan2(y, x);
   this->rPolar.distance = std::sqrt(x * x + y * y + z * z);
-  this->rPolar.zenith = acos(z / this->rPolar.distance);
+  // a zero distance has no direction: zenith is arbitrary there (pi/2, as
+  // the pseudo tracker does); the clamp guards against a ratio rounding
+  // past +-1
+  this->rPolar.zenith =
+      this->rPolar.distance > 0.0
+          ? std::acos(std::clamp(z / this->rPolar.distance, -1.0, 1.0))
+          : kPi / 2;
   this->rPolar.isValid = true;
 }
 

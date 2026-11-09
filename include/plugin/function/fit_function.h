@@ -149,9 +149,10 @@ class OI_CORE_EXPORT BestFitUtil : public FunctionUtil {
       return false;
     }
 
-    double angle = NAN;
-    OiVec::dot(angle, dummyPoint - point, point);
-    direction = -angle * dummyPoint;
+    // the circle normal points from the circle centre towards the dummy
+    // point, as for BestFitPlane. (The former -dot(dummy - c, c) * dummy
+    // depended on where the origin is.)
+    direction = dummyPoint - point;
     direction.normalize();
 
     return true;
@@ -312,10 +313,7 @@ class OI_CORE_EXPORT BestFitCircleUtil : public BestFitUtil {
       OiVec::cross(direction, ab, ac);
       direction.normalize();
     }
-    double angle = 0.0;  // angle between n and direction
-    OiVec::dot(angle, n, direction);
-    angle = std::abs(std::acos(angle));
-    if (angle > (kPi / 2)) {
+    if (fit::opposesDirection(n, direction)) {
       n = n * -1.0;
     }
 
@@ -650,14 +648,8 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
       }
     }
 
-    double angle = 0.0;  // angle between r and direction
-    if (!(direction.getAt(0) == 0 && direction.getAt(1) == 0 &&
-          direction.getAt(2) == 0)) {
-      OiVec::dot(angle, axis, direction);
-      angle = std::abs(std::acos(angle));
-    }
-
-    if (angle > (kPi / 2)) {
+    // a zero direction (no usable hint) has dot 0 and leaves the axis alone
+    if (fit::opposesDirection(axis, direction)) {
       Direction cylinderDirection = cylinder.getDirection();
       cylinderDirection.setVector(axis * -1.0);
       cylinder.setCylinder(cylinderPosition, cylinderDirection,

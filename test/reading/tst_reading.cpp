@@ -1,6 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <format>
+#include <numbers>
 #include <stdexcept>
 #include <string>
 
@@ -251,4 +252,38 @@ TEST_CASE("ReadingTest::testMeasuredAtSurvivesRoundTrip", "[ReadingTest]") {
   ReadingTest fixture;
   fixture.initTestCase();
   fixture.testMeasuredAtSurvivesRoundTrip();
+}
+
+TEST_CASE("A cartesian reading also gets its polar form", "[ReadingTest]") {
+  ChooseLALib::setLinearAlgebra(ChooseLALib::LinearAlgebraLibrary::Armadillo);
+
+  ReadingCartesian cart;
+  cart.isValid = true;
+  cart.xyz.setAt(0, 1.);
+  cart.xyz.setAt(1, 1.);
+  cart.xyz.setAt(2, std::sqrt(2.));
+  const Reading reading(cart);
+
+  const ReadingPolar polar = reading.getPolarReading();
+  REQUIRE(polar.isValid);
+  COMPARE_DOUBLE(polar.azimuth, std::numbers::pi / 4, 1e-12);
+  COMPARE_DOUBLE(polar.zenith, std::numbers::pi / 4, 1e-12);
+  COMPARE_DOUBLE(polar.distance, 2., 1e-12);
+}
+
+TEST_CASE("Cartesian to polar survives the origin and a pole",
+          "[ReadingTest]") {
+  ChooseLALib::setLinearAlgebra(ChooseLALib::LinearAlgebraLibrary::Armadillo);
+
+  ReadingCartesian cart;
+  cart.isValid = true;
+  cart.xyz.setAt(2, 5.);
+  const ReadingPolar pole = Reading(cart).getPolarReading();
+  REQUIRE(pole.isValid);
+  COMPARE_DOUBLE(pole.zenith, 0., 1e-12);
+
+  cart.xyz.setAt(2, 0.);
+  const ReadingPolar origin = Reading(cart).getPolarReading();
+  REQUIRE(origin.isValid);
+  REQUIRE(std::isfinite(origin.zenith));
 }

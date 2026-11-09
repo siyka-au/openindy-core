@@ -179,13 +179,29 @@ class FixedParameter {
   double value;
 };
 
+namespace fit {
+
+/*!
+ * True when a points to the opposite side of b, i.e. the angle between them
+ * exceeds 90 degrees. Only the sign of the dot product decides this, so it
+ * is exact for parallel and antiparallel vectors and cannot produce NaN: the
+ * previous acos(dot) test returned NaN as soon as rounding pushed the dot
+ * product of two unit vectors past +-1, and the NaN compared false, so a
+ * normal was silently left unflipped. A zero vector has dot 0 and never
+ * flips.
+ */
+inline bool opposesDirection(const OiVec& a, const OiVec& b) {
+  double dot = 0.0;
+  OiVec::dot(dot, a, b);
+  return dot < 0.0;
+}
+
+}  // namespace fit
+
 class OI_CORE_EXPORT FunctionUtil {
  protected:
   void rectifyNormalToDirection(OiVec& normal, OiVec& direction) {
-    double cos = 0.0;  // cosine between normal and direction
-    OiVec::dot(cos, normal, direction);
-    double angle = std::abs(std::acos(cos));
-    if (angle > (kPi / 2) && angle < kPi) {
+    if (fit::opposesDirection(normal, direction)) {
       normal = normal * -1.0;
     }
   }

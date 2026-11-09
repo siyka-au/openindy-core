@@ -389,6 +389,15 @@ endif()
 
 add_test(NAME pointcollection COMMAND tst_pointcollection)
 
+add_executable(tst_fitdirection test/fit_direction/tst_fit_direction.cpp)
+target_link_libraries(tst_fitdirection PRIVATE Catch2::Catch2WithMain OpenIndyCore OpenIndyMath)
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(tst_fitdirection PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+
+add_test(NAME fitdirection COMMAND tst_fitdirection)
+
 add_executable(tst_ownership test/ownership/tst_ownership.cpp)
 target_link_libraries(tst_ownership PRIVATE Catch2::Catch2WithMain OpenIndyCore OpenIndyMath)
 
