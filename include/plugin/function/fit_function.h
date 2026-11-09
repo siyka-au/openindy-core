@@ -2,6 +2,7 @@
 #define OI_CORE_PLUGIN_FUNCTION_FIT_FUNCTION_H_
 #include <math.h>
 
+#include <algorithm>
 #include <array>
 #include <cmath>
 #include <iterator>
@@ -24,6 +25,12 @@ namespace fit {
 inline constexpr double kSingularEigenvalueRatio = 1.0e-12;
 //! Unknowns of the cylinder adjustment: radius, X0, Y0, alpha, beta.
 inline constexpr int kCylinderUnknowns = 5;
+//! A fitted cylinder is implausible when its standard deviation exceeds this
+//! factor times the best cheap estimate (a feasible solution of the same
+//! problem, so the optimum cannot exceed the estimate) plus the floor below
+//! (relative to the largest centroid reduced coordinate).
+inline constexpr double kCylinderStdevFactor = 1.5;
+inline constexpr double kCylinderStdevFloor = 1.0e-9;
 //! Unknowns of the circle adjustment: centre x, centre y, radius.
 inline constexpr int kCircleUnknowns = 3;
 //! The in-plane geometric circle fit stops when the largest Gauss-Newton
@@ -622,17 +629,150 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
       return false;
     }
 
-    // filter the best approximation
-    CylinderApproximation bestApproximation;
+    // The iteration can converge to a wrong cylinder. For the automatic
+    // approximations the result is checked against a cheap independent
+    // estimate and retried from the other approximations if it fails.
+    const bool checked =
+        approximationType == ApproximationTypes::eFirstTwoPoints ||
+        approximationType == ApproximationTypes::eGuessAxis;
+    const std::vector<CylinderApproximation> primary = this->approximations;
+    CylinderApproximation best;
     double bestStdev = numeric_limits<double>::max();
-    for (const CylinderApproximation& approximation :
-         std::as_const(approximations)) {
+    for (const CylinderApproximation& approximation : primary) {
       if (approximation.stdev < bestStdev) {
         bestStdev = approximation.stdev;
-        bestApproximation = approximation;
+        best = approximation;
       }
     }
+    const bool fitted = this->fitFromApproximation(
+        function, cylinder, points, reducedInputObservations,
+        allReducedInputObservations, centroid, approximationType, best,
+        checked);
+    const int numPoints = static_cast<int>(reducedInputObservations.size());
+    if (!checked || numPoints <= fit::kCylinderUnknowns) {
+      return fitted;
+    }
 
+    // candidates: the primary approximation plus the three principal axes
+    std::vector<CylinderApproximation> candidates = primary;
+    if (approximationType != ApproximationTypes::eGuessAxis &&
+        this->approximateCylinder(function, cylinder, reducedInputObservations,
+                                  ApproximationTypes::eGuessAxis)) {
+      candidates.insert(candidates.end(), this->approximations.begin(),
+                        this->approximations.end());
+    }
+    // The radial standard deviation of a candidate is a feasible point of the
+    // same least squares problem, so the fitted optimum cannot exceed it.
+    std::vector<double> candidateStdev;
+    double estimate = numeric_limits<double>::max();
+    double scale = 0.0;
+    for (const CylinderApproximation& candidate : candidates) {
+      candidateStdev.push_back(
+          radialStdev(reducedInputObservations, candidate));
+      if (std::isfinite(candidateStdev.back())) {
+        estimate = std::min(estimate, candidateStdev.back());
+      }
+    }
+    for (const IdPoint& obs : reducedInputObservations) {
+      for (int i = 0; i < 3; i++) {
+        scale = std::max(scale, std::abs(obs.xyz.getAt(i)));
+      }
+    }
+    const double limit =
+        fit::kCylinderStdevFactor * estimate + fit::kCylinderStdevFloor * scale;
+    const auto plausible = [&](bool ok) {
+      const double s = function->statistic.getStdev();
+      return ok && std::isfinite(s) &&
+             std::isfinite(cylinder.getRadius().getRadius()) && s <= limit;
+    };
+    if (plausible(fitted) || !std::isfinite(estimate)) {
+      return fitted;
+    }
+
+    function->sendMessage(
+        std::format("cylinder {}: the fit from \"{}\" did not converge to a "
+                    "plausible cylinder, trying the other approximations",
+                    cylinder.getFeatureName(), best.comment),
+        MessageTypes::eWarningMessage);
+    std::vector<size_t> order(candidates.size());
+    for (size_t i = 0; i < order.size(); i++) {
+      order[i] = i;
+    }
+    std::sort(order.begin(), order.end(), [&](size_t a, size_t b) {
+      return candidateStdev[a] < candidateStdev[b];
+    });
+    int winner = -1;
+    double winnerStdev = numeric_limits<double>::max();
+    for (const size_t index : order) {
+      if (candidates[index].comment == best.comment) {
+        continue;
+      }
+      if (plausible(this->fitFromApproximation(
+              function, cylinder, points, reducedInputObservations,
+              allReducedInputObservations, centroid, approximationType,
+              candidates[index], true)) &&
+          function->statistic.getStdev() < winnerStdev) {
+        winnerStdev = function->statistic.getStdev();
+        winner = static_cast<int>(index);
+      }
+    }
+    if (winner < 0) {
+      function->sendMessage(
+          std::format("Error while fitting cylinder {}: no plausible cylinder "
+                      "found from any approximation (the iteration converged "
+                      "to a cylinder much worse than a simple estimate or did "
+                      "not converge); give an approximate axis direction or "
+                      "dummy points",
+                      cylinder.getFeatureName()),
+          MessageTypes::eErrorMessage);
+      return false;
+    }
+    function->sendMessage(
+        std::format("cylinder {}: fell back to the approximation \"{}\"",
+                    cylinder.getFeatureName(), candidates[winner].comment),
+        MessageTypes::eWarningMessage);
+    // repeat the winning fit so that the result and the statistic are its own
+    return this->fitFromApproximation(
+        function, cylinder, points, reducedInputObservations,
+        allReducedInputObservations, centroid, approximationType,
+        candidates[winner], false);
+  }
+
+  //! Standard deviation sqrt(sum d^2 / (n - 5)) of the radial distances of the
+  //! (centroid reduced) points from the cylinder an approximation describes.
+  static double radialStdev(const std::vector<IdPoint>& observations,
+                            const CylinderApproximation& approximation) {
+    const double sa = std::sin(approximation.approxAlpha);
+    const double ca = std::cos(approximation.approxAlpha);
+    const double sb = std::sin(approximation.approxBeta);
+    const double cb = std::cos(approximation.approxBeta);
+    double sum = 0.0;
+    for (const IdPoint& obs : observations) {
+      const double x = obs.xyz.getAt(0);
+      const double y = obs.xyz.getAt(1);
+      const double z = obs.xyz.getAt(2);
+      const double a1 =
+          approximation.approxXm + x * cb + sb * (sa * y + ca * z);
+      const double a2 = approximation.approxYm + ca * y - sa * z;
+      const double d =
+          approximation.approxRadius - std::sqrt(a1 * a1 + a2 * a2);
+      sum += d * d;
+    }
+    return std::sqrt(sum / (static_cast<double>(observations.size()) -
+                            fit::kCylinderUnknowns));
+  }
+
+  //! Rotates the points into the approximate axis frame, runs the adjustment
+  //! and writes the cylinder (position, axis, radius, statistic) in the input
+  //! frame. With \p mayFallBack a failure is only a warning.
+  bool fitFromApproximation(FitFunction* function, Cylinder& cylinder,
+                            const std::vector<IdPoint>& points,
+                            std::vector<IdPoint> reducedInputObservations,
+                            std::vector<IdPoint> allReducedInputObservations,
+                            const OiVec& centroid,
+                            ApproximationTypes approximationType,
+                            CylinderApproximation bestApproximation,
+                            bool mayFallBack) {
     OiMat Ralpha(4, 4);
     OiMat Rbeta(4, 4);
     OiMat Rall(4, 4);
@@ -668,7 +808,8 @@ class OI_CORE_EXPORT BestFitCylinderUtil {
       function->sendMessage(
           std::format("Error while fitting cylinder {} with solution: {}",
                       cylinder.getFeatureName(), bestApproximation.comment),
-          MessageTypes::eErrorMessage);
+          mayFallBack ? MessageTypes::eWarningMessage
+                      : MessageTypes::eErrorMessage);
       return false;
     }
 

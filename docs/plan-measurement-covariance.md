@@ -115,13 +115,12 @@ Goal: results equal to or better than SA, with explainable uncertainties, usable
 - Known defects to fix on the way (each with a test; see "Done so far" for what is fixed): `BestFitSphere` stdev dof (fixed);
   `BestFitCircle` never set stdev and wrote `"vx"` three times (fixed); `BestFitCircleInPlane` was Kasa (fixed: geometric default,
   Kasa kept as `BestFitCircleInPlaneAlgebraic`); `BestFitPoint` n=1 (fixed); `Reading::toPolar` inverted guard (fixed); mixed mm/m
-  unit labels (open); `BestFitLine` stdev biased by a factor sqrt(2) (open, proposal below); `BestFitCylinder` with the default
-  "first two points" approximation silently converges to a wrong cylinder in ~1 of 100 random 50-point sets (open).
-  - Proposal for the 3D line divisor: `BestFitLine` divides the sum of the two small eigenvalues by `n - 2`, but a 3D line has two
-    effective errors per point and four parameters, so the redundancy is `2n - 4`. The Monte Carlo check
-    (`openindy-py/tests/vetting/test_reported_stdev_unbiased.py`) measures mean(stdev^2)/sigma^2 = 2.007 (strict xfail). Fix: divide
-    by `2n - 4` (stdev falls by sqrt(2)); not applied yet because `openindy-py/examples/07` compares OpenIndy's line stdev with a 2D
-    s0 whose convention must be revisited together with the change.
+  unit labels (open); `BestFitLine` stdev biased by a factor sqrt(2) (fixed: divisor `2n - 4`); `BestFitCylinder` with the default
+  "first two points" approximation silently converged to a wrong cylinder in ~1 of 100 random 50-point sets (fixed: plausibility check
+  plus fallback to the principal-axis approximations, error if none is plausible).
+  - 3D line divisor (fixed in the fourth batch): `BestFitLine` divided the sum of the two small eigenvalues by `n - 2`, but a 3D line
+    has two effective errors per point and four parameters, so the redundancy is `2n - 4`. The Monte Carlo check measured
+    mean(stdev^2)/sigma^2 = 2.007 before and 1.004 +- 0.008 after.
 
 ## Done so far (fixes made in the first two vetting batches, all tested)
 - Direction flip helper (`fit::opposesDirection`, replaces the `acos`-based test; exactly antiparallel directions are flipped); line direction follows
@@ -136,6 +135,15 @@ Goal: results equal to or better than SA, with explainable uncertainties, usable
   is `BestFitCircleInPlaneAlgebraic`; `fit_circle(..., method=)` in openindy-py. `BestFitCircle` (3D) sets stdev and s0 a posteriori
   from `sqrt(vv / (2n - 6))`; the in-plane circles use the same redundancy (radial plus out-of-plane corrections). A Monte Carlo
   unbiasedness check (400 trials per fit) validates plane `n-3`, sphere `n-4`, cylinder `n-5`, circles `2n-6`, and flags the line.
+- Fourth batch: `BestFitLine` stdev divides by `2n - 4` (stdev falls by sqrt(2); 2 points: 0 plus a warning); the vetting xfail is
+  now a passing test; `openindy-py/examples/07` prints both the 3D stdev and its own planar 2D s0 and explains the exact factor sqrt(2).
+- Cylinder robustness: after the Gauss-Helmert iteration `BestFitCylinderUtil` compares the stdev with the best radial stdev of the
+  cheap approximations (first-two-points circle fit plus the three principal axes; each is a feasible point of the same problem, so the
+  optimum cannot exceed it). Worse than 1.5 times that estimate (plus 1e-9 of the point extent), non-finite or not converged: the other
+  approximations are fitted, the plausible one with the lowest stdev wins, a warning says a fallback was used; none plausible: error.
+  Applies to "first two points" and "guess axis" only (explicit directions/dummy points are the caller's choice). Seeded 400-trial run
+  (`openindy-py/tests/vetting/test_cylinder_default_approximation.py`): 4 wrong cylinders and 1 non-convergence before, 0 after (the
+  fallback fixed all five, from principal axis 0 or 1); the unbiasedness test now runs the cylinder with the default approximation.
 
 ## Execution notes for a fresh session (this file is the saved plan; nothing below P0 has been started)
 Status checklist: [ ] P1 directions + signed offsets  [ ] P1b direction features, ports, warnings  [ ] P2 recalculation  [ ] P3 covariance data + Instrument/blobs
