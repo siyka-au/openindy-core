@@ -26,6 +26,18 @@ inline constexpr double kSingularEigenvalueRatio = 1.0e-12;
 inline constexpr int kCylinderUnknowns = 5;
 //! Unknowns of the circle adjustment: centre x, centre y, radius.
 inline constexpr int kCircleUnknowns = 3;
+//! The in-plane geometric circle fit stops when the largest Gauss-Newton
+//! correction (centre x, centre y, radius), relative to the radius, falls
+//! below this.
+inline constexpr double kCircleGeometricTolerance = 1.0e-12;
+//! The in-plane geometric circle fit fails when it has not converged after
+//! this many Gauss-Newton iterations.
+inline constexpr int kCircleGeometricMaxIterations = 100;
+//! Independent condition equations of a spatial circle fit per point: a point
+//! lies on the sphere about the centre and in the plane of the circle.
+inline constexpr int kCircleEquationsPerPoint = 2;
+//! Parameters of a spatial circle (centre 3, normal 2, radius 1).
+inline constexpr int kSpatialCircleParameters = 6;
 //! First step length of the cylinder adjustment's Armijo line search (it is
 //! halved before the first trial, so the first trial is the full step).
 inline constexpr double kArmijoInitialStep = 2;
@@ -262,9 +274,73 @@ class OI_CORE_EXPORT BestFitPlaneUtil : public BestFitUtil {
 
 class OI_CORE_EXPORT BestFitCircleUtil : public BestFitUtil {
  protected:
+  //! Orthogonal-distance (geometric) refinement of a 2D circle: Gauss-Newton
+  //! on the radial residuals r_i = |p_i - c| - R with the parameters
+  //! (cx, cy, R), starting from (cx, cy, radius). Returns false when the
+  //! iteration does not converge or the normal equations are singular.
+  static bool refineCircleGeometric(const std::vector<OiVec>& pts, double& cx,
+                                    double& cy, double& radius) {
+    for (int iteration = 0; iteration < fit::kCircleGeometricMaxIterations;
+         ++iteration) {
+      double nn[3][3] = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}};
+      double rhs[3] = {0, 0, 0};
+      for (const OiVec& p : pts) {
+        const double dx = p.getAt(0) - cx;
+        const double dy = p.getAt(1) - cy;
+        const double dist = std::sqrt(dx * dx + dy * dy);
+        if (dist <= 0.0) {
+          return false;  // a point on the centre has no radial direction
+        }
+        const double j[3] = {-dx / dist, -dy / dist, -1.0};
+        const double r = dist - radius;
+        for (int a = 0; a < 3; ++a) {
+          rhs[a] -= j[a] * r;
+          for (int b = 0; b < 3; ++b) {
+            nn[a][b] += j[a] * j[b];
+          }
+        }
+      }
+      OiMat normal(3, 3);
+      OiVec right(3);
+      for (int a = 0; a < 3; ++a) {
+        right.setAt(a, rhs[a]);
+        for (int b = 0; b < 3; ++b) {
+          normal.setAt(a, b, nn[a][b]);
+        }
+      }
+      OiVec delta(3);
+      try {
+        if (!OiMat::solve(delta, normal, right)) {
+          return false;
+        }
+      } catch (const std::exception&) {
+        return false;
+      }
+      cx += delta.getAt(0);
+      cy += delta.getAt(1);
+      radius += delta.getAt(2);
+      if (!std::isfinite(cx) || !std::isfinite(cy) || !std::isfinite(radius)) {
+        return false;
+      }
+      const double step =
+          std::max({std::abs(delta.getAt(0)), std::abs(delta.getAt(1)),
+                    std::abs(delta.getAt(2))});
+      if (step <= fit::kCircleGeometricTolerance * std::abs(radius)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  //! Plane by principal components, then a circle in the plane. With
+  //! `geometric` the circle minimises the squared radial (orthogonal)
+  //! distances (nonlinear least squares, started from the algebraic fit);
+  //! otherwise it is the algebraic (Kasa) fit, which is linear least squares
+  //! on x^2 + y^2 + a x + b y + c = 0 and biased on short arcs.
   bool bestFitCircleInPlane(FitFunction* function, Circle& circle,
                             std::vector<IdPoint> points,
-                            std::vector<IdPoint> usablePoints) {
+                            std::vector<IdPoint> usablePoints,
+                            bool geometric = true) {
     // calculate centroid
     OiVec centroid(4);
     for (const IdPoint& point : std::as_const(points)) {
@@ -392,6 +468,21 @@ class OI_CORE_EXPORT BestFitCircleUtil : public BestFitUtil {
     double radius = std::sqrt(
         (s.getAt(0) * s.getAt(0) + s.getAt(1) * s.getAt(1)) / 4 - s.getAt(2));
 
+    if (geometric) {
+      // refine in the centroid-reduced frame (better conditioned), starting
+      // from the algebraic solution
+      double cx = xm.getAt(0) - centroid2D.getAt(0);
+      double cy = xm.getAt(1) - centroid2D.getAt(1);
+      if (!std::isfinite(radius) ||
+          !refineCircleGeometric(centroidReducedCoordinates, cx, cy, radius)) {
+        function->sendMessage("The geometric circle fit did not converge.",
+                              MessageTypes::eErrorMessage);
+        return false;
+      }
+      xm.setAt(0, cx + centroid2D.getAt(0));
+      xm.setAt(1, cy + centroid2D.getAt(1));
+    }
+
     // calculate distance of each observation from the 2D circle
     OiVec circleDistances;
     OiVec allCircleDistances;
@@ -414,40 +505,21 @@ class OI_CORE_EXPORT BestFitCircleUtil : public BestFitUtil {
     OiMat t_inv = t.inv();
     xm = t_inv * xm;
 
-    // calculate 3D residuals for each observation
+    // display residuals (radial) and the sum of squared out-of-plane distances
+    double sumHeights = 0.0;
     for (int i = 0; i < std::ssize(usablePoints); i++) {
       const IdPoint point = usablePoints[i];
-      OiVec reduced = allCentroidReducedCoordinates[i];
 
-      OiVec v_circle(3);
-      OiVec v_plane(3);
-      OiVec v_all(3);
-
-      // calculate residual vector of 2D circle fit
-      v_circle.setAt(0, reduced.getAt(0) + centroid2D.getAt(0) - xm.getAt(0));
-      v_circle.setAt(1, reduced.getAt(1) + centroid2D.getAt(1) - xm.getAt(1));
-      v_circle.setAt(2, 0.0);
-      v_circle.normalize();
-      v_circle = allCircleDistances.getAt(i) * v_circle;
-      v_circle = t_inv * v_circle;
-
-      // calculate residual vector of plane fit
-      double distance = n.getAt(0) * point.xyz.getAt(0) +
-                        n.getAt(1) * point.xyz.getAt(1) +
-                        n.getAt(2) * point.xyz.getAt(2) - dOrigin;
-      v_plane = distance * n;
-
-      // calculate the at all residual vector
-      v_all = v_circle + v_plane;
-
-      // set up display residual
-      if (false) {
-        function->addDisplayResidual(point.id, v_all.getAt(0), v_all.getAt(1),
-                                     v_all.getAt(2), v_all.length());
-      } else {
-        function->addDisplayResidual(
-            point.id, v_all.length() * sgn(allCircleDistances.getAt(i)));
+      // out-of-plane distance of the point from the fitted plane
+      const double height = n.getAt(0) * point.xyz.getAt(0) +
+                            n.getAt(1) * point.xyz.getAt(1) +
+                            n.getAt(2) * point.xyz.getAt(2) - dOrigin;
+      if (oi::contains(points, point)) {
+        sumHeights += height * height;
       }
+
+      // display residual: the signed radial distance to the circle
+      function->addDisplayResidual(point.id, allCircleDistances.getAt(i));
     }
 
     // set result
@@ -459,15 +531,34 @@ class OI_CORE_EXPORT BestFitCircleUtil : public BestFitUtil {
     circleNormal.setVector(n);
     circle.setCircle(circlePosition, circleNormal, circleRadius);
 
-    // set statistic
-    double stdev = 0.0;
+    // set statistic. The squared corrections are the radial distances to the
+    // circle plus the out-of-plane distances to the PCA plane. A spatial circle
+    // has two independent condition equations per point (on the sphere about
+    // the centre, in the plane) and six parameters, so the redundancy is
+    // 2n - 6 and stdev = sqrt(vv / (2n - 6)) is an unbiased estimate of the
+    // per-coordinate sigma for isotropic noise (checked by simulation in
+    // openindy-py/tests/vetting). s0 a posteriori is the same number (unit
+    // weights, a priori 1).
+    double sumRadial = 0.0;
     for (int i = 0; i < std::ssize(centroidReducedCoordinates); i++) {
-      double v_i = circleDistances.getAt(i);
-      stdev += v_i * v_i;
+      const double v_i = circleDistances.getAt(i);
+      sumRadial += v_i * v_i;
     }
-    stdev = std::sqrt(stdev /
-                      (static_cast<double>(centroidReducedCoordinates.size()) -
-                       fit::kCircleUnknowns));
+    const int redundancy =
+        fit::kCircleEquationsPerPoint * static_cast<int>(points.size()) -
+        fit::kSpatialCircleParameters;
+    double stdev = 0.0;
+    if (redundancy > 0) {
+      stdev =
+          std::sqrt((sumRadial + sumHeights) / static_cast<double>(redundancy));
+    } else {
+      function->sendMessage(
+          "The standard deviation of the circle is undefined without "
+          "redundant points.",
+          MessageTypes::eWarningMessage);
+    }
+    function->statistic.setS0APriori(1.0);
+    function->statistic.setS0APosteriori(stdev);
     function->statistic.setIsValid(true);
     function->statistic.setStdev(stdev);
     circle.setStatistic(function->statistic);

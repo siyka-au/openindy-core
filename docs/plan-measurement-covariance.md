@@ -112,9 +112,30 @@ Goal: results equal to or better than SA, with explainable uncertainties, usable
   no statistic; `kFormatVersion = 1` strict (no compatibility requirement, so changing fields is fine).
 - `MeasurementConfig` blast radius: ~100 files / ~1,300 lines (core 51, app 50 incl. a 169-hit dialog, plugins 8, python 1) plus
   proto, JSON config files and `network.proto`. The target selection today is only the Leica string parameter `"reflector"`.
-- Known defects to fix on the way (each with a test): `BestFitSphere` stdev dof (3n-12); `BestFitCircle` never sets stdev and writes
-  `"vx"` three times (`p_best_fit_circle.cpp:307-309`); `BestFitCircleInPlane` is Kasa (biased on arcs); `BestFitPoint` n=1;
-  `Reading::toPolar` inverted guard (reported, to verify); mixed mm/m unit labels.
+- Known defects to fix on the way (each with a test; see "Done so far" for what is fixed): `BestFitSphere` stdev dof (fixed);
+  `BestFitCircle` never set stdev and wrote `"vx"` three times (fixed); `BestFitCircleInPlane` was Kasa (fixed: geometric default,
+  Kasa kept as `BestFitCircleInPlaneAlgebraic`); `BestFitPoint` n=1 (fixed); `Reading::toPolar` inverted guard (fixed); mixed mm/m
+  unit labels (open); `BestFitLine` stdev biased by a factor sqrt(2) (open, proposal below); `BestFitCylinder` with the default
+  "first two points" approximation silently converges to a wrong cylinder in ~1 of 100 random 50-point sets (open).
+  - Proposal for the 3D line divisor: `BestFitLine` divides the sum of the two small eigenvalues by `n - 2`, but a 3D line has two
+    effective errors per point and four parameters, so the redundancy is `2n - 4`. The Monte Carlo check
+    (`openindy-py/tests/vetting/test_reported_stdev_unbiased.py`) measures mean(stdev^2)/sigma^2 = 2.007 (strict xfail). Fix: divide
+    by `2n - 4` (stdev falls by sqrt(2)); not applied yet because `openindy-py/examples/07` compares OpenIndy's line stdev with a 2D
+    s0 whose convention must be revisited together with the change.
+
+## Done so far (fixes made in the first two vetting batches, all tested)
+- Direction flip helper (`fit::opposesDirection`, replaces the `acos`-based test; exactly antiparallel directions are flipped); line direction follows
+  the point order.
+- Display residual keys: `BestFitCircle` writes `vx`/`vy`/`vz`/`v` per point (they used to overwrite each other); in-plane circle
+  writes `vr`, the signed radial distance.
+- `BestFitPoint` with one point: stdev 0 and a warning instead of NaN.
+- `BestFitSphere` stdev divides by `n - 4` (was `3n - 12`).
+- In-plane circle dummy-point rule: the normal points from the centroid to the dummy point (`dummy - centroid`, translation invariant).
+- `Reading::toPolar` guard fixed.
+- Third batch: `BestFitCircleInPlane` is now the geometric (orthogonal-distance, Gauss-Newton) fit started from Kasa; the algebraic fit
+  is `BestFitCircleInPlaneAlgebraic`; `fit_circle(..., method=)` in openindy-py. `BestFitCircle` (3D) sets stdev and s0 a posteriori
+  from `sqrt(vv / (2n - 6))`; the in-plane circles use the same redundancy (radial plus out-of-plane corrections). A Monte Carlo
+  unbiasedness check (400 trials per fit) validates plane `n-3`, sphere `n-4`, cylinder `n-5`, circles `2n-6`, and flags the line.
 
 ## Execution notes for a fresh session (this file is the saved plan; nothing below P0 has been started)
 Status checklist: [ ] P1 directions + signed offsets  [ ] P1b direction features, ports, warnings  [ ] P2 recalculation  [ ] P3 covariance data + Instrument/blobs
