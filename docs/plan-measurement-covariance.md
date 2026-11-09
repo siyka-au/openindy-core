@@ -146,8 +146,9 @@ Workspace: `/home/malleblas/workspaces/openindy` is not a git repo; it holds sib
 examples in `openindy-py/examples/`, 06 = SA comparison, 07 = flatland worked example). Read `/home/malleblas/workspaces/openindy/CLAUDE.md`
 (build, CI, ABI policy, clang-tidy, dirty tracking, openindy-py) and the memory notes in
 `/home/malleblas/.claude/projects/-home-malleblas-workspaces-openindy/memory/` first (SA vetting conventions, offsets, ABI policy).
-Repo state when this plan was written (all local, **nothing pushed beyond what the user pushed**; do not push unless asked):
-core `4d7ef0b5`, math `20e8e79`, app `beee96f6`, default plugin `d85e670`, leica plugin `2a52fbb`, openindy-py `d3af676`; plugin ABI 20.
+Repo state after the third vetting batch (all local, **nothing pushed beyond what the user pushed**; do not push unless asked):
+core `17bde732` (plus the commit that records these hashes), math `20e8e79`, app `beee96f6`, default plugin `38a1738`, leica plugin `2a52fbb`,
+openindy-py `94abed3`; plugin ABI 20 (unchanged by this batch). Originally written at core `4d7ef0b5`, plugin `d85e670`, openindy-py `d3af676`.
 Standing rules: commit often with tests green; **no attribution lines** in commit messages or PR descriptions; no new dependencies
 without asking; use cheaper subagents for mechanical/large work and verify their output yourself; never run destructive git commands
 on a dirty tree; changes to plugin-facing headers need `scripts/abi-check.sh` (libabigail built at `/home/malleblas/.cache/abg/inst`:
